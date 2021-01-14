@@ -11,8 +11,9 @@ function STTS.TextToSpeech(message,freqs,modulations, volume,name, coalition )
         local script = io.open(filename,"w+")
         script:write(cmd .. " && exit")
         script:close()
-        os.execute(string.format("start \"STTS_wrapper\" /min /WAIT \"%s\"",filename))
-        os.remove(filename)
+        -- os.execute(string.format("start \"STTS_wrapper\" /min \"%s\"",filename))
+        os.execute(string.format("\"%s\"",filename))
+        timer.scheduleFunction(os.remove, filename, timer.getTime() + 1)
     end
     os.execute(cmd)
 end

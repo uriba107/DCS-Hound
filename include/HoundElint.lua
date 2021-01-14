@@ -696,7 +696,7 @@ do
             marker = 1
         end
         self.markpointID = marker
-        trigger.action.markToCoalition(self.markpointID, self.typeName .. " " .. self.uid .. " (" .. self.uncertenty_radius.major .. "/" .. self.uncertenty_radius.minor .. "@" .. self.uncertenty_radius.az .. "|" .. HoundUtils:timeDelta(timer.getAbsTime(),self.last_seen) .. "s)",self.pos.p,self.platformCoalition,true)
+        trigger.action.markToCoalition(self.markpointID, self.typeName .. " " .. self.uid .. " (" .. self.uncertenty_radius.major .. "/" .. self.uncertenty_radius.minor .. "@" .. self.uncertenty_radius.az .. "|" .. HoundUtils:timeDelta(self.last_seen) .. "s)",self.pos.p,self.platformCoalition,true)
     end
 
     function HoundContact:positionDebug()
@@ -1068,8 +1068,8 @@ do
         self.atis.footer = "you have information " .. reportId .. "."
         self.atis.msg = self.atis.header .. self.atis.body .. self.atis.footer
         -- Assumptions for time calc: 150 Words per min, avarage of 5 letters for english word
-        -- so 6 chars (incl. space) = 900 characters per min = 15 chars per second
-        -- so lengh of msg / 15 = number of seconds needed to read it. + 10%
+        -- so 5 chars = 750 characters per min = 12.5 chars per second
+        -- so lengh of msg / 12.5 = number of seconds needed to read it. rounded down to 10 chars per sec
         self.atis.msgTimeSec = math.ceil(((string.len(self.atis.msg)/10)))
         -- env.info("estimates: " .. self.atis.msgTimeSec .. " seconds for lenght of ".. string.len(self.atis.msg))
 
@@ -1115,47 +1115,6 @@ do
                 return PlatformData[mainCategoty][type].precision
             end
         end
-        -- if mainCategoty == Object.Category.STATIC then 
-        --     if type == "Comms tower M" then return 0.25 end
-        -- end
-        -- if mainCategoty == Object.Category.UNIT then
-        --     local category = platform:getDesc()["category"] -- hack due to bug
-        --     if category == Unit.Category.GROUND_UNIT then 
-        --         if type == "MLRS FDDM" then return 0.5 end
-        --         if type == "SPK-11" then return 0.5 end
-        --     end
-        --     -- if category == Unit.Category.STRUCTURE then return 0.1 end
-        --     if category == Unit.Category.HELICOPTER then 
-        --         if type == "CH-47D" then return 2.5 end
-        --         if type == "CH-53E" then return 2.5 end
-        --         if type == "MIL-26" then return 2.5 end
-        --         if type == "SH-60B" then return 4.0 end
-        --         if type == "UH-60A" then return 4.0 end
-        --         if type == "Mi-8MT" then return 4.0 end
-
-        --         if type == "UH-1H" then return 6.0 end
-        --         if type == "KA-27" then return 6.0 end
-        --     end
-        --     if category == Unit.Category.AIRPLANE then
-        --         if type == "C-130" then return 1.0 end
-        --         if type == "C-17A" then return 1.0 end
-
-        --         if type == "E-3A" then return 1.5 end
-        --         if type == "E-2D" then return 1.5 end
-        --         if type == "S-3B" then return 1.5 end
-
-        --         if type == "Tu-95MS" then return 1.0 end
-        --         if type == "Tu-142" then return 1.0 end
-        --         if type == "IL-76MD" then return 1.0 end
-        --         if type == "An-30M" then return 1.0 end
-
-        --         if type == "A-50" then return 1.5 end
-        --         if type == "An-26B" then return 1.5 end
-
-        --         if type == "Su-25T" then return 2.5 end
-        --         if type == "AJS37" then return 2.5 end
-        --     end
-        -- end
         return 15.0
     end
 
@@ -1169,9 +1128,6 @@ do
     end
 
     function HoundElint:getActiveRadars()
-                -- If I'll need to do anything manually then
-        -- https://wiki.hoggitworld.com/view/DCS_func_getGroups
-        -- https://wiki.hoggitworld.com/view/DCS_func_getUnits
         local Radars = {}
 
         -- start logic
@@ -1193,7 +1149,6 @@ do
 
             end
         end
-        -- env.info("Found " .. #Radars .. " Active Radars")
         return Radars
     end
 
@@ -1289,12 +1244,14 @@ do
 
     function HoundElint.runCycle(self)
         if self.coalitionId == nil then return end
-        if length(self.platform) == 0 then return end
         if self.platform then self:platformRefresh() end
-        self:Sniff()
+        -- env.info("platforms: " .. length(self.platform) )
+        if length(self.platform) > 0 then
+            -- env.info("sniff")
+            self:Sniff()
+        end
         if length(self.emitters) > 0 then
             if timer.getAbsTime() % math.floor(gaussian(self.settings.processInterval,3)) < self.settings.mainInterval+5 then 
-
                 self:Process() 
                 self:populateRadioMenu()
             end
@@ -1354,7 +1311,6 @@ do
             self = self,
             option = 'platformOff'
         })
-        -- missionCommands.addCommandForCoalition(self.coalitionId,'Debug - ATIS', self.radioAdminMenu,self:generateATIS)
     end
 
     function HoundElint:removeAdminRadioMenu()
@@ -1482,4 +1438,4 @@ do
     end
 end
 env.info("Hound ELINT Loaded Successfully")
--- Build date 14-01-2021
+-- Build date 15-01-2021

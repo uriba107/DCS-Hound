@@ -227,7 +227,7 @@ do
             marker = 1
         end
         self.markpointID = marker
-        trigger.action.markToCoalition(self.markpointID, self.typeName .. " " .. self.uid .. " (" .. self.uncertenty_radius.major .. "/" .. self.uncertenty_radius.minor .. "@" .. self.uncertenty_radius.az .. "|" .. HoundUtils:timeDelta(timer.getAbsTime(),self.last_seen) .. "s)",self.pos.p,self.platformCoalition,true)
+        trigger.action.markToCoalition(self.markpointID, self.typeName .. " " .. self.uid .. " (" .. self.uncertenty_radius.major .. "/" .. self.uncertenty_radius.minor .. "@" .. self.uncertenty_radius.az .. "|" .. HoundUtils:timeDelta(self.last_seen) .. "s)",self.pos.p,self.platformCoalition,true)
     end
 
     function HoundContact:positionDebug()
