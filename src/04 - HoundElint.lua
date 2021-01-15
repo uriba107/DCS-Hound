@@ -26,6 +26,7 @@ do
             modulation = "AM",
             volume = "1.0",
             name = "Hound_Controller",
+            alerts = true
         }
         elint.atis = {
             enable = false,
@@ -70,6 +71,22 @@ do
                         end
                     end
                     table.insert(self.platform, canidate)
+                end
+            end
+        end
+    end
+
+    function HoundElint:removePlatform(platformName)
+        local canidate = Unit.getByName(platformName)
+        if canidate == nil then
+            canidate = StaticObject.getByName(platformName)
+        end
+
+        if canidate ~= nil then
+            for k,v in ipairs(self.platform) do
+                if v == canidate then
+                    table.remove(self.platform, k)
+                    return
                 end
             end
         end
@@ -184,10 +201,7 @@ do
                                HoundUtils.TTS.getTtsTime() .. ". "
         self.atis.footer = "you have information " .. reportId .. "."
         self.atis.msg = self.atis.header .. self.atis.body .. self.atis.footer
-        -- Assumptions for time calc: 150 Words per min, avarage of 5 letters for english word
-        -- so 5 chars = 750 characters per min = 12.5 chars per second
-        -- so lengh of msg / 12.5 = number of seconds needed to read it. rounded down to 10 chars per sec
-        self.atis.msgTimeSec = math.ceil(((string.len(self.atis.msg)/10)))
+        self.atis.msgTimeSec = HoundUtils.TTS.getReadTime(string.len(self.atis.msg))
         -- env.info("estimates: " .. self.atis.msgTimeSec .. " seconds for lenght of ".. string.len(self.atis.msg))
 
     end
@@ -214,13 +228,33 @@ do
     end
 
     function HoundElint:notifyDeadEmitter(emitter)
+        if self.controller.alerts == false then return end
         if self.controller.textEnable then
-            trigger.action.outTextForCoalition(self.coalitionId,emitter:generateDeathReport(false),15)
+            trigger.action.outTextForCoalition(self.coalitionId,emitter:generateDeathReport(false),30)
         end
         if self.controller.enable then
             HoundUtils.TTS.Transmit(emitter:generateDeathReport(true),self.coalitionId,self.controller)
         end
+    end
 
+    function HoundElint.transmitPopUpReport(args)
+        if length(args) < 2 then return end
+        local msg = args[1]
+        local self = args[2]
+        HoundUtils.TTS.Transmit(msg,self.coalitionId,self.controller)
+    end
+
+    function HoundElint:notifyNewEmitter(emitter,msgTime)
+        if self.controller.alerts == false then return end
+        if self.controller.textEnable then
+            trigger.action.outTextForCoalition(self.coalitionId,emitter:generatePopUpReport(false),30)
+        end
+        if self.controller.enable then
+            local msg = emitter:generatePopUpReport(true)
+            timer.scheduleFunction(HoundElint.transmitPopUpReport,{msg,self}, msgTime)
+            msgTime = msgTime + HoundUtils.TTS.getReadTime(string.len(msg)) + 0.5
+        end
+        return msgTime
     end
 
     function HoundElint:getSensorError(platform)
@@ -295,7 +329,6 @@ do
             local RadarName = radar:getName()
             local radarPos = radar:getPosition().p
             radarPos.y = radarPos.y + 20 -- assume 10 meters radar antenna
-
             -- env.info("looking at " .. RadarName )
             -- env.info(length(self.platform) .. " type " .. type(self.platform))
             for j,platform in ipairs(self.platform) do
@@ -332,9 +365,13 @@ do
     end
 
     function HoundElint:Process()
+        local msgTimer = timer.getTime() + 0.2
         for uid, emitter in pairs(self.emitters) do
             if emitter ~= nil then
-                emitter:processData()
+                local isNew = emitter:processData()
+                if isNew then
+                    msgTimer = self:notifyNewEmitter(emitter,msgTimer)
+                end
                 emitter:CleanTimedout()
                 if emitter:isAlive() == false and HoundUtils:timeDelta(emitter.last_seen, timer.getAbsTime()) > 60 then
                     self:notifyDeadEmitter(emitter)
@@ -396,8 +433,7 @@ do
         self.elintTaskID = mist.scheduleFunction(self.runCycle, {self}, 1, self.settings.mainInterval)
        
         trigger.action.outTextForCoalition(self.coalitionId,
-                                           "Hound ELINT system is now Operating",
-                                           10)
+                                           "Hound ELINT system is now Operating", 10)
     end
 
     function HoundElint:platformOff()
@@ -438,11 +474,9 @@ do
         self.radioMenu.root = missionCommands.addSubMenuForCoalition(
                                   self.coalitionId, 'ELINT Intel')
         self.radioMenu.data = {}
-        self.radioMenu.data["placeholder"] =
-            missionCommands.addCommandForCoalition(self.coalitionId,
+        self.radioMenu.noData = missionCommands.addCommandForCoalition(self.coalitionId,
                                                    "No radars are currently tracked",
-                                                   self.radioMenu.root,
-                                                   timer.getAbsTime)
+                                                   self.radioMenu.root, timer.getAbsTime)
 
     end
 
@@ -471,7 +505,9 @@ do
 
         if length(sortedContacts) == 0 then return end
         for k,t in pairs(self.radioMenu.data) do
-            t.counter = 0
+            if k ~= "placeholder" then
+                t.counter = 0
+            end
         end
         for id, emitter in ipairs(sortedContacts) do
             local DCStypeName = emitter.DCStypeName
@@ -493,14 +529,8 @@ do
                 self:addRadarRadioItem(emitter)
             end
         end
-
-        if self.radioMenu.data["placeholder"] ~= nil and
-            length(self.radioMenu.data) > 1 then
-            missionCommands.removeItemForCoalition(self.coalitionId,
-                                                   self.radioMenu.data["placeholder"])
-            self.radioMenu.data["placeholder"] = nil
-        end
     end
+
 
     function HoundElint:addRadarRadioItem(emitter)
         local DCStypeName = emitter.DCStypeName
@@ -508,18 +538,23 @@ do
         local uid = emitter.uid
         local text = emitter:generateRadioItemText()
 
-
         self.radioMenu.data[assigned].counter = self.radioMenu.data[assigned].counter + 1
 
         if self.radioMenu.data[assigned].counter == 1 then
             for k,v in pairs(self.radioMenu.data[assigned].menus) do
-                missionCommands.removeItemForCoalition(self.coalitionId,v)
-                self.radioMenu.data[assigned].menus[k] = nil
+                self.radioMenu.data[assigned].menus[k] = missionCommands.removeItemForCoalition(self.coalitionId,v)
             end
         end
 
-        local submenu = math.floor(self.radioMenu.data[assigned].counter/10)
-        env.info("Item no." .. self.radioMenu.data[assigned].counter .. " submenu: " ..submenu)
+        if self.radioMenu.noData ~= nil then
+            self.radioMenu.noData = missionCommands.removeItemForCoalition(self.coalitionId, self.radioMenu.noData)
+        end
+
+        
+        local submenu = 0
+        if self.radioMenu.data[assigned].counter > 9 then
+            submenu = math.floor((self.radioMenu.data[assigned].counter+1)/10)
+        end
         if submenu == 0 then
             self.radioMenu.data[assigned].data[uid] = missionCommands.addCommandForCoalition(self.coalitionId, emitter:generateRadioItemText(), self.radioMenu.data[assigned].root, self.TransmitSamReport,{self=self,emitter=emitter})
         end
@@ -528,12 +563,12 @@ do
                 if submenu == 1 then
                     self.radioMenu.data[assigned].menus[submenu] = missionCommands.addSubMenuForCoalition(self.coalitionId, "More (Page " .. submenu+1 .. ")", self.radioMenu.data[assigned].root)
                 else
-                    env.info("submenu: " .. submenu .. " chiled of: " .. submenu-1  )
                     self.radioMenu.data[assigned].menus[submenu] = missionCommands.addSubMenuForCoalition(self.coalitionId, "More (Page " .. submenu+1 .. ")", self.radioMenu.data[assigned].menus[submenu-1])
                 end
             end
             self.radioMenu.data[assigned].data[uid] = missionCommands.addCommandForCoalition(self.coalitionId, emitter:generateRadioItemText(), self.radioMenu.data[assigned].menus[submenu], self.TransmitSamReport,{self=self,emitter=emitter})
         end
+
     end
 
     function HoundElint:removeRadarRadioItem(emitter)
@@ -543,7 +578,7 @@ do
         -- env.info(length(emitter) .. " uid: " .. uid .. " DCStypeName: " .. DCStypeName)
 
         if setContains(self.radioMenu.data[assigned].data,uid) then
-            missionCommands.removeItemForCoalition(self.coalitionId, self.radioMenu.data[assigned].data[uid])
+            self.radioMenu.data[assigned].data[uid] = missionCommands.removeItemForCoalition(self.coalitionId, self.radioMenu.data[assigned].data[uid])
         end
     end
 

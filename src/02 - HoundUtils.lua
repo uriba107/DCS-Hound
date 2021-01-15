@@ -89,6 +89,16 @@ do
         return retval:match( "^%s*(.-)%s*$" ) -- return and strip trailing whitespaces
     end
 
+    function HoundUtils.TTS.getReadTime(length)
+                -- Assumptions for time calc: 150 Words per min, avarage of 5 letters for english word
+        -- so 5 chars = 750 characters per min = 12.5 chars per second
+        -- so lengh of msg / 12.5 = number of seconds needed to read it. rounded down to 10 chars per sec
+        if type(length) == "string" then
+            return math.ceil((string.len(length)/10))
+        end
+        return math.ceil(length/10)
+    end
+
 --[[ 
     ----- Text Functions ----
 --]]
@@ -117,8 +127,7 @@ do
             "Please send my regards.",
             ""
         }
-        return response[math.random(1,#response)]
-
+        return response[math.floor(timer.getAbsTime() % length(response))]
     end
 
     function HoundUtils.getCoalitionString(coalitionID)
@@ -177,6 +186,5 @@ do
 
     function HoundUtils.angleDeltaRad(rad1,rad2)
         return math.abs(math.abs(rad1-math.pi)-math.abs(rad2-math.pi))
-        
     end
 end

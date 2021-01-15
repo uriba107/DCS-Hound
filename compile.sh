@@ -27,6 +27,11 @@ function update_mission {
     cd ${DEMO_PATH}
     /usr/bin/zip -ur ${MISSION_FILE}.miz ${SCRIPT_PATH}
     cd ..
+    IN_USE=0
+    until [ $IN_USE == 1 ]; do
+        lsof ./${DEMO_PATH}/l10n > /dev/null
+        IN_USE=$?
+    done
     rm -r ./${DEMO_PATH}/l10n
     }
 

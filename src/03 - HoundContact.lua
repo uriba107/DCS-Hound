@@ -227,7 +227,7 @@ do
             marker = 1
         end
         self.markpointID = marker
-        trigger.action.markToCoalition(self.markpointID, self.typeName .. " " .. self.uid .. " (" .. self.uncertenty_radius.major .. "/" .. self.uncertenty_radius.minor .. "@" .. self.uncertenty_radius.az .. "|" .. HoundUtils:timeDelta(self.last_seen) .. "s)",self.pos.p,self.platformCoalition,true)
+        trigger.action.markToCoalition(self.markpointID, self.typeName .. " " .. (self.uid%100) .. " (" .. self.uncertenty_radius.major .. "/" .. self.uncertenty_radius.minor .. "@" .. self.uncertenty_radius.az .. "|" .. HoundUtils:timeDelta(self.last_seen) .. "s)",self.pos.p,self.platformCoalition,true)
     end
 
     function HoundContact:positionDebug()
@@ -289,7 +289,7 @@ do
     function HoundContact:generateTtsBrief()
         if self.pos.p == nil or self.uncertenty_radius == nil then return end
         local phoneticGridPos,phoneticBulls = self:getTtsData()
-        local str = self.typeName .. " " .. self.uid .. ", " .. HoundUtils.TTS.getVerbalContactAge(self.last_seen,true)
+        local str = self.typeName .. " " .. (self.uid % 100) .. ", " .. HoundUtils.TTS.getVerbalContactAge(self.last_seen,true)
         str = str .. " at " .. phoneticGridPos -- .. ", bullz " .. phoneticBulls 
         str = str .. ", accuracy " .. HoundUtils.TTS.getVerbalConfidenceLevel( self.uncertenty_radius.r ) .. "."
         return str
@@ -298,7 +298,7 @@ do
     function HoundContact:generateTtsReport()
         if self.pos.p == nil then return end
         local phoneticGridPos,phoneticBulls = self:getTtsData(true)
-        local msg =  self.typeName .. " " .. self.uid ..", bullz " .. phoneticBulls .. ", grid ".. phoneticGridPos
+        local msg =  self.typeName .. " " .. (self.uid % 100) ..", bullz " .. phoneticBulls .. ", grid ".. phoneticGridPos
         msg = msg .. ", position " .. HoundUtils.TTS.getVerbalLL(self.pos.LL.lat,self.pos.LL.lon)
         msg = msg .. ", Ellipse " ..  self.uncertenty_radius.major .. " by " ..  self.uncertenty_radius.minor .. " aligned bearing " .. HoundUtils.TTS.toPhonetic(string.format("%03d",self.uncertenty_radius.az))
         msg = msg .. ", first seen " .. HoundUtils.TTS.getTtsTime(self.first_seen) .. ", last seen " .. HoundUtils.TTS.getVerbalContactAge(self.last_seen) .. " ago. " .. HoundUtils:getControllerResponse()
@@ -308,7 +308,7 @@ do
     function HoundContact:generateTextReport()
         if self.pos.p == nil then return end
         local GridPos,BePos = self:getTextData(true)
-        local msg =  self.typeName .. " " .. self.uid .."\n"
+        local msg =  self.typeName .. " " .. (self.uid % 100) .."\n"
         msg = msg .. "BE: " .. BePos .. " (grid ".. GridPos ..")\n"
         msg = msg .. "LL: " .. HoundUtils.Text.getLL(self.pos.LL.lat,self.pos.LL.lon).."\n"
         msg = msg .. "Ellipse: " ..  self.uncertenty_radius.major .. " by " ..  self.uncertenty_radius.minor .. " aligned bearing " .. string.format("%03d",self.uncertenty_radius.az) .. "\n"
@@ -320,11 +320,27 @@ do
         if self.pos.p == nil then return end
         local GridPos,BePos = self:getTextData(true)
         BePos = BePos:gsub(" for ","/")
-        return self.typeName .. " (" .. self.uid ..") - BE: " .. BePos .. " (".. GridPos ..")"
+        return self.typeName .. " (" .. (self.uid % 100) ..") - BE: " .. BePos .. " (".. GridPos ..")"
     end 
 
+
+    function HoundContact:generatePopUpReport(isTTS)
+        local msg = "BREAK, BREAK! New threat detected! "
+        msg = msg .. self.typeName .. " " .. (self.uid % 100)
+        local GridPos,BePos 
+        if isTTS then
+            GridPos,BePos = self:getTtsData(true)
+            msg = msg .. ", bullz " .. BePos .. ", grid ".. GridPos
+        else
+            GridPos,BePos = self:getTextData(true)
+            msg = msg .. " BE: " .. BePos .. " (grid ".. GridPos ..")"
+        end
+        msg = msg .. " is now Alive!"
+        return msg
+    end
+
     function HoundContact:generateDeathReport(isTTS)
-        local msg = self.typeName .. " " .. self.uid
+        local msg = self.typeName .. " " .. (self.uid % 100)
         local GridPos,BePos 
         if isTTS then
             GridPos,BePos = self:getTtsData(true)
@@ -342,9 +358,16 @@ do
         if msg == nil then return end
         HoundUtils.TTS.Transmit(msg,self.platformCoalition,tts)
     end
+    function HoundContact:NewThreatAlert()
+        if STTS ~= nil then
+
+        end
+
+    end
 
     function HoundContact:processData()
         -- env.info("HoundContact:processData() - start")
+        local newContact = (self.pos.p == nil)
         local mobileDataPoints = {}
         local staticDataPoints = {}
         for k,v in pairs(self.dataPoints) do 
@@ -411,5 +434,8 @@ do
             self:calculateEllipse(estimatePosition,self:calculateAzimuthBias(combinedDataPoints))
         end
 
+        if newContact and self.pos.p ~= nil and self.isEWR == false then
+            return true
+        end
     end
 end
