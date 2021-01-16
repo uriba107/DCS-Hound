@@ -17,24 +17,31 @@ function compile {
 } 
 
 function update_mission {
-    DEMO_PATH="demo_mission"
     SCRIPT_PATH="l10n/DEFAULT"
-    MISSION_FILE="HoundElint_demo"
-    mkdir -p ${DEMO_PATH}/${SCRIPT_PATH}
-    cp ./include/*.lua ./${DEMO_PATH}/${SCRIPT_PATH}
-    cp ./${DEMO_PATH}/${MISSION_FILE}.lua ./${DEMO_PATH}/${SCRIPT_PATH}
+    MISSION_PATH=${1:-"demo_mission"}
+    MISSION_FILE=${2:-"HoundElint_demo"}
 
-    cd ${DEMO_PATH}
+    echo "Updating ${MISSION_FILE}"
+    mkdir -p ${MISSION_PATH}/${SCRIPT_PATH}
+    cp ./include/*.lua ./${MISSION_PATH}/${SCRIPT_PATH}
+    cp ./${MISSION_PATH}/${MISSION_FILE}.lua ./${MISSION_PATH}/${SCRIPT_PATH}
+
+    cd ${MISSION_PATH}
     /usr/bin/zip -ur ${MISSION_FILE}.miz ${SCRIPT_PATH}
-    cd ..
+    until [ -d "./include" ]; do
+        cd ..
+    done
+    sleep 1
     IN_USE=0
     until [ $IN_USE == 1 ]; do
-        lsof ./${DEMO_PATH}/l10n > /dev/null
+        lsof ./${MISSION_PATH}/l10n > /dev/null
         IN_USE=$?
     done
-    rm -r ./${DEMO_PATH}/l10n
+    echo "CleanUp ${MISSION_FILE}"
+    rm -r  ./${MISSION_PATH}/l10n
     }
 
 ## main
 compile
 update_mission
+update_mission "demo_mission/Syria_POC" "Hound_Demo_SyADFGCI"

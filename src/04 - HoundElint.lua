@@ -337,8 +337,7 @@ do
             local RadarName = radar:getName()
             local radarPos = radar:getPosition().p
             radarPos.y = radarPos.y + 20 -- assume 10 meters radar antenna
-            -- env.info("looking at " .. RadarName )
-            -- env.info(length(self.platform) .. " type " .. type(self.platform))
+
             for j,platform in ipairs(self.platform) do
                 local platformPos = platform:getPosition().p
                 local platformId = platform:getID()
@@ -403,7 +402,6 @@ do
 
     function HoundElint:Bark()
         for uid, emitter in pairs(self.emitters) do
-            -- env.info("updating marker for " .. emitter.unit:getName())
             emitter:updateMarker(self.coalitionId)
         end
     end
@@ -411,9 +409,7 @@ do
     function HoundElint.runCycle(self)
         if self.coalitionId == nil then return end
         if self.platform then self:platformRefresh() end
-        -- env.info("platforms: " .. length(self.platform) )
         if length(self.platform) > 0 then
-            -- env.info("sniff")
             self:Sniff()
         end
         if length(self.emitters) > 0 then

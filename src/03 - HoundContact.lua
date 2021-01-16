@@ -80,19 +80,16 @@ do
             -- if Reciver is static, just keep the last Datapoint, as position never changes.
             -- if There is a datapoint, do rolling avarage on AZ to clean errors out.
             if length(self.dataPoints[datapoint.platformId]) > 0 then
-                datapoint.az = (datapoint.az + self.dataPoints[datapoint.platformId][1].az)/2.0
+                datapoint.az =  HoundUtils.AzimuthAverage({datapoint.az,self.dataPoints[datapoint.platformId][1].az})
             end
             self.dataPoints[datapoint.platformId] = {datapoint}
             return
         end
-        -- local dataArray = self.dataPoints[datapoint.platformId]
-        -- Todo data logic
         if length(self.dataPoints[datapoint.platformId]) < 2 then
             table.insert(self.dataPoints[datapoint.platformId], datapoint)
         else
             local LastElementIndex = table.getn(self.dataPoints[datapoint.platformId])
             local DeltaT = HoundUtils:timeDelta(self.dataPoints[datapoint.platformId][LastElementIndex - 1].t, datapoint.t)
-            -- env.info("timeDelta is " .. DeltaT)
             if  DeltaT >= 60 then
                 table.insert(self.dataPoints[datapoint.platformId], datapoint)
             else
@@ -102,8 +99,6 @@ do
                 table.remove(self.dataPoints[datapoint.platformId], 1)
             end
         end
-        -- self.dataPoints[datapoint.platformId] = dataArray
-        -- env.info("finished with " .. length(self.dataPoints[datapoint.platformId]) .. " elements from ".. datapoint.platformId)
     end
 
     function HoundContact:triangulatePoints(earlyPoint, latePoint)
@@ -128,22 +123,13 @@ do
     end
 
     function HoundContact:calculateAzimuthBias(dataPoints)
-        -- env.info("HoundContact:calculateAzimuthBias() - start")
 
-        local biasVector = nil
-        for i=1, length(dataPoints) do
-            local V = {}
-            V.x = math.cos(dataPoints[i].az)
-            V.z = math.sin(dataPoints[i].az)
-            V.y = 0
-            -- table.insert(vectors,V)
-            if biasVector == nil then biasVector = V else biasVector = mist.vec.add(biasVector,V) end
+        local azimuths = {}
+        for k,v in ipairs(dataPoints) do
+            table.insert(azimuths,v.az)
         end
-        -- env.info("avg theta :" .. bias .. "(".. mist.utils.toDegree(bias) .. ")")
-        local pi_2 = 2*math.pi
-        -- env.info("HoundContact:calculateAzimuthBias() - end")
 
-        return  (math.atan2(biasVector.z/length(dataPoints), biasVector.x/length(dataPoints))+pi_2) % pi_2
+        return  HoundUtils.AzimuthAverage(azimuths)
     end
 
     function HoundContact:calculateEllipse(estimatedPositions,Theta)
@@ -154,18 +140,15 @@ do
         for i = 1, percentile do
             table.insert(RelativeToPos,mist.vec.sub(estimatedPositions[i],self.pos.p))
         end
-        -- env.info("Theta: ".. Theta .. "|" .. mist.utils.toDegree(Theta))
         local sinTheta = math.sin(Theta)
         local cosTheta = math.cos(Theta)
 
         for k,v in ipairs(RelativeToPos) do
-            -- env.info("offset dist: " .. mist.utils.get2DDist({x=0,y=0,z=0},v))
             local newPos = {}
             newPos.y = v.y
             newPos.x = v.x*cosTheta - v.z*sinTheta
             newPos.z = v.x*sinTheta + v.z*cosTheta
             RelativeToPos[k] = newPos
-            -- env.info("calculatePos - rotate "..k .. "id "..v.x .. "=>" .. newPos.x .. "/"..v.z.."=>"..newPos.z)
         end
 
         local min = {}
@@ -177,7 +160,6 @@ do
         max.y = -99999
 
         for k,v in ipairs(RelativeToPos) do
-            -- env.info("offsets: minx" .. min.x .. " miny "..min.y .. " maxx " .. max.x.. " maxy "..max.y)
             min.x = math.min(min.x,v.x)
             max.x = math.max(max.x,v.x)
             min.y = math.min(min.y,v.z)
@@ -193,22 +175,17 @@ do
         self.uncertenty_radius.r  = (x+y)/4
         
         -- env.info("ellipse size is :".. self.uncertenty_radius.major .. "/" .. self.uncertenty_radius.minor .. " Az: ".. self.uncertenty_radius.az)
-        -- env.info("HoundContact:calculateEllipse() - end")
 
     end
 
     function HoundContact:calculatePos(estimatedPositions)
-        -- env.info("HoundContact:calculatePos() - start")
         if estimatedPositions == nil then return end
         self.pos.p =  mist.getAvgPoint(estimatedPositions)
         local bullsPos = coalition.getMainRefPoint(self.platformCoalition)
         self.pos.LL.lat, self.pos.LL.lon =  coord.LOtoLL(self.pos.p)
-        -- env.info("LL: " ..self.pos.LL.lat .. " " .. self.pos.LL.lat)
         self.pos.grid  = coord.LLtoMGRS(self.pos.LL.lat, self.pos.LL.lon)
-        -- env.info(self.pos.grid.UTMZone .. " " .. self.pos.grid.MGRSDigraph )
         self.pos.be.brg = mist.utils.round(mist.utils.toDegree(mist.utils.getDir(mist.vec.sub(self.pos.p,bullsPos))))
         self.pos.be.rng =  mist.utils.round(mist.utils.metersToNM(mist.utils.get2DDist(self.pos.p,bullsPos)))
-        -- env.info("HoundContact:calculatePos() - end")
 
     end
 
@@ -320,7 +297,7 @@ do
         if self.pos.p == nil then return end
         local GridPos,BePos = self:getTextData(true)
         BePos = BePos:gsub(" for ","/")
-        return self.typeName .. " (" .. (self.uid % 100) ..") - BE: " .. BePos .. " (".. GridPos ..")"
+        return self.typeName .. (self.uid % 100) .. " - BE: " .. BePos .. " (".. GridPos ..")"
     end 
 
 
@@ -358,15 +335,8 @@ do
         if msg == nil then return end
         HoundUtils.TTS.Transmit(msg,self.platformCoalition,tts)
     end
-    function HoundContact:NewThreatAlert()
-        if STTS ~= nil then
-
-        end
-
-    end
 
     function HoundContact:processData()
-        -- env.info("HoundContact:processData() - start")
         local newContact = (self.pos.p == nil)
         local mobileDataPoints = {}
         local staticDataPoints = {}
@@ -385,12 +355,8 @@ do
         local numStaticPoints = length(staticDataPoints)
 
         if numMobilepoints+numStaticPoints < 2 then return end
-        -- TODO: main process logic
-        -- exteral trigger. manage points triangulation, position calculations and output
+
         local estimatePosition = {}
-        -- env.info("contact has " .. numMobilepoints .. " datapoints")
-        -- self.dataPoints[centerIndex]:resetRange()
-        
         -- Static against all statics
         if numStaticPoints > 1 then
             for i=1,numStaticPoints-1 do

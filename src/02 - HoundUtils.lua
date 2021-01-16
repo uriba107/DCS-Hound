@@ -187,4 +187,19 @@ do
     function HoundUtils.angleDeltaRad(rad1,rad2)
         return math.abs(math.abs(rad1-math.pi)-math.abs(rad2-math.pi))
     end
+
+    function HoundUtils.AzimuthAverage(azimuths)
+
+        local biasVector = nil
+        for i=1, length(azimuths) do
+            local V = {}
+            V.x = math.cos(azimuths[i])
+            V.z = math.sin(azimuths[i])
+            V.y = 0
+            if biasVector == nil then biasVector = V else biasVector = mist.vec.add(biasVector,V) end
+        end
+        local pi_2 = 2*math.pi
+
+        return  (math.atan2(biasVector.z/length(azimuths), biasVector.x/length(azimuths))+pi_2) % pi_2
+    end
 end

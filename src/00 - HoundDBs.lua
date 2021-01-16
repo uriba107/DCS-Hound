@@ -40,7 +40,7 @@ do
             ['Role'] = "STR",
         },
         ['S-300PS 40B6MD sr'] = {
-            ['Name'] = "Tomb Stone",
+            ['Name'] = "Clam Shell",
             ['Assigned'] = "SA-10",
             ['Role'] = "SR",
         },
@@ -125,6 +125,16 @@ do
             ['Assigned'] = "Rapier",
             ['Role'] = "TR",
         },
+        ['HQ-7_STR_SP'] = {
+            ['Name'] = "HQ-7",
+            ['Assigned'] = "HQ-7",
+            ['Role'] = "STR",
+        },
+        ['HQ-7_LN_SP'] = {
+            ['Name'] = "HQ-7",
+            ['Assigned'] = "HQ-7",
+            ['Role'] = "TR",
+        },       
         ['2S6 Tunguska'] = {
             ['Name'] = "Tunguska",
             ['Assigned'] = "Tunguska",
@@ -189,7 +199,7 @@ do
     PlatformData = {
         [Object.Category.STATIC] = {
             ["Comms tower M"] = {
-                precision = 0.25
+                precision = 0.15
             }
         },
         [Object.Category.UNIT] = {
