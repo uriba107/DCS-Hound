@@ -382,6 +382,7 @@ do
                 local isNew = emitter:processData()
                 if isNew then
                     self.controller.msgTimer = self:notifyNewEmitter(emitter,self.controller.msgTimer)
+                    emitter:updateMarker(self.coalitionId)
                 end
                 emitter:CleanTimedout()
                 if emitter:isAlive() == false and HoundUtils:timeDelta(emitter.last_seen, timer.getAbsTime()) > 60 then
