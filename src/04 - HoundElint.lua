@@ -14,11 +14,13 @@ do
         elint.coalitionId = nil
         elint.addPositionError = false
         elint.positionErrorRadius = 30
+
         elint.settings = {
             mainInterval = 15,
             processInterval = 60,
             barkInterval = 120
         }
+
         elint.controller = {
             enable = false,
             textEnable = false,
@@ -26,8 +28,10 @@ do
             modulation = "AM",
             volume = "1.0",
             name = "Hound_Controller",
-            alerts = true
+            alerts = true,
+            msgTimer = timer.getTime() + 0.2
         }
+
         elint.atis = {
             enable = false,
             taskId = nil,
@@ -227,21 +231,27 @@ do
         end
     end
 
-    function HoundElint:notifyDeadEmitter(emitter)
+    function HoundElint.transmitReport(args)
+        if length(args) < 2 then return end
+        local msg = args[1]
+        local self = args[2]
+        HoundUtils.TTS.Transmit(msg,self.coalitionId,self.controller)
+    end
+
+    function HoundElint:ScheduleTransmit(message,msgTime)
+        timer.scheduleFunction(HoundElint.transmitReport,{message,self}, msgTime)
+        return msgTime + HoundUtils.TTS.getReadTime(string.len(message)) + 0.2
+    end
+
+    function HoundElint:notifyDeadEmitter(emitter,msgTime)
         if self.controller.alerts == false then return end
         if self.controller.textEnable then
             trigger.action.outTextForCoalition(self.coalitionId,emitter:generateDeathReport(false),30)
         end
         if self.controller.enable then
-            HoundUtils.TTS.Transmit(emitter:generateDeathReport(true),self.coalitionId,self.controller)
+            msgTime = self:ScheduleTransmit(emitter:generateDeathReport(true),msgTime)
         end
-    end
-
-    function HoundElint.transmitPopUpReport(args)
-        if length(args) < 2 then return end
-        local msg = args[1]
-        local self = args[2]
-        HoundUtils.TTS.Transmit(msg,self.coalitionId,self.controller)
+        return msgTime
     end
 
     function HoundElint:notifyNewEmitter(emitter,msgTime)
@@ -250,9 +260,7 @@ do
             trigger.action.outTextForCoalition(self.coalitionId,emitter:generatePopUpReport(false),30)
         end
         if self.controller.enable then
-            local msg = emitter:generatePopUpReport(true)
-            timer.scheduleFunction(HoundElint.transmitPopUpReport,{msg,self}, msgTime)
-            msgTime = msgTime + HoundUtils.TTS.getReadTime(string.len(msg)) + 0.5
+            msgTime = self:ScheduleTransmit(emitter:generatePopUpReport(true),msgTime)
         end
         return msgTime
     end
@@ -365,16 +373,19 @@ do
     end
 
     function HoundElint:Process()
-        local msgTimer = timer.getTime() + 0.2
+        local currentTime = timer.getTime() + 0.2
+        if self.controller.msgTimer < currentTime then
+            self.controller.msgTimer = currentTime
+        end
         for uid, emitter in pairs(self.emitters) do
             if emitter ~= nil then
                 local isNew = emitter:processData()
                 if isNew then
-                    msgTimer = self:notifyNewEmitter(emitter,msgTimer)
+                    self.controller.msgTimer = self:notifyNewEmitter(emitter,self.controller.msgTimer)
                 end
                 emitter:CleanTimedout()
                 if emitter:isAlive() == false and HoundUtils:timeDelta(emitter.last_seen, timer.getAbsTime()) > 60 then
-                    self:notifyDeadEmitter(emitter)
+                    self.controller.msgTimer = self:notifyDeadEmitter(emitter,self.controller.msgTimer)
                     emitter:removeMarker()
                     self.emitters[uid] = nil
                     self:removeRadioItem(self.radioMenu.data[emitter.typeAssigned].data[uid])
