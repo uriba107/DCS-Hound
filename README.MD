@@ -41,10 +41,10 @@ Remember that the system is using a simulated DF to determin the bearing of the 
 | Tu-142    | 1.0 |
 | IL-76MD   | 1.0 |
 | S-3B      | 1.5 |
-| E-2D      | 1.5 |
-| E-3A      | 1.5 |
-| An-26B    | 1.5 |
-| A-50      | 1.5 |
+| E-2D      | 2.0 |
+| E-3A      | 2.0 |
+| An-26B    | 2.0 |
+| A-50      | 2.0 |
 | Viggen    | 2.5 |
 | Su-25T    | 2.5 |  
 
@@ -70,7 +70,7 @@ Remember that the system is using a simulated DF to determin the bearing of the 
 ### Static Objects
 | Platform  | Accuracy (degrees)|
 | --------  | --------  |
-| Comms tower M | 0.25 |
+| Comms tower M | 0.15 |
 
 ## Can I haz syntax pls?
 Yes you can.
@@ -113,10 +113,14 @@ Additional platforms can be added at any time
 ```lua
     Elint_blue:addPlatform("ELINT_C17")
 ```
+and if need be the oposite is also available
+```lua
+    Elint_blue:removePlatform("ELINT_C17")
+```
 
 Thats it, all you need to do now is to activate the system
 ```lua
-    Elint_blue:platformOn()
+    Elint_blue:systemOn()
 ```
 Once activated the system will use all avaliable platforms to locate transmitting radars. 
 Information about these radars is updated periodicly onto the F10 map.
@@ -125,7 +129,7 @@ Information about these radars is updated periodicly onto the F10 map.
 
 You can of course turn it off for any reason with:
 ```lua
-    Elint_blue:platformOn()
+    Elint_blue:systemOff()
 ```
 
 ### More advanced fun stuff
@@ -207,19 +211,19 @@ for example:
     Elint_blue:enableController(true)
     Elint_blue:enableATIS()
 ```
-This will chage ATIS freqency to 251.5 and enable ATIS
+This will change ATIS freqency to 251.5 and enable ATIS
 and will enable Controller both in Text and in Voice, while transmitting on two frequencies 251.0 AM and 35 FM
 
 
 ## That's all folks!
 
 ---
-
+## Known Issues
+  * when from some reason, all markers are removed, they might not appear again until  manual marker is added. (linked to the fact that "next idx" cannot be retrived from system directly)
 ## special notes for Alpha phase
   * currently sample rate is every 15 seconds, where data points are commited every one minute.
   * 11 data points are soted per radar per platform.
   * menus update every ~60 seconds
   * Markers are updated every ~120 seconds (2 mins)
   * ATIS is on a loop, will update every ~60 seconds or so, unless it's a long message then it will update on next run. If nothing has changed, it will re-broadcast the same one again. 
-  * currenty ATIS will not report positoin on EWR radars, it will just call how many it tracks this will be toggleable.
-  * Menu system does not work currenly with more then 18 radars of the same type. (only the last 18 detected will be listed.)
+  * currenty ATIS will not report position on EWR radars, it will just call how many it tracks this will be toggleable.

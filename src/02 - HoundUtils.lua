@@ -98,6 +98,17 @@ do
         end
         return math.ceil(length/10)
     end
+    function HoundUtils.TTS.simplfyDistance(distanceM) 
+        local distanceUnit = "meters"
+        local distance = 0
+        if distanceM < 1000 then
+            distance = mist.utils.round(distanceM / 50) * 50
+        else
+            distance = mist.utils.round(distanceM / 1000,1)
+            distanceUnit = "kilometers"
+        end
+        return distance .. " " .. distanceUnit
+    end
 
 --[[ 
     ----- Text Functions ----

@@ -35,7 +35,6 @@ do
         elint.atis = {
             enable = false,
             taskId = nil,
-            interval = 55,
             freq = 250.500,
             modulation = "AM",
             name = "Hound_ATIS",
@@ -52,6 +51,9 @@ do
         return elint
     end
 
+    --[[
+        Admin functions
+    --]]
     function HoundElint:addPlatform(platformName)
 
         local canidate = Unit.getByName(platformName)
@@ -79,6 +81,8 @@ do
             end
         end
     end
+
+
 
     function HoundElint:removePlatform(platformName)
         local canidate = Unit.getByName(platformName)
@@ -128,16 +132,26 @@ do
         for k,v in pairs(args) do self.atis[k] = v end
     end
 
+
+    --[[
+        Toggle functions
+    --]]
+
+
     function HoundElint:toggleController(state,textMode)
         if ( STTS ~= nil ) then
-            self.controller.enable = state
+            if type(state) == "boolean" then
+                self.controller.enable = state
+            end
             return
         end
         self.controller.enable = false
      end
 
      function HoundElint:toggleControllerText(state)
-        self.controller.textEnable = state
+        if type(state) == "boolean" then
+            self.controller.textEnable = state
+        end
      end
 
      function HoundElint:enableController(textMode)
@@ -154,13 +168,20 @@ do
             self:toggleControllerText(true)
         end
         self:removeRadioMenu()
+    end
 
+    function HoundElint:controllerReportEWR(state)
+        if type(state) == "boolean" then
+            self.controller.reportEWR = state
+        end
     end
 
 
     function HoundElint:toggleATIS(state) 
         if ( STTS ~= nil ) then
-            self.atis.enable = state
+            if type(state) == "boolean" then
+                self.atis.enable = state
+            end
             return
         end
         self.atis.enable = false
@@ -168,7 +189,6 @@ do
 
     function HoundElint:enableATIS()
         self:toggleATIS(true)
-        -- self.atis.taskId = mist.scheduleFunction(self.TransmitATIS,{self}, 5, self.atis.interval)
         self.atis.taskId = timer.scheduleFunction(self.TransmitATIS,self, timer.getTime() + 15)
     end
 
@@ -178,6 +198,10 @@ do
             timer.removeFunction(self.atis.taskId)
         end
     end
+
+    --[[
+        ATIS functions
+    --]]
 
     function HoundElint:generateATIS()        
         local body = ""
@@ -218,6 +242,10 @@ do
         end
         self.atis.taskId = timer.scheduleFunction(self.TransmitATIS,self, timer.getTime() + self.atis.msgTimeSec + 5)
     end
+
+    --[[
+        Controller functions
+    --]]
 
     function HoundElint.TransmitSamReport(args)
         -- local self = args["self"]
@@ -265,6 +293,10 @@ do
         return msgTime
     end
 
+    --[[
+        Actual work functions
+    --]]
+
     function HoundElint:getSensorError(platform)
         local mainCategoty = platform:getCategory()
         local type = platform:getTypeName()
@@ -310,8 +342,6 @@ do
         end
         return Radars
     end
-
-
 
     function HoundElint:Sniff()
         local Recivers = {}
@@ -368,7 +398,6 @@ do
                 end
             end
         end
-        -- env.info("end Sniff()")
     end
 
     function HoundElint:Process()
@@ -386,9 +415,9 @@ do
                 emitter:CleanTimedout()
                 if emitter:isAlive() == false and HoundUtils:timeDelta(emitter.last_seen, timer.getAbsTime()) > 60 then
                     self.controller.msgTimer = self:notifyDeadEmitter(emitter,self.controller.msgTimer)
+                    self:removeRadioItem(self.radioMenu.data[emitter.typeAssigned].data[uid])
                     emitter:removeMarker()
                     self.emitters[uid] = nil
-                    self:removeRadioItem(self.radioMenu.data[emitter.typeAssigned].data[uid])
                 else
                     if HoundUtils:timeDelta(emitter.last_seen,
                                             timer.getAbsTime()) > 1800 then
@@ -426,17 +455,17 @@ do
     function HoundElint.updatePlatformState(params)
         local option = params.option
         local self = params.self
-        if option == 'platformOn' then
-            self:platformOn()
-        elseif option == 'platformOff' then
-            self:platformOff()
+        if option == 'systemOn' then
+            self:systemOn()
+        elseif option == 'systemOff' then
+            self:systemOff()
         end
     end
 
-    function HoundElint:platformOn()
+    function HoundElint:systemOn()
         env.info("Hound is now on")
 
-        self:platformOff()
+        self:systemOff()
 
         self.elintTaskID = mist.scheduleFunction(self.runCycle, {self}, 1, self.settings.mainInterval)
        
@@ -444,7 +473,7 @@ do
                                            "Hound ELINT system is now Operating", 10)
     end
 
-    function HoundElint:platformOff()
+    function HoundElint:systemOff()
         env.info("Hound is now off")
         if self.elintTaskID ~= nil then
             mist.removeFunction(self.elintTaskID)
@@ -455,6 +484,9 @@ do
                                            10)
     end
 
+    --[[
+        Menu functions - Admin Menu
+    --]]
     -- TODO: Remove Menu when emitter dies:
     function HoundElint:addAdminRadioMenu()
         env.info("addAdminRadioMenu")
@@ -477,6 +509,10 @@ do
     function HoundElint:removeAdminRadioMenu()
         missionCommands.removeItem(self.radioAdminMenu)
     end
+
+    --[[
+        Menu functions - Unit Info Menues
+    --]]
 
     function HoundElint:addRadioMenu()
         self.radioMenu.root = missionCommands.addSubMenuForCoalition(

@@ -201,7 +201,7 @@ do
         if length(marker) > 0 then 
             marker = (marker[#marker].idx + 1)
         else 
-            marker = 1
+            marker = math.random(1,500)
         end
         self.markpointID = marker
         trigger.action.markToCoalition(self.markpointID, self.typeName .. " " .. (self.uid%100) .. " (" .. self.uncertenty_radius.major .. "/" .. self.uncertenty_radius.minor .. "@" .. self.uncertenty_radius.az .. "|" .. HoundUtils:timeDelta(self.last_seen) .. "s)",self.pos.p,self.platformCoalition,true)
@@ -277,7 +277,7 @@ do
         local phoneticGridPos,phoneticBulls = self:getTtsData(true)
         local msg =  self.typeName .. " " .. (self.uid % 100) ..", bullz " .. phoneticBulls .. ", grid ".. phoneticGridPos
         msg = msg .. ", position " .. HoundUtils.TTS.getVerbalLL(self.pos.LL.lat,self.pos.LL.lon)
-        msg = msg .. ", Ellipse " ..  self.uncertenty_radius.major .. " by " ..  self.uncertenty_radius.minor .. " aligned bearing " .. HoundUtils.TTS.toPhonetic(string.format("%03d",self.uncertenty_radius.az))
+        msg = msg .. ", Ellipse " ..  HoundUtils.TTS.simplfyDistance(self.uncertenty_radius.major) .. " by " ..  HoundUtils.TTS.simplfyDistance(self.uncertenty_radius.minor) .. " aligned bearing " .. HoundUtils.TTS.toPhonetic(string.format("%03d",self.uncertenty_radius.az))
         msg = msg .. ", first seen " .. HoundUtils.TTS.getTtsTime(self.first_seen) .. ", last seen " .. HoundUtils.TTS.getVerbalContactAge(self.last_seen) .. " ago. " .. HoundUtils:getControllerResponse()
         return msg
     end
