@@ -12,6 +12,7 @@ do
     ----- TTS Functions ----
 --]]    
     function HoundUtils.TTS.Transmit(msg,coalitionID,args)
+
         if STTS == nil then return end
         if msg == nil then return end
         if coalitionID == nil then return end
@@ -20,9 +21,10 @@ do
         if args.modulation == nil then args.modulation = "AM" end
         if args.volume == nil then args.volume = "1.0" end
         if args.name == nil then args.name = "Hound" end
+        if args.gender == nil then args.gender = "female" end
+        if args.locale == nil then args.locale = "en-US" end
 
-        -- STTS.TextToSpeech("Hello DCS WORLD","251","AM","1.0","SRS",2)
-        STTS.TextToSpeech(msg,args.freq,args.modulation,args.volume,args.name,coalitionID)
+        STTS.TextToSpeech(msg,args.freq,args.modulation,args.volume,args.name,coalitionID,args.gender,args.locale)
         return true
     end
 
@@ -90,7 +92,7 @@ do
     end
 
     function HoundUtils.TTS.getReadTime(length)
-                -- Assumptions for time calc: 150 Words per min, avarage of 5 letters for english word
+        -- Assumptions for time calc: 150 Words per min, avarage of 5 letters for english word
         -- so 5 chars = 750 characters per min = 12.5 chars per second
         -- so lengh of msg / 12.5 = number of seconds needed to read it. rounded down to 10 chars per sec
         if type(length) == "string" then
@@ -98,6 +100,8 @@ do
         end
         return math.ceil(length/10)
     end
+
+
     function HoundUtils.TTS.simplfyDistance(distanceM) 
         local distanceUnit = "meters"
         local distance = 0
@@ -132,11 +136,11 @@ do
 --]]
     function HoundUtils.getControllerResponse()
         local response = {
-            "",
+            " ",
             "Good Luck!",
             "Happy Hunting!",
             "Please send my regards.",
-            ""
+            " "
         }
         return response[math.floor(timer.getAbsTime() % length(response))]
     end
@@ -148,7 +152,6 @@ do
         elseif coalitionID == coalition.side.NEUTRAL then
             coalitionStr = "NEUTRAL"
         end
-        -- env.info("getCoalitionString: " .. tostring(coalitionID) .. " output: " .. coalitionStr)
         return coalitionStr
     end
 
@@ -189,9 +192,9 @@ do
         return PHONETIC[string.char(HoundUtils.ReportId)]
     end
 
+-- more functions
     function HoundUtils:timeDelta(t0, t1)
         if t1 == nil then t1 = timer.getAbsTime() end
-        -- env.info("timestamps are t0: " .. tostring(t0) .. " t1: " .. tostring(t1))
         return t1 - t0
     end
 

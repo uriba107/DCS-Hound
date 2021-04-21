@@ -11,7 +11,8 @@ do
     Elint_blue:addAdminRadioMenu()
     tts_args = {
         freq = "251.000,35.000",
-		modulation = "AM,FM"
+        modulation = "AM,FM",
+        gender = "male"
     }
     atis_args = {
         freq = 251.500,
@@ -22,6 +23,6 @@ do
     Elint_blue:enableController(true)
     Elint_blue:enableATIS()
 
-    Elint_blue:platformOn()
+    Elint_blue:systemOn()
 
 end

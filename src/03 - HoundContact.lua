@@ -330,11 +330,11 @@ do
         return msg
     end
 
-    function HoundContact:transmitReport(tts)
-        local msg =self:generateTtsReport()
-        if msg == nil then return end
-        HoundUtils.TTS.Transmit(msg,self.platformCoalition,tts)
-    end
+    -- function HoundContact:transmitReport(tts)
+    --     local msg =self:generateTtsReport()
+    --     if msg == nil then return end
+    --     HoundUtils.TTS.Transmit(msg,self.platformCoalition,tts)
+    -- end
 
     function HoundContact:processData()
         local newContact = (self.pos.p == nil)

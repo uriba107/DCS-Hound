@@ -12,6 +12,7 @@ do
         elint.radioMenu = {}
         elint.radioAdminMenu = nil
         elint.coalitionId = nil
+        elint.useMarkers = true
         elint.addPositionError = false
         elint.positionErrorRadius = 30
 
@@ -21,33 +22,19 @@ do
             barkInterval = 120
         }
 
-        elint.controller = {
-            enable = false,
-            textEnable = false,
-            freq = 250.000,
-            modulation = "AM",
-            volume = "1.0",
-            name = "Hound_Controller",
-            alerts = true,
-            msgTimer = timer.getTime() + 0.2
-        }
-
-        elint.atis = {
-            enable = false,
-            taskId = nil,
-            freq = 250.500,
-            modulation = "AM",
-            name = "Hound_ATIS",
-            body = "",
-            header = "",
-            footer = "",
-            msg = "",
-            msgTimeSec = 0,
-            reportEWR = false
-        }
         if platformName ~= nil then
             elint:addPlatform(platformName)
         end
+
+        elint.controller = HoundCommsManager:create()
+        elint.controller.settings.enableText = false
+        elint.controller.settings.alerts = true
+
+        elint.atis = HoundCommsManager:create()
+        elint.atis.settings.name = "Chorus"
+        elint.atis.settings.freq = 250.500
+        elint.atis.settings.interval = 4
+        elint.atis.reportEWR = false
         return elint
     end
 
@@ -120,16 +107,12 @@ do
 
 
     function HoundElint:configureController(args)
-        -- STTS.TextToSpeech("Hello DCS WORLD","251","AM","1.0","SRS",2)
-        for k,v in pairs(args) do self.controller[k] = v end
+        self.controller:updateSettings(args)
 
-        if (self.controller.freq ~= nil and STTS ~= nil) then
-            self.controller.enable = true
-        end
     end
 
     function HoundElint:configureAtis(args)
-        for k,v in pairs(args) do self.atis[k] = v end
+        self.atis:updateSettings(args)
     end
 
 
@@ -139,23 +122,24 @@ do
 
 
     function HoundElint:toggleController(state,textMode)
-        if ( STTS ~= nil ) then
-            if type(state) == "boolean" then
-                self.controller.enable = state
+        if ( STTS ~= nil and STTS.isLoaded() ) then
+            if state == true and type(state) == "boolean" then
+                self.controller:enable()
+                return
             end
-            return
         end
-        self.controller.enable = false
+        self.controller:disable()
      end
 
      function HoundElint:toggleControllerText(state)
         if type(state) == "boolean" then
-            self.controller.textEnable = state
+            self.controller.settings.enableText = state
         end
      end
 
      function HoundElint:enableController(textMode)
         self:toggleController(true)
+        self.controller:enable()
         if textMode then
             self:toggleControllerText(true)
         end
@@ -163,7 +147,7 @@ do
     end
 
     function HoundElint:disableController(textMode)
-        self:toggleController(false)
+        self.controller:disable()
         if textMode then
             self:toggleControllerText(true)
         end
@@ -172,48 +156,45 @@ do
 
     function HoundElint:controllerReportEWR(state)
         if type(state) == "boolean" then
-            self.controller.reportEWR = state
+            self.atis.reportEWR = state
         end
     end
 
 
     function HoundElint:toggleATIS(state) 
-        if ( STTS ~= nil ) then
-            if type(state) == "boolean" then
-                self.atis.enable = state
+        if ( STTS ~= nil and STTS.isLoaded() ) then
+            if state == true and type(state) == "boolean" then
+                    self.atis:enable()
             end
             return
         end
-        self.atis.enable = false
+        self.atis:disable()
     end
 
     function HoundElint:enableATIS()
-        self:toggleATIS(true)
-        self.atis.taskId = timer.scheduleFunction(self.TransmitATIS,self, timer.getTime() + 15)
+        self.atis:enable()
+        self.atis:SetMsgCallback(self.generateATIS,self)
     end
 
     function HoundElint:disableATIS()
-        self:toggleATIS(false)
-        if self.atis.taskId ~= nil then
-            timer.removeFunction(self.atis.taskId)
-        end
+        self.atis:disable()
     end
 
     --[[
         ATIS functions
     --]]
 
-    function HoundElint:generateATIS()        
+    function HoundElint.generateATIS(gSelf)        
         local body = ""
         local numberEWR = 0
 
-        if length(self.emitters) > 0 then
-            for uid, emitter in pairs(self.emitters) do
+        if length(gSelf.emitters) > 0 then
+            for uid, emitter in pairs(gSelf.emitters) do
                 if emitter.pos.p ~= nil then
-                    if emitter.isEWR == false or (self.atis.reportEWR and emitter.isEWR) then
+                    if emitter.isEWR == false or (gSelf.atis.settings.reportEWR and emitter.isEWR) then
                     body = body .. emitter:generateTtsBrief() .. " "
                     end
-                    if (self.atis.reportEWR == false and emitter.isEWR) then
+                    if (gSelf.atis.settings.reportEWR == false and emitter.isEWR) then
                         numberEWR = numberEWR+1
                     end
                 end
@@ -221,76 +202,81 @@ do
         end
         if body == "" then body = "No threats had been detected " end
         if numberEWR > 0 then body = body .. ",  " .. numberEWR .. " EWRs are tracked. " end
-        if body == self.atis.body then return end
-        self.atis.body = body
+        if body == gSelf.atis.loop.body then return end
+        gSelf.atis.loop.body = body
 
         local reportId = HoundUtils.TTS.getReportId()
-        self.atis.header = "SAM information " .. reportId .. " " ..
+        gSelf.atis.loop.header = gSelf.atis.settings.name .. " information " .. reportId .. " " ..
                                HoundUtils.TTS.getTtsTime() .. ". "
-        self.atis.footer = "you have information " .. reportId .. "."
-        self.atis.msg = self.atis.header .. self.atis.body .. self.atis.footer
-        self.atis.msgTimeSec = HoundUtils.TTS.getReadTime(string.len(self.atis.msg))
-        -- env.info("estimates: " .. self.atis.msgTimeSec .. " seconds for lenght of ".. string.len(self.atis.msg))
+        gSelf.atis.loop.footer = "you have information " .. reportId .. "."
+        local msg = gSelf.atis.loop.header .. gSelf.atis.loop.body .. gSelf.atis.loop.footer
+        local msgObj = {
+            coalition = gSelf.coalitionId,
+            priority = "loop",
+            tts = msg
+        }
+
+        gSelf.atis.loop.msg = msgObj
 
     end
 
-    function HoundElint.TransmitATIS(self)
-        if self.atis.enable then
-            self:generateATIS()
-            HoundUtils.TTS.Transmit(self.atis.msg,self.coalitionId,self.atis)
-
-        end
-        self.atis.taskId = timer.scheduleFunction(self.TransmitATIS,self, timer.getTime() + self.atis.msgTimeSec + 5)
-    end
 
     --[[
         Controller functions
     --]]
 
     function HoundElint.TransmitSamReport(args)
-        -- local self = args["self"]
-        -- local emitter = args["emitter"]
+        local gSelf = args["self"]
+        local emitter = args["emitter"]
+        local requester = args["requester"]
+        local controllerCallsign = args["self"].controller.settings.name
         local coalitionId = args["self"].coalitionId
-        if args["self"].controller.enable then
-        HoundUtils.TTS.Transmit(args["emitter"]:generateTtsReport(),coalitionId,args["self"].controller)
+        local msgObj = {
+            coalition = args["self"].coalitionId,
+            priority = 1
+        }
+        if emitter.isEWR then msgObj.priority = 2 end
+
+        if gSelf.controller.enabled then
+            msgObj.tts = args["emitter"]:generateTtsReport()
+            if requester ~= nil then
+                msgObj.tts = requester .. ", " .. controllerCallsign .. ". " .. msgObj.tts
+            end
         end
-        if args["self"].controller.textEnable == true then
-            trigger.action.outTextForCoalition(coalitionId,args["emitter"]:generateTextReport(),30)
+        if gSelf.controller.settings.enableText == true then
+            msgObj.txt = emitter:generateTextReport()
         end
+
+        gSelf.controller:addMessageObj(msgObj)
+
     end
 
-    function HoundElint.transmitReport(args)
-        if length(args) < 2 then return end
-        local msg = args[1]
-        local self = args[2]
-        HoundUtils.TTS.Transmit(msg,self.coalitionId,self.controller)
+
+    function HoundElint:notifyDeadEmitter(emitter)
+        if self.controller.settings.alerts == false then return end
+        local msg = {
+            coalition = self.coalitionId,
+            priority = 3
+        }
+        if self.controller.settings.enableText then
+            msg.txt = emitter:generateDeathReport(false)
+        end
+        msg.tts = emitter:generateDeathReport(true)
+        self.controller:addMessageObj(msg)
     end
 
-    function HoundElint:ScheduleTransmit(message,msgTime)
-        timer.scheduleFunction(HoundElint.transmitReport,{message,self}, msgTime)
-        return msgTime + HoundUtils.TTS.getReadTime(string.len(message)) + 0.2
-    end
-
-    function HoundElint:notifyDeadEmitter(emitter,msgTime)
-        if self.controller.alerts == false then return end
-        if self.controller.textEnable then
-            trigger.action.outTextForCoalition(self.coalitionId,emitter:generateDeathReport(false),30)
+    function HoundElint:notifyNewEmitter(emitter)
+        if self.controller.settings.alerts == false then return end
+        local msg = {
+            coalition = self.coalitionId,
+            priority = 2
+        }
+        if self.controller.settings.enableText then
+            msg.txt = emitter:generatePopUpReport(false)
         end
-        if self.controller.enable then
-            msgTime = self:ScheduleTransmit(emitter:generateDeathReport(true),msgTime)
-        end
-        return msgTime
-    end
-
-    function HoundElint:notifyNewEmitter(emitter,msgTime)
-        if self.controller.alerts == false then return end
-        if self.controller.textEnable then
-            trigger.action.outTextForCoalition(self.coalitionId,emitter:generatePopUpReport(false),30)
-        end
-        if self.controller.enable then
-            msgTime = self:ScheduleTransmit(emitter:generatePopUpReport(true),msgTime)
-        end
-        return msgTime
+        msg.tts = emitter:generatePopUpReport(true)
+        
+        self.controller:addMessageObj(msg)
     end
 
     --[[
@@ -402,19 +388,19 @@ do
 
     function HoundElint:Process()
         local currentTime = timer.getTime() + 0.2
-        if self.controller.msgTimer < currentTime then
-            self.controller.msgTimer = currentTime
-        end
+        -- if self.controller.msgTimer < currentTime then
+        --     self.controller.msgTimer = currentTime
+        -- end
         for uid, emitter in pairs(self.emitters) do
             if emitter ~= nil then
                 local isNew = emitter:processData()
                 if isNew then
-                    self.controller.msgTimer = self:notifyNewEmitter(emitter,self.controller.msgTimer)
-                    emitter:updateMarker(self.coalitionId)
+                    self:notifyNewEmitter(emitter)
+                    if self.useMarkers then emitter:updateMarker(self.coalitionId) end
                 end
                 emitter:CleanTimedout()
                 if emitter:isAlive() == false and HoundUtils:timeDelta(emitter.last_seen, timer.getAbsTime()) > 60 then
-                    self.controller.msgTimer = self:notifyDeadEmitter(emitter,self.controller.msgTimer)
+                    self:notifyDeadEmitter(emitter)
                     self:removeRadioItem(self.radioMenu.data[emitter.typeAssigned].data[uid])
                     emitter:removeMarker()
                     self.emitters[uid] = nil
@@ -431,7 +417,7 @@ do
 
     function HoundElint:Bark()
         for uid, emitter in pairs(self.emitters) do
-            emitter:updateMarker(self.coalitionId)
+           if self.useMarkers then emitter:updateMarker(self.coalitionId) end
         end
     end
 
@@ -489,7 +475,6 @@ do
     --]]
     -- TODO: Remove Menu when emitter dies:
     function HoundElint:addAdminRadioMenu()
-        env.info("addAdminRadioMenu")
         self.radioAdminMenu = missionCommands.addSubMenuForCoalition(
                                   self.coalitionId, 'ELINT managment')
         missionCommands.addCommandForCoalition(self.coalitionId, 'Activate',

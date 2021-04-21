@@ -82,6 +82,7 @@ Yes you can.
 
 `
 Due to the length of messages, I've written a custom override function for STTS, this needs to be included if you plan on using TTS. Use that file to override TSST directory as instructed in the SimpleTextToSpeech instructions
+This will require you to comment out the sanitation in "DCS World/Scripts/MissionScripting.lua"
 `
 
 #### adding to the mission
@@ -186,7 +187,10 @@ possible settings are:
             freq = 250.000,
             modulation = "AM",
             volume = "1.0",
-            name = "Hound_Controller",
+            name = "Hound", -- For ATIS this will be used in the opening line
+            gender = "male"|"female",
+            locale = "en-US"|"en-UK" -- (any installed on your system)
+
         }
 ```
 you can override one or more, and you can also have mutiple frequencies.
