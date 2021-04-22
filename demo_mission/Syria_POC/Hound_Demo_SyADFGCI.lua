@@ -23,7 +23,7 @@ do
     Elint_blue:enableController(true)
     Elint_blue:enableATIS()
 
-    Elint_blue:platformOn()
+    Elint_blue:systemOn()
     env.info("Hound - End of config")    
 
 end

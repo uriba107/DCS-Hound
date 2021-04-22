@@ -49,6 +49,7 @@ do
         elintcontact.uncertenty_radius = nil
         elintcontact.last_seen = timer.getAbsTime()
         elintcontact.first_seen = timer.getAbsTime()
+        elintcontact.maxRange = HoundUtils.getSamMaxRange(DCS_Unit)
         elintcontact.dataPoints = {}
         elintcontact.markpointID = -1
         elintcontact.platformCoalition = platformCoalition

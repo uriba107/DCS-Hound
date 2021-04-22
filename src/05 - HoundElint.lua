@@ -509,6 +509,25 @@ do
 
     end
 
+    function HoundElint.sortContacts(a,b)
+        if a.isEWR ~= b.isEWR then
+          return b.isEWR and not a.isEWR
+        end
+        if a.maxRange ~= b.maxRange then
+            return a.maxRange > b.maxRange
+        end
+        if a.typeAssigned ~= b.typeAssigned then
+            return a.typeAssigned < b.typeAssigned
+        end
+        if a.typeName ~= b.typeName then
+            return a.typeName < b.typeName
+        end
+        if a.first_seen ~= b.first_seen then
+            return a.first_seen > b.first_seen
+        end
+        return a.uid < b.uid 
+    end
+
     function HoundElint:populateRadioMenu()
         if self.radioMenu.root == nil or length(self.emitters) == 0 then
             return
@@ -519,18 +538,7 @@ do
             table.insert(sortedContacts,emitter)
         end
 
-        table.sort(sortedContacts, function(a, b) 
-            if a.typeAssigned ~= b.typeAssigned then
-                return a.typeAssigned < b.typeAssigned
-            end
-            if a.typeName ~= b.typeName then
-                return a.typeName < b.typeName
-            end
-            if a.first_seen ~= b.first_seen then
-                return a.first_seen > b.first_seen
-            end
-            return a.uid < b.uid 
-        end)
+        table.sort(sortedContacts, HoundElint.sortContacts)
 
         if length(sortedContacts) == 0 then return end
         for k,t in pairs(self.radioMenu.data) do
@@ -538,6 +546,10 @@ do
                 t.counter = 0
             end
         end
+        -- for id,menu in ipairs(self.radioMenu.data) do
+        --     env.info(mist.utils.tableShow(menu))
+        --     missionCommands.removeItemForCoalition(self.coalitionId,menu.root)
+        -- end
         for id, emitter in ipairs(sortedContacts) do
             local DCStypeName = emitter.DCStypeName
             local assigned = emitter.typeAssigned

@@ -8,151 +8,246 @@ do
         ['p-19 s-125 sr'] = {
             ['Name'] = "Flat Face",
             ['Assigned'] = "SA-2/3",
-            ['Role'] = "SR",
+            ['Role'] = "SR"
         },
         ['1L13 EWR'] = {
             ['Name'] = "EWR",
             ['Assigned'] = "EWR",
-            ['Role'] = "EWR",
+            ['Role'] = "EWR"
         },
         ['55G6 EWR'] = {
             ['Name'] = "EWR",
             ['Assigned'] = "EWR",
-            ['Role'] = "EWR",
+            ['Role'] = "EWR"
         },
         -- SAM radars --
-        ['SNR_75V']  = {
+        ['SNR_75V'] = {
             ['Name'] = "Fan-song",
             ['Assigned'] = "SA-2",
-            ['Role'] = "SNR",
+            ['Role'] = "SNR"
         },
         ['snr s-125 tr'] = {
             ['Name'] = "Low Blow",
             ['Assigned'] = "SA-3",
-            ['Role'] = "TR",
+            ['Role'] = "TR"
         },
         ['Kub 1S91 str'] = {
             ['Name'] = "Straight Flush",
             ['Assigned'] = "SA-6",
-            ['Role'] = "STR",
+            ['Role'] = "STR"
         },
         ['Osa 9A33 ln'] = {
             ['Name'] = "Osa",
             ['Assigned'] = "SA-8",
-            ['Role'] = "STR",
+            ['Role'] = "STR"
         },
         ['S-300PS 40B6MD sr'] = {
             ['Name'] = "Clam Shell",
             ['Assigned'] = "SA-10",
-            ['Role'] = "SR",
+            ['Role'] = "SR"
         },
         ['S-300PS 64H6E sr'] = {
             ['Name'] = "Big Bird",
             ['Assigned'] = "SA-10",
-            ['Role'] = "SR",
+            ['Role'] = "SR"
         },
         ['S-300PS 40B6M tr'] = {
             ['Name'] = "Tomb Stone",
             ['Assigned'] = "SA-10",
-            ['Role'] = "TR",
+            ['Role'] = "TR"
         },
 
         ['SA-11 Buk SR 9S18M1'] = {
             ['Name'] = "Snow Drift",
             ['Assigned'] = "SA-11",
-            ['Role'] = "SR",
+            ['Role'] = "SR"
         },
         ['SA-11 Buk LN 9A310M1'] = {
             ['Name'] = "SA-11 LN/TR",
             ['Assigned'] = "SA-11",
-            ['Role'] = "TR",
+            ['Role'] = "TR"
         },
         ['Tor 9A331'] = {
             ['Name'] = "Tor",
             ['Assigned'] = "SA-15",
-            ['Role'] = "STR",
+            ['Role'] = "STR"
         },
         ['Strela-1 9P31'] = {
             ['Name'] = "SA-9",
             ['Assigned'] = "SA-9",
-            ['Role'] = "TR",
+            ['Role'] = "TR"
         },
         ['Strela-10M3'] = {
             ['Name'] = "SA-13",
             ['Assigned'] = "SA-13",
-            ['Role'] = "TR",
+            ['Role'] = "TR"
         },
         ['Patriot str'] = {
             ['Name'] = "Patriot",
             ['Assigned'] = "Patriot",
-            ['Role'] = "STR",
+            ['Role'] = "STR"
         },
-        ['Hawk sr']  = {
+        ['Hawk sr'] = {
             ['Name'] = "Hawk SR",
             ['Assigned'] = "Hawk",
-            ['Role'] = "SR",
+            ['Role'] = "SR"
         },
         ['Hawk tr'] = {
             ['Name'] = "Hawk TR",
             ['Assigned'] = "Hawk",
-            ['Role'] = "TR",
+            ['Role'] = "TR"
         },
         ['Hawk cwar'] = {
             ['Name'] = "Hawk CWAR",
             ['Assigned'] = "Hawk",
-            ['Role'] = "TR",
+            ['Role'] = "TR"
         },
         ['Roland ADS'] = {
             ['Name'] = "Roland TR",
             ['Assigned'] = "Roland",
-            ['Role'] = "TR",
+            ['Role'] = "TR"
         },
         ['Roland Radar'] = {
             ['Name'] = "Roland SR",
             ['Assigned'] = "Roland",
-            ['Role'] = "SR",
+            ['Role'] = "SR"
         },
         ['Gepard'] = {
             ['Name'] = "Gepard",
             ['Assigned'] = "Gepard",
-            ['Role'] = "STR",
+            ['Role'] = "STR"
         },
         ['rapier_fsa_blindfire_radar'] = {
             ['Name'] = "Rapier",
             ['Assigned'] = "Rapier",
-            ['Role'] = "TR",
+            ['Role'] = "TR"
         },
         ['rapier_fsa_launcher'] = {
             ['Name'] = "Rapier",
             ['Assigned'] = "Rapier",
-            ['Role'] = "TR",
+            ['Role'] = "TR"
         },
         ['HQ-7_STR_SP'] = {
             ['Name'] = "HQ-7",
             ['Assigned'] = "HQ-7",
-            ['Role'] = "STR",
+            ['Role'] = "STR"
         },
         ['HQ-7_LN_SP'] = {
             ['Name'] = "HQ-7",
             ['Assigned'] = "HQ-7",
-            ['Role'] = "TR",
-        },       
+            ['Role'] = "TR"
+        },
         ['2S6 Tunguska'] = {
             ['Name'] = "Tunguska",
             ['Assigned'] = "Tunguska",
-            ['Role'] = "STR",
+            ['Role'] = "STR"
         },
         ['ZSU-23-4 Shilka'] = {
             ['Name'] = "Shilka",
             ['Assigned'] = "Shilka",
-            ['Role'] = "TR",
+            ['Role'] = "TR"
         },
-        ['Dog Ear radar']  = {
+        ['Dog Ear radar'] = {
             ['Name'] = "AAA SR",
             ['Assigned'] = "AAA",
-            ['Role'] = "SR",
+            ['Role'] = "SR"
         },
-
+        -- highdigitsams radars --
+        ['S-300PS 64H6E TRAILER sr'] = {
+            ['Name'] = "Big Bird",
+            ['Assigned'] = "SA-10",
+            ['Role'] = "SR"
+        },
+        ['S-300PS SA-10B 40B6MD MAST sr'] = {
+            ['Name'] = "Clam Shell",
+            ['Assigned'] = "SA-10",
+            ['Role'] = "SR"
+        },
+        ['S-300PS 40B6M MAST tr'] = {
+            ['Name'] = "Flap Lid",
+            ['Assigned'] = "SA-10",
+            ['Role'] = "TR"
+        },
+        ['S-300PS 30H6 TRAILER tr'] = {
+            ['Name'] = "Flap Lid",
+            ['Assigned'] = "SA-10",
+            ['Role'] = "TR"
+        },
+        ['S-300PS 30N6 TRAILER tr'] = {
+            ['Name'] = "Flap Lid",
+            ['Assigned'] = "SA-10",
+            ['Role'] = "TR"
+        },
+        ['S-300PMU1 40B6MD sr'] = {
+            ['Name'] = "Clam Shell",
+            ['Assigned'] = "SA-10",
+            ['Role'] = "SR"
+        },
+        ['S-300PMU1 64N6E sr'] = {
+            ['Name'] = "Big Bird",
+            ['Assigned'] = "SA-10",
+            ['Role'] = "SR"
+        },
+        ['S-300PMU1 30N6E tr'] = {
+            ['Name'] = "Flap Lid",
+            ['Assigned'] = "SA-10",
+            ['Role'] = "TR"
+        },
+        ['S-300PMU1 40B6M tr'] = {
+            ['Name'] = "Grave Stone",
+            ['Assigned'] = "SA-10",
+            ['Role'] = "TR"
+        },
+        ['S-300V 9S15 sr'] = {
+            ['Name'] = 'Bill Board',
+            ['Assigned'] = "SA-12",
+            ['Role'] = "SR"
+        },
+        ['S-300V 9S19 sr'] = {
+            ['Name'] = 'High Screen',
+            ['Assigned'] = "SA-12",
+            ['Role'] = "SR"
+        },
+        ['S-300V 9S32 tr'] = {
+            ['Name'] = 'Grill Pan',
+            ['Assigned'] = "SA-12",
+            ['Role'] = "TR"
+        },
+        ['S-300PMU2 92H6E tr'] = {
+            ['Name'] = 'Grave Stone',
+            ['Assigned'] = "SA-20B",
+            ['Role'] = "TR"
+        },
+        ['S-300PMU2 64H6E2 sr'] = {
+            ['Name'] = "Big Bird",
+            ['Assigned'] = "SA-20B",
+            ['Role'] = "SR"
+        },
+        ['S-300VM 9S15M2 sr'] = {
+            ['Name'] = 'Bill Board M',
+            ['Assigned'] = "SA-23",
+            ['Role'] = "SR"
+        },
+        ['S-300VM 9S19M2 sr'] = {
+            ['Name'] = 'High Screen M',
+            ['Assigned'] = "SA-23",
+            ['Role'] = "SR"
+        },
+        ['S-300VM 9S32ME tr']  = {
+            ['Name'] = 'Grill Pan M',
+            ['Assigned'] = "SA-23",
+            ['Role'] = "TR"
+        },
+        ['SA-17 Buk M1-2 LN 9A310M1-2'] = {
+            ['Name'] = "SA-17 LN/TR",
+            ['Assigned'] = "SA-17",
+            ['Role'] = "TR"
+        },
+        ['34Ya6E Gazetchik E decoy'] = {
+            ['Name'] = "Flap Lid",
+            ['Assigned'] = "SA-10",
+            ['Role'] = "Decoy"
+        },
     }
 end
 
@@ -178,7 +273,7 @@ do
         ["R"] = "Romeo",
         ["S"] = "Sierra",
         ["T"] = "Tango",
-        ["U"] = "Uniform", 
+        ["U"] = "Uniform",
         ["V"] = "Victor",
         ["W"] = "Whiskey",
         ["X"] = "X ray",
@@ -199,85 +294,35 @@ end
 
 do
     PlatformData = {
-        [Object.Category.STATIC] = {
-            ["Comms tower M"] = {
-                precision = 0.15
-            }
-        },
+        [Object.Category.STATIC] = {["Comms tower M"] = {precision = 0.15}},
         [Object.Category.UNIT] = {
             -- Ground Units
-            ["MLRS FDDM"] = {
-                precision = 0.5
-            },
-            ["SPK-11"] = {
-                precision = 0.5
-            },
-       -- Helicopters
-            ["CH-47D"] = {
-                precision = 2.5
-            },
-            ["CH-53E"] = {
-                precision = 2.5
-            },
-            ["MIL-26"] = {
-                precision = 2.5
-            },
-            ["SH-60B"] = {
-                precision = 4.0
-            },
-            ["UH-60A"] = {
-                precision = 4.0
-            },
-            ["Mi-8MT"] = {
-                precision = 4.0
-            },
-            ["UH-1H"] = {
-                precision = 6.0
-            },
-            ["KA-27"] = {
-                precision = 6.0
-            },
+            ["MLRS FDDM"] = {precision = 0.5},
+            ["SPK-11"] = {precision = 0.5},
+            -- Helicopters
+            ["CH-47D"] = {precision = 2.5},
+            ["CH-53E"] = {precision = 2.5},
+            ["MIL-26"] = {precision = 2.5},
+            ["SH-60B"] = {precision = 4.0},
+            ["UH-60A"] = {precision = 4.0},
+            ["Mi-8MT"] = {precision = 4.0},
+            ["UH-1H"] = {precision = 6.0},
+            ["KA-27"] = {precision = 6.0},
             -- Airplanes
-            ["C-130"] = {
-                precision = 1.0
-            },
-            ["C-17A"] = {
-                precision = 1.0
-            },
-            ["S-3B"] = {
-                precision = 1.5
-            },
-            ["E-3A"] = {
-                precision = 2.0
-            },
-            ["E-2D"] = {
-                precision = 2.0
-            },
-            ["Tu-95MS"] = {
-                precision = 1.0
-            },
-            ["Tu-142"] = {
-                precision = 1.0
-            },
-            ["IL-76MD"] = {
-                precision = 1.0
-            },
-            ["An-30M"] = {
-                precision = 1.0
-            },
-            ["A-50"] = {
-                precision = 2.0
-            },
-            ["An-26B"] = {
-                precision = 2.0
-            },
-            ["Su-25T"] = {
-                precision = 2.5
-            },
-            ["AJS37"] = {
-                precision = 2.5
-            },
-        },
+            ["C-130"] = {precision = 1.0},
+            ["C-17A"] = {precision = 1.0},
+            ["S-3B"] = {precision = 1.5},
+            ["E-3A"] = {precision = 2.0},
+            ["E-2D"] = {precision = 2.0},
+            ["Tu-95MS"] = {precision = 1.0},
+            ["Tu-142"] = {precision = 1.0},
+            ["IL-76MD"] = {precision = 1.0},
+            ["An-30M"] = {precision = 1.0},
+            ["A-50"] = {precision = 2.0},
+            ["An-26B"] = {precision = 2.0},
+            ["Su-25T"] = {precision = 2.5},
+            ["AJS37"] = {precision = 2.5}
+        }
     }
 end
 -- --------------------------------------
@@ -515,8 +560,28 @@ do
 
         return  (math.atan2(biasVector.z/length(azimuths), biasVector.x/length(azimuths))+pi_2) % pi_2
     end
-end
--- --------------------------------------
+
+    function HoundUtils.getSamMaxRange(emitter)
+        local maxRng = 0
+        if emitter ~= nil then
+            local units = emitter:getGroup():getUnits()
+            for i, unit in ipairs(units) do
+                local weapons = unit:getAmmo()
+                if weapons ~= nil then
+                    for j, ammo in ipairs(weapons) do
+                        -- env.info(mist.utils.tableShow(ammo))
+                        if ammo.desc.category == Weapon.Category.MISSILE and ammo.desc.missileCategory == Weapon.MissileCategory.SAM then
+                            maxRng = math.max( math.max(ammo.desc.rangeMaxAltMax,ammo.desc.rangeMaxAltMin),maxRng)
+                        end
+                    end
+                end
+            end
+        end
+        env.info("uid: " .. emitter:getID() .. " maxRNG: " .. maxRng)
+
+        return maxRng
+    end
+end-- --------------------------------------
 do
     HoundElintDatapoint = {}
     HoundElintDatapoint.__index = HoundElintDatapoint
@@ -567,6 +632,7 @@ do
         elintcontact.uncertenty_radius = nil
         elintcontact.last_seen = timer.getAbsTime()
         elintcontact.first_seen = timer.getAbsTime()
+        elintcontact.maxRange = HoundUtils.getSamMaxRange(DCS_Unit)
         elintcontact.dataPoints = {}
         elintcontact.markpointID = -1
         elintcontact.platformCoalition = platformCoalition
@@ -1569,6 +1635,25 @@ do
 
     end
 
+    function HoundElint.sortContacts(a,b)
+        if a.isEWR ~= b.isEWR then
+          return b.isEWR and not a.isEWR
+        end
+        if a.maxRange ~= b.maxRange then
+            return a.maxRange > b.maxRange
+        end
+        if a.typeAssigned ~= b.typeAssigned then
+            return a.typeAssigned < b.typeAssigned
+        end
+        if a.typeName ~= b.typeName then
+            return a.typeName < b.typeName
+        end
+        if a.first_seen ~= b.first_seen then
+            return a.first_seen > b.first_seen
+        end
+        return a.uid < b.uid 
+    end
+
     function HoundElint:populateRadioMenu()
         if self.radioMenu.root == nil or length(self.emitters) == 0 then
             return
@@ -1579,18 +1664,7 @@ do
             table.insert(sortedContacts,emitter)
         end
 
-        table.sort(sortedContacts, function(a, b) 
-            if a.typeAssigned ~= b.typeAssigned then
-                return a.typeAssigned < b.typeAssigned
-            end
-            if a.typeName ~= b.typeName then
-                return a.typeName < b.typeName
-            end
-            if a.first_seen ~= b.first_seen then
-                return a.first_seen > b.first_seen
-            end
-            return a.uid < b.uid 
-        end)
+        table.sort(sortedContacts, HoundElint.sortContacts)
 
         if length(sortedContacts) == 0 then return end
         for k,t in pairs(self.radioMenu.data) do
@@ -1598,6 +1672,10 @@ do
                 t.counter = 0
             end
         end
+        -- for id,menu in ipairs(self.radioMenu.data) do
+        --     env.info(mist.utils.tableShow(menu))
+        --     missionCommands.removeItemForCoalition(self.coalitionId,menu.root)
+        -- end
         for id, emitter in ipairs(sortedContacts) do
             local DCStypeName = emitter.DCStypeName
             local assigned = emitter.typeAssigned
@@ -1680,4 +1758,4 @@ do
 end
 
 env.info("Hound ELINT Loaded Successfully")
--- Build date 22-04-2021
+-- Build date 23-04-2021

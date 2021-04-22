@@ -216,4 +216,25 @@ do
 
         return  (math.atan2(biasVector.z/length(azimuths), biasVector.x/length(azimuths))+pi_2) % pi_2
     end
+
+    function HoundUtils.getSamMaxRange(emitter)
+        local maxRng = 0
+        if emitter ~= nil then
+            local units = emitter:getGroup():getUnits()
+            for i, unit in ipairs(units) do
+                local weapons = unit:getAmmo()
+                if weapons ~= nil then
+                    for j, ammo in ipairs(weapons) do
+                        -- env.info(mist.utils.tableShow(ammo))
+                        if ammo.desc.category == Weapon.Category.MISSILE and ammo.desc.missileCategory == Weapon.MissileCategory.SAM then
+                            maxRng = math.max( math.max(ammo.desc.rangeMaxAltMax,ammo.desc.rangeMaxAltMin),maxRng)
+                        end
+                    end
+                end
+            end
+        end
+        env.info("uid: " .. emitter:getID() .. " maxRNG: " .. maxRng)
+
+        return maxRng
+    end
 end
