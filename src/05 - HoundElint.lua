@@ -31,7 +31,6 @@ do
         elint.controller.settings.alerts = true
 
         elint.atis = HoundCommsManager:create()
-        elint.atis.settings.name = "Chorus"
         elint.atis.settings.freq = 250.500
         elint.atis.settings.interval = 4
         elint.atis.reportEWR = false
@@ -206,9 +205,9 @@ do
         gSelf.atis.loop.body = body
 
         local reportId = HoundUtils.TTS.getReportId()
-        gSelf.atis.loop.header = gSelf.atis.settings.name .. " information " .. reportId .. " " ..
+        gSelf.atis.loop.header = gSelf.atis.settings.name .. " SAM information " .. reportId .. " " ..
                                HoundUtils.TTS.getTtsTime() .. ". "
-        gSelf.atis.loop.footer = "you have information " .. reportId .. "."
+        gSelf.atis.loop.footer = "you have " .. reportId .. "."
         local msg = gSelf.atis.loop.header .. gSelf.atis.loop.body .. gSelf.atis.loop.footer
         local msgObj = {
             coalition = gSelf.coalitionId,
