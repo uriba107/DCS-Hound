@@ -486,7 +486,7 @@ do
             "Please send my regards.",
             " "
         }
-        return response[math.floor(timer.getAbsTime() % length(response))]
+        return response[math.max(1,math.min(math.floor(timer.getAbsTime() % length(response)),length(response)))]
     end
 
     function HoundUtils.getCoalitionString(coalitionID)
@@ -1654,7 +1654,7 @@ do
     end
 
     function HoundElint:populateRadioMenu()
-        if self.radioMenu.root == nil or length(self.emitters) == 0 then
+        if self.radioMenu.root == nil or length(self.emitters) == 0 or self.coalitionID == nil then
             return
         end
         local sortedContacts = {}
@@ -1757,4 +1757,4 @@ do
 end
 
 env.info("Hound ELINT Loaded Successfully")
--- Build date 23-04-2021
+-- Build date 25-04-2021

@@ -528,7 +528,7 @@ do
     end
 
     function HoundElint:populateRadioMenu()
-        if self.radioMenu.root == nil or length(self.emitters) == 0 then
+        if self.radioMenu.root == nil or length(self.emitters) == 0 or self.coalitionID == nil then
             return
         end
         local sortedContacts = {}

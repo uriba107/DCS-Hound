@@ -142,7 +142,7 @@ do
             "Please send my regards.",
             " "
         }
-        return response[math.floor(timer.getAbsTime() % length(response))]
+        return response[math.max(1,math.min(math.floor(timer.getAbsTime() % length(response)),length(response)))]
     end
 
     function HoundUtils.getCoalitionString(coalitionID)
