@@ -291,6 +291,12 @@ do
 end
 
 do
+    INSFormat = {
+        ["F-16C_blk50"] = true,
+        ["A-10C"] = true
+    }
+end
+do
     PlatformData = {
         [Object.Category.STATIC] = {["Comms tower M"] = {precision = 0.15}},
         [Object.Category.UNIT] = {

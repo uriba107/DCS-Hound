@@ -134,6 +134,19 @@ You can of course turn it off for any reason with:
 ```
 
 ### More advanced fun stuff
+#### Map markers
+---
+Hound uses Map markers to indicate the estimated position of the radar tracket. It's a product of the system, and only contains data user can get from the system in other ways. (equvilant to making marks on a paper map)
+
+However, some mission designers may want to disable the markers. 
+
+```lua
+HoundElint:enableMarkers()
+```
+and
+```lua
+HoundElint:disableMarkers()
+```
 #### ATIS system
 ---
 As mentioned Hound includes Text-To-Speech using SRS. You players can recive updates via their radio.
@@ -189,7 +202,7 @@ possible settings are:
             volume = "1.0",
             name = "Hound", -- For ATIS this will be used in the opening line
             gender = "male"|"female",
-            locale = "en-US"|"en-UK" -- (any installed on your system)
+            culture = "en-US"|"en-UK" -- (any installed on your system)
 
         }
 ```
@@ -224,6 +237,7 @@ and will enable Controller both in Text and in Voice, while transmitting on two 
 ---
 ## Known Issues
   * when from some reason, all markers are removed, they might not appear again until  manual marker is added. (linked to the fact that "next idx" cannot be retrived from system directly)
+  * not a bug but a feature. system noly provides LL in DMS format. if your aircraft only accepts DMM.MMM (Viper and Hawg, looking at you).. Pilot will neet to know to to convert seconds to decimal minutes. (i.e 6 seconds = 0.1 minute)
 ## special notes for Alpha phase
   * currently sample rate is every 15 seconds, where data points are commited every one minute.
   * 11 data points are soted per radar per platform.

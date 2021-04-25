@@ -184,6 +184,7 @@ do
         self.pos.p =  mist.getAvgPoint(estimatedPositions)
         local bullsPos = coalition.getMainRefPoint(self.platformCoalition)
         self.pos.LL.lat, self.pos.LL.lon =  coord.LOtoLL(self.pos.p)
+        self.pos.elev = land.getHeight(self.pos.p)
         self.pos.grid  = coord.LLtoMGRS(self.pos.LL.lat, self.pos.LL.lon)
         self.pos.be.brg = mist.utils.round(mist.utils.toDegree(mist.utils.getDir(mist.vec.sub(self.pos.p,bullsPos))))
         self.pos.be.rng =  mist.utils.round(mist.utils.metersToNM(mist.utils.get2DDist(self.pos.p,bullsPos)))
@@ -277,7 +278,8 @@ do
         if self.pos.p == nil then return end
         local phoneticGridPos,phoneticBulls = self:getTtsData(true)
         local msg =  self.typeName .. " " .. (self.uid % 100) ..", bullz " .. phoneticBulls .. ", grid ".. phoneticGridPos
-        msg = msg .. ", position " .. HoundUtils.TTS.getVerbalLL(self.pos.LL.lat,self.pos.LL.lon)
+        msg = msg .. ", position " .. HoundUtils.TTS.getVerbalLL(self.pos.LL.lat,self.pos.LL.lon) .. " at " .. HoundUtils.getRoundedElevationFt(self.pos.elev) .. "feet MSL"
+        msg = msg .. ", " .. HoundUtils.TTS.getVerbalLL(self.pos.LL.lat,self.pos.LL.lon) .. " at " .. HoundUtils.getRoundedElevationFt(self.pos.elev) .. "feet MSL"
         msg = msg .. ", Ellipse " ..  HoundUtils.TTS.simplfyDistance(self.uncertenty_radius.major) .. " by " ..  HoundUtils.TTS.simplfyDistance(self.uncertenty_radius.minor) .. " aligned bearing " .. HoundUtils.TTS.toPhonetic(string.format("%03d",self.uncertenty_radius.az))
         msg = msg .. ", first seen " .. HoundUtils.TTS.getTtsTime(self.first_seen) .. ", last seen " .. HoundUtils.TTS.getVerbalContactAge(self.last_seen) .. " ago. " .. HoundUtils:getControllerResponse()
         return msg
@@ -288,7 +290,7 @@ do
         local GridPos,BePos = self:getTextData(true)
         local msg =  self.typeName .. " " .. (self.uid % 100) .."\n"
         msg = msg .. "BE: " .. BePos .. " (grid ".. GridPos ..")\n"
-        msg = msg .. "LL: " .. HoundUtils.Text.getLL(self.pos.LL.lat,self.pos.LL.lon).."\n"
+        msg = msg .. "LL: " .. HoundUtils.Text.getLL(self.pos.LL.lat,self.pos.LL.lon)..", Elev: " .. HoundUtils.getRoundedElevation(self.pos.elev) .. "ft\n"
         msg = msg .. "Ellipse: " ..  self.uncertenty_radius.major .. " by " ..  self.uncertenty_radius.minor .. " aligned bearing " .. string.format("%03d",self.uncertenty_radius.az) .. "\n"
         msg = msg .. "First detected " .. HoundUtils.Text.getTime(self.first_seen) .. " Last Contact: " ..  HoundUtils.TTS.getVerbalContactAge(self.last_seen) .. " ago. " .. HoundUtils:getControllerResponse()
         return msg

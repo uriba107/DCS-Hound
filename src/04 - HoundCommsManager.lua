@@ -6,6 +6,7 @@ do
         local CommsManager = {}
         setmetatable(CommsManager, HoundCommsManager)
         CommsManager.enabled = false
+        CommsManager.transmitter = nil
 
         CommsManager._queue = {
             {},{},{}
@@ -24,6 +25,10 @@ do
             modulation = "AM",
             volume = "1.0",
             name = "Hound",
+            speed = 1.0,
+            voice = nil,
+            gender = nil,
+            culture = nil,            
             interval = 0.5
         }
 
@@ -116,7 +121,11 @@ do
         end
 
         if gSelf.enabled and (STTS ~= nil and STTS.isLoaded()) and msgObj.tts ~= nil then
-            HoundUtils.TTS.Transmit(msgObj.tts,msgObj.coalition,gSelf.settings)
+            local transmitterPos = nil
+            if gSelf.transmitter ~= nil then
+                transmitterPos = Unit.getByName(gSelf.transmitter):getPoint()
+            end
+            HoundUtils.TTS.Transmit(msgObj.tts,msgObj.coalition,gSelf.settings,transmitterPos)
 
             return timer.getTime() + HoundUtils.TTS.getReadTime(msgObj.tts)
         end

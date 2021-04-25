@@ -11,9 +11,9 @@ do
 --[[ 
     ----- TTS Functions ----
 --]]    
-    function HoundUtils.TTS.Transmit(msg,coalitionID,args)
+    function HoundUtils.TTS.Transmit(msg,coalitionID,args,transmitterPos)
 
-        if STTS == nil then return end
+        if STTS == nil and not STTS.isLoaded() then return end
         if msg == nil then return end
         if coalitionID == nil then return end
 
@@ -22,9 +22,10 @@ do
         if args.volume == nil then args.volume = "1.0" end
         if args.name == nil then args.name = "Hound" end
         if args.gender == nil then args.gender = "female" end
-        if args.locale == nil then args.locale = "en-US" end
+        if args.culture == nil then args.culture = "en-US" end
 
-        STTS.TextToSpeech(msg,args.freq,args.modulation,args.volume,args.name,coalitionID,args.gender,args.locale)
+
+        STTS.TextToSpeech(msg,args.freq,args.modulation,args.volume,args.name,coalitionID,transmitterPos,args.speed,args.gender,args.culture,args.voice,args.googleTTS)
         return true
     end
 
@@ -71,8 +72,11 @@ do
         return tostring(math.floor(ageSeconds/60)) .. " minutes"
     end
 
-    function HoundUtils.TTS.DecToDMS(cood)
+    function HoundUtils.TTS.DecToDMS(cood,minDec)
         local DMS = HoundUtils.DecToDMS(cood)
+        if minDec == true then
+            return DMS.d .. " Degrees " .. DMS.mDec .. " Minutes"
+        end
         return DMS.d .. " Degrees " .. DMS.m .. " Minutes " .. DMS.s .. " Seconds"
     end
 
@@ -118,10 +122,14 @@ do
     ----- Text Functions ----
 --]]
 
-    function HoundUtils.Text.getLL(lat,lon)
+    function HoundUtils.Text.getLL(lat,lon,minDec)
         local hemi = HoundUtils.getHemispheres(lat,lon)
         local lat = HoundUtils.DecToDMS(lat)
         local lon = HoundUtils.DecToDMS(lon)
+        if minDec == true then
+            return hemi.NS .. lat.d .. "°" .. lat.mDec .. "'".."\"" ..  " " ..  hemi.EW  .. lon.d .. "°" .. lon.mDec .. "'" .."\"" 
+
+        end
         return hemi.NS .. lat.d .. "°" .. lat.m .. "'".. lat.s.."\"" ..  " " ..  hemi.EW  .. lon.d .. "°" .. lon.m .. "'".. lon.s .."\"" 
     end
 
@@ -179,7 +187,7 @@ do
             d = deg,
             m = minutes,
             s = sec,
-            mDec = dec
+            mDec = mist.utils.round(dec ,3)
         }
     end
 
@@ -227,14 +235,17 @@ do
                     for j, ammo in ipairs(weapons) do
                         -- env.info(mist.utils.tableShow(ammo))
                         if ammo.desc.category == Weapon.Category.MISSILE and ammo.desc.missileCategory == Weapon.MissileCategory.SAM then
-                            maxRng = math.max( math.max(ammo.desc.rangeMaxAltMax,ammo.desc.rangeMaxAltMin),maxRng)
+                            maxRng = math.max(math.max(ammo.desc.rangeMaxAltMax,ammo.desc.rangeMaxAltMin),maxRng)
                         end
                     end
                 end
             end
         end
-        env.info("uid: " .. emitter:getID() .. " maxRNG: " .. maxRng)
-
+        -- env.info("uid: " .. emitter:getID() .. " maxRNG: " .. maxRng)
         return maxRng
+    end
+
+    function HoundUtils.getRoundedElevationFt(elev)
+        return mist.utils.round(mist.utils.metersToFeet(elev) / 50 ) * 50
     end
 end

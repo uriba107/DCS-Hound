@@ -179,6 +179,14 @@ do
         self.atis:disable()
     end
 
+    function HoundElint:enableMarkers()
+        self.useMarkers = true
+    end
+
+    function HoundElint:disableMarkers()
+        self.useMarkers = false
+        
+    end
     --[[
         ATIS functions
     --]]
@@ -239,7 +247,7 @@ do
         if gSelf.controller.enabled then
             msgObj.tts = args["emitter"]:generateTtsReport()
             if requester ~= nil then
-                msgObj.tts = requester .. ", " .. controllerCallsign .. ". " .. msgObj.tts
+                msgObj.tts = requester .. ", " .. controllerCallsign .. ", " .. msgObj.tts
             end
         end
         if gSelf.controller.settings.enableText == true then
@@ -549,6 +557,14 @@ do
         --     env.info(mist.utils.tableShow(menu))
         --     missionCommands.removeItemForCoalition(self.coalitionId,menu.root)
         -- end
+
+        local players = {}
+        for i, player in coalition.getPlayers(self.coalitionId) do
+            local gid = Unit.getGroup(player):getID()
+            local callsign = Unit.getCallsign(player)
+            env.info(Unit.getName(player).. " " .. callsign .. " " .. gid)
+        end
+
         for id, emitter in ipairs(sortedContacts) do
             local DCStypeName = emitter.DCStypeName
             local assigned = emitter.typeAssigned
