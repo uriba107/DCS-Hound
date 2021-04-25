@@ -293,6 +293,13 @@ do
 end
 
 do
+    useDecMin = {
+        ["F-16C_blk50"] = true,
+        ["A-10C"] = true
+    }
+end
+
+do
     PlatformData = {
         [Object.Category.STATIC] = {["Comms tower M"] = {precision = 0.15}},
         [Object.Category.UNIT] = {
@@ -355,9 +362,9 @@ do
 --[[ 
     ----- TTS Functions ----
 --]]    
-    function HoundUtils.TTS.Transmit(msg,coalitionID,args)
+    function HoundUtils.TTS.Transmit(msg,coalitionID,args,transmitterPos)
 
-        if STTS == nil then return end
+        if STTS == nil and not STTS.isLoaded() then return end
         if msg == nil then return end
         if coalitionID == nil then return end
 
@@ -366,9 +373,10 @@ do
         if args.volume == nil then args.volume = "1.0" end
         if args.name == nil then args.name = "Hound" end
         if args.gender == nil then args.gender = "female" end
-        if args.locale == nil then args.locale = "en-US" end
+        if args.culture == nil then args.culture = "en-US" end
 
-        STTS.TextToSpeech(msg,args.freq,args.modulation,args.volume,args.name,coalitionID,args.gender,args.locale)
+
+        STTS.TextToSpeech(msg,args.freq,args.modulation,args.volume,args.name,coalitionID,transmitterPos,args.speed,args.gender,args.culture,args.voice,args.googleTTS)
         return true
     end
 
@@ -415,14 +423,17 @@ do
         return tostring(math.floor(ageSeconds/60)) .. " minutes"
     end
 
-    function HoundUtils.TTS.DecToDMS(cood)
+    function HoundUtils.TTS.DecToDMS(cood,minDec)
         local DMS = HoundUtils.DecToDMS(cood)
-        return DMS.d .. " Degrees " .. DMS.m .. " Minutes " .. DMS.s .. " Seconds"
+        if minDec == true then
+            return DMS.d .. " Degrees, " .. DMS.mDec .. " Minutes"
+        end
+        return DMS.d .. " Degrees, " .. DMS.m .. " Minutes, " .. DMS.s .. " Seconds"
     end
 
     function HoundUtils.TTS.getVerbalLL(lat,lon)
         local hemi = HoundUtils.getHemispheres(lat,lon,true)
-        return HoundUtils.TTS.DecToDMS(lat) .. " " .. hemi.NS .. ", " .. HoundUtils.TTS.DecToDMS(lon) .. " " .. hemi.EW  
+        return hemi.NS .. " " .. HoundUtils.TTS.DecToDMS(lat)  ..  ", " .. hemi.EW .. " " .. HoundUtils.TTS.DecToDMS(lon)
     end
 
 
@@ -462,10 +473,14 @@ do
     ----- Text Functions ----
 --]]
 
-    function HoundUtils.Text.getLL(lat,lon)
+    function HoundUtils.Text.getLL(lat,lon,minDec)
         local hemi = HoundUtils.getHemispheres(lat,lon)
         local lat = HoundUtils.DecToDMS(lat)
         local lon = HoundUtils.DecToDMS(lon)
+        if minDec == true then
+            return hemi.NS .. lat.d .. "°" .. lat.mDec .. "'".."\"" ..  " " ..  hemi.EW  .. lon.d .. "°" .. lon.mDec .. "'" .."\"" 
+
+        end
         return hemi.NS .. lat.d .. "°" .. lat.m .. "'".. lat.s.."\"" ..  " " ..  hemi.EW  .. lon.d .. "°" .. lon.m .. "'".. lon.s .."\"" 
     end
 
@@ -523,7 +538,7 @@ do
             d = deg,
             m = minutes,
             s = sec,
-            mDec = dec
+            mDec = mist.utils.round(dec ,3)
         }
     end
 
@@ -571,15 +586,18 @@ do
                     for j, ammo in ipairs(weapons) do
                         -- env.info(mist.utils.tableShow(ammo))
                         if ammo.desc.category == Weapon.Category.MISSILE and ammo.desc.missileCategory == Weapon.MissileCategory.SAM then
-                            maxRng = math.max( math.max(ammo.desc.rangeMaxAltMax,ammo.desc.rangeMaxAltMin),maxRng)
+                            maxRng = math.max(math.max(ammo.desc.rangeMaxAltMax,ammo.desc.rangeMaxAltMin),maxRng)
                         end
                     end
                 end
             end
         end
-        env.info("uid: " .. emitter:getID() .. " maxRNG: " .. maxRng)
-
+        -- env.info("uid: " .. emitter:getID() .. " maxRNG: " .. maxRng)
         return maxRng
+    end
+
+    function HoundUtils.getRoundedElevationFt(elev)
+        return mist.utils.round(mist.utils.metersToFeet(elev) / 50 ) * 50
     end
 end-- --------------------------------------
 do
@@ -767,6 +785,7 @@ do
         self.pos.p =  mist.getAvgPoint(estimatedPositions)
         local bullsPos = coalition.getMainRefPoint(self.platformCoalition)
         self.pos.LL.lat, self.pos.LL.lon =  coord.LOtoLL(self.pos.p)
+        self.pos.elev = land.getHeight(self.pos.p)
         self.pos.grid  = coord.LLtoMGRS(self.pos.LL.lat, self.pos.LL.lon)
         self.pos.be.brg = mist.utils.round(mist.utils.toDegree(mist.utils.getDir(mist.vec.sub(self.pos.p,bullsPos))))
         self.pos.be.rng =  mist.utils.round(mist.utils.metersToNM(mist.utils.get2DDist(self.pos.p,bullsPos)))
@@ -860,7 +879,8 @@ do
         if self.pos.p == nil then return end
         local phoneticGridPos,phoneticBulls = self:getTtsData(true)
         local msg =  self.typeName .. " " .. (self.uid % 100) ..", bullz " .. phoneticBulls .. ", grid ".. phoneticGridPos
-        msg = msg .. ", position " .. HoundUtils.TTS.getVerbalLL(self.pos.LL.lat,self.pos.LL.lon)
+        msg = msg .. ", position " .. HoundUtils.TTS.getVerbalLL(self.pos.LL.lat,self.pos.LL.lon) .. " at " .. HoundUtils.getRoundedElevationFt(self.pos.elev) .. "feet MSL"
+        msg = msg .. ", " .. HoundUtils.TTS.getVerbalLL(self.pos.LL.lat,self.pos.LL.lon) .. " at " .. HoundUtils.getRoundedElevationFt(self.pos.elev) .. "feet MSL"
         msg = msg .. ", Ellipse " ..  HoundUtils.TTS.simplfyDistance(self.uncertenty_radius.major) .. " by " ..  HoundUtils.TTS.simplfyDistance(self.uncertenty_radius.minor) .. " aligned bearing " .. HoundUtils.TTS.toPhonetic(string.format("%03d",self.uncertenty_radius.az))
         msg = msg .. ", first seen " .. HoundUtils.TTS.getTtsTime(self.first_seen) .. ", last seen " .. HoundUtils.TTS.getVerbalContactAge(self.last_seen) .. " ago. " .. HoundUtils:getControllerResponse()
         return msg
@@ -871,7 +891,7 @@ do
         local GridPos,BePos = self:getTextData(true)
         local msg =  self.typeName .. " " .. (self.uid % 100) .."\n"
         msg = msg .. "BE: " .. BePos .. " (grid ".. GridPos ..")\n"
-        msg = msg .. "LL: " .. HoundUtils.Text.getLL(self.pos.LL.lat,self.pos.LL.lon).."\n"
+        msg = msg .. "LL: " .. HoundUtils.Text.getLL(self.pos.LL.lat,self.pos.LL.lon)..", Elev: " .. HoundUtils.getRoundedElevationFt(self.pos.elev) .. "ft\n"
         msg = msg .. "Ellipse: " ..  self.uncertenty_radius.major .. " by " ..  self.uncertenty_radius.minor .. " aligned bearing " .. string.format("%03d",self.uncertenty_radius.az) .. "\n"
         msg = msg .. "First detected " .. HoundUtils.Text.getTime(self.first_seen) .. " Last Contact: " ..  HoundUtils.TTS.getVerbalContactAge(self.last_seen) .. " ago. " .. HoundUtils:getControllerResponse()
         return msg
@@ -997,6 +1017,7 @@ do
         local CommsManager = {}
         setmetatable(CommsManager, HoundCommsManager)
         CommsManager.enabled = false
+        CommsManager.transmitter = nil
 
         CommsManager._queue = {
             {},{},{}
@@ -1015,6 +1036,10 @@ do
             modulation = "AM",
             volume = "1.0",
             name = "Hound",
+            speed = 0,
+            voice = nil,
+            gender = nil,
+            culture = nil,            
             interval = 0.5
         }
 
@@ -1103,13 +1128,13 @@ do
         if msgObj == nil then return timer.getTime() + gSelf.settings.interval end
 
         if msgObj.txt ~= nil then
-            trigger.action.outTextForCoalition(msgObj.coalition,msgObj.txt, HoundUtils.TTS.getReadTime(msgObj.txt)+2)
+            trigger.action.outTextForCoalition(msgObj.coalition,msgObj.txt, HoundUtils.TTS.getReadTime(msgObj.txt)*1.5+5)
         end
 
         if gSelf.enabled and (STTS ~= nil and STTS.isLoaded()) and msgObj.tts ~= nil then
-            HoundUtils.TTS.Transmit(msgObj.tts,msgObj.coalition,gSelf.settings)
+            HoundUtils.TTS.Transmit(msgObj.tts,msgObj.coalition,gSelf.settings,gSelf.transmitter)
 
-            return timer.getTime() + HoundUtils.TTS.getReadTime(msgObj.tts)
+            return timer.getTime() + HoundUtils.TTS.getReadTime(msgObj.tts)*1.5 -- temp till I figure out the speed
         end
     end
 
@@ -1159,6 +1184,8 @@ do
         elint.atis = HoundCommsManager:create()
         elint.atis.settings.freq = 250.500
         elint.atis.settings.interval = 4
+        elint.atis.settings.speed = 1
+
         elint.atis.reportEWR = false
         return elint
     end
@@ -1176,7 +1203,6 @@ do
         if self.coalitionId == nil and canidate ~= nil then
             self.coalitionId = canidate:getCoalition()
         end
-
         if canidate ~= nil and canidate:getCoalition() == self.coalitionId then
             local mainCategoty = canidate:getCategory()
             local type = canidate:getTypeName()
@@ -1305,6 +1331,14 @@ do
         self.atis:disable()
     end
 
+    function HoundElint:enableMarkers()
+        self.useMarkers = true
+    end
+
+    function HoundElint:disableMarkers()
+        self.useMarkers = false
+        
+    end
     --[[
         ATIS functions
     --]]
@@ -1365,7 +1399,7 @@ do
         if gSelf.controller.enabled then
             msgObj.tts = args["emitter"]:generateTtsReport()
             if requester ~= nil then
-                msgObj.tts = requester .. ", " .. controllerCallsign .. ". " .. msgObj.tts
+                msgObj.tts = requester .. ", " .. controllerCallsign .. ", " .. msgObj.tts
             end
         end
         if gSelf.controller.settings.enableText == true then
@@ -1526,14 +1560,15 @@ do
                 emitter:CleanTimedout()
                 if emitter:isAlive() == false and HoundUtils:timeDelta(emitter.last_seen, timer.getAbsTime()) > 60 then
                     self:notifyDeadEmitter(emitter)
-                    self:removeRadioItem(self.radioMenu.data[emitter.typeAssigned].data[uid])
+                    self:removeRadarRadioItem(emitter)
                     emitter:removeMarker()
                     self.emitters[uid] = nil
                 else
                     if HoundUtils:timeDelta(emitter.last_seen,
                                             timer.getAbsTime()) > 1800 then
+                        self:removeRadarRadioItem(emitter)
+                        emitter:removeMarker()
                         self.emitters[uid] = nil
-                        self:removeRadioItem(self.radioMenu.data[emitter.typeAssigned].data[uid])
                     end
                 end
             end
@@ -1654,7 +1689,7 @@ do
     end
 
     function HoundElint:populateRadioMenu()
-        if self.radioMenu.root == nil or length(self.emitters) == 0 or self.coalitionID == nil then
+        if self.radioMenu.root == nil or length(self.emitters) == 0 or self.coalitionId == nil then
             return
         end
         local sortedContacts = {}
@@ -1671,10 +1706,15 @@ do
                 t.counter = 0
             end
         end
-        -- for id,menu in ipairs(self.radioMenu.data) do
-        --     env.info(mist.utils.tableShow(menu))
-        --     missionCommands.removeItemForCoalition(self.coalitionId,menu.root)
+
+        -- local players = {}
+        -- for i, player in ipairs(coalition.getPlayers(self.coalitionId)) do
+        --     env.info("player loop " .. i)
+        --     local gid = Unit.getGroup(player):getID()
+        --     local callsign = Unit.getCallsign(player)
+        --     env.info(Unit.getName(player).. " " .. callsign .. " " .. gid)
         -- end
+
         for id, emitter in ipairs(sortedContacts) do
             local DCStypeName = emitter.DCStypeName
             local assigned = emitter.typeAssigned
@@ -1757,4 +1797,4 @@ do
 end
 
 env.info("Hound ELINT Loaded Successfully")
--- Build date 25-04-2021
+-- Build date 26-04-2021

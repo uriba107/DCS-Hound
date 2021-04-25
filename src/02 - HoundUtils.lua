@@ -75,14 +75,14 @@ do
     function HoundUtils.TTS.DecToDMS(cood,minDec)
         local DMS = HoundUtils.DecToDMS(cood)
         if minDec == true then
-            return DMS.d .. " Degrees " .. DMS.mDec .. " Minutes"
+            return DMS.d .. " Degrees, " .. DMS.mDec .. " Minutes"
         end
-        return DMS.d .. " Degrees " .. DMS.m .. " Minutes " .. DMS.s .. " Seconds"
+        return DMS.d .. " Degrees, " .. DMS.m .. " Minutes, " .. DMS.s .. " Seconds"
     end
 
     function HoundUtils.TTS.getVerbalLL(lat,lon)
         local hemi = HoundUtils.getHemispheres(lat,lon,true)
-        return HoundUtils.TTS.DecToDMS(lat) .. " " .. hemi.NS .. ", " .. HoundUtils.TTS.DecToDMS(lon) .. " " .. hemi.EW  
+        return hemi.NS .. " " .. HoundUtils.TTS.DecToDMS(lat)  ..  ", " .. hemi.EW .. " " .. HoundUtils.TTS.DecToDMS(lon)
     end
 
 

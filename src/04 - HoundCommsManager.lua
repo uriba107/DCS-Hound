@@ -25,7 +25,7 @@ do
             modulation = "AM",
             volume = "1.0",
             name = "Hound",
-            speed = 1.0,
+            speed = 0,
             voice = nil,
             gender = nil,
             culture = nil,            
@@ -117,17 +117,13 @@ do
         if msgObj == nil then return timer.getTime() + gSelf.settings.interval end
 
         if msgObj.txt ~= nil then
-            trigger.action.outTextForCoalition(msgObj.coalition,msgObj.txt, HoundUtils.TTS.getReadTime(msgObj.txt)+2)
+            trigger.action.outTextForCoalition(msgObj.coalition,msgObj.txt, HoundUtils.TTS.getReadTime(msgObj.txt)*1.5+5)
         end
 
         if gSelf.enabled and (STTS ~= nil and STTS.isLoaded()) and msgObj.tts ~= nil then
-            local transmitterPos = nil
-            if gSelf.transmitter ~= nil then
-                transmitterPos = Unit.getByName(gSelf.transmitter):getPoint()
-            end
-            HoundUtils.TTS.Transmit(msgObj.tts,msgObj.coalition,gSelf.settings,transmitterPos)
+            HoundUtils.TTS.Transmit(msgObj.tts,msgObj.coalition,gSelf.settings,gSelf.transmitter)
 
-            return timer.getTime() + HoundUtils.TTS.getReadTime(msgObj.tts)
+            return timer.getTime() + HoundUtils.TTS.getReadTime(msgObj.tts)*1.5 -- temp till I figure out the speed
         end
     end
 

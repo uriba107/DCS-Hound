@@ -33,6 +33,8 @@ do
         elint.atis = HoundCommsManager:create()
         elint.atis.settings.freq = 250.500
         elint.atis.settings.interval = 4
+        elint.atis.settings.speed = 1
+
         elint.atis.reportEWR = false
         return elint
     end
@@ -50,7 +52,6 @@ do
         if self.coalitionId == nil and canidate ~= nil then
             self.coalitionId = canidate:getCoalition()
         end
-
         if canidate ~= nil and canidate:getCoalition() == self.coalitionId then
             local mainCategoty = canidate:getCategory()
             local type = canidate:getTypeName()
@@ -408,14 +409,15 @@ do
                 emitter:CleanTimedout()
                 if emitter:isAlive() == false and HoundUtils:timeDelta(emitter.last_seen, timer.getAbsTime()) > 60 then
                     self:notifyDeadEmitter(emitter)
-                    self:removeRadioItem(self.radioMenu.data[emitter.typeAssigned].data[uid])
+                    self:removeRadarRadioItem(emitter)
                     emitter:removeMarker()
                     self.emitters[uid] = nil
                 else
                     if HoundUtils:timeDelta(emitter.last_seen,
                                             timer.getAbsTime()) > 1800 then
+                        self:removeRadarRadioItem(emitter)
+                        emitter:removeMarker()
                         self.emitters[uid] = nil
-                        self:removeRadioItem(self.radioMenu.data[emitter.typeAssigned].data[uid])
                     end
                 end
             end
@@ -536,7 +538,7 @@ do
     end
 
     function HoundElint:populateRadioMenu()
-        if self.radioMenu.root == nil or length(self.emitters) == 0 or self.coalitionID == nil then
+        if self.radioMenu.root == nil or length(self.emitters) == 0 or self.coalitionId == nil then
             return
         end
         local sortedContacts = {}
@@ -553,17 +555,14 @@ do
                 t.counter = 0
             end
         end
-        -- for id,menu in ipairs(self.radioMenu.data) do
-        --     env.info(mist.utils.tableShow(menu))
-        --     missionCommands.removeItemForCoalition(self.coalitionId,menu.root)
-        -- end
 
-        local players = {}
-        for i, player in coalition.getPlayers(self.coalitionId) do
-            local gid = Unit.getGroup(player):getID()
-            local callsign = Unit.getCallsign(player)
-            env.info(Unit.getName(player).. " " .. callsign .. " " .. gid)
-        end
+        -- local players = {}
+        -- for i, player in ipairs(coalition.getPlayers(self.coalitionId)) do
+        --     env.info("player loop " .. i)
+        --     local gid = Unit.getGroup(player):getID()
+        --     local callsign = Unit.getCallsign(player)
+        --     env.info(Unit.getName(player).. " " .. callsign .. " " .. gid)
+        -- end
 
         for id, emitter in ipairs(sortedContacts) do
             local DCStypeName = emitter.DCStypeName
