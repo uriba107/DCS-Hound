@@ -12,3 +12,4 @@ assert(loadfile(currentDir..'src\\05 - HoundElint.lua'))()
 
 -- assert(loadfile(currentDir..'HoundElint_test.lua'))()
 env.info("Loading Done")
+

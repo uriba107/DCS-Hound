@@ -364,17 +364,16 @@ do
 --]]    
     function HoundUtils.TTS.Transmit(msg,coalitionID,args,transmitterPos)
 
-        if STTS == nil and not STTS.isLoaded() then return end
+        if STTS == nil then return end
         if msg == nil then return end
         if coalitionID == nil then return end
 
         if args.freq == nil then return end
-        if args.modulation == nil then args.modulation = "AM" end
-        if args.volume == nil then args.volume = "1.0" end
-        if args.name == nil then args.name = "Hound" end
-        if args.gender == nil then args.gender = "female" end
-        if args.culture == nil then args.culture = "en-US" end
-
+        args.modulation = args.modulation or "AM"
+        args.volume = args.volume or "1.0"
+        args.name = args.name or "Hound"
+        args.gender = args.gender or "female"
+        args.culture = args.culture or "en-US"
 
         STTS.TextToSpeech(msg,args.freq,args.modulation,args.volume,args.name,coalitionID,transmitterPos,args.speed,args.gender,args.culture,args.voice,args.googleTTS)
         return true
@@ -446,14 +445,36 @@ do
         return retval:match( "^%s*(.-)%s*$" ) -- return and strip trailing whitespaces
     end
 
-    function HoundUtils.TTS.getReadTime(length)
-        -- Assumptions for time calc: 150 Words per min, avarage of 5 letters for english word
-        -- so 5 chars = 750 characters per min = 12.5 chars per second
-        -- so lengh of msg / 12.5 = number of seconds needed to read it. rounded down to 10 chars per sec
-        if type(length) == "string" then
-            return math.ceil((string.len(length)/10))
+    function HoundUtils.TTS.getReadTime(length,speed,isGoogle)
+        -- Assumptions for time calc: 100 Words per min, avarage of 5 letters for english word
+        -- so 5 chars * 100wpm = 500 characters per min = 8.3 chars per second
+        -- so lengh of msg / 8.3 = number of seconds needed to read it. rounded down to 8 chars per sec
+        -- map function:  (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
+        local maxRateRatio = 4 -- can be chaned to 5 if windows TTSrate is up to 5x not 4x
+
+        speed = speed or 1.0
+        isGoogle = isGoogle or false
+
+        local speedFactor = 1.0
+        if isGoogle then
+            speedFactor = speed
+        else
+            if speed ~= 0 then
+                speedFactor = math.abs(speed) * (maxRateRatio - 1) / 10 + 1
+            end
+            if speed < 0 then
+                speedFactor = 1/speedFactor
+            end
         end
-        return math.ceil(length/10)
+
+        local wpm = math.ceil(100 * speedFactor)
+        local cps = math.floor((wpm * 5)/60)
+
+        if type(length) == "string" then
+            length = string.len(length)
+        end
+
+        return math.ceil(length/cps)
     end
 
 
@@ -776,8 +797,6 @@ do
         self.uncertenty_radius.az = mist.utils.round(mist.utils.toDegree(Theta))
         self.uncertenty_radius.r  = (x+y)/4
         
-        -- env.info("ellipse size is :".. self.uncertenty_radius.major .. "/" .. self.uncertenty_radius.minor .. " Az: ".. self.uncertenty_radius.az)
-
     end
 
     function HoundContact:calculatePos(estimatedPositions)
@@ -789,7 +808,6 @@ do
         self.pos.grid  = coord.LLtoMGRS(self.pos.LL.lat, self.pos.LL.lon)
         self.pos.be.brg = mist.utils.round(mist.utils.toDegree(mist.utils.getDir(mist.vec.sub(self.pos.p,bullsPos))))
         self.pos.be.rng =  mist.utils.round(mist.utils.metersToNM(mist.utils.get2DDist(self.pos.p,bullsPos)))
-
     end
 
     function HoundContact:removeMarker()
@@ -880,7 +898,7 @@ do
         local phoneticGridPos,phoneticBulls = self:getTtsData(true)
         local msg =  self.typeName .. " " .. (self.uid % 100) ..", bullz " .. phoneticBulls .. ", grid ".. phoneticGridPos
         msg = msg .. ", position " .. HoundUtils.TTS.getVerbalLL(self.pos.LL.lat,self.pos.LL.lon) .. " at " .. HoundUtils.getRoundedElevationFt(self.pos.elev) .. "feet MSL"
-        msg = msg .. ", " .. HoundUtils.TTS.getVerbalLL(self.pos.LL.lat,self.pos.LL.lon) .. " at " .. HoundUtils.getRoundedElevationFt(self.pos.elev) .. "feet MSL"
+        msg = msg .. ", I repeat " .. HoundUtils.TTS.getVerbalLL(self.pos.LL.lat,self.pos.LL.lon) .. " at " .. HoundUtils.getRoundedElevationFt(self.pos.elev) .. "feet MSL"
         msg = msg .. ", Ellipse " ..  HoundUtils.TTS.simplfyDistance(self.uncertenty_radius.major) .. " by " ..  HoundUtils.TTS.simplfyDistance(self.uncertenty_radius.minor) .. " aligned bearing " .. HoundUtils.TTS.toPhonetic(string.format("%03d",self.uncertenty_radius.az))
         msg = msg .. ", first seen " .. HoundUtils.TTS.getTtsTime(self.first_seen) .. ", last seen " .. HoundUtils.TTS.getVerbalContactAge(self.last_seen) .. " ago. " .. HoundUtils:getControllerResponse()
         return msg
@@ -893,7 +911,7 @@ do
         msg = msg .. "BE: " .. BePos .. " (grid ".. GridPos ..")\n"
         msg = msg .. "LL: " .. HoundUtils.Text.getLL(self.pos.LL.lat,self.pos.LL.lon)..", Elev: " .. HoundUtils.getRoundedElevationFt(self.pos.elev) .. "ft\n"
         msg = msg .. "Ellipse: " ..  self.uncertenty_radius.major .. " by " ..  self.uncertenty_radius.minor .. " aligned bearing " .. string.format("%03d",self.uncertenty_radius.az) .. "\n"
-        msg = msg .. "First detected " .. HoundUtils.Text.getTime(self.first_seen) .. " Last Contact: " ..  HoundUtils.TTS.getVerbalContactAge(self.last_seen) .. " ago. " .. HoundUtils:getControllerResponse()
+        msg = msg .. "First detected: " .. HoundUtils.Text.getTime(self.first_seen) .. " Last Contact: " ..  HoundUtils.TTS.getVerbalContactAge(self.last_seen) .. " ago. " .. HoundUtils:getControllerResponse()
         return msg
     end
 
@@ -1120,21 +1138,41 @@ do
         for i,v in ipairs(self._queue) do
             if #v > 0 then return table.remove(self._queue[i],1) end
         end
+    end
 
+    function HoundCommsManager:getTransmitterPos()
+        if self.transmitter == nil then return nil end
+        if self.transmitter ~= nil and (self.transmitter:isExist() == false or self.transmitter:getLife() < 1) then
+            return false
+        end
+        local pos = self.transmitter:getPoint()
+        if self.transmitter:getCategory() == Object.Category.STATIC then
+            pos.y = pos.y + 120
+        end
+        if self.transmitter:getDesc()["category"] == Unit.Category.GROUND_UNIT then
+            pos.y = pos.y + 50
+        end
+        return pos
     end
 
     function HoundCommsManager.TransmitFromQueue(gSelf)
         local msgObj = gSelf:getNextMsg()
         if msgObj == nil then return timer.getTime() + gSelf.settings.interval end
+        local transmitterPos = gSelf:getTransmitterPos()
 
-        if msgObj.txt ~= nil then
-            trigger.action.outTextForCoalition(msgObj.coalition,msgObj.txt, HoundUtils.TTS.getReadTime(msgObj.txt)*1.5+5)
+        if transmitterPos == false then
+            env.info("[Hound] - Transmitter destroyed")
+            return
         end
 
-        if gSelf.enabled and (STTS ~= nil and STTS.isLoaded()) and msgObj.tts ~= nil then
-            HoundUtils.TTS.Transmit(msgObj.tts,msgObj.coalition,gSelf.settings,gSelf.transmitter)
+        if msgObj.txt ~= nil then
+            trigger.action.outTextForCoalition(msgObj.coalition,msgObj.txt, HoundUtils.TTS.getReadTime(msgObj.txt,gSelf.settings.speed)+5)
+        end
 
-            return timer.getTime() + HoundUtils.TTS.getReadTime(msgObj.tts)*1.5 -- temp till I figure out the speed
+        if gSelf.enabled and STTS ~= nil and msgObj.tts ~= nil then
+            HoundUtils.TTS.Transmit(msgObj.tts,msgObj.coalition,gSelf.settings,transmitterPos)
+
+            return timer.getTime() + HoundUtils.TTS.getReadTime(msgObj.tts,gSelf.settings.speed) -- temp till I figure out the speed
         end
     end
 
@@ -1148,6 +1186,21 @@ do
     function HoundCommsManager:disable()
         self.enabled = false 
         self:StopLoop()
+    end
+
+    function HoundCommsManager:setTransmitter(platformName)
+        local canidate = Unit.getByName(platformName)
+        if canidate == nil then
+            canidate = StaticObject.getByName(platformName)
+        end
+
+        self.transmitter = canidate
+    end
+
+    function HoundCommsManager:removeTransmitter()
+        if self.transmitter ~= nil then
+            self.transmitter = nil
+        end
     end
 end-- -------------------------------------------------------------
 do
@@ -1242,8 +1295,9 @@ do
         if length(self.platform) < 1 then return end
         local toRemove = {}
         for i = length(self.platform), 1,-1 do
-            if self.platform[i]:isExist() == false or self.platform[i]:getLife() <
-                1 then  table.remove(self.platform, i) end
+            if self.platform[i]:isExist() == false or self.platform[i]:getLife() <1 then  
+                table.remove(self.platform, i) 
+            end
         end
     end
 
@@ -1273,7 +1327,7 @@ do
 
 
     function HoundElint:toggleController(state,textMode)
-        if ( STTS ~= nil and STTS.isLoaded() ) then
+        if STTS ~= nil  then
             if state == true and type(state) == "boolean" then
                 self.controller:enable()
                 return
@@ -1313,7 +1367,7 @@ do
 
 
     function HoundElint:toggleATIS(state) 
-        if ( STTS ~= nil and STTS.isLoaded() ) then
+        if STTS ~= nil then
             if state == true and type(state) == "boolean" then
                     self.atis:enable()
             end
@@ -1348,6 +1402,9 @@ do
         local numberEWR = 0
 
         if length(gSelf.emitters) > 0 then
+            if gSelf.atis.loop.last_update ~= nil then
+                if timer.getTime() - gSelf.atis.loop.last_update < 120 then return end
+            end
             for uid, emitter in pairs(gSelf.emitters) do
                 if emitter.pos.p ~= nil then
                     if emitter.isEWR == false or (gSelf.atis.settings.reportEWR and emitter.isEWR) then
@@ -1376,6 +1433,7 @@ do
         }
 
         gSelf.atis.loop.msg = msgObj
+        gSelf.atis.loop.last_update = timer.getTime()
 
     end
 
@@ -1797,4 +1855,4 @@ do
 end
 
 env.info("Hound ELINT Loaded Successfully")
--- Build date 26-04-2021
+-- Build date 01-05-2021

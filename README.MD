@@ -162,6 +162,11 @@ and turned off with
 
 system can be configured some more, but more on that later
 
+By default system will only report number of EWR radars tracked. you can activate EWR detailed report by setting the ATIS internal `reportEWR` to true
+```lua
+Elint_blue.atis.settings.reportEWR = true
+```
+
 #### SAM controller
 ---
 Like the ATIS this is also an TTS system using SRS (defaults to 250.00 AM). This functinality allows users to recive a detailed description of a specific radar (with extended information) by selecting that radar from the F10 menu.
@@ -186,7 +191,23 @@ and of course
     Elint_blue:disableController()
 ```
 
-` Note: during this first implementation, menues are updated every 1 minute`
+` Note: during this first implementation, menus are updated every 1 minute`
+
+#### Transmitter Unit (or static Object)
+Both ATIS system and SAM controller both support a transmitter unit. This assigned unit will broadcast over SRS which respects unit's LOS and transmitter range. so ground unit will have terrain masking and add some intrest. 
+if Transmitter unit is destroyed no Transmissions will be made until a new transmitter Unit is assinged.
+
+You can assign (and Update) a transmitting unit to either by calling an internal function in the Comm device
+```lua
+Elint_blue.atis:setTransmitter("Migariya_Elint")
+Elint_blue.controller:setTransmitter("Migariya_Elint")
+```
+
+if you want to remove the unit (which will broadcast without any limitations)
+```lua
+Elint_blue.atis:removeTransmitter()
+Elint_blue.controller:removeTransmitter()
+```
 
 
 #### Fine tuning TTS stuff.
@@ -211,7 +232,6 @@ you then pass the table into the appropriet functions
 ```lua
     Elint_blue:configureController(args)
     Elint_blue:configureAtis(args)
-
 ```
 for example:
 ```lua

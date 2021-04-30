@@ -91,8 +91,9 @@ do
         if length(self.platform) < 1 then return end
         local toRemove = {}
         for i = length(self.platform), 1,-1 do
-            if self.platform[i]:isExist() == false or self.platform[i]:getLife() <
-                1 then  table.remove(self.platform, i) end
+            if self.platform[i]:isExist() == false or self.platform[i]:getLife() <1 then  
+                table.remove(self.platform, i) 
+            end
         end
     end
 
@@ -122,7 +123,7 @@ do
 
 
     function HoundElint:toggleController(state,textMode)
-        if ( STTS ~= nil and STTS.isLoaded() ) then
+        if STTS ~= nil  then
             if state == true and type(state) == "boolean" then
                 self.controller:enable()
                 return
@@ -162,7 +163,7 @@ do
 
 
     function HoundElint:toggleATIS(state) 
-        if ( STTS ~= nil and STTS.isLoaded() ) then
+        if STTS ~= nil then
             if state == true and type(state) == "boolean" then
                     self.atis:enable()
             end
@@ -197,6 +198,9 @@ do
         local numberEWR = 0
 
         if length(gSelf.emitters) > 0 then
+            if gSelf.atis.loop.last_update ~= nil then
+                if timer.getTime() - gSelf.atis.loop.last_update < 120 then return end
+            end
             for uid, emitter in pairs(gSelf.emitters) do
                 if emitter.pos.p ~= nil then
                     if emitter.isEWR == false or (gSelf.atis.settings.reportEWR and emitter.isEWR) then
@@ -225,6 +229,7 @@ do
         }
 
         gSelf.atis.loop.msg = msgObj
+        gSelf.atis.loop.last_update = timer.getTime()
 
     end
 

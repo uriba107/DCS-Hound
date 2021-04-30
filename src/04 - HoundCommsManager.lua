@@ -109,21 +109,41 @@ do
         for i,v in ipairs(self._queue) do
             if #v > 0 then return table.remove(self._queue[i],1) end
         end
+    end
 
+    function HoundCommsManager:getTransmitterPos()
+        if self.transmitter == nil then return nil end
+        if self.transmitter ~= nil and (self.transmitter:isExist() == false or self.transmitter:getLife() < 1) then
+            return false
+        end
+        local pos = self.transmitter:getPoint()
+        if self.transmitter:getCategory() == Object.Category.STATIC then
+            pos.y = pos.y + 120
+        end
+        if self.transmitter:getDesc()["category"] == Unit.Category.GROUND_UNIT then
+            pos.y = pos.y + 50
+        end
+        return pos
     end
 
     function HoundCommsManager.TransmitFromQueue(gSelf)
         local msgObj = gSelf:getNextMsg()
         if msgObj == nil then return timer.getTime() + gSelf.settings.interval end
+        local transmitterPos = gSelf:getTransmitterPos()
 
-        if msgObj.txt ~= nil then
-            trigger.action.outTextForCoalition(msgObj.coalition,msgObj.txt, HoundUtils.TTS.getReadTime(msgObj.txt)*1.5+5)
+        if transmitterPos == false then
+            env.info("[Hound] - Transmitter destroyed")
+            return
         end
 
-        if gSelf.enabled and (STTS ~= nil and STTS.isLoaded()) and msgObj.tts ~= nil then
-            HoundUtils.TTS.Transmit(msgObj.tts,msgObj.coalition,gSelf.settings,gSelf.transmitter)
+        if msgObj.txt ~= nil then
+            trigger.action.outTextForCoalition(msgObj.coalition,msgObj.txt, HoundUtils.TTS.getReadTime(msgObj.txt,gSelf.settings.speed)+5)
+        end
 
-            return timer.getTime() + HoundUtils.TTS.getReadTime(msgObj.tts)*1.5 -- temp till I figure out the speed
+        if gSelf.enabled and STTS ~= nil and msgObj.tts ~= nil then
+            HoundUtils.TTS.Transmit(msgObj.tts,msgObj.coalition,gSelf.settings,transmitterPos)
+
+            return timer.getTime() + HoundUtils.TTS.getReadTime(msgObj.tts,gSelf.settings.speed) -- temp till I figure out the speed
         end
     end
 
@@ -137,5 +157,20 @@ do
     function HoundCommsManager:disable()
         self.enabled = false 
         self:StopLoop()
+    end
+
+    function HoundCommsManager:setTransmitter(platformName)
+        local canidate = Unit.getByName(platformName)
+        if canidate == nil then
+            canidate = StaticObject.getByName(platformName)
+        end
+
+        self.transmitter = canidate
+    end
+
+    function HoundCommsManager:removeTransmitter()
+        if self.transmitter ~= nil then
+            self.transmitter = nil
+        end
     end
 end

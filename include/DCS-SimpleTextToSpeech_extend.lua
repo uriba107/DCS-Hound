@@ -18,8 +18,8 @@ function STTS.TextToSpeech(message,freqs,modulations, volume,name, coalition,poi
 
     message = message:gsub("\"","\\\"")
     
-    local cmd = string.format("start /min \"\" /d \"%s\" /b \"%s\" -f %s -m %s -c %s -p %s -n \"%s\" -h", STTS.DIRECTORY, STTS.EXECUTABLE, freqs, modulations, coalition,STTS.SRS_PORT, name )
-    
+    local cmd = string.format("start \"\" /min /d \"%s\" /b \"%s\" -f %s -m %s -c %s -p %s -n \"%s\" -h", STTS.DIRECTORY, STTS.EXECUTABLE, freqs, modulations, coalition,STTS.SRS_PORT, name )
+
     if voice ~= "" then
     	cmd = cmd .. string.format(" -V \"%s\"",voice)
     else
@@ -57,18 +57,20 @@ function STTS.TextToSpeech(message,freqs,modulations, volume,name, coalition,poi
     local inlineText = string.format(" -t \"%s\"",message)
 
     if string.len(cmd) + string.len(inlineText) >= 260 then
-        local filename = STTS.DIRECTORY .. "\\" .."tmp_" .. STTS.uuid() .. ".txt"
-        local script = io.open(filename,"w+")
+        local filename = "tmp_" .. STTS.uuid() .. ".txt"
+        local script = io.open(STTS.DIRECTORY .. "\\" .. filename,"w+")
         script:write(message)
         script:close()
         cmd = cmd .. string.format(" -I \"%s\"",filename)
-        timer.scheduleFunction(os.remove, filename, timer.getTime() + 5) 
+        timer.scheduleFunction(os.remove, STTS.DIRECTORY .. "\\" .. filename, timer.getTime() + 5) 
     else
         cmd = cmd .. inlineText
     end
 
-    -- env.info("[DCS-STTS] TextToSpeech Command :\n" .. cmd.."\n")
+    if string.len(cmd) > 255 then env.error("[DCS-STTS] - cmd string too long") end
+    env.info("[DCS-STTS] TextToSpeech Command :\n" .. cmd.."\n")
     os.execute(cmd)
+
 end
 
 

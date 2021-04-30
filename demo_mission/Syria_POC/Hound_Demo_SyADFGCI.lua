@@ -1,4 +1,11 @@
 do
+    if STTS ~= nil then
+        STTS.DIRECTORY = "C:\\Program Files\\DCS-SimpleRadio-Standalone"
+    end
+end
+
+do
+    
     env.info("configuring Hound")    
     Elint_blue = HoundElint:create("Mt_Meron_ELINT")
     Elint_blue:addPlatform("Mt_Hermon_ELINT")

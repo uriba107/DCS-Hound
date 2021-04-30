@@ -13,17 +13,16 @@ do
 --]]    
     function HoundUtils.TTS.Transmit(msg,coalitionID,args,transmitterPos)
 
-        if STTS == nil and not STTS.isLoaded() then return end
+        if STTS == nil then return end
         if msg == nil then return end
         if coalitionID == nil then return end
 
         if args.freq == nil then return end
-        if args.modulation == nil then args.modulation = "AM" end
-        if args.volume == nil then args.volume = "1.0" end
-        if args.name == nil then args.name = "Hound" end
-        if args.gender == nil then args.gender = "female" end
-        if args.culture == nil then args.culture = "en-US" end
-
+        args.modulation = args.modulation or "AM"
+        args.volume = args.volume or "1.0"
+        args.name = args.name or "Hound"
+        args.gender = args.gender or "female"
+        args.culture = args.culture or "en-US"
 
         STTS.TextToSpeech(msg,args.freq,args.modulation,args.volume,args.name,coalitionID,transmitterPos,args.speed,args.gender,args.culture,args.voice,args.googleTTS)
         return true
@@ -95,14 +94,36 @@ do
         return retval:match( "^%s*(.-)%s*$" ) -- return and strip trailing whitespaces
     end
 
-    function HoundUtils.TTS.getReadTime(length)
-        -- Assumptions for time calc: 150 Words per min, avarage of 5 letters for english word
-        -- so 5 chars = 750 characters per min = 12.5 chars per second
-        -- so lengh of msg / 12.5 = number of seconds needed to read it. rounded down to 10 chars per sec
-        if type(length) == "string" then
-            return math.ceil((string.len(length)/10))
+    function HoundUtils.TTS.getReadTime(length,speed,isGoogle)
+        -- Assumptions for time calc: 100 Words per min, avarage of 5 letters for english word
+        -- so 5 chars * 100wpm = 500 characters per min = 8.3 chars per second
+        -- so lengh of msg / 8.3 = number of seconds needed to read it. rounded down to 8 chars per sec
+        -- map function:  (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
+        local maxRateRatio = 4 -- can be chaned to 5 if windows TTSrate is up to 5x not 4x
+
+        speed = speed or 1.0
+        isGoogle = isGoogle or false
+
+        local speedFactor = 1.0
+        if isGoogle then
+            speedFactor = speed
+        else
+            if speed ~= 0 then
+                speedFactor = math.abs(speed) * (maxRateRatio - 1) / 10 + 1
+            end
+            if speed < 0 then
+                speedFactor = 1/speedFactor
+            end
         end
-        return math.ceil(length/10)
+
+        local wpm = math.ceil(100 * speedFactor)
+        local cps = math.floor((wpm * 5)/60)
+
+        if type(length) == "string" then
+            length = string.len(length)
+        end
+
+        return math.ceil(length/cps)
     end
 
 
