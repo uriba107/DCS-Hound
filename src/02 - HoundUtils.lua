@@ -34,7 +34,6 @@ do
         local hours = DHMS.h
         local minutes = DHMS.m
         local seconds = DHMS.s
-        -- env.info(hours..":"..minutes..":"..seconds)
         if hours == 0 then
             hours = PHONETIC["0"]
         else 
@@ -244,6 +243,10 @@ do
         local pi_2 = 2*math.pi
 
         return  (math.atan2(biasVector.z/length(azimuths), biasVector.x/length(azimuths))+pi_2) % pi_2
+    end
+
+    function HoundUtils.RandomAngle()
+        return math.random() * 2 * math.pi
     end
 
     function HoundUtils.getSamMaxRange(emitter)

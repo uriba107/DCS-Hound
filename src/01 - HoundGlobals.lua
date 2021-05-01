@@ -12,6 +12,10 @@ function gaussian (mean, variance)
             math.cos(2 * math.pi * math.random()) + mean
 end
 
+function map (x,in_min,in_max,out_min,out_max)
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
+end
+
 function setContains(set, key)
   return set[key] ~= nil
 end

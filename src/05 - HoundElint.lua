@@ -308,13 +308,31 @@ do
         return 15.0
     end
 
+    function HoundElint.generateError(precision)
+        local MAG = math.abs(gaussian(0, precision * 50) / 100)
+        local ROT = math.random() * 2 * math.pi
+        -- x` = x*cos(theta)-y*sin(theta)
+        -- y' = x*sin(theta)+y*cos(theta)
+        local epsilon = {}
+        epsilon.az = -MAG*math.sin(ROT)
+        epsilon.el = MAG*math.cos(ROT)
+        return epsilon
+    end
+
     function HoundElint:getAzimuth(src, dst, sensorError)
         local dirRad = mist.utils.getDir(mist.vec.sub(dst, src))
-        local randomError = gaussian(0, sensorError * 50) / 100
-        -- env.info("sensor is: ".. sensorError .. "passing in " .. sensorError*500 / 1000 .. " Error: " .. randomError )
-        local AzDeg = mist.utils.round((math.deg(dirRad) + randomError + 360) % 360, 3)
-        -- env.info("az: " .. math.deg(dirRad) .. " err: "..  randomError .. " final: " ..AzDeg)
-        return math.rad(AzDeg)
+        -- local elRad =  math.acos(mist.utils.get2DDist(src,dst)/mist.utils.get3DDist(src,dst))
+        -- tan(θ) = Opposite / Adjacent
+        -- 
+        local elRad = math.atan((dst.y-src.y)/mist.utils.get2DDist(src,dst))
+
+        local randomError = HoundElint.generateError(sensorError)
+        local AzDeg = mist.utils.round((math.deg(dirRad) + randomError.az + 360) % 360, 3)
+        local ElDeg = mist.utils.round((math.deg(elRad) + randomError.el), 3)
+        -- env.info("sensor is: ".. sensorError .. "passing in " .. sensorError*500 / 1000  )
+        -- env.info("az: " .. math.deg(dirRad) .. " err: "..  randomError.az .. " final: " ..AzDeg)
+        -- env.info("el: " .. math.deg(elRad) .. " err: "..  randomError.el .. " final: " ..ElDeg)
+        return math.rad(AzDeg),math.rad(ElDeg)
     end
 
     function HoundElint:getActiveRadars()
@@ -371,15 +389,20 @@ do
                 local platformPos = platform:getPosition().p
                 local platformId = platform:getID()
                 local platformIsStatic = false
+                local isAerialUnit = false
 
                 if platform:getCategory() == Object.Category.STATIC then
                     platformIsStatic = true
                     platformPos.y = platformPos.y + 60
                 else
                     local PlatformUnitCategory = platform:getDesc()["category"]
-                    if (self.addPositionError and ( PlatformUnitCategory == Unit.Category.HELICOPTER or PlatformUnitCategory == Unit.Category.AIRPLANE)) then
-                        platformPos = mist.getRandPointInCircle( platform:getPosition().p, self.positionErrorRadius)
+                    if PlatformUnitCategory == Unit.Category.HELICOPTER or PlatformUnitCategory == Unit.Category.AIRPLANE then
+                        isAerialUnit = true
+                        if self.addPositionError then
+                            platformPos = mist.getRandPointInCircle( platform:getPosition().p, self.positionErrorRadius)
+                        end                    
                     end
+
                     if PlatformUnitCategory == Unit.Category.GROUND_UNIT then
                         platformPos.y = platformPos.y + 15 
                     end
@@ -390,9 +413,12 @@ do
                         self.emitters[RadarUid] =
                             HoundContact:New(radar, self.coalitionId)
                     end
-                    local az = self:getAzimuth(platformPos, radarPos, self:getSensorError(platform))
-                    -- env.info(platform:getName() .. "-->".. RadarName .. " Az: " .. az )
-                    local datapoint = HoundElintDatapoint:New(platformId,platformPos, az, timer.getAbsTime(),platformIsStatic)
+                    local az,el = self:getAzimuth(platformPos, radarPos, self:getSensorError(platform))
+                    if not isAerialUnit then
+                        el = nil
+                    end
+                    -- env.info(platform:getName() .. "-->"..  mist.utils.tableShow(platform:getPosition().x) )
+                    local datapoint = HoundElintDatapoint:New(platformId,platformPos, az, el, timer.getAbsTime(),platformIsStatic)
                     self.emitters[RadarUid]:AddPoint(datapoint)
                 end
             end

@@ -56,7 +56,7 @@ function STTS.TextToSpeech(message,freqs,modulations, volume,name, coalition,poi
 
     local inlineText = string.format(" -t \"%s\"",message)
 
-    if string.len(cmd) + string.len(inlineText) >= 260 then
+    if string.len(cmd) + string.len(inlineText) > 255 then
         local filename = "tmp_" .. STTS.uuid() .. ".txt"
         local script = io.open(STTS.DIRECTORY .. "\\" .. filename,"w+")
         script:write(message)
@@ -67,8 +67,10 @@ function STTS.TextToSpeech(message,freqs,modulations, volume,name, coalition,poi
         cmd = cmd .. inlineText
     end
 
-    if string.len(cmd) > 255 then env.error("[DCS-STTS] - cmd string too long") end
-    env.info("[DCS-STTS] TextToSpeech Command :\n" .. cmd.."\n")
+    if string.len(cmd) > 255 then 
+        env.error("[DCS-STTS] - cmd string too long") 
+        env.info("[DCS-STTS] TextToSpeech Command :\n" .. cmd.."\n")
+    end
     os.execute(cmd)
 
 end

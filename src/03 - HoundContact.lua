@@ -3,15 +3,37 @@ do
     HoundElintDatapoint = {}
     HoundElintDatapoint.__index = HoundElintDatapoint
 
-    function HoundElintDatapoint:New(id0, p0, az0, t0,isPlatformStatic)
+    function HoundElintDatapoint:New(id0, p0, az0, el0, t0,isPlatformStatic)
         local elintDatapoint = {}
         setmetatable(elintDatapoint, HoundElintDatapoint)
-        elintDatapoint.pos = p0
+        elintDatapoint.platformPos = p0
         elintDatapoint.az = az0
+        elintDatapoint.el = el0
         elintDatapoint.t = tonumber(t0)
         elintDatapoint.platformId = id0
         elintDatapoint.platformStatic = isPlatformStatic
+        elintDatapoint.estimatedPos = nil
         return elintDatapoint
+    end
+
+    function HoundElintDatapoint:estimatePos()
+        if self.el == nil then return end
+        env.info("decl is " .. mist.utils.toDegree(self.el))
+        local maxSlant = self.platformPos.y/math.abs(math.sin(self.el))
+
+        local unitVector = {
+            x = math.cos(self.el)*math.cos(self.az),
+            z = math.cos(self.el)*math.sin(self.az),
+            y = math.sin(self.el)
+        }
+        -- env.info("unit Vector: X " ..unitVector.x .." ,Z "..unitVector.z..", Y:" .. unitVector.y .. " | maxSlant " .. maxSlant)
+
+        self.estimatedPos = land.getIP(self.platformPos, unitVector , maxSlant+100 )
+        -- debugging
+        -- env.info(mist.utils.tableShow( self.estimatedPos))
+        -- local latitude, longitude, altitude = coord.LOtoLL(self.estimatedPos)
+        -- env.info("estimated 3d point: Lat " ..latitude.." ,lon "..longitude..", alt:" .. tostring(altitude) )
+
     end
 end
 
@@ -56,8 +78,6 @@ do
         return elintcontact
     end
 
-
-
     function HoundContact:CleanTimedout()
         if HoundUtils:timeDelta(timer.getAbsTime(), self.last_seen) > 900 then
             -- if contact wasn't seen for 15 minuts purge all currnent data
@@ -86,6 +106,12 @@ do
             self.dataPoints[datapoint.platformId] = {datapoint}
             return
         end
+        if datapoint.el ~=nil then
+            datapoint:estimatePos()
+            
+
+        end
+
         if length(self.dataPoints[datapoint.platformId]) < 2 then
             table.insert(self.dataPoints[datapoint.platformId], datapoint)
         else
@@ -103,8 +129,8 @@ do
     end
 
     function HoundContact:triangulatePoints(earlyPoint, latePoint)
-        local p1 = earlyPoint.pos
-        local p2 = latePoint.pos
+        local p1 = earlyPoint.platformPos
+        local p2 = latePoint.platformPos
 
         local m1 = math.tan(earlyPoint.az)
         local m2 = math.tan(latePoint.az)
@@ -330,16 +356,12 @@ do
         return msg
     end
 
-    -- function HoundContact:transmitReport(tts)
-    --     local msg =self:generateTtsReport()
-    --     if msg == nil then return end
-    --     HoundUtils.TTS.Transmit(msg,self.platformCoalition,tts)
-    -- end
-
     function HoundContact:processData()
         local newContact = (self.pos.p == nil)
         local mobileDataPoints = {}
         local staticDataPoints = {}
+        local estimatePosition = {}
+
         for k,v in pairs(self.dataPoints) do 
             if length(v) > 0 then
                 for k,v in pairs(v) do 
@@ -348,15 +370,17 @@ do
                     else
                         table.insert(mobileDataPoints,v) 
                     end
+                    if v.estimatedPos ~= nil then
+                        table.insert(estimatePosition,v.estimatedPos)
+                    end
                 end
             end
         end
         local numMobilepoints = length(mobileDataPoints)
         local numStaticPoints = length(staticDataPoints)
 
-        if numMobilepoints+numStaticPoints < 2 then return end
+        if numMobilepoints+numStaticPoints < 2 and length(estimatePosition) == 0 then return end
 
-        local estimatePosition = {}
         -- Static against all statics
         if numStaticPoints > 1 then
             for i=1,numStaticPoints-1 do
