@@ -18,7 +18,7 @@ do
 
     function HoundElintDatapoint:estimatePos()
         if self.el == nil then return end
-        env.info("decl is " .. mist.utils.toDegree(self.el))
+        -- env.info("decl is " .. mist.utils.toDegree(self.el))
         local maxSlant = self.platformPos.y/math.abs(math.sin(self.el))
 
         local unitVector = {
@@ -162,9 +162,10 @@ do
     function HoundContact:calculateEllipse(estimatedPositions,Theta)
         table.sort(estimatedPositions,function(a,b) return tonumber(mist.utils.get2DDist(self.pos.p,a)) < tonumber(mist.utils.get2DDist(self.pos.p,b)) end)
 
-        local percentile = math.floor(length(estimatedPositions)*0.95)
+        local percentile = math.floor(length(estimatedPositions)*0.50)
         local RelativeToPos = {}
-        for i = 1, percentile do
+        local NumToUse = math.max(math.min(2,length(estimatedPositions)),percentile)
+        for i = 1, NumToUse  do
             table.insert(RelativeToPos,mist.vec.sub(estimatedPositions[i],self.pos.p))
         end
         local sinTheta = math.sin(Theta)
@@ -380,7 +381,6 @@ do
         local numStaticPoints = length(staticDataPoints)
 
         if numMobilepoints+numStaticPoints < 2 and length(estimatePosition) == 0 then return end
-
         -- Static against all statics
         if numStaticPoints > 1 then
             for i=1,numStaticPoints-1 do
@@ -394,7 +394,7 @@ do
         if numStaticPoints > 0  and numMobilepoints > 0 then
             for i,staticDataPoint in ipairs(staticDataPoints) do
                 for j,mobileDataPoint in ipairs(mobileDataPoints) do
-                    if math.deg(HoundUtils.angleDeltaRad(staticDataPoint.az,mobileDataPoint.az)) > 0.75 then
+                    if math.deg(HoundUtils.angleDeltaRad(staticDataPoint.az,mobileDataPoint.az)) > 1.5 then
                         table.insert(estimatePosition,self:triangulatePoints(staticDataPoint,mobileDataPoint))
                     end
                 end
@@ -405,7 +405,7 @@ do
         if numMobilepoints > 1 then
             for i=1,numMobilepoints-1 do
                 for j=i+1,numMobilepoints do
-                    if math.deg(HoundUtils.angleDeltaRad(mobileDataPoints[i].az,mobileDataPoints[j].az)) > 0.75 then
+                    if math.deg(HoundUtils.angleDeltaRad(mobileDataPoints[i].az,mobileDataPoints[j].az)) > 2 then
                         table.insert(estimatePosition,self:triangulatePoints(mobileDataPoints[i],mobileDataPoints[j]))
                     end
                 end

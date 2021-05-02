@@ -258,10 +258,10 @@ and will enable Controller both in Text and in Voice, while transmitting on two 
 ## Known Issues
   * when from some reason, all markers are removed, they might not appear again until  manual marker is added. (linked to the fact that "next idx" cannot be retrived from system directly)
   * not a bug but a feature. system noly provides LL in DMS format. if your aircraft only accepts DMM.MMM (Viper and Hawg, looking at you).. Pilot will neet to know to to convert seconds to decimal minutes. (i.e 6 seconds = 0.1 minute)
+  * Text alerts will appear for all coalition memebers regarless of tuned radio channles and such. so consider turning them off. This will be addressed in an undetermind date in the future :)
 ## special notes for Alpha phase
   * currently sample rate is every 15 seconds, where data points are commited every one minute.
   * 11 data points are soted per radar per platform.
   * menus update every ~60 seconds
   * Markers are updated every ~120 seconds (2 mins)
   * ATIS is on a loop, will update every ~60 seconds or so, unless it's a long message then it will update on next run. If nothing has changed, it will re-broadcast the same one again. 
-  * currenty ATIS will not report position on EWR radars, it will just call how many it tracks this will be toggleable.

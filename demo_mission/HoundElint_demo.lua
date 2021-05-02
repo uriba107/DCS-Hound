@@ -8,9 +8,9 @@ do
     
     Elint_blue = HoundElint:create()
     Elint_blue:addPlatform("ELINT_C17")
-    -- Elint_blue:addPlatform("ELINT_C130")
+    Elint_blue:addPlatform("ELINT_C130")
     -- Elint_blue:addPlatform("Kokotse_Elint")
-    -- Elint_blue:addPlatform("Khvamli_Elint")
+    Elint_blue:addPlatform("Khvamli_Elint")
     -- Elint_blue:addPlatform("Migariya_Elint")
 
 

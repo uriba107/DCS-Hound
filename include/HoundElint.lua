@@ -346,6 +346,10 @@ function gaussian (mean, variance)
             math.cos(2 * math.pi * math.random()) + mean
 end
 
+function map (x,in_min,in_max,out_min,out_max)
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
+end
+
 function setContains(set, key)
   return set[key] ~= nil
 end
@@ -385,7 +389,6 @@ do
         local hours = DHMS.h
         local minutes = DHMS.m
         local seconds = DHMS.s
-        -- env.info(hours..":"..minutes..":"..seconds)
         if hours == 0 then
             hours = PHONETIC["0"]
         else 
@@ -597,6 +600,10 @@ do
         return  (math.atan2(biasVector.z/length(azimuths), biasVector.x/length(azimuths))+pi_2) % pi_2
     end
 
+    function HoundUtils.RandomAngle()
+        return math.random() * 2 * math.pi
+    end
+
     function HoundUtils.getSamMaxRange(emitter)
         local maxRng = 0
         if emitter ~= nil then
@@ -625,15 +632,37 @@ do
     HoundElintDatapoint = {}
     HoundElintDatapoint.__index = HoundElintDatapoint
 
-    function HoundElintDatapoint:New(id0, p0, az0, t0,isPlatformStatic)
+    function HoundElintDatapoint:New(id0, p0, az0, el0, t0,isPlatformStatic)
         local elintDatapoint = {}
         setmetatable(elintDatapoint, HoundElintDatapoint)
-        elintDatapoint.pos = p0
+        elintDatapoint.platformPos = p0
         elintDatapoint.az = az0
+        elintDatapoint.el = el0
         elintDatapoint.t = tonumber(t0)
         elintDatapoint.platformId = id0
         elintDatapoint.platformStatic = isPlatformStatic
+        elintDatapoint.estimatedPos = nil
         return elintDatapoint
+    end
+
+    function HoundElintDatapoint:estimatePos()
+        if self.el == nil then return end
+        -- env.info("decl is " .. mist.utils.toDegree(self.el))
+        local maxSlant = self.platformPos.y/math.abs(math.sin(self.el))
+
+        local unitVector = {
+            x = math.cos(self.el)*math.cos(self.az),
+            z = math.cos(self.el)*math.sin(self.az),
+            y = math.sin(self.el)
+        }
+        -- env.info("unit Vector: X " ..unitVector.x .." ,Z "..unitVector.z..", Y:" .. unitVector.y .. " | maxSlant " .. maxSlant)
+
+        self.estimatedPos = land.getIP(self.platformPos, unitVector , maxSlant+100 )
+        -- debugging
+        -- env.info(mist.utils.tableShow( self.estimatedPos))
+        -- local latitude, longitude, altitude = coord.LOtoLL(self.estimatedPos)
+        -- env.info("estimated 3d point: Lat " ..latitude.." ,lon "..longitude..", alt:" .. tostring(altitude) )
+
     end
 end
 
@@ -678,8 +707,6 @@ do
         return elintcontact
     end
 
-
-
     function HoundContact:CleanTimedout()
         if HoundUtils:timeDelta(timer.getAbsTime(), self.last_seen) > 900 then
             -- if contact wasn't seen for 15 minuts purge all currnent data
@@ -708,6 +735,12 @@ do
             self.dataPoints[datapoint.platformId] = {datapoint}
             return
         end
+        if datapoint.el ~=nil then
+            datapoint:estimatePos()
+            
+
+        end
+
         if length(self.dataPoints[datapoint.platformId]) < 2 then
             table.insert(self.dataPoints[datapoint.platformId], datapoint)
         else
@@ -725,8 +758,8 @@ do
     end
 
     function HoundContact:triangulatePoints(earlyPoint, latePoint)
-        local p1 = earlyPoint.pos
-        local p2 = latePoint.pos
+        local p1 = earlyPoint.platformPos
+        local p2 = latePoint.platformPos
 
         local m1 = math.tan(earlyPoint.az)
         local m2 = math.tan(latePoint.az)
@@ -758,9 +791,10 @@ do
     function HoundContact:calculateEllipse(estimatedPositions,Theta)
         table.sort(estimatedPositions,function(a,b) return tonumber(mist.utils.get2DDist(self.pos.p,a)) < tonumber(mist.utils.get2DDist(self.pos.p,b)) end)
 
-        local percentile = math.floor(length(estimatedPositions)*0.95)
+        local percentile = math.floor(length(estimatedPositions)*0.50)
         local RelativeToPos = {}
-        for i = 1, percentile do
+        local NumToUse = math.max(math.min(2,length(estimatedPositions)),percentile)
+        for i = 1, NumToUse  do
             table.insert(RelativeToPos,mist.vec.sub(estimatedPositions[i],self.pos.p))
         end
         local sinTheta = math.sin(Theta)
@@ -952,16 +986,12 @@ do
         return msg
     end
 
-    -- function HoundContact:transmitReport(tts)
-    --     local msg =self:generateTtsReport()
-    --     if msg == nil then return end
-    --     HoundUtils.TTS.Transmit(msg,self.platformCoalition,tts)
-    -- end
-
     function HoundContact:processData()
         local newContact = (self.pos.p == nil)
         local mobileDataPoints = {}
         local staticDataPoints = {}
+        local estimatePosition = {}
+
         for k,v in pairs(self.dataPoints) do 
             if length(v) > 0 then
                 for k,v in pairs(v) do 
@@ -970,15 +1000,16 @@ do
                     else
                         table.insert(mobileDataPoints,v) 
                     end
+                    if v.estimatedPos ~= nil then
+                        table.insert(estimatePosition,v.estimatedPos)
+                    end
                 end
             end
         end
         local numMobilepoints = length(mobileDataPoints)
         local numStaticPoints = length(staticDataPoints)
 
-        if numMobilepoints+numStaticPoints < 2 then return end
-
-        local estimatePosition = {}
+        if numMobilepoints+numStaticPoints < 2 and length(estimatePosition) == 0 then return end
         -- Static against all statics
         if numStaticPoints > 1 then
             for i=1,numStaticPoints-1 do
@@ -992,7 +1023,7 @@ do
         if numStaticPoints > 0  and numMobilepoints > 0 then
             for i,staticDataPoint in ipairs(staticDataPoints) do
                 for j,mobileDataPoint in ipairs(mobileDataPoints) do
-                    if math.deg(HoundUtils.angleDeltaRad(staticDataPoint.az,mobileDataPoint.az)) > 0.75 then
+                    if math.deg(HoundUtils.angleDeltaRad(staticDataPoint.az,mobileDataPoint.az)) > 1.5 then
                         table.insert(estimatePosition,self:triangulatePoints(staticDataPoint,mobileDataPoint))
                     end
                 end
@@ -1003,7 +1034,7 @@ do
         if numMobilepoints > 1 then
             for i=1,numMobilepoints-1 do
                 for j=i+1,numMobilepoints do
-                    if math.deg(HoundUtils.angleDeltaRad(mobileDataPoints[i].az,mobileDataPoints[j].az)) > 0.75 then
+                    if math.deg(HoundUtils.angleDeltaRad(mobileDataPoints[i].az,mobileDataPoints[j].az)) > 2 then
                         table.insert(estimatePosition,self:triangulatePoints(mobileDataPoints[i],mobileDataPoints[j]))
                     end
                 end
@@ -1512,13 +1543,31 @@ do
         return 15.0
     end
 
+    function HoundElint.generateError(precision)
+        local MAG = math.abs(gaussian(0, precision * 50) / 100)
+        local ROT = math.random() * 2 * math.pi
+        -- x` = x*cos(theta)-y*sin(theta)
+        -- y' = x*sin(theta)+y*cos(theta)
+        local epsilon = {}
+        epsilon.az = -MAG*math.sin(ROT)
+        epsilon.el = MAG*math.cos(ROT)
+        return epsilon
+    end
+
     function HoundElint:getAzimuth(src, dst, sensorError)
         local dirRad = mist.utils.getDir(mist.vec.sub(dst, src))
-        local randomError = gaussian(0, sensorError * 50) / 100
-        -- env.info("sensor is: ".. sensorError .. "passing in " .. sensorError*500 / 1000 .. " Error: " .. randomError )
-        local AzDeg = mist.utils.round((math.deg(dirRad) + randomError + 360) % 360, 3)
-        -- env.info("az: " .. math.deg(dirRad) .. " err: "..  randomError .. " final: " ..AzDeg)
-        return math.rad(AzDeg)
+        -- local elRad =  math.acos(mist.utils.get2DDist(src,dst)/mist.utils.get3DDist(src,dst))
+        -- tan(θ) = Opposite / Adjacent
+        -- 
+        local elRad = math.atan((dst.y-src.y)/mist.utils.get2DDist(src,dst))
+
+        local randomError = HoundElint.generateError(sensorError)
+        local AzDeg = mist.utils.round((math.deg(dirRad) + randomError.az + 360) % 360, 3)
+        local ElDeg = mist.utils.round((math.deg(elRad) + randomError.el), 3)
+        -- env.info("sensor is: ".. sensorError .. "passing in " .. sensorError*500 / 1000  )
+        -- env.info("az: " .. math.deg(dirRad) .. " err: "..  randomError.az .. " final: " ..AzDeg)
+        -- env.info("el: " .. math.deg(elRad) .. " err: "..  randomError.el .. " final: " ..ElDeg)
+        return math.rad(AzDeg),math.rad(ElDeg)
     end
 
     function HoundElint:getActiveRadars()
@@ -1575,15 +1624,20 @@ do
                 local platformPos = platform:getPosition().p
                 local platformId = platform:getID()
                 local platformIsStatic = false
+                local isAerialUnit = false
 
                 if platform:getCategory() == Object.Category.STATIC then
                     platformIsStatic = true
                     platformPos.y = platformPos.y + 60
                 else
                     local PlatformUnitCategory = platform:getDesc()["category"]
-                    if (self.addPositionError and ( PlatformUnitCategory == Unit.Category.HELICOPTER or PlatformUnitCategory == Unit.Category.AIRPLANE)) then
-                        platformPos = mist.getRandPointInCircle( platform:getPosition().p, self.positionErrorRadius)
+                    if PlatformUnitCategory == Unit.Category.HELICOPTER or PlatformUnitCategory == Unit.Category.AIRPLANE then
+                        isAerialUnit = true
+                        if self.addPositionError then
+                            platformPos = mist.getRandPointInCircle( platform:getPosition().p, self.positionErrorRadius)
+                        end                    
                     end
+
                     if PlatformUnitCategory == Unit.Category.GROUND_UNIT then
                         platformPos.y = platformPos.y + 15 
                     end
@@ -1594,9 +1648,12 @@ do
                         self.emitters[RadarUid] =
                             HoundContact:New(radar, self.coalitionId)
                     end
-                    local az = self:getAzimuth(platformPos, radarPos, self:getSensorError(platform))
-                    -- env.info(platform:getName() .. "-->".. RadarName .. " Az: " .. az )
-                    local datapoint = HoundElintDatapoint:New(platformId,platformPos, az, timer.getAbsTime(),platformIsStatic)
+                    local az,el = self:getAzimuth(platformPos, radarPos, self:getSensorError(platform))
+                    if not isAerialUnit then
+                        el = nil
+                    end
+                    -- env.info(platform:getName() .. "-->"..  mist.utils.tableShow(platform:getPosition().x) )
+                    local datapoint = HoundElintDatapoint:New(platformId,platformPos, az, el, timer.getAbsTime(),platformIsStatic)
                     self.emitters[RadarUid]:AddPoint(datapoint)
                 end
             end
@@ -1855,4 +1912,4 @@ do
 end
 
 env.info("Hound ELINT Loaded Successfully")
--- Build date 01-05-2021
+-- Build date 02-05-2021
