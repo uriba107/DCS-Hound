@@ -354,7 +354,6 @@ do
                         end
                     end
                 end
-
             end
         end
         return Radars
@@ -586,14 +585,6 @@ do
                 t.counter = 0
             end
         end
-
-        -- local players = {}
-        -- for i, player in ipairs(coalition.getPlayers(self.coalitionId)) do
-        --     env.info("player loop " .. i)
-        --     local gid = Unit.getGroup(player):getID()
-        --     local callsign = Unit.getCallsign(player)
-        --     env.info(Unit.getName(player).. " " .. callsign .. " " .. gid)
-        -- end
 
         for id, emitter in ipairs(sortedContacts) do
             local DCStypeName = emitter.DCStypeName

@@ -137,7 +137,8 @@ do
         end
 
         if msgObj.txt ~= nil then
-            trigger.action.outTextForCoalition(msgObj.coalition,msgObj.txt, HoundUtils.TTS.getReadTime(msgObj.txt,gSelf.settings.speed)+5)
+            local readTime =  HoundUtils.TTS.getReadTime(msgObj.tts,gSelf.settings.speed) or HoundUtils.TTS.getReadTime(msgObj.txt,gSelf.settings.speed)
+            trigger.action.outTextForCoalition(msgObj.coalition,msgObj.txt,readTime+2)
         end
 
         if gSelf.enabled and STTS ~= nil and msgObj.tts ~= nil then

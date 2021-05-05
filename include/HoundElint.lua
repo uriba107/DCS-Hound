@@ -435,7 +435,7 @@ do
 
     function HoundUtils.TTS.getVerbalLL(lat,lon)
         local hemi = HoundUtils.getHemispheres(lat,lon,true)
-        return hemi.NS .. " " .. HoundUtils.TTS.DecToDMS(lat)  ..  ", " .. hemi.EW .. " " .. HoundUtils.TTS.DecToDMS(lon)
+        return hemi.NS .. ", " .. HoundUtils.TTS.DecToDMS(lat)  ..  ", " .. hemi.EW .. ", " .. HoundUtils.TTS.DecToDMS(lon)
     end
 
 
@@ -453,7 +453,8 @@ do
         -- so 5 chars * 100wpm = 500 characters per min = 8.3 chars per second
         -- so lengh of msg / 8.3 = number of seconds needed to read it. rounded down to 8 chars per sec
         -- map function:  (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
-        local maxRateRatio = 4 -- can be chaned to 5 if windows TTSrate is up to 5x not 4x
+        if length == nil then return nil end
+        local maxRateRatio = 3 -- can be chaned to 5 if windows TTSrate is up to 5x not 4x
 
         speed = speed or 1.0
         isGoogle = isGoogle or false
@@ -485,7 +486,7 @@ do
         local distanceUnit = "meters"
         local distance = 0
         if distanceM < 1000 then
-            distance = mist.utils.round(distanceM / 50) * 50
+            distance = HoundUtils.roundToNearest(distanceM,50)
         else
             distance = mist.utils.round(distanceM / 1000,1)
             distanceUnit = "kilometers"
@@ -625,7 +626,11 @@ do
     end
 
     function HoundUtils.getRoundedElevationFt(elev)
-        return mist.utils.round(mist.utils.metersToFeet(elev) / 50 ) * 50
+        return HoundUtils.roundToNearest(mist.utils.metersToFeet(elev),50)
+    end
+
+    function HoundUtils.roundToNearest(input,nearest)
+        return mist.utils.round(input/nearest) * nearest
     end
 end-- --------------------------------------
 do
@@ -737,8 +742,6 @@ do
         end
         if datapoint.el ~=nil then
             datapoint:estimatePos()
-            
-
         end
 
         if length(self.dataPoints[datapoint.platformId]) < 2 then
@@ -868,7 +871,7 @@ do
     end
 
 
-    function HoundContact:getTextData(utmZone,wideGrid)
+    function HoundContact:getTextData(utmZone,MGRSdigits)
         if self.pos.p == nil then return end
         local GridPos = ""
         if utmZone then
@@ -876,23 +879,17 @@ do
         end
         GridPos = GridPos .. self.pos.grid.MGRSDigraph
         local BE = string.format("%03d",self.pos.be.brg) .. " for " .. self.pos.be.rng
-        if wideGrid then
+        if MGRSdigits == nil then
             return GridPos,BE
         end
-        local E = self.pos.grid.Easting
-        local N = self.pos.grid.Northing
-        while E >= 10 do
-            E = math.floor(E/10)
-        end
-        while N >= 10 do
-            N = math.floor(N/10)
-        end
-        GridPos = GridPos .. E .. N
+        local E = math.floor(self.pos.grid.Easting/math.pow(10,math.min(5,math.max(1,5-MGRSdigits))))
+        local N = math.floor(self.pos.grid.Northing/math.pow(10,math.min(5,math.max(1,5-MGRSdigits))))
+        GridPos = GridPos .. " " .. E .. " " .. N
         
         return GridPos,BE
     end
 
-    function HoundContact:getTtsData(utmZone,wideGrid)
+    function HoundContact:getTtsData(utmZone,MGRSdigits)
         if self.pos.p == nil then return end
         local phoneticGridPos = ""
         if utmZone then
@@ -902,18 +899,12 @@ do
         phoneticGridPos =  phoneticGridPos ..  HoundUtils.TTS.toPhonetic(self.pos.grid.MGRSDigraph)
         local phoneticBulls = HoundUtils.TTS.toPhonetic(string.format("%03d",self.pos.be.brg)) 
                                 .. " for " .. self.pos.be.rng
-        if wideGrid then
+        if MGRSdigits==nil then
             return phoneticGridPos,phoneticBulls
         end
-        local E = self.pos.grid.Easting
-        local N = self.pos.grid.Northing
-        while E >= 10 do
-            E = math.floor(E/10)
-        end
-        while N >= 10 do
-            N = math.floor(N/10)
-        end
-            phoneticGridPos = phoneticGridPos .. " " .. HoundUtils.TTS.toPhonetic(E) .. " " .. HoundUtils.TTS.toPhonetic(N)
+        local E = math.floor(self.pos.grid.Easting/math.pow(10,math.min(5,math.max(1,5-MGRSdigits))))
+        local N = math.floor(self.pos.grid.Northing/math.pow(10,math.min(5,math.max(1,5-MGRSdigits))))
+        phoneticGridPos = phoneticGridPos .. " " .. HoundUtils.TTS.toPhonetic(E) .. " " .. HoundUtils.TTS.toPhonetic(N)
 
         return phoneticGridPos,phoneticBulls
     end
@@ -929,21 +920,27 @@ do
 
     function HoundContact:generateTtsReport()
         if self.pos.p == nil then return end
-        local phoneticGridPos,phoneticBulls = self:getTtsData(true)
-        local msg =  self.typeName .. " " .. (self.uid % 100) ..", bullz " .. phoneticBulls .. ", grid ".. phoneticGridPos
-        msg = msg .. ", position " .. HoundUtils.TTS.getVerbalLL(self.pos.LL.lat,self.pos.LL.lon) .. " at " .. HoundUtils.getRoundedElevationFt(self.pos.elev) .. "feet MSL"
-        msg = msg .. ", I repeat " .. HoundUtils.TTS.getVerbalLL(self.pos.LL.lat,self.pos.LL.lon) .. " at " .. HoundUtils.getRoundedElevationFt(self.pos.elev) .. "feet MSL"
-        msg = msg .. ", Ellipse " ..  HoundUtils.TTS.simplfyDistance(self.uncertenty_radius.major) .. " by " ..  HoundUtils.TTS.simplfyDistance(self.uncertenty_radius.minor) .. " aligned bearing " .. HoundUtils.TTS.toPhonetic(string.format("%03d",self.uncertenty_radius.az))
+        local phoneticGridPos,phoneticBulls = self:getTtsData(true,3)
+        local msg =  self.typeName .. " " .. (self.uid % 100) ..", bullz " .. phoneticBulls -- .. ", grid ".. phoneticGridPos
+        msg = msg .. ", position " .. HoundUtils.TTS.getVerbalLL(self.pos.LL.lat,self.pos.LL.lon)
+        msg = msg .. ", I repeat " .. HoundUtils.TTS.getVerbalLL(self.pos.LL.lat,self.pos.LL.lon)
+        msg = msg .. ", MGRS " .. phoneticGridPos
+        msg = msg .. ", elevation  " .. HoundUtils.getRoundedElevationFt(self.pos.elev) .. "feet MSL"
+        msg = msg .. ", accuracy " .. HoundUtils.TTS.getVerbalConfidenceLevel( self.uncertenty_radius.r )
+        msg = msg .. ", ellipse " ..  HoundUtils.TTS.simplfyDistance(self.uncertenty_radius.major) .. " by " ..  HoundUtils.TTS.simplfyDistance(self.uncertenty_radius.minor) .. ", aligned bearing " .. HoundUtils.TTS.toPhonetic(string.format("%03d",self.uncertenty_radius.az))
         msg = msg .. ", first seen " .. HoundUtils.TTS.getTtsTime(self.first_seen) .. ", last seen " .. HoundUtils.TTS.getVerbalContactAge(self.last_seen) .. " ago. " .. HoundUtils:getControllerResponse()
         return msg
     end
 
     function HoundContact:generateTextReport()
         if self.pos.p == nil then return end
-        local GridPos,BePos = self:getTextData(true)
+        local GridPos,BePos = self:getTextData(true,3)
         local msg =  self.typeName .. " " .. (self.uid % 100) .."\n"
-        msg = msg .. "BE: " .. BePos .. " (grid ".. GridPos ..")\n"
-        msg = msg .. "LL: " .. HoundUtils.Text.getLL(self.pos.LL.lat,self.pos.LL.lon)..", Elev: " .. HoundUtils.getRoundedElevationFt(self.pos.elev) .. "ft\n"
+        msg = msg .. "BE: " .. BePos .. "\n" -- .. " (grid ".. GridPos ..")\n"
+        msg = msg .. "LL: " .. HoundUtils.Text.getLL(self.pos.LL.lat,self.pos.LL.lon).."\n"
+        msg = msg .. "MGRS: " .. GridPos .. "\n"
+        msg = msg .. "Elev: " .. HoundUtils.getRoundedElevationFt(self.pos.elev) .. "ft\n"
+        msg = msg .. "Accuracy: " .. HoundUtils.TTS.getVerbalConfidenceLevel( self.uncertenty_radius.r ) .. "\n"
         msg = msg .. "Ellipse: " ..  self.uncertenty_radius.major .. " by " ..  self.uncertenty_radius.minor .. " aligned bearing " .. string.format("%03d",self.uncertenty_radius.az) .. "\n"
         msg = msg .. "First detected: " .. HoundUtils.Text.getTime(self.first_seen) .. " Last Contact: " ..  HoundUtils.TTS.getVerbalContactAge(self.last_seen) .. " ago. " .. HoundUtils:getControllerResponse()
         return msg
@@ -1197,7 +1194,8 @@ do
         end
 
         if msgObj.txt ~= nil then
-            trigger.action.outTextForCoalition(msgObj.coalition,msgObj.txt, HoundUtils.TTS.getReadTime(msgObj.txt,gSelf.settings.speed)+5)
+            local readTime =  HoundUtils.TTS.getReadTime(msgObj.tts,gSelf.settings.speed) or HoundUtils.TTS.getReadTime(msgObj.txt,gSelf.settings.speed)
+            trigger.action.outTextForCoalition(msgObj.coalition,msgObj.txt,readTime+2)
         end
 
         if gSelf.enabled and STTS ~= nil and msgObj.tts ~= nil then
@@ -1589,7 +1587,6 @@ do
                         end
                     end
                 end
-
             end
         end
         return Radars
@@ -1822,14 +1819,6 @@ do
             end
         end
 
-        -- local players = {}
-        -- for i, player in ipairs(coalition.getPlayers(self.coalitionId)) do
-        --     env.info("player loop " .. i)
-        --     local gid = Unit.getGroup(player):getID()
-        --     local callsign = Unit.getCallsign(player)
-        --     env.info(Unit.getName(player).. " " .. callsign .. " " .. gid)
-        -- end
-
         for id, emitter in ipairs(sortedContacts) do
             local DCStypeName = emitter.DCStypeName
             local assigned = emitter.typeAssigned
@@ -1912,4 +1901,4 @@ do
 end
 
 env.info("Hound ELINT Loaded Successfully")
--- Build date 02-05-2021
+-- Build date 06-05-2021

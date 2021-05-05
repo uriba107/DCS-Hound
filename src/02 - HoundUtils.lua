@@ -80,7 +80,7 @@ do
 
     function HoundUtils.TTS.getVerbalLL(lat,lon)
         local hemi = HoundUtils.getHemispheres(lat,lon,true)
-        return hemi.NS .. " " .. HoundUtils.TTS.DecToDMS(lat)  ..  ", " .. hemi.EW .. " " .. HoundUtils.TTS.DecToDMS(lon)
+        return hemi.NS .. ", " .. HoundUtils.TTS.DecToDMS(lat)  ..  ", " .. hemi.EW .. ", " .. HoundUtils.TTS.DecToDMS(lon)
     end
 
 
@@ -98,7 +98,8 @@ do
         -- so 5 chars * 100wpm = 500 characters per min = 8.3 chars per second
         -- so lengh of msg / 8.3 = number of seconds needed to read it. rounded down to 8 chars per sec
         -- map function:  (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
-        local maxRateRatio = 4 -- can be chaned to 5 if windows TTSrate is up to 5x not 4x
+        if length == nil then return nil end
+        local maxRateRatio = 3 -- can be chaned to 5 if windows TTSrate is up to 5x not 4x
 
         speed = speed or 1.0
         isGoogle = isGoogle or false
@@ -130,7 +131,7 @@ do
         local distanceUnit = "meters"
         local distance = 0
         if distanceM < 1000 then
-            distance = mist.utils.round(distanceM / 50) * 50
+            distance = HoundUtils.roundToNearest(distanceM,50)
         else
             distance = mist.utils.round(distanceM / 1000,1)
             distanceUnit = "kilometers"
@@ -270,6 +271,10 @@ do
     end
 
     function HoundUtils.getRoundedElevationFt(elev)
-        return mist.utils.round(mist.utils.metersToFeet(elev) / 50 ) * 50
+        return HoundUtils.roundToNearest(mist.utils.metersToFeet(elev),50)
+    end
+
+    function HoundUtils.roundToNearest(input,nearest)
+        return mist.utils.round(input/nearest) * nearest
     end
 end
