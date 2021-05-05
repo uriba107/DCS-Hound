@@ -45,3 +45,4 @@ function update_mission {
 compile
 update_mission
 update_mission "demo_mission/Syria_POC" "Hound_Demo_SyADFGCI"
+update_mission "demo_mission/Syria_HARM" "SpudHound"
