@@ -316,16 +316,16 @@ do
             ["UH-1H"] = {precision = 6.0},
             ["KA-27"] = {precision = 6.0},
             -- Airplanes
-            ["C-130"] = {precision = 1.0},
-            ["C-17A"] = {precision = 1.0},
-            ["S-3B"] = {precision = 1.5},
-            ["E-3A"] = {precision = 2.0},
-            ["E-2D"] = {precision = 2.0},
-            ["Tu-95MS"] = {precision = 1.0},
-            ["Tu-142"] = {precision = 1.0},
-            ["IL-76MD"] = {precision = 1.0},
-            ["An-30M"] = {precision = 1.0},
-            ["A-50"] = {precision = 2.0},
+            ["C-130"] = {precision = 1.5},
+            ["C-17A"] = {precision = 1.5},
+            ["S-3B"] = {precision = 2.0},
+            ["E-3A"] = {precision = 5.0},
+            ["E-2D"] = {precision = 5.0},
+            ["Tu-95MS"] = {precision = 1.5},
+            ["Tu-142"] = {precision = 1.5},
+            ["IL-76MD"] = {precision = 1.5},
+            ["An-30M"] = {precision = 1.5},
+            ["A-50"] = {precision = 5},
             ["An-26B"] = {precision = 2.0},
             ["Su-25T"] = {precision = 2.5},
             ["AJS37"] = {precision = 2.5}
@@ -405,10 +405,14 @@ do
     end
 
     function HoundUtils.TTS.getVerbalConfidenceLevel(confidenceRadius)
-        if confidenceRadius <= 500 then return "Very High" end 
-        if confidenceRadius <= 1000 then return "High" end 
-        if confidenceRadius <= 2000 then return "Medium" end 
-        return "low"
+        local score={
+            "Very High",
+            "High",
+            "Medium",
+            "Low",
+            "Very Low"
+        }
+        return score[math.min(#score,math.max(1,math.ceil(confidenceRadius/500)))]
     end
 
     function HoundUtils.TTS.getVerbalContactAge(timestamp,isSimple)
@@ -1901,4 +1905,4 @@ do
 end
 
 env.info("Hound ELINT Loaded Successfully")
--- Build date 07-05-2021
+-- Build date 08-05-2021

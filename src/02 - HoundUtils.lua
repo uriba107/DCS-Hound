@@ -50,10 +50,14 @@ do
     end
 
     function HoundUtils.TTS.getVerbalConfidenceLevel(confidenceRadius)
-        if confidenceRadius <= 500 then return "Very High" end 
-        if confidenceRadius <= 1000 then return "High" end 
-        if confidenceRadius <= 2000 then return "Medium" end 
-        return "low"
+        local score={
+            "Very High",
+            "High",
+            "Medium",
+            "Low",
+            "Very Low"
+        }
+        return score[math.min(#score,math.max(1,math.ceil(confidenceRadius/500)))]
     end
 
     function HoundUtils.TTS.getVerbalContactAge(timestamp,isSimple)
