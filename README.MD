@@ -26,7 +26,8 @@ Same goes to Fast movers like the Viggen or the Su-25T. they can dash into enemy
 
 Remember that the system is using a simulated DF to determin the bearing of the radar from the platform. Low precision systems will cause the calculated position to be with a higher ellipse of uncertenty for radar position. below you can find the list of working units and their sensor precision.
 
-``` Note: While currently not implemented. Intention of including both Viggen and the Su-25T is that they will only be able to participate if they are carrying their ELINT and SEAD pods respectivly ```
+``` Note: While currently not implemented. Intention of including both Viggen and the Su-25T is that they will only be able to participate if they are carrying their ELINT and SEAD pods respectivly ```  
+
 ``` Currently resolution of platform is being reworked. It now using defraction based on antenna size and radar transmission wave length - table will be updated soon. Thank you TLTeo for helping out with the physics of it ```
 
 ## Available assets
