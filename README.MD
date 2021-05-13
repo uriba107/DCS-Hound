@@ -27,6 +27,7 @@ Same goes to Fast movers like the Viggen or the Su-25T. they can dash into enemy
 Remember that the system is using a simulated DF to determin the bearing of the radar from the platform. Low precision systems will cause the calculated position to be with a higher ellipse of uncertenty for radar position. below you can find the list of working units and their sensor precision.
 
 ``` Note: While currently not implemented. Intention of including both Viggen and the Su-25T is that they will only be able to participate if they are carrying their ELINT and SEAD pods respectivly ```
+``` Currently resolution of platform is being reworked. It now using defraction based on antenna size and radar transmission wave length - table will be updated soon. Thank you TLTeo for helping out with the physics of it ```
 
 ## Available assets
 ### Airborn assets
@@ -34,43 +35,44 @@ Remember that the system is using a simulated DF to determin the bearing of the 
 ---
 | Platform  | Precision (degrees)|
 | --------  | -------- |
-| C-130     | 1.0 |
-| C-17      | 1.0 |
-| An-30M    | 1.0 |
-| Tu-95     | 1.0 |
-| Tu-142    | 1.0 |
-| IL-76MD   | 1.0 |
-| S-3B      | 1.5 |
-| E-2D      | 2.0 |
-| E-3A      | 2.0 |
-| An-26B    | 2.0 |
-| A-50      | 2.0 |
-| Viggen    | 2.5 |
-| Su-25T    | 2.5 |  
-
+| C-130     | ~~1.0~~ |
+| C-17      | ~~1.0~~ |
+| An-30M    | ~~1.0~~ |
+| Tu-95     | ~~1.0~~ |
+| Tu-142    | ~~1.0~~ |
+| IL-76MD   | ~~1.0~~ |
+| S-3B      | ~~1.5~~ |
+| E-2D      | ~~2.0~~ |
+| E-3A      | ~~2.0~~ |
+| An-26B    | ~~2.0~~ |
+| A-50      | ~~2.0~~ |
+| Viggen    | ~~2.5~~ |
+| Su-25T    | ~~2.5~~ |  
+  
 #### Helicopters
 ---
 | Platform  | Accuracy (degrees)|
 | --------  | --------  |
-| CH-47D    | 2.5       |
-| CH-53E    | 2.5       |
-| MIL-26    | 2.5       |
-| UH-60A    | 4.0       |
-| SH-60B    | 4.0       |
-| Mi-8MT    | 4.0       |
-| UH-1H     | 6.0       |
-| Ka-27     | 6.0       |
+| CH-47D    | ~~2.5~~       |
+| CH-53E    | ~~2.5~~       |
+| MIL-26    | ~~2.5~~       |
+| UH-60A    | ~~4.0~~       |
+| SH-60B    | ~~4.0~~       |
+| Mi-8MT    | ~~4.0~~       |
+| UH-1H     | ~~6.0~~       |
+| Ka-27     | ~~6.0~~       |  
 
 ### Ground Units
 | Platform  | Accuracy (degrees)|
 | --------  | --------  |
-| SPK-11    | 0.5       |
-| MLRS FDDM | 0.5       |
+| SPK-11    | ~~0.5~~       |
+| MLRS FDDM | ~~0.5~~       |  
 
 ### Static Objects
 | Platform  | Accuracy (degrees)|
 | --------  | --------  |
-| Comms tower M | 0.15 |
+| Comms tower M | ~~0.15~~ |
+
 
 ## Can I haz syntax pls?
 Yes you can.

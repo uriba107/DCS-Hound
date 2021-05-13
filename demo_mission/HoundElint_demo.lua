@@ -46,6 +46,11 @@ do
     function testing.removePlatform(args)
         args["houndInstance"]:removePlatform(args["unit_name"])
     end
+
+    function testing.getContacts(hound)
+        env.info(mist.utils.tableShow(hound:getContacts()))
+    end
+
     testing.Menu = missionCommands.addSubMenu("Hound Testing")
     missionCommands.addCommand("Destroy Radar",testing.Menu,Unit.destroy,Unit.getByName("SA-3 P-19"))
     missionCommands.addCommand("Destroy C17",testing.Menu,Unit.destroy,Unit.getByName("ELINT_C17"))
@@ -53,5 +58,6 @@ do
     missionCommands.addCommand("Add transmitter",testing.Menu,testing.addTransmitter,{houndCommsInstance=Elint_blue.controller,unit_name="Migariya_Elint"})
     missionCommands.addCommand("Destroy transmitter",testing.Menu,Unit.destroy,	Unit.getByName("Migariya_Elint"))
     missionCommands.addCommand("Remove transmitter",testing.Menu,testing.removeTransmitter,Elint_blue.controller)
+    missionCommands.addCommand("Get Contacts",testing.Menu,testing.getContacts,Elint_blue)
 
 end

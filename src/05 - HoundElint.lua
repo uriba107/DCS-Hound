@@ -56,8 +56,8 @@ do
             local mainCategoty = canidate:getCategory()
             local type = canidate:getTypeName()
     
-            if setContains(PlatformData,mainCategoty) then
-                if setContains(PlatformData[mainCategoty],type) then
+            if setContains(HoundDB.Platform,mainCategoty) then
+                if setContains(HoundDB.Platform[mainCategoty],type) then
                     for k,v in pairs(self.platform) do
                         if v == canidate then
                             return
@@ -68,8 +68,6 @@ do
             end
         end
     end
-
-
 
     function HoundElint:removePlatform(platformName)
         local canidate = Unit.getByName(platformName)
@@ -106,7 +104,6 @@ do
         end
     end
 
-
     function HoundElint:configureController(args)
         self.controller:updateSettings(args)
 
@@ -116,11 +113,9 @@ do
         self.atis:updateSettings(args)
     end
 
-
     --[[
         Toggle functions
     --]]
-
 
     function HoundElint:toggleController(state,textMode)
         if STTS ~= nil  then
@@ -161,7 +156,6 @@ do
         end
     end
 
-
     function HoundElint:toggleATIS(state) 
         if STTS ~= nil then
             if state == true and type(state) == "boolean" then
@@ -186,9 +180,9 @@ do
     end
 
     function HoundElint:disableMarkers()
-        self.useMarkers = false
-        
+        self.useMarkers = false 
     end
+    
     --[[
         ATIS functions
     --]]
@@ -198,8 +192,9 @@ do
         local numberEWR = 0
 
         if length(gSelf.emitters) > 0 then
-            if gSelf.atis.loop.last_update ~= nil then
-                if timer.getTime() - gSelf.atis.loop.last_update < 120 then return end
+            if (gSelf.atis.loop.last_count ~= nil and gSelf.atis.loop.last_update ~= nil) then
+                if ((gSelf.atis.loop.last_count == #gSelf.emitters) and
+                     ((timer.getAbsTime() - gSelf.atis.loop.last_update) < 120)) then return end
             end
             for uid, emitter in pairs(gSelf.emitters) do
                 if emitter.pos.p ~= nil then
@@ -229,8 +224,8 @@ do
         }
 
         gSelf.atis.loop.msg = msgObj
-        gSelf.atis.loop.last_update = timer.getTime()
-
+        gSelf.atis.loop.last_count = #gSelf.emitters
+        gSelf.atis.loop.last_update =  timer.getAbsTime()
     end
 
 
@@ -296,20 +291,23 @@ do
         Actual work functions
     --]]
 
-    function HoundElint:getSensorError(platform)
+    function HoundElint:getSensorPrecision(platform,emitterBand)
         local mainCategoty = platform:getCategory()
         local type = platform:getTypeName()
 
-        if setContains(PlatformData,mainCategoty) then
-            if setContains(PlatformData[mainCategoty],type) then
-                return PlatformData[mainCategoty][type].precision
+        if setContains(HoundDB.Platform,mainCategoty) then
+            if setContains(HoundDB.Platform[mainCategoty],type) then
+                local antenna_size = HoundDB.Platform[mainCategoty][type].antenna.size *  HoundDB.Platform[mainCategoty][type].antenna.factor
+                -- local precision =  HoundUtils.getDefraction(emitterBand,antenna_size)
+                -- env.info(type .. " Precision: " .. antenna_size .. "m for "..emitterBand.. " Band = " .. precision .. " deg")
+                return  HoundUtils.getDefraction(emitterBand,antenna_size) -- precision
             end
         end
         return 15.0
     end
 
     function HoundElint.generateError(precision)
-        local MAG = math.abs(gaussian(0, precision * 50) / 100)
+        local MAG = math.abs(gaussian(0, precision * 50) / 50)
         local ROT = math.random() * 2 * math.pi
         -- x` = x*cos(theta)-y*sin(theta)
         -- y' = x*sin(theta)+y*cos(theta)
@@ -412,17 +410,17 @@ do
                         self.emitters[RadarUid] =
                             HoundContact:New(radar, self.coalitionId)
                     end
-                    local az,el = self:getAzimuth(platformPos, radarPos, self:getSensorError(platform))
+                    local az,el = self:getAzimuth(platformPos, radarPos, self:getSensorPrecision(platform,self.emitters[RadarUid].band))
                     if not isAerialUnit then
                         el = nil
                     end
                     -- env.info(platform:getName() .. "-->"..  mist.utils.tableShow(platform:getPosition().x) )
-                    local datapoint = HoundElintDatapoint:New(platformId,platformPos, az, el, timer.getAbsTime(),platformIsStatic)
+                    local datapoint = HoundElintDatapoint:New(platform,platformPos, az, el, timer.getAbsTime(),platformIsStatic)
                     self.emitters[RadarUid]:AddPoint(datapoint)
                 end
             end
-        end
-    end
+        end 
+    end 
 
     function HoundElint:Process()
         local currentTime = timer.getTime() + 0.2
@@ -608,7 +606,6 @@ do
         end
     end
 
-
     function HoundElint:addRadarRadioItem(emitter)
         local DCStypeName = emitter.DCStypeName
         local assigned = emitter.typeAssigned
@@ -659,10 +656,32 @@ do
         end
     end
 
-
     function HoundElint:removeRadioMenu()
         missionCommands.removeItemForCoalition(self.coalitionId,
                                                self.radioMenu.root)
         self.radioMenu = {}
+    end
+
+    function HoundElint:getContacts()
+        local contacts = {
+            ewr = { contacts = {}
+                },
+            sam = {
+                    contacts = {}
+                }
+        }
+        for uid,emitter in pairs(self.emitters) do
+            local contact = emitter:export()
+            if contact ~= nil then
+                if emitter.isEWR then
+                    table.insert(contacts.ewr.contacts,contact)
+                else
+                    table.insert(contacts.sam.contacts,contact)
+                end
+            end
+        end
+        contacts.ewr.count = #contacts.ewr.contacts or 0
+        contacts.sam.count = #contacts.sam.contacts or 0
+        return contacts
     end
 end

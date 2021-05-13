@@ -6,14 +6,15 @@ do
     SA6_South = Group.getByName("SYR_SA-6_S")
     SEAD_PLAYER_GRP = Group.getByName("SEAD_USER")
 
-    SA6_North:enableEmission(false)
-    SA6_South:enableEmission(false)
-    trigger.action.activateGroup(SA6_North)
-    trigger.action.activateGroup(SA6_South)
+    -- SA6_North:enableEmission(false)
+    -- SA6_South:enableEmission(false)
+
 
     SA6GoLive = function ()
-        SA6_North:enableEmission(true)
-        SA6_South:enableEmission(true)
+        -- SA6_North:enableEmission(true)
+        -- SA6_South:enableEmission(true)
+        trigger.action.activateGroup(SA6_North)
+        trigger.action.activateGroup(SA6_South)
     end
 
     RestartMission = function()

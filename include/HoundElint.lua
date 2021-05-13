@@ -2,252 +2,301 @@
 env.info("Hound ELINT Loading...")
 -- --------------------------------------
 -- Radar Database
+HoundDB = {}
 do
-    HoundSamDB = {
+    HoundDB.Sam = {
         -- EWR --
         ['p-19 s-125 sr'] = {
             ['Name'] = "Flat Face",
             ['Assigned'] = "SA-2/3",
-            ['Role'] = "SR"
+            ['Role'] = "SR",
+            ['Band'] = 'C'
         },
         ['1L13 EWR'] = {
             ['Name'] = "EWR",
             ['Assigned'] = "EWR",
-            ['Role'] = "EWR"
+            ['Role'] = "EWR",
+            ['Band'] = 'A'
         },
         ['55G6 EWR'] = {
             ['Name'] = "EWR",
             ['Assigned'] = "EWR",
-            ['Role'] = "EWR"
+            ['Role'] = "EWR",
+            ['Band'] = 'A'
         },
         -- SAM radars --
         ['SNR_75V'] = {
             ['Name'] = "Fan-song",
             ['Assigned'] = "SA-2",
-            ['Role'] = "SNR"
+            ['Role'] = "SNR",
+            ['Band'] = 'E'
         },
         ['snr s-125 tr'] = {
             ['Name'] = "Low Blow",
             ['Assigned'] = "SA-3",
-            ['Role'] = "TR"
+            ['Role'] = "TR",
+            ['Band'] = 'D'
         },
         ['Kub 1S91 str'] = {
             ['Name'] = "Straight Flush",
             ['Assigned'] = "SA-6",
-            ['Role'] = "STR"
+            ['Role'] = "STR",
+            ['Band'] = 'G'
         },
         ['Osa 9A33 ln'] = {
             ['Name'] = "Osa",
             ['Assigned'] = "SA-8",
-            ['Role'] = "STR"
+            ['Role'] = "STR",
+            ['Band'] = 'H'
         },
         ['S-300PS 40B6MD sr'] = {
             ['Name'] = "Clam Shell",
             ['Assigned'] = "SA-10",
-            ['Role'] = "SR"
+            ['Role'] = "SR",
+            ['Band'] = 'I'
         },
         ['S-300PS 64H6E sr'] = {
             ['Name'] = "Big Bird",
             ['Assigned'] = "SA-10",
-            ['Role'] = "SR"
+            ['Role'] = "SR",
+            ['Band'] = 'C'
         },
         ['S-300PS 40B6M tr'] = {
             ['Name'] = "Tomb Stone",
             ['Assigned'] = "SA-10",
-            ['Role'] = "TR"
+            ['Role'] = "TR",
+            ['Band'] = 'J'
         },
 
         ['SA-11 Buk SR 9S18M1'] = {
             ['Name'] = "Snow Drift",
             ['Assigned'] = "SA-11",
-            ['Role'] = "SR"
+            ['Role'] = "SR",
+            ['Band'] = 'G'
         },
         ['SA-11 Buk LN 9A310M1'] = {
             ['Name'] = "SA-11 LN/TR",
             ['Assigned'] = "SA-11",
-            ['Role'] = "TR"
+            ['Role'] = "TR",
+            ['Band'] = 'H'
         },
         ['Tor 9A331'] = {
             ['Name'] = "Tor",
             ['Assigned'] = "SA-15",
-            ['Role'] = "STR"
+            ['Role'] = "STR",
+            ['Band'] = 'F'
         },
         ['Strela-1 9P31'] = {
             ['Name'] = "SA-9",
             ['Assigned'] = "SA-9",
-            ['Role'] = "TR"
+            ['Role'] = "TR",
+            ['Band'] = 'K'
         },
         ['Strela-10M3'] = {
             ['Name'] = "SA-13",
             ['Assigned'] = "SA-13",
-            ['Role'] = "TR"
+            ['Role'] = "TR",
+            ['Band'] = 'J'
         },
         ['Patriot str'] = {
             ['Name'] = "Patriot",
             ['Assigned'] = "Patriot",
-            ['Role'] = "STR"
+            ['Role'] = "STR",
+            ['Band'] = 'K'
         },
         ['Hawk sr'] = {
             ['Name'] = "Hawk SR",
             ['Assigned'] = "Hawk",
-            ['Role'] = "SR"
+            ['Role'] = "SR",
+            ['Band'] = 'C'
         },
         ['Hawk tr'] = {
             ['Name'] = "Hawk TR",
             ['Assigned'] = "Hawk",
-            ['Role'] = "TR"
+            ['Role'] = "TR",
+            ['Band'] = 'J'
         },
         ['Hawk cwar'] = {
             ['Name'] = "Hawk CWAR",
             ['Assigned'] = "Hawk",
-            ['Role'] = "TR"
+            ['Role'] = "TR",
+            ['Band'] = 'J'
         },
         ['Roland ADS'] = {
             ['Name'] = "Roland TR",
             ['Assigned'] = "Roland",
-            ['Role'] = "TR"
+            ['Role'] = "TR",
+            ['Band'] = 'H'
         },
         ['Roland Radar'] = {
             ['Name'] = "Roland SR",
             ['Assigned'] = "Roland",
-            ['Role'] = "SR"
+            ['Role'] = "SR",
+            ['Band'] = 'C'
         },
         ['Gepard'] = {
             ['Name'] = "Gepard",
             ['Assigned'] = "Gepard",
-            ['Role'] = "STR"
+            ['Role'] = "STR",
+            ['Band'] = 'E'
         },
         ['rapier_fsa_blindfire_radar'] = {
             ['Name'] = "Rapier",
             ['Assigned'] = "Rapier",
-            ['Role'] = "TR"
+            ['Role'] = "TR",
+            ['Band'] = 'D'
         },
         ['rapier_fsa_launcher'] = {
             ['Name'] = "Rapier",
             ['Assigned'] = "Rapier",
-            ['Role'] = "TR"
+            ['Role'] = "TR",
+            ['Band'] = 'J'
         },
         ['HQ-7_STR_SP'] = {
             ['Name'] = "HQ-7",
             ['Assigned'] = "HQ-7",
-            ['Role'] = "STR"
+            ['Role'] = "SR",
+            ['Band'] = 'F'
         },
         ['HQ-7_LN_SP'] = {
             ['Name'] = "HQ-7",
             ['Assigned'] = "HQ-7",
-            ['Role'] = "TR"
+            ['Role'] = "TR",
+            ['Band'] = 'J'
         },
         ['2S6 Tunguska'] = {
             ['Name'] = "Tunguska",
             ['Assigned'] = "Tunguska",
-            ['Role'] = "STR"
+            ['Role'] = "STR",
+            ['Band'] = 'F'
         },
         ['ZSU-23-4 Shilka'] = {
             ['Name'] = "Shilka",
             ['Assigned'] = "Shilka",
-            ['Role'] = "TR"
+            ['Role'] = "TR",
+            ['Band'] = 'J'
         },
         ['Dog Ear radar'] = {
             ['Name'] = "AAA SR",
             ['Assigned'] = "AAA",
-            ['Role'] = "SR"
+            ['Role'] = "SR",
+            ['Band'] = 'G'
         },
         -- highdigitsams radars --
         ['S-300PS 64H6E TRAILER sr'] = {
             ['Name'] = "Big Bird",
             ['Assigned'] = "SA-10",
-            ['Role'] = "SR"
+            ['Role'] = "SR",
+            ['Band'] = 'C'
         },
         ['S-300PS SA-10B 40B6MD MAST sr'] = {
             ['Name'] = "Clam Shell",
             ['Assigned'] = "SA-10",
-            ['Role'] = "SR"
+            ['Role'] = "SR",
+            ['Band'] = 'I'
         },
         ['S-300PS 40B6M MAST tr'] = {
             ['Name'] = "Flap Lid",
             ['Assigned'] = "SA-10",
-            ['Role'] = "TR"
+            ['Role'] = "TR",
+            ['Band'] = 'J'
         },
         ['S-300PS 30H6 TRAILER tr'] = {
             ['Name'] = "Flap Lid",
             ['Assigned'] = "SA-10",
-            ['Role'] = "TR"
+            ['Role'] = "TR",
+            ['Band'] = 'J'
         },
         ['S-300PS 30N6 TRAILER tr'] = {
             ['Name'] = "Flap Lid",
             ['Assigned'] = "SA-10",
-            ['Role'] = "TR"
+            ['Role'] = "TR",
+            ['Band'] = 'J'
         },
         ['S-300PMU1 40B6MD sr'] = {
             ['Name'] = "Clam Shell",
             ['Assigned'] = "SA-10",
-            ['Role'] = "SR"
+            ['Role'] = "SR",
+            ['Band'] = 'I'
         },
         ['S-300PMU1 64N6E sr'] = {
             ['Name'] = "Big Bird",
             ['Assigned'] = "SA-10",
-            ['Role'] = "SR"
+            ['Role'] = "SR",
+            ['Band'] = 'C'
         },
         ['S-300PMU1 30N6E tr'] = {
             ['Name'] = "Flap Lid",
             ['Assigned'] = "SA-10",
-            ['Role'] = "TR"
+            ['Role'] = "TR",
+            ['Band'] = 'J'
         },
         ['S-300PMU1 40B6M tr'] = {
             ['Name'] = "Grave Stone",
             ['Assigned'] = "SA-10",
-            ['Role'] = "TR"
+            ['Role'] = "TR",
+            ['Band'] = 'J'
         },
         ['S-300V 9S15 sr'] = {
             ['Name'] = 'Bill Board',
             ['Assigned'] = "SA-12",
-            ['Role'] = "SR"
+            ['Role'] = "SR",
+            ['Band'] = 'E'
         },
         ['S-300V 9S19 sr'] = {
             ['Name'] = 'High Screen',
             ['Assigned'] = "SA-12",
-            ['Role'] = "SR"
+            ['Role'] = "SR",
+            ['Band'] = 'C'
         },
         ['S-300V 9S32 tr'] = {
             ['Name'] = 'Grill Pan',
             ['Assigned'] = "SA-12",
-            ['Role'] = "TR"
+            ['Role'] = "TR",
+            ['Band'] = 'J'
         },
         ['S-300PMU2 92H6E tr'] = {
             ['Name'] = 'Grave Stone',
             ['Assigned'] = "SA-20B",
-            ['Role'] = "TR"
+            ['Role'] = "TR",
+            ['Band'] = 'I'
         },
         ['S-300PMU2 64H6E2 sr'] = {
             ['Name'] = "Big Bird",
             ['Assigned'] = "SA-20B",
-            ['Role'] = "SR"
+            ['Role'] = "SR",
+            ['Band'] = 'C'
         },
         ['S-300VM 9S15M2 sr'] = {
             ['Name'] = 'Bill Board M',
             ['Assigned'] = "SA-23",
-            ['Role'] = "SR"
+            ['Role'] = "SR",
+            ['Band'] = 'E'
         },
         ['S-300VM 9S19M2 sr'] = {
             ['Name'] = 'High Screen M',
             ['Assigned'] = "SA-23",
-            ['Role'] = "SR"
+            ['Role'] = "SR",
+            ['Band'] = 'C'
         },
-        ['S-300VM 9S32ME tr']  = {
+        ['S-300VM 9S32ME tr'] = {
             ['Name'] = 'Grill Pan M',
             ['Assigned'] = "SA-23",
-            ['Role'] = "TR"
+            ['Role'] = "TR",
+            ['Band'] = 'K'
         },
         ['SA-17 Buk M1-2 LN 9A310M1-2'] = {
             ['Name'] = "SA-17 LN/TR",
             ['Assigned'] = "SA-17",
-            ['Role'] = "TR"
+            ['Role'] = "TR",
+            ['Band'] = 'H'
         },
         ['34Ya6E Gazetchik E decoy'] = {
             ['Name'] = "Flap Lid",
             ['Assigned'] = "SA-10",
-            ['Role'] = "Decoy"
-        },
+            ['Role'] = "Decoy",
+            ['Band'] = 'J'
+        }
     }
 end
 
@@ -292,44 +341,54 @@ do
     }
 end
 
-do
-    useDecMin = {
-        ["F-16C_blk50"] = true,
-        ["A-10C"] = true
-    }
-end
+do useDecMin = {["F-16C_blk50"] = true, ["A-10C"] = true} end
 
 do
-    PlatformData = {
-        [Object.Category.STATIC] = {["Comms tower M"] = {precision = 0.15}},
+    HoundDB.Platform = {
+        [Object.Category.STATIC] = {["Comms tower M"] = {precision = 0.15, antenna = {size = 80, factor = 1}}},
         [Object.Category.UNIT] = {
             -- Ground Units
-            ["MLRS FDDM"] = {precision = 0.5},
-            ["SPK-11"] = {precision = 0.5},
+            ["MLRS FDDM"] = {precision = 0.5, antenna = {size = 15, factor = 1}},
+            ["SPK-11"] = {precision = 0.5, antenna = {size = 15, factor = 1}},
             -- Helicopters
-            ["CH-47D"] = {precision = 2.5},
-            ["CH-53E"] = {precision = 2.5},
-            ["MIL-26"] = {precision = 2.5},
-            ["SH-60B"] = {precision = 4.0},
-            ["UH-60A"] = {precision = 4.0},
-            ["Mi-8MT"] = {precision = 4.0},
-            ["UH-1H"] = {precision = 6.0},
-            ["KA-27"] = {precision = 6.0},
+            ["CH-47D"] = {precision = 2.5, antenna = {size = 12, factor = 1}},
+            ["CH-53E"] = {precision = 2.5, antenna = {size = 10, factor = 1}},
+            ["MIL-26"] = {precision = 2.5, antenna = {size = 20, factor = 1}},
+            ["SH-60B"] = {precision = 4.0, antenna = {size = 8, factor = 1}},
+            ["UH-60A"] = {precision = 4.0, antenna = {size = 8, factor = 1}},
+            ["Mi-8MT"] = {precision = 4.0, antenna = {size = 9, factor = 1}},
+            ["UH-1H"] = {precision = 6.0, antenna = {size = 7, factor = 1}},
+            ["KA-27"] = {precision = 6.0, antenna = {size = 6, factor = 1}},
             -- Airplanes
-            ["C-130"] = {precision = 1.5},
-            ["C-17A"] = {precision = 1.5},
-            ["S-3B"] = {precision = 2.0},
-            ["E-3A"] = {precision = 5.0},
-            ["E-2D"] = {precision = 5.0},
-            ["Tu-95MS"] = {precision = 1.5},
-            ["Tu-142"] = {precision = 1.5},
-            ["IL-76MD"] = {precision = 1.5},
-            ["An-30M"] = {precision = 1.5},
-            ["A-50"] = {precision = 5},
-            ["An-26B"] = {precision = 2.0},
-            ["Su-25T"] = {precision = 2.5},
-            ["AJS37"] = {precision = 2.5}
+            ["C-130"] = {precision = 1.5, antenna = {size = 35, factor = 1}},
+            ["C-17A"] = {precision = 1.5, antenna = {size = 50, factor = 1}},
+            ["S-3B"] = {precision = 2.0, antenna = {size = 18, factor = 0.8}},
+            ["E-3A"] = {precision = 5.0, antenna = {size = 45, factor = 0.5}},
+            ["E-2D"] = {precision = 5.0, antenna = {size = 20, factor = 0.5}},
+            ["Tu-95MS"] = {precision = 1.5, antenna = {size = 50, factor = 1}},
+            ["Tu-142"] = {precision = 1.5, antenna = {size = 50, factor = 1}},
+            ["IL-76MD"] = {precision = 1.5, antenna = {size = 48, factor = 0.8}},
+            ["An-30M"] = {precision = 1.5, antenna = {size = 25, factor = 1}},
+            ["A-50"] = {precision = 5, antenna = {size = 48, factor = 0.5}},
+            ["An-26B"] = {precision = 2.0, antenna = {size = 26, factor = 0.9}},
+            ["Su-25T"] = {precision = 2.5, antenna = {size = 4, factor = 0.75}},
+            ["AJS37"] = {precision = 2.5, antenna = {size = 4, factor = 0.75}}
         }
+    }
+
+    HoundDB.Bands = {
+        ["A"] = 1.713100,
+        ["C"] = 0.399723,
+        ["B"] = 0.799447,
+        ["E"] = 0.119917,
+        ["D"] = 0.199862,
+        ["G"] = 0.059958,
+        ["F"] = 0.085655,
+        ["I"] = 0.033310,
+        ["H"] = 0.042827,
+        ["K"] = 0.009993,
+        ["J"] = 0.019986,
+        ["L"] = 0.005996
     }
 end
 -- --------------------------------------
@@ -530,7 +589,7 @@ do
             "Please send my regards.",
             " "
         }
-        return response[math.max(1,math.min(math.floor(timer.getAbsTime() % length(response)),length(response)))]
+        return response[math.max(1,math.min(math.ceil(timer.getAbsTime() % length(response)),length(response)))]
     end
 
     function HoundUtils.getCoalitionString(coalitionID)
@@ -636,19 +695,26 @@ do
     function HoundUtils.roundToNearest(input,nearest)
         return mist.utils.round(input/nearest) * nearest
     end
+
+    function HoundUtils.getDefraction(band,antenna_size)
+
+        if band == nil or antenna_size == nil or antenna_size == 0 then return 15 end
+        return math.deg(HoundDB.Bands[band]/antenna_size)
+    end
 end-- --------------------------------------
 do
     HoundElintDatapoint = {}
     HoundElintDatapoint.__index = HoundElintDatapoint
 
-    function HoundElintDatapoint:New(id0, p0, az0, el0, t0,isPlatformStatic)
+    function HoundElintDatapoint:New(platform0, p0, az0, el0, t0,isPlatformStatic)
         local elintDatapoint = {}
         setmetatable(elintDatapoint, HoundElintDatapoint)
         elintDatapoint.platformPos = p0
         elintDatapoint.az = az0
         elintDatapoint.el = el0
         elintDatapoint.t = tonumber(t0)
-        elintDatapoint.platformId = id0
+        elintDatapoint.platformId = platform0:getID()
+        elintDatapoint.platfromName = platform0:getName()
         elintDatapoint.platformStatic = isPlatformStatic
         elintDatapoint.estimatedPos = nil
         return elintDatapoint
@@ -688,10 +754,12 @@ do
         elintcontact.typeName = DCS_Unit:getTypeName()
         elintcontact.isEWR = false
         elintcontact.typeAssigned = "Unknown" 
-        if setContains(HoundSamDB,DCS_Unit:getTypeName())  then
-            elintcontact.typeName =  HoundSamDB[DCS_Unit:getTypeName()].Name
-            elintcontact.isEWR = (HoundSamDB[DCS_Unit:getTypeName()].Role == "EWR")
-            elintcontact.typeAssigned = HoundSamDB[DCS_Unit:getTypeName()].Assigned
+        if setContains(HoundDB.Sam,DCS_Unit:getTypeName())  then
+            local unitName = DCS_Unit:getTypeName()
+            elintcontact.typeName =  HoundDB.Sam[unitName].Name
+            elintcontact.isEWR = (HoundDB.Sam[unitName].Role == "EWR")
+            elintcontact.typeAssigned = HoundDB.Sam[unitName].Assigned
+            elintcontact.band = HoundDB.Sam[unitName].Band
         end
          
         elintcontact.pos = {
@@ -843,9 +911,10 @@ do
     function HoundContact:calculatePos(estimatedPositions)
         if estimatedPositions == nil then return end
         self.pos.p =  mist.getAvgPoint(estimatedPositions)
+        self.pos.p.y = land.getHeight(self.pos.p)
         local bullsPos = coalition.getMainRefPoint(self.platformCoalition)
         self.pos.LL.lat, self.pos.LL.lon =  coord.LOtoLL(self.pos.p)
-        self.pos.elev = land.getHeight(self.pos.p)
+        self.pos.elev = self.pos.p.y
         self.pos.grid  = coord.LLtoMGRS(self.pos.LL.lat, self.pos.LL.lon)
         self.pos.be.brg = mist.utils.round(mist.utils.toDegree(mist.utils.getDir(mist.vec.sub(self.pos.p,bullsPos))))
         self.pos.be.rng =  mist.utils.round(mist.utils.metersToNM(mist.utils.get2DDist(self.pos.p,bullsPos)))
@@ -854,19 +923,34 @@ do
     function HoundContact:removeMarker()
         if self.markpointID ~= nil then
             trigger.action.removeMark(self.markpointID)
+            trigger.action.removeMark(self.markpointID+1)
         end
     end
     function HoundContact:updateMarker(coalitionID)
         if self.pos.p == nil or self.uncertenty_radius == nil then return end
-        self:removeMarker()
         local marker = world.getMarkPanels()
+        self:removeMarker()
         if length(marker) > 0 then 
             marker = (marker[#marker].idx + 1)
         else 
-            marker = math.random(1,500)
+            marker = math.random(1,100)
         end
         self.markpointID = marker
-        trigger.action.markToCoalition(self.markpointID, self.typeName .. " " .. (self.uid%100) .. " (" .. self.uncertenty_radius.major .. "/" .. self.uncertenty_radius.minor .. "@" .. self.uncertenty_radius.az .. "|" .. HoundUtils:timeDelta(self.last_seen) .. "s)",self.pos.p,self.platformCoalition,true)
+
+        local fillcolor = {0,0,0,0.15}
+        local linecolor = {0,0,0,0.3}
+        if self.platformCoalition == coalition.side.BLUE then
+            fillcolor[1] = 1
+            linecolor[1] = 1
+        end
+        if self.platformCoalition == coalition.side.RED then
+            fillcolor[3] = 1
+            linecolor[3] = 1
+        end        
+        trigger.action.circleToAll(self.platformCoalition,self.markpointID,self.pos.p,self.uncertenty_radius.r,linecolor,fillcolor,3,true)
+        -- linecolor[4] = 0.6
+        -- trigger.action.textToAll(self.platformCoalition , self.markpointID+1 , self.pos.p , linecolor,{0,0,0,0} , 12 , true , self.typeName .. " " .. (self.uid%100) .. "\n(" .. self.uncertenty_radius.major .. "/" .. self.uncertenty_radius.minor .. "@" .. self.uncertenty_radius.az .. "|" .. HoundUtils:timeDelta(self.last_seen) .. "s)")
+        trigger.action.markToCoalition(self.markpointID+1, self.typeName .. " " .. (self.uid%100) .. " (" .. self.uncertenty_radius.major .. "/" .. self.uncertenty_radius.minor .. "@" .. self.uncertenty_radius.az .. "|" .. HoundUtils:timeDelta(self.last_seen) .. "s)",self.pos.p,self.platformCoalition,true)
     end
 
     function HoundContact:positionDebug()
@@ -992,6 +1076,7 @@ do
         local mobileDataPoints = {}
         local staticDataPoints = {}
         local estimatePosition = {}
+        local platforms = {}
 
         for k,v in pairs(self.dataPoints) do 
             if length(v) > 0 then
@@ -1004,6 +1089,7 @@ do
                     if v.estimatedPos ~= nil then
                         table.insert(estimatePosition,v.estimatedPos)
                     end
+                    platforms[v.platfromName] = 1
                 end
             end
         end
@@ -1052,11 +1138,38 @@ do
                 for k,v in ipairs(staticDataPoints) do table.insert(combinedDataPoints,v) end
             end
             self:calculateEllipse(estimatePosition,self:calculateAzimuthBias(combinedDataPoints))
+            local detected_by = {}
+
+            for key, value in pairs(platforms) do
+                table.insert(detected_by,key)
+            end
+            self.detected_by = detected_by
         end
 
         if newContact and self.pos.p ~= nil and self.isEWR == false then
             return true
         end
+
+    end
+    function HoundContact:export()
+        local contact = {}
+        contact.typeName = self.typeName
+        contact.uid = self.uid % 100
+        contact.DCSunitName = self.unit:getName()
+        if self.pos.p ~= nil and self.uncertenty_radius ~= nil then
+
+        contact.pos = self.pos.p
+        contact.accuracy = HoundUtils.TTS.getVerbalConfidenceLevel( self.uncertenty_radius.r )
+        contact.uncertenty = {
+            major = self.uncertenty_radius.major,
+            minor = self.uncertenty_radius.minor,
+            heading = self.uncertenty_radius.az
+        }
+        contact.maxRange = self.maxRange
+        contact.last_seen = self.last_seen
+        end
+        contact.detected_by = self.detected_by
+        return contact
     end
 end
 do
@@ -1293,8 +1406,8 @@ do
             local mainCategoty = canidate:getCategory()
             local type = canidate:getTypeName()
     
-            if setContains(PlatformData,mainCategoty) then
-                if setContains(PlatformData[mainCategoty],type) then
+            if setContains(HoundDB.Platform,mainCategoty) then
+                if setContains(HoundDB.Platform[mainCategoty],type) then
                     for k,v in pairs(self.platform) do
                         if v == canidate then
                             return
@@ -1305,8 +1418,6 @@ do
             end
         end
     end
-
-
 
     function HoundElint:removePlatform(platformName)
         local canidate = Unit.getByName(platformName)
@@ -1343,7 +1454,6 @@ do
         end
     end
 
-
     function HoundElint:configureController(args)
         self.controller:updateSettings(args)
 
@@ -1353,11 +1463,9 @@ do
         self.atis:updateSettings(args)
     end
 
-
     --[[
         Toggle functions
     --]]
-
 
     function HoundElint:toggleController(state,textMode)
         if STTS ~= nil  then
@@ -1398,7 +1506,6 @@ do
         end
     end
 
-
     function HoundElint:toggleATIS(state) 
         if STTS ~= nil then
             if state == true and type(state) == "boolean" then
@@ -1423,9 +1530,9 @@ do
     end
 
     function HoundElint:disableMarkers()
-        self.useMarkers = false
-        
+        self.useMarkers = false 
     end
+    
     --[[
         ATIS functions
     --]]
@@ -1435,8 +1542,9 @@ do
         local numberEWR = 0
 
         if length(gSelf.emitters) > 0 then
-            if gSelf.atis.loop.last_update ~= nil then
-                if timer.getTime() - gSelf.atis.loop.last_update < 120 then return end
+            if (gSelf.atis.loop.last_count ~= nil and gSelf.atis.loop.last_update ~= nil) then
+                if ((gSelf.atis.loop.last_count == #gSelf.emitters) and
+                     ((timer.getAbsTime() - gSelf.atis.loop.last_update) < 120)) then return end
             end
             for uid, emitter in pairs(gSelf.emitters) do
                 if emitter.pos.p ~= nil then
@@ -1466,8 +1574,8 @@ do
         }
 
         gSelf.atis.loop.msg = msgObj
-        gSelf.atis.loop.last_update = timer.getTime()
-
+        gSelf.atis.loop.last_count = #gSelf.emitters
+        gSelf.atis.loop.last_update =  timer.getAbsTime()
     end
 
 
@@ -1533,20 +1641,23 @@ do
         Actual work functions
     --]]
 
-    function HoundElint:getSensorError(platform)
+    function HoundElint:getSensorPrecision(platform,emitterBand)
         local mainCategoty = platform:getCategory()
         local type = platform:getTypeName()
 
-        if setContains(PlatformData,mainCategoty) then
-            if setContains(PlatformData[mainCategoty],type) then
-                return PlatformData[mainCategoty][type].precision
+        if setContains(HoundDB.Platform,mainCategoty) then
+            if setContains(HoundDB.Platform[mainCategoty],type) then
+                local antenna_size = HoundDB.Platform[mainCategoty][type].antenna.size *  HoundDB.Platform[mainCategoty][type].antenna.factor
+                -- local precision =  HoundUtils.getDefraction(emitterBand,antenna_size)
+                -- env.info(type .. " Precision: " .. antenna_size .. "m for "..emitterBand.. " Band = " .. precision .. " deg")
+                return  HoundUtils.getDefraction(emitterBand,antenna_size) -- precision
             end
         end
         return 15.0
     end
 
     function HoundElint.generateError(precision)
-        local MAG = math.abs(gaussian(0, precision * 50) / 100)
+        local MAG = math.abs(gaussian(0, precision * 50) / 50)
         local ROT = math.random() * 2 * math.pi
         -- x` = x*cos(theta)-y*sin(theta)
         -- y' = x*sin(theta)+y*cos(theta)
@@ -1649,17 +1760,17 @@ do
                         self.emitters[RadarUid] =
                             HoundContact:New(radar, self.coalitionId)
                     end
-                    local az,el = self:getAzimuth(platformPos, radarPos, self:getSensorError(platform))
+                    local az,el = self:getAzimuth(platformPos, radarPos, self:getSensorPrecision(platform,self.emitters[RadarUid].band))
                     if not isAerialUnit then
                         el = nil
                     end
                     -- env.info(platform:getName() .. "-->"..  mist.utils.tableShow(platform:getPosition().x) )
-                    local datapoint = HoundElintDatapoint:New(platformId,platformPos, az, el, timer.getAbsTime(),platformIsStatic)
+                    local datapoint = HoundElintDatapoint:New(platform,platformPos, az, el, timer.getAbsTime(),platformIsStatic)
                     self.emitters[RadarUid]:AddPoint(datapoint)
                 end
             end
-        end
-    end
+        end 
+    end 
 
     function HoundElint:Process()
         local currentTime = timer.getTime() + 0.2
@@ -1845,7 +1956,6 @@ do
         end
     end
 
-
     function HoundElint:addRadarRadioItem(emitter)
         local DCStypeName = emitter.DCStypeName
         local assigned = emitter.typeAssigned
@@ -1896,13 +2006,35 @@ do
         end
     end
 
-
     function HoundElint:removeRadioMenu()
         missionCommands.removeItemForCoalition(self.coalitionId,
                                                self.radioMenu.root)
         self.radioMenu = {}
     end
+
+    function HoundElint:getContacts()
+        local contacts = {
+            ewr = { contacts = {}
+                },
+            sam = {
+                    contacts = {}
+                }
+        }
+        for uid,emitter in pairs(self.emitters) do
+            local contact = emitter:export()
+            if contact ~= nil then
+                if emitter.isEWR then
+                    table.insert(contacts.ewr.contacts,contact)
+                else
+                    table.insert(contacts.sam.contacts,contact)
+                end
+            end
+        end
+        contacts.ewr.count = #contacts.ewr.contacts or 0
+        contacts.sam.count = #contacts.sam.contacts or 0
+        return contacts
+    end
 end
 
 env.info("Hound ELINT Loaded Successfully")
--- Build date 08-05-2021
+-- Build date 14-05-2021

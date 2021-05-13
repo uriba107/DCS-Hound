@@ -3,14 +3,15 @@ do
     HoundElintDatapoint = {}
     HoundElintDatapoint.__index = HoundElintDatapoint
 
-    function HoundElintDatapoint:New(id0, p0, az0, el0, t0,isPlatformStatic)
+    function HoundElintDatapoint:New(platform0, p0, az0, el0, t0,isPlatformStatic)
         local elintDatapoint = {}
         setmetatable(elintDatapoint, HoundElintDatapoint)
         elintDatapoint.platformPos = p0
         elintDatapoint.az = az0
         elintDatapoint.el = el0
         elintDatapoint.t = tonumber(t0)
-        elintDatapoint.platformId = id0
+        elintDatapoint.platformId = platform0:getID()
+        elintDatapoint.platfromName = platform0:getName()
         elintDatapoint.platformStatic = isPlatformStatic
         elintDatapoint.estimatedPos = nil
         return elintDatapoint
@@ -50,10 +51,12 @@ do
         elintcontact.typeName = DCS_Unit:getTypeName()
         elintcontact.isEWR = false
         elintcontact.typeAssigned = "Unknown" 
-        if setContains(HoundSamDB,DCS_Unit:getTypeName())  then
-            elintcontact.typeName =  HoundSamDB[DCS_Unit:getTypeName()].Name
-            elintcontact.isEWR = (HoundSamDB[DCS_Unit:getTypeName()].Role == "EWR")
-            elintcontact.typeAssigned = HoundSamDB[DCS_Unit:getTypeName()].Assigned
+        if setContains(HoundDB.Sam,DCS_Unit:getTypeName())  then
+            local unitName = DCS_Unit:getTypeName()
+            elintcontact.typeName =  HoundDB.Sam[unitName].Name
+            elintcontact.isEWR = (HoundDB.Sam[unitName].Role == "EWR")
+            elintcontact.typeAssigned = HoundDB.Sam[unitName].Assigned
+            elintcontact.band = HoundDB.Sam[unitName].Band
         end
          
         elintcontact.pos = {
@@ -205,9 +208,10 @@ do
     function HoundContact:calculatePos(estimatedPositions)
         if estimatedPositions == nil then return end
         self.pos.p =  mist.getAvgPoint(estimatedPositions)
+        self.pos.p.y = land.getHeight(self.pos.p)
         local bullsPos = coalition.getMainRefPoint(self.platformCoalition)
         self.pos.LL.lat, self.pos.LL.lon =  coord.LOtoLL(self.pos.p)
-        self.pos.elev = land.getHeight(self.pos.p)
+        self.pos.elev = self.pos.p.y
         self.pos.grid  = coord.LLtoMGRS(self.pos.LL.lat, self.pos.LL.lon)
         self.pos.be.brg = mist.utils.round(mist.utils.toDegree(mist.utils.getDir(mist.vec.sub(self.pos.p,bullsPos))))
         self.pos.be.rng =  mist.utils.round(mist.utils.metersToNM(mist.utils.get2DDist(self.pos.p,bullsPos)))
@@ -216,19 +220,34 @@ do
     function HoundContact:removeMarker()
         if self.markpointID ~= nil then
             trigger.action.removeMark(self.markpointID)
+            trigger.action.removeMark(self.markpointID+1)
         end
     end
     function HoundContact:updateMarker(coalitionID)
         if self.pos.p == nil or self.uncertenty_radius == nil then return end
-        self:removeMarker()
         local marker = world.getMarkPanels()
+        self:removeMarker()
         if length(marker) > 0 then 
             marker = (marker[#marker].idx + 1)
         else 
-            marker = math.random(1,500)
+            marker = math.random(1,100)
         end
         self.markpointID = marker
-        trigger.action.markToCoalition(self.markpointID, self.typeName .. " " .. (self.uid%100) .. " (" .. self.uncertenty_radius.major .. "/" .. self.uncertenty_radius.minor .. "@" .. self.uncertenty_radius.az .. "|" .. HoundUtils:timeDelta(self.last_seen) .. "s)",self.pos.p,self.platformCoalition,true)
+
+        local fillcolor = {0,0,0,0.15}
+        local linecolor = {0,0,0,0.3}
+        if self.platformCoalition == coalition.side.BLUE then
+            fillcolor[1] = 1
+            linecolor[1] = 1
+        end
+        if self.platformCoalition == coalition.side.RED then
+            fillcolor[3] = 1
+            linecolor[3] = 1
+        end        
+        trigger.action.circleToAll(self.platformCoalition,self.markpointID,self.pos.p,self.uncertenty_radius.r,linecolor,fillcolor,3,true)
+        -- linecolor[4] = 0.6
+        -- trigger.action.textToAll(self.platformCoalition , self.markpointID+1 , self.pos.p , linecolor,{0,0,0,0} , 12 , true , self.typeName .. " " .. (self.uid%100) .. "\n(" .. self.uncertenty_radius.major .. "/" .. self.uncertenty_radius.minor .. "@" .. self.uncertenty_radius.az .. "|" .. HoundUtils:timeDelta(self.last_seen) .. "s)")
+        trigger.action.markToCoalition(self.markpointID+1, self.typeName .. " " .. (self.uid%100) .. " (" .. self.uncertenty_radius.major .. "/" .. self.uncertenty_radius.minor .. "@" .. self.uncertenty_radius.az .. "|" .. HoundUtils:timeDelta(self.last_seen) .. "s)",self.pos.p,self.platformCoalition,true)
     end
 
     function HoundContact:positionDebug()
@@ -354,6 +373,7 @@ do
         local mobileDataPoints = {}
         local staticDataPoints = {}
         local estimatePosition = {}
+        local platforms = {}
 
         for k,v in pairs(self.dataPoints) do 
             if length(v) > 0 then
@@ -366,6 +386,7 @@ do
                     if v.estimatedPos ~= nil then
                         table.insert(estimatePosition,v.estimatedPos)
                     end
+                    platforms[v.platfromName] = 1
                 end
             end
         end
@@ -414,10 +435,37 @@ do
                 for k,v in ipairs(staticDataPoints) do table.insert(combinedDataPoints,v) end
             end
             self:calculateEllipse(estimatePosition,self:calculateAzimuthBias(combinedDataPoints))
+            local detected_by = {}
+
+            for key, value in pairs(platforms) do
+                table.insert(detected_by,key)
+            end
+            self.detected_by = detected_by
         end
 
         if newContact and self.pos.p ~= nil and self.isEWR == false then
             return true
         end
+
+    end
+    function HoundContact:export()
+        local contact = {}
+        contact.typeName = self.typeName
+        contact.uid = self.uid % 100
+        contact.DCSunitName = self.unit:getName()
+        if self.pos.p ~= nil and self.uncertenty_radius ~= nil then
+
+        contact.pos = self.pos.p
+        contact.accuracy = HoundUtils.TTS.getVerbalConfidenceLevel( self.uncertenty_radius.r )
+        contact.uncertenty = {
+            major = self.uncertenty_radius.major,
+            minor = self.uncertenty_radius.minor,
+            heading = self.uncertenty_radius.az
+        }
+        contact.maxRange = self.maxRange
+        contact.last_seen = self.last_seen
+        end
+        contact.detected_by = self.detected_by
+        return contact
     end
 end

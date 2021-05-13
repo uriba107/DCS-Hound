@@ -175,7 +175,7 @@ do
             "Please send my regards.",
             " "
         }
-        return response[math.max(1,math.min(math.floor(timer.getAbsTime() % length(response)),length(response)))]
+        return response[math.max(1,math.min(math.ceil(timer.getAbsTime() % length(response)),length(response)))]
     end
 
     function HoundUtils.getCoalitionString(coalitionID)
@@ -280,5 +280,11 @@ do
 
     function HoundUtils.roundToNearest(input,nearest)
         return mist.utils.round(input/nearest) * nearest
+    end
+
+    function HoundUtils.getDefraction(band,antenna_size)
+
+        if band == nil or antenna_size == nil or antenna_size == 0 then return 15 end
+        return math.deg(HoundDB.Bands[band]/antenna_size)
     end
 end
