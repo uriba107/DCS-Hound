@@ -354,9 +354,9 @@ do
             ["MIL-26"] = {precision = 2.5, antenna = {size = 20, factor = 1}},
             ["SH-60B"] = {precision = 4.0, antenna = {size = 8, factor = 1}},
             ["UH-60A"] = {precision = 4.0, antenna = {size = 8, factor = 1}},
-            ["Mi-8MT"] = {precision = 4.0, antenna = {size = 9, factor = 1}},
-            ["UH-1H"] = {precision = 6.0, antenna = {size = 7, factor = 1}},
-            ["KA-27"] = {precision = 6.0, antenna = {size = 6, factor = 1}},
+            ["Mi-8MT"] = {precision = 4.0, antenna = {size = 8, factor = 1}},
+            ["UH-1H"] = {precision = 6.0, antenna = {size = 4, factor = 1}},
+            ["KA-27"] = {precision = 6.0, antenna = {size = 4, factor = 1}},
             -- Airplanes
             ["C-130"] = {precision = 1.5, antenna = {size = 35, factor = 1}},
             ["C-17A"] = {precision = 1.5, antenna = {size = 50, factor = 1}},
@@ -369,8 +369,8 @@ do
             ["An-30M"] = {precision = 1.5, antenna = {size = 25, factor = 1}},
             ["A-50"] = {precision = 5, antenna = {size = 48, factor = 0.5}},
             ["An-26B"] = {precision = 2.0, antenna = {size = 26, factor = 0.9}},
-            ["Su-25T"] = {precision = 2.5, antenna = {size = 4, factor = 0.75}},
-            ["AJS37"] = {precision = 2.5, antenna = {size = 4, factor = 0.75}}
+            ["Su-25T"] = {precision = 2.5, antenna = {size = 0.5, factor = 0.75}},
+            ["AJS37"] = {precision = 2.5, antenna = {size = 0.5, factor = 0.75}}
         }
     }
 

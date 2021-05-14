@@ -26,53 +26,54 @@ Same goes to Fast movers like the Viggen or the Su-25T. they can dash into enemy
 
 Remember that the system is using a simulated DF to determin the bearing of the radar from the platform. Low precision systems will cause the calculated position to be with a higher ellipse of uncertenty for radar position. below you can find the list of working units and their sensor precision.
 
+Resolution of platforms are derrived from antenna size and emitter frequency. shout out to TLTeo for explaining the physics of this.
+
 ``` Note: While currently not implemented. Intention of including both Viggen and the Su-25T is that they will only be able to participate if they are carrying their ELINT and SEAD pods respectivly ```  
 
-``` Currently resolution of platform is being reworked. It now using defraction based on antenna size and radar transmission wave length - table will be updated soon. Thank you TLTeo for helping out with the physics of it ```
 
 ## Available assets
 ### Airborn assets
 #### Airplanes
 ---
-| Platform  | Precision (degrees)|
+| Platform  | Accuracy (degC/H Bands degrees)|
 | --------  | -------- |
-| C-130     | ~~1.0~~ |
-| C-17      | ~~1.0~~ |
-| An-30M    | ~~1.0~~ |
-| Tu-95     | ~~1.0~~ |
-| Tu-142    | ~~1.0~~ |
-| IL-76MD   | ~~1.0~~ |
-| S-3B      | ~~1.5~~ |
-| E-2D      | ~~2.0~~ |
-| E-3A      | ~~2.0~~ |
-| An-26B    | ~~2.0~~ |
-| A-50      | ~~2.0~~ |
-| Viggen    | ~~2.5~~ |
-| Su-25T    | ~~2.5~~ |  
+| C-130     | 0.65 / 0.07 |
+| C-17      | 0.46 / 0.05 |
+| An-30M    | 0.92 / 0.10 |
+| Tu-95     | 0.46 / 0.05 |
+| Tu-142    | 0.46 / 0.05 |
+| IL-76MD   | 0.60 / 0.06 |
+| S-3B      | 1.59 / 0.17 |
+| E-2D      | 2.29 / 0.25 |
+| E-3A      | 1.02 / 0.11 |
+| An-26B    | 0.98 / 0.10 |
+| A-50      | 0.95 / 0.10 |
+| Viggen    | 15.00 / 4.91 |
+| Su-25T    | 15.00 / 4.91 |  
   
 #### Helicopters
 ---
-| Platform  | Accuracy (degrees)|
+| Platform  | Accuracy (C/H Bands degrees)|
 | --------  | --------  |
-| CH-47D    | ~~2.5~~       |
-| CH-53E    | ~~2.5~~       |
-| MIL-26    | ~~2.5~~       |
-| UH-60A    | ~~4.0~~       |
-| SH-60B    | ~~4.0~~       |
-| Mi-8MT    | ~~4.0~~       |
-| UH-1H     | ~~6.0~~       |
-| Ka-27     | ~~6.0~~       |  
+| CH-47D    | 1.91 / 0.20 |
+| CH-53E    | 2.29 / 0.25 |
+| MIL-26    | 1.15 / 0.12 |
+| UH-60A    | 2.86 / 0.31 |
+| SH-60B    | 2.86 / 0.31 |
+| Mi-8MT    | 2.86 / 0.31 |
+| UH-1H     | 5.73 / 0.61 |
+| Ka-27     | 5.73 / 0.61 |  
 
 ### Ground Units
-| Platform  | Accuracy (degrees)|
+| Platform  | Accuracy (C/H Bands degrees)|
 | --------  | --------  |
-| SPK-11    | ~~0.5~~       |
-| MLRS FDDM | ~~0.5~~       |  
+| SPK-11    | 1.53 / 0.16 |
+| MLRS FDDM | 1.53 / 0.16 |  
 
 ### Static Objects
-| Platform  | Accuracy (degrees)|
+| Platform  | Accuracy (C/H Bands degrees)|
 | --------  | --------  |
-| Comms tower M | ~~0.15~~ |
+| Comms tower M | 0.29 / 0.03 |
 
 
 ## Can I haz syntax pls?
