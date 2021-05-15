@@ -35,7 +35,7 @@ Resolution of platforms are derrived from antenna size and emitter frequency. sh
 ### Airborn assets
 #### Airplanes
 ---
-| Platform  | Accuracy (degC/H Bands degrees)|
+| Platform  | Accuracy (C/H Bands degrees)|
 | --------  | -------- |
 | C-130     | 0.65 / 0.07 |
 | C-17      | 0.46 / 0.05 |
@@ -48,8 +48,10 @@ Resolution of platforms are derrived from antenna size and emitter frequency. sh
 | E-3A      | 1.02 / 0.11 |
 | An-26B    | 0.98 / 0.10 |
 | A-50      | 0.95 / 0.10 |
-| Viggen    | 15.00 / 4.91 |
-| Su-25T    | 15.00 / 4.91 |  
+| Viggen    | 14.31 / 1.53 |
+| Su-25T    | 14.31 / 1.53 |  
+
+<sup>*</sup> Data with resolution below 15 deg is rejected
   
 #### Helicopters
 ---
@@ -95,13 +97,11 @@ This will require you to comment out the sanitation in "DCS World/Scripts/Missio
 on a "ONCE" type action with "time more 1" condition, add the scripts in the following order
 1. `MIST`
 2. `DCS-SimpleTextToSpeech` (if TTS is desired)
-3. `DCS-SimpleTextToSpeech_extend.lua` (if TTS is desired)
-4. `HoundElint.lua`
+3. `HoundElint.lua`
 
 #### some screenshot as hints
-![Open scripting Panel](./images/marker_crop_left.jpg)  
 
-![Add scripts](./images/marker_crop_right.jpg)
+![Add scripts](./images/Hound_setup.jpg)
 
 
 ### Adding Hound system to your mission scripts

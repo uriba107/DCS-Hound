@@ -29,13 +29,13 @@ do
             ['Name'] = "Fan-song",
             ['Assigned'] = "SA-2",
             ['Role'] = "SNR",
-            ['Band'] = 'E'
+            ['Band'] = 'G'
         },
         ['snr s-125 tr'] = {
             ['Name'] = "Low Blow",
             ['Assigned'] = "SA-3",
             ['Role'] = "TR",
-            ['Band'] = 'D'
+            ['Band'] = 'I'
         },
         ['Kub 1S91 str'] = {
             ['Name'] = "Straight Flush",
@@ -348,47 +348,47 @@ do
         [Object.Category.STATIC] = {["Comms tower M"] = {precision = 0.15, antenna = {size = 80, factor = 1}}},
         [Object.Category.UNIT] = {
             -- Ground Units
-            ["MLRS FDDM"] = {precision = 0.5, antenna = {size = 15, factor = 1}},
-            ["SPK-11"] = {precision = 0.5, antenna = {size = 15, factor = 1}},
+            ["MLRS FDDM"] = {antenna = {size = 15, factor = 1}},
+            ["SPK-11"] = {antenna = {size = 15, factor = 1}},
             -- Helicopters
-            ["CH-47D"] = {precision = 2.5, antenna = {size = 12, factor = 1}},
-            ["CH-53E"] = {precision = 2.5, antenna = {size = 10, factor = 1}},
-            ["MIL-26"] = {precision = 2.5, antenna = {size = 20, factor = 1}},
-            ["SH-60B"] = {precision = 4.0, antenna = {size = 8, factor = 1}},
-            ["UH-60A"] = {precision = 4.0, antenna = {size = 8, factor = 1}},
-            ["Mi-8MT"] = {precision = 4.0, antenna = {size = 8, factor = 1}},
-            ["UH-1H"] = {precision = 6.0, antenna = {size = 4, factor = 1}},
-            ["KA-27"] = {precision = 6.0, antenna = {size = 4, factor = 1}},
+            ["CH-47D"] = {antenna = {size = 12, factor = 1}},
+            ["CH-53E"] = {antenna = {size = 10, factor = 1}},
+            ["MIL-26"] = {antenna = {size = 20, factor = 1}},
+            ["SH-60B"] = {antenna = {size = 8, factor = 1}},
+            ["UH-60A"] = {antenna = {size = 8, factor = 1}},
+            ["Mi-8MT"] = {antenna = {size = 8, factor = 1}},
+            ["UH-1H"] = {antenna = {size = 4, factor = 1}},
+            ["KA-27"] = {antenna = {size = 4, factor = 1}},
             -- Airplanes
-            ["C-130"] = {precision = 1.5, antenna = {size = 35, factor = 1}},
-            ["C-17A"] = {precision = 1.5, antenna = {size = 50, factor = 1}},
-            ["S-3B"] = {precision = 2.0, antenna = {size = 18, factor = 0.8}},
-            ["E-3A"] = {precision = 5.0, antenna = {size = 45, factor = 0.5}},
-            ["E-2D"] = {precision = 5.0, antenna = {size = 20, factor = 0.5}},
-            ["Tu-95MS"] = {precision = 1.5, antenna = {size = 50, factor = 1}},
-            ["Tu-142"] = {precision = 1.5, antenna = {size = 50, factor = 1}},
-            ["IL-76MD"] = {precision = 1.5, antenna = {size = 48, factor = 0.8}},
-            ["An-30M"] = {precision = 1.5, antenna = {size = 25, factor = 1}},
-            ["A-50"] = {precision = 5, antenna = {size = 48, factor = 0.5}},
-            ["An-26B"] = {precision = 2.0, antenna = {size = 26, factor = 0.9}},
-            ["Su-25T"] = {precision = 2.5, antenna = {size = 0.5, factor = 0.75}},
-            ["AJS37"] = {precision = 2.5, antenna = {size = 0.5, factor = 0.75}}
+            ["C-130"] = {antenna = {size = 35, factor = 1}},
+            ["C-17A"] = {antenna = {size = 50, factor = 1}},
+            ["S-3B"] = {antenna = {size = 18, factor = 0.8}},
+            ["E-3A"] = {antenna = {size = 45, factor = 0.5}},
+            ["E-2D"] = {antenna = {size = 20, factor = 0.5}},
+            ["Tu-95MS"] = {antenna = {size = 50, factor = 1}},
+            ["Tu-142"] = {antenna = {size = 50, factor = 1}},
+            ["IL-76MD"] = {antenna = {size = 48, factor = 0.8}},
+            ["An-30M"] = {antenna = {size = 25, factor = 1}},
+            ["A-50"] = {antenna = {size = 48, factor = 0.5}},
+            ["An-26B"] = {antenna = {size = 26, factor = 0.9}},
+            ["Su-25T"] = {antenna = {size = 1.6, factor = 0.75}},
+            ["AJS37"] = {antenna = {size = 1.6, factor = 0.75}}
         }
     }
 
     HoundDB.Bands = {
         ["A"] = 1.713100,
-        ["C"] = 0.399723,
         ["B"] = 0.799447,
-        ["E"] = 0.119917,
+        ["C"] = 0.399723,
         ["D"] = 0.199862,
-        ["G"] = 0.059958,
+        ["E"] = 0.119917,
         ["F"] = 0.085655,
-        ["I"] = 0.033310,
+        ["G"] = 0.059958,
         ["H"] = 0.042827,
-        ["K"] = 0.009993,
+        ["I"] = 0.033310,
         ["J"] = 0.019986,
-        ["L"] = 0.005996
+        ["K"] = 0.009993,
+        ["L"] = 0.005996,
     }
 end
 -- --------------------------------------
@@ -697,15 +697,26 @@ do
     end
 
     function HoundUtils.getDefraction(band,antenna_size)
-        if band == nil or antenna_size == nil or antenna_size == 0 then return 15 end
-        return math.min(math.deg(HoundDB.Bands[band]/antenna_size),15)
+        if band == nil or antenna_size == nil or antenna_size == 0 then return 30 end
+        return math.deg(HoundDB.Bands[band]/antenna_size)
+    end
+
+    
+    function HoundUtils.getAngularError(variance)
+        local MAG = math.abs(gaussian(0, variance * 10 ) / 10)
+        local ROT = math.random() * 2 * math.pi
+        
+        local epsilon = {}
+        epsilon.az = -MAG*math.sin(ROT)
+        epsilon.el = MAG*math.cos(ROT)
+        return epsilon
     end
 end-- --------------------------------------
 do
     HoundElintDatapoint = {}
     HoundElintDatapoint.__index = HoundElintDatapoint
 
-    function HoundElintDatapoint:New(platform0, p0, az0, el0, t0,isPlatformStatic)
+    function HoundElintDatapoint:New(platform0, p0, az0, el0, t0,isPlatformStatic,sensorMargins)
         local elintDatapoint = {}
         setmetatable(elintDatapoint, HoundElintDatapoint)
         elintDatapoint.platformPos = p0
@@ -714,7 +725,8 @@ do
         elintDatapoint.t = tonumber(t0)
         elintDatapoint.platformId = platform0:getID()
         elintDatapoint.platfromName = platform0:getName()
-        elintDatapoint.platformStatic = isPlatformStatic
+        elintDatapoint.platformStatic = isPlatformStatic or false
+        elintDatapoint.platformPrecision = sensorMargins or 20
         elintDatapoint.estimatedPos = nil
         return elintDatapoint
     end
@@ -1100,7 +1112,10 @@ do
         if numStaticPoints > 1 then
             for i=1,numStaticPoints-1 do
                 for j=i+1,numStaticPoints do
-                    table.insert(estimatePosition,self:triangulatePoints(staticDataPoints[i],staticDataPoints[j]))
+                    local err = (staticDataPoints[i].platformPrecision + staticDataPoints[j].platformPrecision)/2
+                    if math.deg(HoundUtils.angleDeltaRad(staticDataPoints[i].az,staticDataPoints[j].az)) > err then
+                        table.insert(estimatePosition,self:triangulatePoints(staticDataPoints[i],staticDataPoints[j]))
+                    end
                 end
             end
         end
@@ -1109,7 +1124,8 @@ do
         if numStaticPoints > 0  and numMobilepoints > 0 then
             for i,staticDataPoint in ipairs(staticDataPoints) do
                 for j,mobileDataPoint in ipairs(mobileDataPoints) do
-                    if math.deg(HoundUtils.angleDeltaRad(staticDataPoint.az,mobileDataPoint.az)) > 1.5 then
+                    local err = (staticDataPoint.platformPrecision + mobileDataPoint.platformPrecision)/2
+                    if math.deg(HoundUtils.angleDeltaRad(staticDataPoint.az,mobileDataPoint.az)) > err then
                         table.insert(estimatePosition,self:triangulatePoints(staticDataPoint,mobileDataPoint))
                     end
                 end
@@ -1120,14 +1136,15 @@ do
         if numMobilepoints > 1 then
             for i=1,numMobilepoints-1 do
                 for j=i+1,numMobilepoints do
-                    if math.deg(HoundUtils.angleDeltaRad(mobileDataPoints[i].az,mobileDataPoints[j].az)) > 2 then
+                    local err = (mobileDataPoints[i].platformPrecision + mobileDataPoints[j].platformPrecision)/2
+                    if math.deg(HoundUtils.angleDeltaRad(mobileDataPoints[i].az,mobileDataPoints[j].az)) > err then
                         table.insert(estimatePosition,self:triangulatePoints(mobileDataPoints[i],mobileDataPoints[j]))
                     end
                 end
             end
         end
         
-        if length(estimatePosition) > 1 then
+        if length(estimatePosition) > 2 then
             self:calculatePos(estimatePosition)
             local combinedDataPoints = {} 
             if numMobilepoints > 0 then
@@ -1577,7 +1594,6 @@ do
         gSelf.atis.loop.last_update =  timer.getAbsTime()
     end
 
-
     --[[
         Controller functions
     --]]
@@ -1607,7 +1623,6 @@ do
         gSelf.controller:addMessageObj(msgObj)
 
     end
-
 
     function HoundElint:notifyDeadEmitter(emitter)
         if self.controller.settings.alerts == false then return end
@@ -1655,28 +1670,15 @@ do
         return 15.0
     end
 
-    function HoundElint.generateError(precision)
-        local MAG = math.abs(gaussian(0, precision * 50) / 50)
-        local ROT = math.random() * 2 * math.pi
-        -- x` = x*cos(theta)-y*sin(theta)
-        -- y' = x*sin(theta)+y*cos(theta)
-        local epsilon = {}
-        epsilon.az = -MAG*math.sin(ROT)
-        epsilon.el = MAG*math.cos(ROT)
-        return epsilon
-    end
 
     function HoundElint:getAzimuth(src, dst, sensorError)
         local dirRad = mist.utils.getDir(mist.vec.sub(dst, src))
-        -- local elRad =  math.acos(mist.utils.get2DDist(src,dst)/mist.utils.get3DDist(src,dst))
-        -- tan(θ) = Opposite / Adjacent
-        -- 
         local elRad = math.atan((dst.y-src.y)/mist.utils.get2DDist(src,dst))
 
-        local randomError = HoundElint.generateError(sensorError)
+        local randomError = HoundUtils.getAngularError(sensorError)
         local AzDeg = mist.utils.round((math.deg(dirRad) + randomError.az + 360) % 360, 3)
         local ElDeg = mist.utils.round((math.deg(elRad) + randomError.el), 3)
-        -- env.info("sensor is: ".. sensorError .. "passing in " .. sensorError*500 / 1000  )
+        -- env.info("sensor is: ".. mist.utils.tableShow(randomError) .. "passing in " .. sensorError )
         -- env.info("az: " .. math.deg(dirRad) .. " err: "..  randomError.az .. " final: " ..AzDeg)
         -- env.info("el: " .. math.deg(elRad) .. " err: "..  randomError.el .. " final: " ..ElDeg)
         return math.rad(AzDeg),math.rad(ElDeg)
@@ -1721,8 +1723,7 @@ do
             env.info("No Transmitting Radars")
             return
         end
-        env.info("Recivers: " .. table.getn(self.platform) .. " | Radars: " .. table.getn(Radars))
-
+        -- env.info("Recivers: " .. table.getn(self.platform) .. " | Radars: " .. table.getn(Radars))
         for i,RadarName in ipairs(Radars) do
             local radar = Unit.getByName(RadarName)
             local RadarUid = radar:getID()
@@ -1745,7 +1746,8 @@ do
                     if PlatformUnitCategory == Unit.Category.HELICOPTER or PlatformUnitCategory == Unit.Category.AIRPLANE then
                         isAerialUnit = true
                         if self.addPositionError then
-                            platformPos = mist.getRandPointInCircle( platform:getPosition().p, self.positionErrorRadius)
+                            -- TODO: make this work
+                            -- platformPos = mist.getRandPointInCircle( platformPos, self.positionErrorRadius)
                         end                    
                     end
 
@@ -1759,13 +1761,16 @@ do
                         self.emitters[RadarUid] =
                             HoundContact:New(radar, self.coalitionId)
                     end
-                    local az,el = self:getAzimuth(platformPos, radarPos, self:getSensorPrecision(platform,self.emitters[RadarUid].band))
-                    if not isAerialUnit then
-                        el = nil
+                    local sensorMargins = self:getSensorPrecision(platform,self.emitters[RadarUid].band)
+                    if sensorMargins < 15 then
+                        local az,el = self:getAzimuth(platformPos, radarPos, sensorMargins )
+                        if not isAerialUnit then
+                            el = nil
+                        end
+                        -- env.info(platform:getName() .. "-->"..  mist.utils.tableShow(platform:getPosition().x) )
+                        local datapoint = HoundElintDatapoint:New(platform,platformPos, az, el, timer.getAbsTime(),platformIsStatic,sensorMargins)
+                        self.emitters[RadarUid]:AddPoint(datapoint)
                     end
-                    -- env.info(platform:getName() .. "-->"..  mist.utils.tableShow(platform:getPosition().x) )
-                    local datapoint = HoundElintDatapoint:New(platform,platformPos, az, el, timer.getAbsTime(),platformIsStatic)
-                    self.emitters[RadarUid]:AddPoint(datapoint)
                 end
             end
         end 
@@ -1991,7 +1996,6 @@ do
             end
             self.radioMenu.data[assigned].data[uid] = missionCommands.addCommandForCoalition(self.coalitionId, emitter:generateRadioItemText(), self.radioMenu.data[assigned].menus[submenu], self.TransmitSamReport,{self=self,emitter=emitter})
         end
-
     end
 
     function HoundElint:removeRadarRadioItem(emitter)
@@ -2036,4 +2040,4 @@ do
 end
 
 env.info("Hound ELINT Loaded Successfully")
--- Build date 14-05-2021
+-- Build date 15-05-2021

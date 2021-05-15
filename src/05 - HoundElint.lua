@@ -228,7 +228,6 @@ do
         gSelf.atis.loop.last_update =  timer.getAbsTime()
     end
 
-
     --[[
         Controller functions
     --]]
@@ -258,7 +257,6 @@ do
         gSelf.controller:addMessageObj(msgObj)
 
     end
-
 
     function HoundElint:notifyDeadEmitter(emitter)
         if self.controller.settings.alerts == false then return end
@@ -306,28 +304,15 @@ do
         return 15.0
     end
 
-    function HoundElint.generateError(precision)
-        local MAG = math.abs(gaussian(0, precision * 50) / 50)
-        local ROT = math.random() * 2 * math.pi
-        -- x` = x*cos(theta)-y*sin(theta)
-        -- y' = x*sin(theta)+y*cos(theta)
-        local epsilon = {}
-        epsilon.az = -MAG*math.sin(ROT)
-        epsilon.el = MAG*math.cos(ROT)
-        return epsilon
-    end
 
     function HoundElint:getAzimuth(src, dst, sensorError)
         local dirRad = mist.utils.getDir(mist.vec.sub(dst, src))
-        -- local elRad =  math.acos(mist.utils.get2DDist(src,dst)/mist.utils.get3DDist(src,dst))
-        -- tan(θ) = Opposite / Adjacent
-        -- 
         local elRad = math.atan((dst.y-src.y)/mist.utils.get2DDist(src,dst))
 
-        local randomError = HoundElint.generateError(sensorError)
+        local randomError = HoundUtils.getAngularError(sensorError)
         local AzDeg = mist.utils.round((math.deg(dirRad) + randomError.az + 360) % 360, 3)
         local ElDeg = mist.utils.round((math.deg(elRad) + randomError.el), 3)
-        -- env.info("sensor is: ".. sensorError .. "passing in " .. sensorError*500 / 1000  )
+        -- env.info("sensor is: ".. mist.utils.tableShow(randomError) .. "passing in " .. sensorError )
         -- env.info("az: " .. math.deg(dirRad) .. " err: "..  randomError.az .. " final: " ..AzDeg)
         -- env.info("el: " .. math.deg(elRad) .. " err: "..  randomError.el .. " final: " ..ElDeg)
         return math.rad(AzDeg),math.rad(ElDeg)
@@ -372,8 +357,7 @@ do
             env.info("No Transmitting Radars")
             return
         end
-        env.info("Recivers: " .. table.getn(self.platform) .. " | Radars: " .. table.getn(Radars))
-
+        -- env.info("Recivers: " .. table.getn(self.platform) .. " | Radars: " .. table.getn(Radars))
         for i,RadarName in ipairs(Radars) do
             local radar = Unit.getByName(RadarName)
             local RadarUid = radar:getID()
@@ -396,7 +380,8 @@ do
                     if PlatformUnitCategory == Unit.Category.HELICOPTER or PlatformUnitCategory == Unit.Category.AIRPLANE then
                         isAerialUnit = true
                         if self.addPositionError then
-                            platformPos = mist.getRandPointInCircle( platform:getPosition().p, self.positionErrorRadius)
+                            -- TODO: make this work
+                            -- platformPos = mist.getRandPointInCircle( platformPos, self.positionErrorRadius)
                         end                    
                     end
 
@@ -410,13 +395,16 @@ do
                         self.emitters[RadarUid] =
                             HoundContact:New(radar, self.coalitionId)
                     end
-                    local az,el = self:getAzimuth(platformPos, radarPos, self:getSensorPrecision(platform,self.emitters[RadarUid].band))
-                    if not isAerialUnit then
-                        el = nil
+                    local sensorMargins = self:getSensorPrecision(platform,self.emitters[RadarUid].band)
+                    if sensorMargins < 15 then
+                        local az,el = self:getAzimuth(platformPos, radarPos, sensorMargins )
+                        if not isAerialUnit then
+                            el = nil
+                        end
+                        -- env.info(platform:getName() .. "-->"..  mist.utils.tableShow(platform:getPosition().x) )
+                        local datapoint = HoundElintDatapoint:New(platform,platformPos, az, el, timer.getAbsTime(),platformIsStatic,sensorMargins)
+                        self.emitters[RadarUid]:AddPoint(datapoint)
                     end
-                    -- env.info(platform:getName() .. "-->"..  mist.utils.tableShow(platform:getPosition().x) )
-                    local datapoint = HoundElintDatapoint:New(platform,platformPos, az, el, timer.getAbsTime(),platformIsStatic)
-                    self.emitters[RadarUid]:AddPoint(datapoint)
                 end
             end
         end 
@@ -642,7 +630,6 @@ do
             end
             self.radioMenu.data[assigned].data[uid] = missionCommands.addCommandForCoalition(self.coalitionId, emitter:generateRadioItemText(), self.radioMenu.data[assigned].menus[submenu], self.TransmitSamReport,{self=self,emitter=emitter})
         end
-
     end
 
     function HoundElint:removeRadarRadioItem(emitter)

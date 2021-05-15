@@ -27,13 +27,13 @@ do
             ['Name'] = "Fan-song",
             ['Assigned'] = "SA-2",
             ['Role'] = "SNR",
-            ['Band'] = 'E'
+            ['Band'] = 'G'
         },
         ['snr s-125 tr'] = {
             ['Name'] = "Low Blow",
             ['Assigned'] = "SA-3",
             ['Role'] = "TR",
-            ['Band'] = 'D'
+            ['Band'] = 'I'
         },
         ['Kub 1S91 str'] = {
             ['Name'] = "Straight Flush",
@@ -346,46 +346,46 @@ do
         [Object.Category.STATIC] = {["Comms tower M"] = {precision = 0.15, antenna = {size = 80, factor = 1}}},
         [Object.Category.UNIT] = {
             -- Ground Units
-            ["MLRS FDDM"] = {precision = 0.5, antenna = {size = 15, factor = 1}},
-            ["SPK-11"] = {precision = 0.5, antenna = {size = 15, factor = 1}},
+            ["MLRS FDDM"] = {antenna = {size = 15, factor = 1}},
+            ["SPK-11"] = {antenna = {size = 15, factor = 1}},
             -- Helicopters
-            ["CH-47D"] = {precision = 2.5, antenna = {size = 12, factor = 1}},
-            ["CH-53E"] = {precision = 2.5, antenna = {size = 10, factor = 1}},
-            ["MIL-26"] = {precision = 2.5, antenna = {size = 20, factor = 1}},
-            ["SH-60B"] = {precision = 4.0, antenna = {size = 8, factor = 1}},
-            ["UH-60A"] = {precision = 4.0, antenna = {size = 8, factor = 1}},
-            ["Mi-8MT"] = {precision = 4.0, antenna = {size = 8, factor = 1}},
-            ["UH-1H"] = {precision = 6.0, antenna = {size = 4, factor = 1}},
-            ["KA-27"] = {precision = 6.0, antenna = {size = 4, factor = 1}},
+            ["CH-47D"] = {antenna = {size = 12, factor = 1}},
+            ["CH-53E"] = {antenna = {size = 10, factor = 1}},
+            ["MIL-26"] = {antenna = {size = 20, factor = 1}},
+            ["SH-60B"] = {antenna = {size = 8, factor = 1}},
+            ["UH-60A"] = {antenna = {size = 8, factor = 1}},
+            ["Mi-8MT"] = {antenna = {size = 8, factor = 1}},
+            ["UH-1H"] = {antenna = {size = 4, factor = 1}},
+            ["KA-27"] = {antenna = {size = 4, factor = 1}},
             -- Airplanes
-            ["C-130"] = {precision = 1.5, antenna = {size = 35, factor = 1}},
-            ["C-17A"] = {precision = 1.5, antenna = {size = 50, factor = 1}},
-            ["S-3B"] = {precision = 2.0, antenna = {size = 18, factor = 0.8}},
-            ["E-3A"] = {precision = 5.0, antenna = {size = 45, factor = 0.5}},
-            ["E-2D"] = {precision = 5.0, antenna = {size = 20, factor = 0.5}},
-            ["Tu-95MS"] = {precision = 1.5, antenna = {size = 50, factor = 1}},
-            ["Tu-142"] = {precision = 1.5, antenna = {size = 50, factor = 1}},
-            ["IL-76MD"] = {precision = 1.5, antenna = {size = 48, factor = 0.8}},
-            ["An-30M"] = {precision = 1.5, antenna = {size = 25, factor = 1}},
-            ["A-50"] = {precision = 5, antenna = {size = 48, factor = 0.5}},
-            ["An-26B"] = {precision = 2.0, antenna = {size = 26, factor = 0.9}},
-            ["Su-25T"] = {precision = 2.5, antenna = {size = 0.5, factor = 0.75}},
-            ["AJS37"] = {precision = 2.5, antenna = {size = 0.5, factor = 0.75}}
+            ["C-130"] = {antenna = {size = 35, factor = 1}},
+            ["C-17A"] = {antenna = {size = 50, factor = 1}},
+            ["S-3B"] = {antenna = {size = 18, factor = 0.8}},
+            ["E-3A"] = {antenna = {size = 45, factor = 0.5}},
+            ["E-2D"] = {antenna = {size = 20, factor = 0.5}},
+            ["Tu-95MS"] = {antenna = {size = 50, factor = 1}},
+            ["Tu-142"] = {antenna = {size = 50, factor = 1}},
+            ["IL-76MD"] = {antenna = {size = 48, factor = 0.8}},
+            ["An-30M"] = {antenna = {size = 25, factor = 1}},
+            ["A-50"] = {antenna = {size = 48, factor = 0.5}},
+            ["An-26B"] = {antenna = {size = 26, factor = 0.9}},
+            ["Su-25T"] = {antenna = {size = 1.6, factor = 0.75}},
+            ["AJS37"] = {antenna = {size = 1.6, factor = 0.75}}
         }
     }
 
     HoundDB.Bands = {
         ["A"] = 1.713100,
-        ["C"] = 0.399723,
         ["B"] = 0.799447,
-        ["E"] = 0.119917,
+        ["C"] = 0.399723,
         ["D"] = 0.199862,
-        ["G"] = 0.059958,
+        ["E"] = 0.119917,
         ["F"] = 0.085655,
-        ["I"] = 0.033310,
+        ["G"] = 0.059958,
         ["H"] = 0.042827,
-        ["K"] = 0.009993,
+        ["I"] = 0.033310,
         ["J"] = 0.019986,
-        ["L"] = 0.005996
+        ["K"] = 0.009993,
+        ["L"] = 0.005996,
     }
 end

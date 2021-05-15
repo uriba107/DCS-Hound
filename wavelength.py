@@ -41,19 +41,19 @@ platforms = {
             "An-30M": {"category": 2, "antenna":{"size":25, "factor":1}},
             "A-50": {"category": 2, "antenna":{"size":48, "factor":0.5}},
             "An-26B": {"category": 2, "antenna":{"size":26, "factor":0.9}},
-            "Su-25T": {"category": 2, "antenna":{"size":0.5, "factor":1}},
-            "AJS37": {"category": 2, "antenna":{"size":0.5, "factor":1}}
+            "Su-25T": {"category": 2, "antenna":{"size":1.6, "factor":1}},
+            "AJS37": {"category": 2, "antenna":{"size":1.6, "factor":1}}
         }
 
 def genBandTable():
     print("HoundDB.Bands = {")
-    for band in bands:
+    for band in sorted(bands):
         bands[band]["wavelength"] = (299792458.0/bands[band]["Freq"])
         print("    [\"%s\"] = %f,"%(band,bands[band]["wavelength"]))
     print("}")
 
 def calcResolution(wavelength,antenna):
-    return min(15, math.degrees(wavelength/antenna))
+    return math.degrees(wavelength/antenna)
 
 def genResolutionTable():
     for platform in sorted(platforms,key=lambda  item:  (platforms[item]['category'],item)):
@@ -62,8 +62,24 @@ def genResolutionTable():
         CBand = calcResolution(bands["C"]["wavelength"],antenna)
         print ("%s: %.2f / %.2f"%(platform,CBand,Hband))
 
+def getAntennaSize(resDeg,band):
+    resRad = math.radians(resDeg)
+    print("for %.1f degrees on %s Band you need %fm sensor"%(resDeg,band,bands[band]["wavelength"]/resRad)) 
+    return bands[band]["wavelength"]/resRad
+
+def showRes(band,antenna):
+    wavelength = bands[band]["wavelength"]
+    print("%.2f antenna on %s Band resolution is %f deg"%(antenna,band,calcResolution(wavelength,antenna)))
+    return calcResolution(wavelength,antenna)
+
+print("=== Band wavelength data ===")
 genBandTable()
+print("\n=== ReadMe resolution data ===")
 genResolutionTable()
 
-# sorted_dict = sorted(platforms,key=lambda  item: (platforms[item]['category'],item))
-# print(sorted_dict)
+print("\n=== Other stuff ===")
+
+
+showRes("H",getAntennaSize(14.9,"C"))
+showRes("C",1.6)
+showRes("C",0.22*3.2)

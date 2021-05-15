@@ -283,7 +283,18 @@ do
     end
 
     function HoundUtils.getDefraction(band,antenna_size)
-        if band == nil or antenna_size == nil or antenna_size == 0 then return 15 end
-        return math.min(math.deg(HoundDB.Bands[band]/antenna_size),15)
+        if band == nil or antenna_size == nil or antenna_size == 0 then return 30 end
+        return math.deg(HoundDB.Bands[band]/antenna_size)
+    end
+
+    
+    function HoundUtils.getAngularError(variance)
+        local MAG = math.abs(gaussian(0, variance * 10 ) / 10)
+        local ROT = math.random() * 2 * math.pi
+        
+        local epsilon = {}
+        epsilon.az = -MAG*math.sin(ROT)
+        epsilon.el = MAG*math.cos(ROT)
+        return epsilon
     end
 end

@@ -3,7 +3,7 @@ do
     HoundElintDatapoint = {}
     HoundElintDatapoint.__index = HoundElintDatapoint
 
-    function HoundElintDatapoint:New(platform0, p0, az0, el0, t0,isPlatformStatic)
+    function HoundElintDatapoint:New(platform0, p0, az0, el0, t0,isPlatformStatic,sensorMargins)
         local elintDatapoint = {}
         setmetatable(elintDatapoint, HoundElintDatapoint)
         elintDatapoint.platformPos = p0
@@ -12,7 +12,8 @@ do
         elintDatapoint.t = tonumber(t0)
         elintDatapoint.platformId = platform0:getID()
         elintDatapoint.platfromName = platform0:getName()
-        elintDatapoint.platformStatic = isPlatformStatic
+        elintDatapoint.platformStatic = isPlatformStatic or false
+        elintDatapoint.platformPrecision = sensorMargins or 20
         elintDatapoint.estimatedPos = nil
         return elintDatapoint
     end
@@ -398,7 +399,10 @@ do
         if numStaticPoints > 1 then
             for i=1,numStaticPoints-1 do
                 for j=i+1,numStaticPoints do
-                    table.insert(estimatePosition,self:triangulatePoints(staticDataPoints[i],staticDataPoints[j]))
+                    local err = (staticDataPoints[i].platformPrecision + staticDataPoints[j].platformPrecision)/2
+                    if math.deg(HoundUtils.angleDeltaRad(staticDataPoints[i].az,staticDataPoints[j].az)) > err then
+                        table.insert(estimatePosition,self:triangulatePoints(staticDataPoints[i],staticDataPoints[j]))
+                    end
                 end
             end
         end
@@ -407,7 +411,8 @@ do
         if numStaticPoints > 0  and numMobilepoints > 0 then
             for i,staticDataPoint in ipairs(staticDataPoints) do
                 for j,mobileDataPoint in ipairs(mobileDataPoints) do
-                    if math.deg(HoundUtils.angleDeltaRad(staticDataPoint.az,mobileDataPoint.az)) > 1.5 then
+                    local err = (staticDataPoint.platformPrecision + mobileDataPoint.platformPrecision)/2
+                    if math.deg(HoundUtils.angleDeltaRad(staticDataPoint.az,mobileDataPoint.az)) > err then
                         table.insert(estimatePosition,self:triangulatePoints(staticDataPoint,mobileDataPoint))
                     end
                 end
@@ -418,14 +423,15 @@ do
         if numMobilepoints > 1 then
             for i=1,numMobilepoints-1 do
                 for j=i+1,numMobilepoints do
-                    if math.deg(HoundUtils.angleDeltaRad(mobileDataPoints[i].az,mobileDataPoints[j].az)) > 2 then
+                    local err = (mobileDataPoints[i].platformPrecision + mobileDataPoints[j].platformPrecision)/2
+                    if math.deg(HoundUtils.angleDeltaRad(mobileDataPoints[i].az,mobileDataPoints[j].az)) > err then
                         table.insert(estimatePosition,self:triangulatePoints(mobileDataPoints[i],mobileDataPoints[j]))
                     end
                 end
             end
         end
         
-        if length(estimatePosition) > 1 then
+        if length(estimatePosition) > 2 then
             self:calculatePos(estimatePosition)
             local combinedDataPoints = {} 
             if numMobilepoints > 0 then
