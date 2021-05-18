@@ -1,32 +1,66 @@
 do
-    STTS.DIRECTORY = "C:\\Program Files\\DCS-SimpleRadio-Standalone"
+    if STTS ~= nil then
+        STTS.DIRECTORY = "C:\\Program Files\\DCS-SimpleRadio-Standalone"
+    end
 
     -- SA-6 activation logic
-    SA6_North = Group.getByName("SYR_SA-6_N")
-    SA6_South = Group.getByName("SYR_SA-6_S")
-    SEAD_PLAYER_GRP = Group.getByName("SEAD_USER")
 
-    -- SA6_North:enableEmission(false)
-    -- SA6_South:enableEmission(false)
+    SA6 = {}
+    SA6.North = nil
+    SA6.South = nil
+    SA6.template = "SYR_SA6"
+    function SA6.destroy(GroupName)
+        env.info("check " .. GroupName)
 
+        local SAM = Group.getByName(GroupName)
+        local destroy = false
+        for index, data in pairs(SAM:getUnits()) do
+            if Unit.getTypeName(data) == "Kub 1S91 str" and Unit.getLife(data) < 1 then
+                destroy = true
+            end 
+        end
+        if destroy then
+            SAM:destroy()
+        end
+        env.info(GroupName .. " destroy " .. tostring(destroy))
 
-    SA6GoLive = function ()
-        -- SA6_North:enableEmission(true)
-        -- SA6_South:enableEmission(true)
-        trigger.action.activateGroup(SA6_North)
-        trigger.action.activateGroup(SA6_South)
+        return destroy
     end
 
-    RestartMission = function()
-        local filename = DCS.getMissionFilename()
-        net.load_mission(filename)
+    function SA6.activate(SAM)
+        local control = SAM:getController()
+        control:setOnOff(true)
+        control:setOption(0,2) -- ROE, Open_file
+        control:setOption(9,2) -- Alarm_State, RED
+        SAM:activate()
     end
 
-    mgmt_menu = {
+    function SA6.GoLive()
+        env.info("GoLive")
+        if SA6.North == nil or SA6.destroy(SA6.North:getName()) then
+            SA6.North = Unit.getByName(mist.cloneInZone(SA6.template,"SA6_North")["units"][1]["name"]):getGroup()
+            SA6.activate(SA6.North)
+
+        end
+
+        if SA6.South == nil or SA6.destroy(SA6.South:getName()) then
+            -- SA6.South = mist.cloneInZone(SA6.template,"SA6_South")
+            SA6.South = Unit.getByName(mist.cloneInZone(SA6.template,"SA6_South")["units"][1]["name"]):getGroup()
+            SA6.activate(SA6.South)
+        end
+
+    end
+
+    -- RestartMission = function()
+    --     local filename = DCS.getMissionFilename()
+    --     net.load_mission(filename)
+    -- end
+
+    MAIN_MENU = {
         root = missionCommands.addSubMenuForCoalition(coalition.side.BLUE,"Mission Actions")
     }
-    mgmt_menu.activateSa6 = missionCommands.addCommandForCoalition(coalition.side.BLUE,"Activate SA-6",mgmt_menu.root,SA6GoLive)
-    mgmt_menu.activateSa6 = missionCommands.addCommandForCoalition(coalition.side.BLUE,"Restart Mission",mgmt_menu.root,RestartMission)
+    MAIN_MENU.activateSa6 = missionCommands.addCommandForCoalition(coalition.side.BLUE,"Activate SA-6",MAIN_MENU.root,SA6.GoLive)
+    -- MAIN_MENU.activateSa6 = missionCommands.addCommandForCoalition(coalition.side.BLUE,"Restart Mission",MAIN_MENU.root,RestartMission)
 
 
 
@@ -39,12 +73,12 @@ do
     HoundBlue:addPlatform("ELINT MERON") -- Ground Station
 
 
-    controller_args = {
+    local controller_args = {
         freq = "251.000,122.000,35.000",
         modulation = "AM,AM,FM",
         gender = "male"
     }
-    atis_args = {
+    local atis_args = {
         freq = "253.000,124.000",
         modulation = "AM,AM"
     }

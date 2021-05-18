@@ -164,7 +164,7 @@ do
     function HoundContact:calculateEllipse(estimatedPositions,Theta)
         table.sort(estimatedPositions,function(a,b) return tonumber(mist.utils.get2DDist(self.pos.p,a)) < tonumber(mist.utils.get2DDist(self.pos.p,b)) end)
 
-        local percentile = math.floor(length(estimatedPositions)*0.50)
+        local percentile = math.floor(length(estimatedPositions)*0.55)
         local RelativeToPos = {}
         local NumToUse = math.max(math.min(2,length(estimatedPositions)),percentile)
         for i = 1, NumToUse  do
@@ -307,12 +307,12 @@ do
     function HoundContact:generateTtsReport()
         if self.pos.p == nil then return end
         local phoneticGridPos,phoneticBulls = self:getTtsData(true,3)
-        local msg =  self.typeName .. " " .. (self.uid % 100) ..", bullz " .. phoneticBulls -- .. ", grid ".. phoneticGridPos
+        local msg =  self.typeName .. " " .. (self.uid % 100) .. ", " .. HoundUtils.TTS.getVerbalContactAge(self.last_seen,true) .." at bullz " .. phoneticBulls -- .. ", grid ".. phoneticGridPos
+        msg = msg .. ", accuracy " .. HoundUtils.TTS.getVerbalConfidenceLevel( self.uncertenty_radius.r )
         msg = msg .. ", position " .. HoundUtils.TTS.getVerbalLL(self.pos.LL.lat,self.pos.LL.lon)
         msg = msg .. ", I repeat " .. HoundUtils.TTS.getVerbalLL(self.pos.LL.lat,self.pos.LL.lon)
         msg = msg .. ", MGRS " .. phoneticGridPos
-        msg = msg .. ", elevation  " .. HoundUtils.getRoundedElevationFt(self.pos.elev) .. "feet MSL"
-        msg = msg .. ", accuracy " .. HoundUtils.TTS.getVerbalConfidenceLevel( self.uncertenty_radius.r )
+        msg = msg .. ", elevation  " .. HoundUtils.getRoundedElevationFt(self.pos.elev) .. " feet MSL"
         msg = msg .. ", ellipse " ..  HoundUtils.TTS.simplfyDistance(self.uncertenty_radius.major) .. " by " ..  HoundUtils.TTS.simplfyDistance(self.uncertenty_radius.minor) .. ", aligned bearing " .. HoundUtils.TTS.toPhonetic(string.format("%03d",self.uncertenty_radius.az))
         msg = msg .. ", first seen " .. HoundUtils.TTS.getTtsTime(self.first_seen) .. ", last seen " .. HoundUtils.TTS.getVerbalContactAge(self.last_seen) .. " ago. " .. HoundUtils:getControllerResponse()
         return msg
@@ -321,12 +321,12 @@ do
     function HoundContact:generateTextReport()
         if self.pos.p == nil then return end
         local GridPos,BePos = self:getTextData(true,3)
-        local msg =  self.typeName .. " " .. (self.uid % 100) .."\n"
+        local msg =  self.typeName .. " " .. (self.uid % 100) .." (" .. HoundUtils.TTS.getVerbalContactAge(self.last_seen,true).. ")\n"
+        msg = msg .. "Accuracy: " .. HoundUtils.TTS.getVerbalConfidenceLevel( self.uncertenty_radius.r ) .. "\n"
         msg = msg .. "BE: " .. BePos .. "\n" -- .. " (grid ".. GridPos ..")\n"
         msg = msg .. "LL: " .. HoundUtils.Text.getLL(self.pos.LL.lat,self.pos.LL.lon).."\n"
         msg = msg .. "MGRS: " .. GridPos .. "\n"
         msg = msg .. "Elev: " .. HoundUtils.getRoundedElevationFt(self.pos.elev) .. "ft\n"
-        msg = msg .. "Accuracy: " .. HoundUtils.TTS.getVerbalConfidenceLevel( self.uncertenty_radius.r ) .. "\n"
         msg = msg .. "Ellipse: " ..  self.uncertenty_radius.major .. " by " ..  self.uncertenty_radius.minor .. " aligned bearing " .. string.format("%03d",self.uncertenty_radius.az) .. "\n"
         msg = msg .. "First detected: " .. HoundUtils.Text.getTime(self.first_seen) .. " Last Contact: " ..  HoundUtils.TTS.getVerbalContactAge(self.last_seen) .. " ago. " .. HoundUtils:getControllerResponse()
         return msg
