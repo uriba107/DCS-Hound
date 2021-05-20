@@ -60,10 +60,14 @@ do
         return score[math.min(#score,math.max(1,math.ceil(confidenceRadius/500)))]
     end
 
-    function HoundUtils.TTS.getVerbalContactAge(timestamp,isSimple)
+    function HoundUtils.TTS.getVerbalContactAge(timestamp,isSimple,NATO)
         local ageSeconds = HoundUtils:timeDelta(timestamp,timer.getAbsTime())
 
         if isSimple then 
+            if NATO then
+                if ageSeconds < 16 then return "Active" end
+                return "Awake"
+            end
             if ageSeconds < 16 then return "Active" end
             if ageSeconds < 90 then return "very recent" end
             if ageSeconds < 180 then return "recent" end
@@ -262,7 +266,6 @@ do
                 local weapons = unit:getAmmo()
                 if weapons ~= nil then
                     for j, ammo in ipairs(weapons) do
-                        -- env.info(mist.utils.tableShow(ammo))
                         if ammo.desc.category == Weapon.Category.MISSILE and ammo.desc.missileCategory == Weapon.MissileCategory.SAM then
                             maxRng = math.max(math.max(ammo.desc.rangeMaxAltMax,ammo.desc.rangeMaxAltMin),maxRng)
                         end
@@ -270,7 +273,6 @@ do
                 end
             end
         end
-        -- env.info("uid: " .. emitter:getID() .. " maxRNG: " .. maxRng)
         return maxRng
     end
 

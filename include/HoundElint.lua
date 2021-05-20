@@ -8,7 +8,7 @@ do
         -- EWR --
         ['p-19 s-125 sr'] = {
             ['Name'] = "Flat Face",
-            ['Assigned'] = "SA-2/3",
+            ['Assigned'] = "SA-2 or SA-3",
             ['Role'] = "SR",
             ['Band'] = 'C'
         },
@@ -474,10 +474,14 @@ do
         return score[math.min(#score,math.max(1,math.ceil(confidenceRadius/500)))]
     end
 
-    function HoundUtils.TTS.getVerbalContactAge(timestamp,isSimple)
+    function HoundUtils.TTS.getVerbalContactAge(timestamp,isSimple,NATO)
         local ageSeconds = HoundUtils:timeDelta(timestamp,timer.getAbsTime())
 
         if isSimple then 
+            if NATO then
+                if ageSeconds < 16 then return "Active" end
+                return "Awake"
+            end
             if ageSeconds < 16 then return "Active" end
             if ageSeconds < 90 then return "very recent" end
             if ageSeconds < 180 then return "recent" end
@@ -676,7 +680,6 @@ do
                 local weapons = unit:getAmmo()
                 if weapons ~= nil then
                     for j, ammo in ipairs(weapons) do
-                        -- env.info(mist.utils.tableShow(ammo))
                         if ammo.desc.category == Weapon.Category.MISSILE and ammo.desc.missileCategory == Weapon.MissileCategory.SAM then
                             maxRng = math.max(math.max(ammo.desc.rangeMaxAltMax,ammo.desc.rangeMaxAltMin),maxRng)
                         end
@@ -684,7 +687,6 @@ do
                 end
             end
         end
-        -- env.info("uid: " .. emitter:getID() .. " maxRNG: " .. maxRng)
         return maxRng
     end
 
@@ -859,7 +861,7 @@ do
         local pos = {}
         pos.x = Easting
         pos.z = Northing
-        pos.y = land.getHeight({pos.x,pos.z})
+        pos.y = land.getHeight({x=pos.x,y=pos.z})
 
         return pos
     end
@@ -922,7 +924,7 @@ do
     function HoundContact:calculatePos(estimatedPositions)
         if estimatedPositions == nil then return end
         self.pos.p =  mist.getAvgPoint(estimatedPositions)
-        self.pos.p.y = land.getHeight(self.pos.p)
+        self.pos.p.y = land.getHeight({x=self.pos.p.x,y=self.pos.p.z})
         local bullsPos = coalition.getMainRefPoint(self.platformCoalition)
         self.pos.LL.lat, self.pos.LL.lon =  coord.LOtoLL(self.pos.p)
         self.pos.elev = self.pos.p.y
@@ -964,12 +966,6 @@ do
         trigger.action.markToCoalition(self.markpointID+1, self.typeName .. " " .. (self.uid%100) .. " (" .. self.uncertenty_radius.major .. "/" .. self.uncertenty_radius.minor .. "@" .. self.uncertenty_radius.az .. "|" .. HoundUtils:timeDelta(self.last_seen) .. "s)",self.pos.p,self.platformCoalition,true)
     end
 
-    function HoundContact:positionDebug()
-        if self.pos.p == nil then return end
-        env.info("location of " ..self.typeName .. " is " .. self.pos.p.x .. " " ..  self.pos.p.z)
-    end
-
-
     function HoundContact:getTextData(utmZone,MGRSdigits)
         if self.pos.p == nil then return end
         local GridPos = ""
@@ -1008,11 +1004,19 @@ do
         return phoneticGridPos,phoneticBulls
     end
 
-    function HoundContact:generateTtsBrief()
+    function HoundContact:generateTtsBrief(NATO)
         if self.pos.p == nil or self.uncertenty_radius == nil then return end
-        local phoneticGridPos,phoneticBulls = self:getTtsData()
-        local str = self.typeName .. " " .. (self.uid % 100) .. ", " .. HoundUtils.TTS.getVerbalContactAge(self.last_seen,true)
-        str = str .. " at " .. phoneticGridPos -- .. ", bullz " .. phoneticBulls 
+        local phoneticGridPos,phoneticBulls = self:getTtsData(false,1)
+        local reportedName = self.typeName .. " " .. (self.uid % 100)
+        if NATO then
+            reportedName = string.gsub(self.typeAssigned,"(SA)-",'')
+        end
+        local str = reportedName .. ", " .. HoundUtils.TTS.getVerbalContactAge(self.last_seen,true,NATO)
+        if NATO then
+            str = str .. " bullseye " .. phoneticBulls
+        else
+            str = str .. " at " .. phoneticGridPos -- .. ", bullseye " .. phoneticBulls 
+        end
         str = str .. ", accuracy " .. HoundUtils.TTS.getVerbalConfidenceLevel( self.uncertenty_radius.r ) .. "."
         return str
     end
@@ -1020,7 +1024,7 @@ do
     function HoundContact:generateTtsReport()
         if self.pos.p == nil then return end
         local phoneticGridPos,phoneticBulls = self:getTtsData(true,3)
-        local msg =  self.typeName .. " " .. (self.uid % 100) .. ", " .. HoundUtils.TTS.getVerbalContactAge(self.last_seen,true) .." at bullz " .. phoneticBulls -- .. ", grid ".. phoneticGridPos
+        local msg =  self.typeName .. " " .. (self.uid % 100) .. ", " .. HoundUtils.TTS.getVerbalContactAge(self.last_seen,true) .." at bullseye " .. phoneticBulls -- .. ", grid ".. phoneticGridPos
         msg = msg .. ", accuracy " .. HoundUtils.TTS.getVerbalConfidenceLevel( self.uncertenty_radius.r )
         msg = msg .. ", position " .. HoundUtils.TTS.getVerbalLL(self.pos.LL.lat,self.pos.LL.lon)
         msg = msg .. ", I repeat " .. HoundUtils.TTS.getVerbalLL(self.pos.LL.lat,self.pos.LL.lon)
@@ -1047,7 +1051,7 @@ do
 
     function HoundContact:generateRadioItemText()
         if self.pos.p == nil then return end
-        local GridPos,BePos = self:getTextData(true)
+        local GridPos,BePos = self:getTextData(true,1)
         BePos = BePos:gsub(" for ","/")
         return self.typeName .. (self.uid % 100) .. " - BE: " .. BePos .. " (".. GridPos ..")"
     end 
@@ -1059,7 +1063,7 @@ do
         local GridPos,BePos 
         if isTTS then
             GridPos,BePos = self:getTtsData(true)
-            msg = msg .. ", bullz " .. BePos .. ", grid ".. GridPos
+            msg = msg .. ", bullseye " .. BePos .. ", grid ".. GridPos
         else
             GridPos,BePos = self:getTextData(true)
             msg = msg .. " BE: " .. BePos .. " (grid ".. GridPos ..")"
@@ -1073,7 +1077,7 @@ do
         local GridPos,BePos 
         if isTTS then
             GridPos,BePos = self:getTtsData(true)
-            msg = msg .. ", bullz " .. BePos .. ", grid ".. GridPos
+            msg = msg .. ", bullseye " .. BePos .. ", grid ".. GridPos
         else
             GridPos,BePos = self:getTextData(true)
             msg = msg .. " BE: " .. BePos .. " (grid ".. GridPos ..")"
@@ -1400,8 +1404,7 @@ do
         elint.atis.settings.freq = 250.500
         elint.atis.settings.interval = 4
         elint.atis.settings.speed = 1
-
-        elint.atis.reportEWR = false
+        elint.atis.settings.reportEWR = false
         return elint
     end
 
@@ -1562,10 +1565,18 @@ do
                 if ((gSelf.atis.loop.last_count == #gSelf.emitters) and
                      ((timer.getAbsTime() - gSelf.atis.loop.last_update) < 120)) then return end
             end
-            for uid, emitter in pairs(gSelf.emitters) do
+            local sortedContacts = {}
+
+            for uid,emitter in pairs(gSelf.emitters) do
+                table.insert(sortedContacts,emitter)
+            end
+    
+            table.sort(sortedContacts, HoundElint.sortContacts)
+
+            for uid, emitter in pairs(sortedContacts) do
                 if emitter.pos.p ~= nil then
                     if emitter.isEWR == false or (gSelf.atis.settings.reportEWR and emitter.isEWR) then
-                    body = body .. emitter:generateTtsBrief() .. " "
+                    body = body .. emitter:generateTtsBrief(gSelf.atis.settings.NATO) .. " "
                     end
                     if (gSelf.atis.settings.reportEWR == false and emitter.isEWR) then
                         numberEWR = numberEWR+1
@@ -1579,7 +1590,7 @@ do
         gSelf.atis.loop.body = body
 
         local reportId = HoundUtils.TTS.getReportId()
-        gSelf.atis.loop.header = gSelf.atis.settings.name .. " SAM information " .. reportId .. " " ..
+        gSelf.atis.loop.header = gSelf.atis.settings.name .. " Lowdown " .. reportId .. " " ..
                                HoundUtils.TTS.getTtsTime() .. ". "
         gSelf.atis.loop.footer = "you have " .. reportId .. "."
         local msg = gSelf.atis.loop.header .. gSelf.atis.loop.body .. gSelf.atis.loop.footer
@@ -1804,6 +1815,9 @@ do
                 end
             end
         end
+        for uid, emitter in pairs(self.emitters) do
+            if self.useMarkers then emitter:updateMarker(self.coalitionId) end
+         end
     end
 
     function HoundElint:Bark()
@@ -1823,9 +1837,9 @@ do
                 self:Process() 
                 self:populateRadioMenu()
             end
-            if timer.getAbsTime() % math.floor(gaussian(self.settings.barkInterval,7)) < self.settings.mainInterval+5 then
-                self:Bark()
-            end
+            -- if timer.getAbsTime() % math.floor(gaussian(self.settings.barkInterval,7)) < self.settings.mainInterval+5 then
+            --     self:Bark()
+            -- end
         end
     end
 
@@ -2040,4 +2054,4 @@ do
 end
 
 env.info("Hound ELINT Loaded Successfully")
--- Build date 18-05-2021
+-- Build date 21-05-2021

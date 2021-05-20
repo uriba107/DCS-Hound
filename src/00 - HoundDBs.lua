@@ -6,7 +6,7 @@ do
         -- EWR --
         ['p-19 s-125 sr'] = {
             ['Name'] = "Flat Face",
-            ['Assigned'] = "SA-2/3",
+            ['Assigned'] = "SA-2 or SA-3",
             ['Role'] = "SR",
             ['Band'] = 'C'
         },

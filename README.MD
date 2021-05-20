@@ -137,8 +137,7 @@ You can of course turn it off for any reason with:
     Elint_blue:systemOff()
 ```
 
-### More advanced fun stuff
-#### Map markers
+## Map markers
 ---
 Hound uses Map markers to indicate the estimated position of the radar tracket. It's a product of the system, and only contains data user can get from the system in other ways. (equvilant to making marks on a paper map)
 
@@ -151,6 +150,12 @@ and
 ```lua
 HoundElint:disableMarkers()
 ```
+
+## Text-To-Speech
+Hound allows user to recive information via two radio channles (using SRS).
+The are the [ATIS system](#atis-system) and the [SAM controller]
+
+both can be extensivly configured in the [Fine tuning TTS channels](#fine-tuning-tts-channels) segment below
 #### ATIS system
 ---
 As mentioned Hound includes Text-To-Speech using SRS. You players can recive updates via their radio.
@@ -162,13 +167,6 @@ This feature can be activated using:
 and turned off with
 ```lua
     Elint_blue:disableATIS()
-```
-
-system can be configured some more, but more on that later
-
-By default system will only report number of EWR radars tracked. you can activate EWR detailed report by setting the ATIS internal `reportEWR` to true
-```lua
-Elint_blue.atis.settings.reportEWR = true
 ```
 
 #### SAM controller
@@ -214,7 +212,7 @@ Elint_blue.controller:removeTransmitter()
 ```
 
 
-#### Fine tuning TTS stuff.
+#### Fine tuning TTS channels
 ---
 Oviously, you may want to tweak the radio to better work with you mission.
 this can be done using an arguments table and passing it to the configuration funtion.
@@ -228,7 +226,6 @@ possible settings are:
             name = "Hound", -- For ATIS this will be used in the opening line
             gender = "male"|"female",
             culture = "en-US"|"en-UK" -- (any installed on your system)
-
         }
 ```
 you can override one or more, and you can also have mutiple frequencies.
@@ -254,6 +251,39 @@ for example:
 ```
 This will change ATIS freqency to 251.5 and enable ATIS
 and will enable Controller both in Text and in Voice, while transmitting on two frequencies 251.0 AM and 35 FM
+
+
+**More ATIS settings**  
+---
+ATIS has a few more settings available in the args 
+```lua
+        args = {
+            reportEWR = false -- [false]/true/nil
+            NATO = false -- [false]/true
+        }
+```
+they control additional settings.
+**EWR reporting**  
+By default system will only report number of EWR radars tracked. you can activate EWR detailed report by setting the ATIS argument `reportEWR` to `true`.
+if set to `nil` it will not count nor report EWRs.
+
+`false` (default) - ATIS will inform you on how many EWR radars are tracked.  
+`true` - ATIS will treat EWRs are threats and report them in full.  
+`nil` - ATIS will ignore EWRs completly in the report. 
+
+**NATO LOWDOWN**  
+by ATIS will also call out radar names and Grid position.  
+```
+Straight Flush 17, grid GG20, accuracy very high
+```
+it is possible to switch it to NATO LOWDOWN format
+```
+6, ACTIVE, BULLSEYE 012 of 13, accuracy very high
+```
+
+this is configured by the `NATO` argument.  
+`false` (default) - report using radar name and grid.  
+`true` - report using SAM type number and Bullseye
 
 
 ## That's all folks!

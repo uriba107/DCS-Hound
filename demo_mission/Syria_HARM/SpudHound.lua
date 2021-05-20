@@ -13,10 +13,10 @@ do
         env.info("check " .. GroupName)
 
         local SAM = Group.getByName(GroupName)
-        local destroy = false
+        local destroy = true
         for index, data in pairs(SAM:getUnits()) do
-            if Unit.getTypeName(data) == "Kub 1S91 str" and Unit.getLife(data) < 1 then
-                destroy = true
+            if Unit.getTypeName(data) == "Kub 1S91 str" and (Unit.getLife(data) > 1 or Unit.isExist(data) or (Unit.getLife(data)/Unit.getLife0(data)) > 0.55) then
+                destroy = false
             end 
         end
         if destroy then
@@ -32,6 +32,7 @@ do
         control:setOnOff(true)
         control:setOption(0,2) -- ROE, Open_file
         control:setOption(9,2) -- Alarm_State, RED
+        control:setOption(20,false) -- ENGAGE_AIR_WEAPONS, false
         SAM:activate()
     end
 

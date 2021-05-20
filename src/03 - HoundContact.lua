@@ -146,7 +146,7 @@ do
         local pos = {}
         pos.x = Easting
         pos.z = Northing
-        pos.y = land.getHeight({pos.x,pos.z})
+        pos.y = land.getHeight({x=pos.x,y=pos.z})
 
         return pos
     end
@@ -209,7 +209,7 @@ do
     function HoundContact:calculatePos(estimatedPositions)
         if estimatedPositions == nil then return end
         self.pos.p =  mist.getAvgPoint(estimatedPositions)
-        self.pos.p.y = land.getHeight(self.pos.p)
+        self.pos.p.y = land.getHeight({x=self.pos.p.x,y=self.pos.p.z})
         local bullsPos = coalition.getMainRefPoint(self.platformCoalition)
         self.pos.LL.lat, self.pos.LL.lon =  coord.LOtoLL(self.pos.p)
         self.pos.elev = self.pos.p.y
@@ -251,12 +251,6 @@ do
         trigger.action.markToCoalition(self.markpointID+1, self.typeName .. " " .. (self.uid%100) .. " (" .. self.uncertenty_radius.major .. "/" .. self.uncertenty_radius.minor .. "@" .. self.uncertenty_radius.az .. "|" .. HoundUtils:timeDelta(self.last_seen) .. "s)",self.pos.p,self.platformCoalition,true)
     end
 
-    function HoundContact:positionDebug()
-        if self.pos.p == nil then return end
-        env.info("location of " ..self.typeName .. " is " .. self.pos.p.x .. " " ..  self.pos.p.z)
-    end
-
-
     function HoundContact:getTextData(utmZone,MGRSdigits)
         if self.pos.p == nil then return end
         local GridPos = ""
@@ -295,11 +289,19 @@ do
         return phoneticGridPos,phoneticBulls
     end
 
-    function HoundContact:generateTtsBrief()
+    function HoundContact:generateTtsBrief(NATO)
         if self.pos.p == nil or self.uncertenty_radius == nil then return end
-        local phoneticGridPos,phoneticBulls = self:getTtsData()
-        local str = self.typeName .. " " .. (self.uid % 100) .. ", " .. HoundUtils.TTS.getVerbalContactAge(self.last_seen,true)
-        str = str .. " at " .. phoneticGridPos -- .. ", bullz " .. phoneticBulls 
+        local phoneticGridPos,phoneticBulls = self:getTtsData(false,1)
+        local reportedName = self.typeName .. " " .. (self.uid % 100)
+        if NATO then
+            reportedName = string.gsub(self.typeAssigned,"(SA)-",'')
+        end
+        local str = reportedName .. ", " .. HoundUtils.TTS.getVerbalContactAge(self.last_seen,true,NATO)
+        if NATO then
+            str = str .. " bullseye " .. phoneticBulls
+        else
+            str = str .. " at " .. phoneticGridPos -- .. ", bullseye " .. phoneticBulls 
+        end
         str = str .. ", accuracy " .. HoundUtils.TTS.getVerbalConfidenceLevel( self.uncertenty_radius.r ) .. "."
         return str
     end
@@ -307,7 +309,7 @@ do
     function HoundContact:generateTtsReport()
         if self.pos.p == nil then return end
         local phoneticGridPos,phoneticBulls = self:getTtsData(true,3)
-        local msg =  self.typeName .. " " .. (self.uid % 100) .. ", " .. HoundUtils.TTS.getVerbalContactAge(self.last_seen,true) .." at bullz " .. phoneticBulls -- .. ", grid ".. phoneticGridPos
+        local msg =  self.typeName .. " " .. (self.uid % 100) .. ", " .. HoundUtils.TTS.getVerbalContactAge(self.last_seen,true) .." at bullseye " .. phoneticBulls -- .. ", grid ".. phoneticGridPos
         msg = msg .. ", accuracy " .. HoundUtils.TTS.getVerbalConfidenceLevel( self.uncertenty_radius.r )
         msg = msg .. ", position " .. HoundUtils.TTS.getVerbalLL(self.pos.LL.lat,self.pos.LL.lon)
         msg = msg .. ", I repeat " .. HoundUtils.TTS.getVerbalLL(self.pos.LL.lat,self.pos.LL.lon)
@@ -334,7 +336,7 @@ do
 
     function HoundContact:generateRadioItemText()
         if self.pos.p == nil then return end
-        local GridPos,BePos = self:getTextData(true)
+        local GridPos,BePos = self:getTextData(true,1)
         BePos = BePos:gsub(" for ","/")
         return self.typeName .. (self.uid % 100) .. " - BE: " .. BePos .. " (".. GridPos ..")"
     end 
@@ -346,7 +348,7 @@ do
         local GridPos,BePos 
         if isTTS then
             GridPos,BePos = self:getTtsData(true)
-            msg = msg .. ", bullz " .. BePos .. ", grid ".. GridPos
+            msg = msg .. ", bullseye " .. BePos .. ", grid ".. GridPos
         else
             GridPos,BePos = self:getTextData(true)
             msg = msg .. " BE: " .. BePos .. " (grid ".. GridPos ..")"
@@ -360,7 +362,7 @@ do
         local GridPos,BePos 
         if isTTS then
             GridPos,BePos = self:getTtsData(true)
-            msg = msg .. ", bullz " .. BePos .. ", grid ".. GridPos
+            msg = msg .. ", bullseye " .. BePos .. ", grid ".. GridPos
         else
             GridPos,BePos = self:getTextData(true)
             msg = msg .. " BE: " .. BePos .. " (grid ".. GridPos ..")"

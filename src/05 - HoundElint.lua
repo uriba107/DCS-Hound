@@ -34,8 +34,7 @@ do
         elint.atis.settings.freq = 250.500
         elint.atis.settings.interval = 4
         elint.atis.settings.speed = 1
-
-        elint.atis.reportEWR = false
+        elint.atis.settings.reportEWR = false
         return elint
     end
 
@@ -196,10 +195,18 @@ do
                 if ((gSelf.atis.loop.last_count == #gSelf.emitters) and
                      ((timer.getAbsTime() - gSelf.atis.loop.last_update) < 120)) then return end
             end
-            for uid, emitter in pairs(gSelf.emitters) do
+            local sortedContacts = {}
+
+            for uid,emitter in pairs(gSelf.emitters) do
+                table.insert(sortedContacts,emitter)
+            end
+    
+            table.sort(sortedContacts, HoundElint.sortContacts)
+
+            for uid, emitter in pairs(sortedContacts) do
                 if emitter.pos.p ~= nil then
                     if emitter.isEWR == false or (gSelf.atis.settings.reportEWR and emitter.isEWR) then
-                    body = body .. emitter:generateTtsBrief() .. " "
+                    body = body .. emitter:generateTtsBrief(gSelf.atis.settings.NATO) .. " "
                     end
                     if (gSelf.atis.settings.reportEWR == false and emitter.isEWR) then
                         numberEWR = numberEWR+1
@@ -213,7 +220,7 @@ do
         gSelf.atis.loop.body = body
 
         local reportId = HoundUtils.TTS.getReportId()
-        gSelf.atis.loop.header = gSelf.atis.settings.name .. " SAM information " .. reportId .. " " ..
+        gSelf.atis.loop.header = gSelf.atis.settings.name .. " Lowdown " .. reportId .. " " ..
                                HoundUtils.TTS.getTtsTime() .. ". "
         gSelf.atis.loop.footer = "you have " .. reportId .. "."
         local msg = gSelf.atis.loop.header .. gSelf.atis.loop.body .. gSelf.atis.loop.footer
@@ -438,6 +445,9 @@ do
                 end
             end
         end
+        for uid, emitter in pairs(self.emitters) do
+            if self.useMarkers then emitter:updateMarker(self.coalitionId) end
+         end
     end
 
     function HoundElint:Bark()
@@ -457,9 +467,9 @@ do
                 self:Process() 
                 self:populateRadioMenu()
             end
-            if timer.getAbsTime() % math.floor(gaussian(self.settings.barkInterval,7)) < self.settings.mainInterval+5 then
-                self:Bark()
-            end
+            -- if timer.getAbsTime() % math.floor(gaussian(self.settings.barkInterval,7)) < self.settings.mainInterval+5 then
+            --     self:Bark()
+            -- end
         end
     end
 
