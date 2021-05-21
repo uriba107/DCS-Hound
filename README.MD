@@ -87,8 +87,7 @@ Yes you can.
 [DCS-SimpleTextToSpeech (by ciribob)](https://github.com/ciribob/DCS-SimpleTextToSpeech) - Optional (required for TTS)
 
 `
-Due to the length of messages, I've written a custom override function for STTS, this needs to be included if you plan on using TTS. Use that file to override TSST directory as instructed in the SimpleTextToSpeech instructions
-This will require you to comment out the sanitation in "DCS World/Scripts/MissionScripting.lua"
+for TTS you'll need to set up STTS properly. consult Ciribob's repo for that. You will require you to comment out the sanitation in "DCS World/Scripts/MissionScripting.lua"
 `
 
 #### adding to the mission
@@ -290,12 +289,12 @@ this is configured by the `NATO` argument.
 
 ---
 ## Known Issues
-  * when from some reason, all markers are removed, they might not appear again until  manual marker is added. (linked to the fact that "next idx" cannot be retrived from system directly)
-  * not a bug but a feature. system noly provides LL in DMS format. if your aircraft only accepts DMM.MMM (Viper and Hawg, looking at you).. Pilot will neet to know to to convert seconds to decimal minutes. (i.e 6 seconds = 0.1 minute)
+  * In some cases, when all markers are removed, they might not appear again until a manual marker is added. 
+  * not a bug but a feature. system only provides LL in DMS format. if your aircraft only accepts DMM.MMM (Viper and Hawg, looking at you).. Pilot will neet to know to to convert seconds to decimal minutes. (i.e 6 seconds = 0.1 minute)
   * Text alerts will appear for all coalition memebers regarless of tuned radio channles and such. so consider turning them off. This will be addressed in an undetermind date in the future :)
-## special notes for Alpha phase
-  * currently sample rate is every 15 seconds, where data points are commited every one minute.
-  * 11 data points are soted per radar per platform.
-  * menus update every ~60 seconds
-  * Markers are updated every ~120 seconds (2 mins)
-  * ATIS is on a loop, will update every ~60 seconds or so, unless it's a long message then it will update on next run. If nothing has changed, it will re-broadcast the same one again. 
+
+## Special thanks
+  * __[Ciribob](https://github.com/ciribob)__ - without his help, support and acceptence of wierd merge requests. none of this would have been possible.
+  * __flywaldair__ - Hound was initially inspired by [Skynet IADS](https://github.com/walder/Skynet-IADS).
+  * __Nikos__ - That had to endure 2 am texts with screenshots.
+  * __Grimes__ - For [MIST](https://github.com/mrSkortch/MissionScriptingTools) and because Without the [Hoggit Wiki](https://wiki.hoggitworld.com/) we would all be fumbling in the dark.  
