@@ -1590,8 +1590,13 @@ do
         gSelf.atis.loop.body = body
 
         local reportId = HoundUtils.TTS.getReportId()
-        gSelf.atis.loop.header = gSelf.atis.settings.name .. " Lowdown " .. reportId .. " " ..
-                               HoundUtils.TTS.getTtsTime() .. ". "
+        gSelf.atis.loop.header = gSelf.atis.settings.name 
+        if gSelf.atis.settings.NATO then
+            gSelf.atis.loop.header = gSelf.atis.loop.header .. " Lowdown "
+        else
+            gSelf.atis.loop.header = gSelf.atis.loop.header .. " SAM information "
+        end 
+        gSelf.atis.loop.header = gSelf.atis.loop.header .. reportId .. " " .. HoundUtils.TTS.getTtsTime() .. ". "
         gSelf.atis.loop.footer = "you have " .. reportId .. "."
         local msg = gSelf.atis.loop.header .. gSelf.atis.loop.body .. gSelf.atis.loop.footer
         local msgObj = {

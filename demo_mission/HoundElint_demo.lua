@@ -24,6 +24,7 @@ do
     }
     atis_args = {
         freq = 251.500,
+        NATO = false
     }
 
     Elint_blue:configureController(tts_args)

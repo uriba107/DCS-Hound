@@ -289,6 +289,7 @@ this is configured by the `NATO` argument.
 
 ---
 ## Known Issues
+  * On initial detection accuracy will usually be very high with solution nowhere near the radar actual position. This is sorted by the system as more datapoints are gathered. allow at least 2 minutes for contact to stablize.
   * In some cases, when all markers are removed, they might not appear again until a manual marker is added. 
   * not a bug but a feature. system only provides LL in DMS format. if your aircraft only accepts DMM.MMM (Viper and Hawg, looking at you).. Pilot will neet to know to to convert seconds to decimal minutes. (i.e 6 seconds = 0.1 minute)
   * Text alerts will appear for all coalition memebers regarless of tuned radio channles and such. so consider turning them off. This will be addressed in an undetermind date in the future :)
