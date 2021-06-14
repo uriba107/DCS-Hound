@@ -1,6 +1,6 @@
 # Hound ELINT system for DCS
 ## Overview
-**Hound ELINT** is a scripted system for DCS. it approximates location of activly transmitting enemy radars by triangulating the radar using one or more assigned assets. Assets can be Airborn, ground units or stationary objects each has it's pros and cons.  
+**Hound ELINT** is a scripted system for DCS. it approximates location of activly transmitting enemy radars by triangulating the radar using one or more assigned assets. Assets can be Airborn, ground units or stationary objects each has it's pros and cons. 
 
 Hound presents data in sevral methods.
 
@@ -9,6 +9,8 @@ Hound presents data in sevral methods.
 3. Detailed information by a "SAM controller" can be provided as TTS (via SRS) and as text messages. 
 
 System can gather information about Enemy radar deployments and help understand the tactical situation or penetrate enemy defences. Because the System is asset based, you also need to be protecting these assets, as if they are destroyed, you loose your tactical data.
+
+Hound is compatible with MIST, MOOSE, Skynet IADS and High-Digit SAMs
 
 
 ## Putting this to work
