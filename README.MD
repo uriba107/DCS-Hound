@@ -102,7 +102,7 @@ on a "ONCE" type action with "time more 1" condition, add the scripts in the fol
 
 #### some screenshot as hints
 
-![Add scripts](./images/Hound_setup.jpg)
+![Add scripts](/images/hound_setup.jpg)
 
 
 ### Adding Hound system to your mission scripts
