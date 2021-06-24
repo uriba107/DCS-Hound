@@ -61,13 +61,18 @@ do
             ['Role'] = "SR",
             ['Band'] = 'C'
         },
+        ['RLS_19J6'] = {
+            ['Name'] = "Tin Shield",
+            ['Assigned'] = "SA-10",
+            ['Role'] = "SR",
+            ['Band'] = 'E'
+        },
         ['S-300PS 40B6M tr'] = {
             ['Name'] = "Tomb Stone",
             ['Assigned'] = "SA-10",
             ['Role'] = "TR",
             ['Band'] = 'J'
         },
-
         ['SA-11 Buk SR 9S18M1'] = {
             ['Name'] = "Snow Drift",
             ['Assigned'] = "SA-11",
@@ -361,18 +366,20 @@ do
             ["KA-27"] = {antenna = {size = 4, factor = 1}},
             -- Airplanes
             ["C-130"] = {antenna = {size = 35, factor = 1}},
+            ["Hercules"] = {antenna = {size = 35, factor = 1}}, -- Anubis' C-130J
             ["C-17A"] = {antenna = {size = 50, factor = 1}},
             ["S-3B"] = {antenna = {size = 18, factor = 0.8}},
-            ["E-3A"] = {antenna = {size = 45, factor = 0.5}},
-            ["E-2D"] = {antenna = {size = 20, factor = 0.5}},
+            ["E-3A"] = {antenna = {size = 9, factor = 0.5}},
+            ["E-2D"] = {antenna = {size = 7, factor = 0.5}},
             ["Tu-95MS"] = {antenna = {size = 50, factor = 1}},
             ["Tu-142"] = {antenna = {size = 50, factor = 1}},
             ["IL-76MD"] = {antenna = {size = 48, factor = 0.8}},
             ["An-30M"] = {antenna = {size = 25, factor = 1}},
-            ["A-50"] = {antenna = {size = 48, factor = 0.5}},
+            ["A-50"] = {antenna = {size = 9, factor = 0.5}},
             ["An-26B"] = {antenna = {size = 26, factor = 0.9}},
-            ["Su-25T"] = {antenna = {size = 1.6, factor = 0.75}},
-            ["AJS37"] = {antenna = {size = 1.6, factor = 0.75}}
+            ["EA_6B"] = {antenna = {size = 9, factor = 1}}, -- VSN EA-6B
+            ["Su-25T"] = {antenna = {size = 1.6, factor = 1}},
+            ["AJS37"] = {antenna = {size = 1.6, factor = 1}}
         }
     }
 
@@ -767,6 +774,7 @@ do
         elintcontact.typeName = DCS_Unit:getTypeName()
         elintcontact.isEWR = false
         elintcontact.typeAssigned = "Unknown" 
+        elintcontact.band = "C"
         if setContains(HoundDB.Sam,DCS_Unit:getTypeName())  then
             local unitName = DCS_Unit:getTypeName()
             elintcontact.typeName =  HoundDB.Sam[unitName].Name
@@ -1322,24 +1330,27 @@ do
 
     function HoundCommsManager.TransmitFromQueue(gSelf)
         local msgObj = gSelf:getNextMsg()
-        if msgObj == nil then return timer.getTime() + gSelf.settings.interval end
+        local readTime = gSelf.settings.interval
+        if msgObj == nil then return timer.getTime() + readTime end
         local transmitterPos = gSelf:getTransmitterPos()
 
         if transmitterPos == false then
             env.info("[Hound] - Transmitter destroyed")
-            return
-        end
-
-        if msgObj.txt ~= nil then
-            local readTime =  HoundUtils.TTS.getReadTime(msgObj.tts,gSelf.settings.speed) or HoundUtils.TTS.getReadTime(msgObj.txt,gSelf.settings.speed)
-            trigger.action.outTextForCoalition(msgObj.coalition,msgObj.txt,readTime+2)
+            return timer.getTime() + 10
         end
 
         if gSelf.enabled and STTS ~= nil and msgObj.tts ~= nil then
             HoundUtils.TTS.Transmit(msgObj.tts,msgObj.coalition,gSelf.settings,transmitterPos)
-
-            return timer.getTime() + HoundUtils.TTS.getReadTime(msgObj.tts,gSelf.settings.speed) -- temp till I figure out the speed
+            readTime = HoundUtils.TTS.getReadTime(msgObj.tts,gSelf.settings.speed)
+            -- return timer.getTime() + readTime -- temp till I figure out the speed
         end
+
+        if gSelf.settings.enableText and msgObj.txt ~= nil then
+            readTime =  HoundUtils.TTS.getReadTime(msgObj.tts,gSelf.settings.speed) or HoundUtils.TTS.getReadTime(msgObj.txt,gSelf.settings.speed)
+            trigger.action.outTextForCoalition(msgObj.coalition,msgObj.txt,readTime+2)
+        end
+
+        return timer.getTime() + readTime
     end
 
     function HoundCommsManager:enable()
@@ -1433,9 +1444,12 @@ do
                         end
                     end
                     table.insert(self.platform, canidate)
+                    return true
                 end
             end
         end
+        env.info("[Hound] - Failed to add platform "..platformName..". Make sure you use unit name.")
+        return false
     end
 
     function HoundElint:removePlatform(platformName)
@@ -1448,10 +1462,11 @@ do
             for k,v in ipairs(self.platform) do
                 if v == canidate then
                     table.remove(self.platform, k)
-                    return
+                    return true
                 end
             end
         end
+        return false
     end
 
     function HoundElint:platformRefresh()
@@ -1519,7 +1534,7 @@ do
         self:removeRadioMenu()
     end
 
-    function HoundElint:controllerReportEWR(state)
+    function HoundElint:atisReportEWR(state)
         if type(state) == "boolean" then
             self.atis.reportEWR = state
         end
@@ -1529,8 +1544,8 @@ do
         if STTS ~= nil then
             if state == true and type(state) == "boolean" then
                     self.atis:enable()
+                    return
             end
-            return
         end
         self.atis:disable()
     end
@@ -1562,7 +1577,7 @@ do
 
         if length(gSelf.emitters) > 0 then
             if (gSelf.atis.loop.last_count ~= nil and gSelf.atis.loop.last_update ~= nil) then
-                if ((gSelf.atis.loop.last_count == #gSelf.emitters) and
+                if ((gSelf.atis.loop.last_count == length(gSelf.emitters)) and
                      ((timer.getAbsTime() - gSelf.atis.loop.last_update) < 120)) then return end
             end
             local sortedContacts = {}
@@ -1606,8 +1621,8 @@ do
         }
 
         gSelf.atis.loop.msg = msgObj
-        gSelf.atis.loop.last_count = #gSelf.emitters
-        gSelf.atis.loop.last_update =  timer.getAbsTime()
+        gSelf.atis.loop.last_count = length(gSelf.emitters)
+        gSelf.atis.loop.last_update = timer.getAbsTime()
     end
 
     --[[
@@ -1637,6 +1652,7 @@ do
         end
 
         gSelf.controller:addMessageObj(msgObj)
+
 
     end
 
@@ -1858,26 +1874,32 @@ do
         end
     end
 
-    function HoundElint:systemOn()
-        env.info("Hound is now on")
-
-        self:systemOff()
+    function HoundElint:systemOn(notify)
+        if self.coalitionId == nil then
+            env.info("[Hound] - failed to start. no coalition found.")
+            return false
+        end
+        self:systemOff(false)
 
         self.elintTaskID = mist.scheduleFunction(self.runCycle, {self}, 1, self.settings.mainInterval)
-       
-        trigger.action.outTextForCoalition(self.coalitionId,
+        if notify == nil or notify then
+            trigger.action.outTextForCoalition(self.coalitionId,
                                            "Hound ELINT system is now Operating", 10)
+        end
+        env.info("Hound is now on")
+        return true
     end
 
-    function HoundElint:systemOff()
-        env.info("Hound is now off")
+    function HoundElint:systemOff(notify)
         if self.elintTaskID ~= nil then
             mist.removeFunction(self.elintTaskID)
         end
-        
-        trigger.action.outTextForCoalition(self.coalitionId,
-                                           "Hound ELINT system is now Offline",
-                                           10)
+        if notify == nil or notify then
+            trigger.action.outTextForCoalition(self.coalitionId,
+                                           "Hound ELINT system is now Offline", 10)
+        end
+        env.info("Hound is now off")
+        return true
     end
 
     --[[
@@ -1891,13 +1913,13 @@ do
                                                self.radioAdminMenu,
                                                HoundElint.updatePlatformState, {
             self = self,
-            option = 'platformOn'
+            option = 'systemOn'
         })
         missionCommands.addCommandForCoalition(self.coalitionId, 'DeActivate',
                                                self.radioAdminMenu,
                                                HoundElint.updatePlatformState, {
             self = self,
-            option = 'platformOff'
+            option = 'systemOff'
         })
     end
 
@@ -1939,7 +1961,7 @@ do
     end
 
     function HoundElint:populateRadioMenu()
-        if self.radioMenu.root == nil or length(self.emitters) == 0 or self.coalitionId == nil then
+        if self.radioMenu.root == nil or length(self.emitters) == 0 or self.coalitionId == nil or not self.controller.enabled then
             return
         end
         local sortedContacts = {}
@@ -2018,10 +2040,14 @@ do
     end
 
     function HoundElint:removeRadarRadioItem(emitter)
+
         local DCStypeName = emitter.DCStypeName
         local assigned = emitter.typeAssigned
         local uid = emitter.uid
         -- env.info(length(emitter) .. " uid: " .. uid .. " DCStypeName: " .. DCStypeName)
+        if self.radioMenu.data[assigned] == nil or not self.controller.enabled then
+            return
+        end
 
         if setContains(self.radioMenu.data[assigned].data,uid) then
             self.radioMenu.data[assigned].data[uid] = missionCommands.removeItemForCoalition(self.coalitionId, self.radioMenu.data[assigned].data[uid])
@@ -2059,4 +2085,4 @@ do
 end
 
 env.info("Hound ELINT Loaded Successfully")
--- Build date 21-05-2021
+-- Build date 25-06-2021

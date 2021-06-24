@@ -52,6 +52,7 @@ do
         elintcontact.typeName = DCS_Unit:getTypeName()
         elintcontact.isEWR = false
         elintcontact.typeAssigned = "Unknown" 
+        elintcontact.band = "C"
         if setContains(HoundDB.Sam,DCS_Unit:getTypeName())  then
             local unitName = DCS_Unit:getTypeName()
             elintcontact.typeName =  HoundDB.Sam[unitName].Name

@@ -33,16 +33,18 @@ platforms = {
             "C-130": {"category": 2, "antenna":{"size":35, "factor":1}},
             "C-17A": {"category": 2, "antenna":{"size":50, "factor":1}},
             "S-3B": {"category": 2, "antenna":{"size":18, "factor":0.8}},
-            "E-3A": {"category": 2, "antenna":{"size":45, "factor":0.5}},
-            "E-2D": {"category": 2, "antenna":{"size":20, "factor":0.5}},
+            "E-3A": {"category": 2, "antenna":{"size":9, "factor":0.5}},
+            "E-2D": {"category": 2, "antenna":{"size":7, "factor":0.5}},
             "Tu-95MS": {"category": 2, "antenna":{"size":50, "factor":1}},
             "Tu-142": {"category": 2, "antenna":{"size":50, "factor":1}},
             "IL-76MD": {"category": 2, "antenna":{"size":48, "factor":0.8}},
             "An-30M": {"category": 2, "antenna":{"size":25, "factor":1}},
-            "A-50": {"category": 2, "antenna":{"size":48, "factor":0.5}},
+            "A-50": {"category": 2, "antenna":{"size":9, "factor":0.5}},
             "An-26B": {"category": 2, "antenna":{"size":26, "factor":0.9}},
             "Su-25T": {"category": 2, "antenna":{"size":1.6, "factor":1}},
-            "AJS37": {"category": 2, "antenna":{"size":1.6, "factor":1}}
+            "AJS37": {"category": 2, "antenna":{"size":1.6, "factor":1}},
+            "EA-6B": {"category": 2, "antenna":{"size":9, "factor":1}}
+
         }
 
 def genBandTable():
@@ -60,7 +62,7 @@ def genResolutionTable():
         antenna = platforms[platform]["antenna"]["size"]*platforms[platform]["antenna"]["factor"]
         Hband = calcResolution(bands["H"]["wavelength"],antenna)
         CBand = calcResolution(bands["C"]["wavelength"],antenna)
-        print ("%s: %.2f / %.2f"%(platform,CBand,Hband))
+        print ("| %s   |  %.2f / %.2f  | "%(platform,CBand,Hband))
 
 def getAntennaSize(resDeg,band):
     resRad = math.radians(resDeg)

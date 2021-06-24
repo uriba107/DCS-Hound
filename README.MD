@@ -46,10 +46,10 @@ Resolution of platforms are derrived from antenna size and emitter frequency. sh
 | Tu-142    | 0.46 / 0.05 |
 | IL-76MD   | 0.60 / 0.06 |
 | S-3B      | 1.59 / 0.17 |
-| E-2D      | 2.29 / 0.25 |
-| E-3A      | 1.02 / 0.11 |
+| E-2D      | 6.54 / 0.70 |
+| E-3A      | 5.09 / 0.55 |
 | An-26B    | 0.98 / 0.10 |
-| A-50      | 0.95 / 0.10 |
+| A-50      | 5.09 / 0.55 |
 | Viggen    | 14.31 / 1.53 |
 | Su-25T    | 14.31 / 1.53 |  
 
@@ -79,6 +79,11 @@ Resolution of platforms are derrived from antenna size and emitter frequency. sh
 | --------  | --------  |
 | Comms tower M | 0.29 / 0.03 |
 
+### Community Mods
+| Platform  | Accuracy (C/H Bands degrees)|
+| --------  | -------- |
+| Anubis C-130J | 0.65 / 0.07 |
+| VSN EA-6B Prowler   |  2.54 / 0.27  |
 
 ## Can I haz syntax pls?
 Yes you can.
@@ -102,7 +107,7 @@ on a "ONCE" type action with "time more 1" condition, add the scripts in the fol
 
 #### some screenshot as hints
 
-![Add scripts](./images/Hound_setup.jpg)
+![Add scripts](./images/hound_setup.jpg)
 
 
 ### Adding Hound system to your mission scripts

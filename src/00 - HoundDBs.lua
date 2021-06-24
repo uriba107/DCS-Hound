@@ -59,13 +59,18 @@ do
             ['Role'] = "SR",
             ['Band'] = 'C'
         },
+        ['RLS_19J6'] = {
+            ['Name'] = "Tin Shield",
+            ['Assigned'] = "SA-10",
+            ['Role'] = "SR",
+            ['Band'] = 'E'
+        },
         ['S-300PS 40B6M tr'] = {
             ['Name'] = "Tomb Stone",
             ['Assigned'] = "SA-10",
             ['Role'] = "TR",
             ['Band'] = 'J'
         },
-
         ['SA-11 Buk SR 9S18M1'] = {
             ['Name'] = "Snow Drift",
             ['Assigned'] = "SA-11",
@@ -359,18 +364,20 @@ do
             ["KA-27"] = {antenna = {size = 4, factor = 1}},
             -- Airplanes
             ["C-130"] = {antenna = {size = 35, factor = 1}},
+            ["Hercules"] = {antenna = {size = 35, factor = 1}}, -- Anubis' C-130J
             ["C-17A"] = {antenna = {size = 50, factor = 1}},
             ["S-3B"] = {antenna = {size = 18, factor = 0.8}},
-            ["E-3A"] = {antenna = {size = 45, factor = 0.5}},
-            ["E-2D"] = {antenna = {size = 20, factor = 0.5}},
+            ["E-3A"] = {antenna = {size = 9, factor = 0.5}},
+            ["E-2D"] = {antenna = {size = 7, factor = 0.5}},
             ["Tu-95MS"] = {antenna = {size = 50, factor = 1}},
             ["Tu-142"] = {antenna = {size = 50, factor = 1}},
             ["IL-76MD"] = {antenna = {size = 48, factor = 0.8}},
             ["An-30M"] = {antenna = {size = 25, factor = 1}},
-            ["A-50"] = {antenna = {size = 48, factor = 0.5}},
+            ["A-50"] = {antenna = {size = 9, factor = 0.5}},
             ["An-26B"] = {antenna = {size = 26, factor = 0.9}},
-            ["Su-25T"] = {antenna = {size = 1.6, factor = 0.75}},
-            ["AJS37"] = {antenna = {size = 1.6, factor = 0.75}}
+            ["EA_6B"] = {antenna = {size = 9, factor = 1}}, -- VSN EA-6B
+            ["Su-25T"] = {antenna = {size = 1.6, factor = 1}},
+            ["AJS37"] = {antenna = {size = 1.6, factor = 1}}
         }
     }
 

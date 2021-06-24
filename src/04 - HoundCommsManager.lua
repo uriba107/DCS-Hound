@@ -128,24 +128,27 @@ do
 
     function HoundCommsManager.TransmitFromQueue(gSelf)
         local msgObj = gSelf:getNextMsg()
-        if msgObj == nil then return timer.getTime() + gSelf.settings.interval end
+        local readTime = gSelf.settings.interval
+        if msgObj == nil then return timer.getTime() + readTime end
         local transmitterPos = gSelf:getTransmitterPos()
 
         if transmitterPos == false then
             env.info("[Hound] - Transmitter destroyed")
-            return
-        end
-
-        if msgObj.txt ~= nil then
-            local readTime =  HoundUtils.TTS.getReadTime(msgObj.tts,gSelf.settings.speed) or HoundUtils.TTS.getReadTime(msgObj.txt,gSelf.settings.speed)
-            trigger.action.outTextForCoalition(msgObj.coalition,msgObj.txt,readTime+2)
+            return timer.getTime() + 10
         end
 
         if gSelf.enabled and STTS ~= nil and msgObj.tts ~= nil then
             HoundUtils.TTS.Transmit(msgObj.tts,msgObj.coalition,gSelf.settings,transmitterPos)
-
-            return timer.getTime() + HoundUtils.TTS.getReadTime(msgObj.tts,gSelf.settings.speed) -- temp till I figure out the speed
+            readTime = HoundUtils.TTS.getReadTime(msgObj.tts,gSelf.settings.speed)
+            -- return timer.getTime() + readTime -- temp till I figure out the speed
         end
+
+        if gSelf.settings.enableText and msgObj.txt ~= nil then
+            readTime =  HoundUtils.TTS.getReadTime(msgObj.tts,gSelf.settings.speed) or HoundUtils.TTS.getReadTime(msgObj.txt,gSelf.settings.speed)
+            trigger.action.outTextForCoalition(msgObj.coalition,msgObj.txt,readTime+2)
+        end
+
+        return timer.getTime() + readTime
     end
 
     function HoundCommsManager:enable()
