@@ -1,6 +1,6 @@
 # Hound ELINT system for DCS
 ## Overview
-**Hound ELINT** is a scripted system for DCS. it approximates location of activly transmitting enemy radars by triangulating the radar using one or more assigned assets. Assets can be Airborn, ground units or stationary objects each has it's pros and cons. 
+**Hound ELINT** is a mission script for DCS. it uses one or more assigned ELINT platforms to approximates location of transmitting enemy radars using triangulation. Platforms are pre-assigned or dynamicly assgined asstes, they can be Airborn, ground units or stationary objects from a set list of assets avialable. 
 
 Hound presents data in sevral methods.
 
@@ -11,6 +11,9 @@ Hound presents data in sevral methods.
 System can gather information about Enemy radar deployments and help understand the tactical situation or penetrate enemy defences. Because the System is asset based, you also need to be protecting these assets, as if they are destroyed, you loose your tactical data.
 
 Hound is compatible with MIST, MOOSE, Skynet IADS and High-Digit SAMs
+
+## Video Intro (YouTube)
+[![Hound Cinematic Intro video](https://i.ytimg.com/vi/S4xxtKOqGqU/hq720.jpg?sqp=-oaymwEcCNAFEJQDSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLAAa-SdnDgNiWTKc0YNSvm5RRMa7g)](https://www.youtube.com/watch?v=S4xxtKOqGqU)
 
 
 ## Putting this to work
@@ -109,6 +112,22 @@ on a "ONCE" type action with "time more 1" condition, add the scripts in the fol
 
 ![Add scripts](./images/hound_setup.jpg)
 
+### Minimum required Code to get Hound working
+The bare minumum, more customization optionas are available.
+```lua
+do
+  Elint_blue = HoundElint:create()
+  Elint_blue:addPlatform("NAME_OF_UNIT_1")
+  -- it's recommended to have at least two active platform to make system faster and more accurate
+  Elint_blue:addPlatform("NAME_OF_UNIT_2")
+  Elint_blue:systemOn()
+  -- This is a basic setup with map markers only
+  -- additional stuff (uncomment if desired)
+  -- Elint_blue:enableATIS() -- ATIS requires STTS, as it is voice only
+  -- Elint_blue:enableController(true) -- This will enable Voice+text controller messages
+end
+
+```
 
 ### Adding Hound system to your mission scripts
 ```lua
@@ -146,15 +165,15 @@ You can of course turn it off for any reason with:
 ## Map markers
 ---
 Hound uses Map markers to indicate the estimated position of the radar tracket. It's a product of the system, and only contains data user can get from the system in other ways. (equvilant to making marks on a paper map)
+Map markers are enabled by default
 
 However, some mission designers may want to disable the markers. 
-
-```lua
-HoundElint:enableMarkers()
-```
-and
 ```lua
 HoundElint:disableMarkers()
+```
+they can be turned back on with
+```lua
+HoundElint:enableMarkers()
 ```
 
 ## Text-To-Speech
@@ -182,16 +201,15 @@ This functinality is available also via the standard DCS text notification inter
 
 ```lua
     -- Elint_blue:enableController([showText|bool])
-
+    -- default is "false" - no text notification
+        Elint_blue:enableController()
+```
+to explicitly control text use:
+```lua 
+    -- verbouse equivilant
+        Elint_blue:enableController(false)
     -- so with text:
         Elint_blue:enableController(true)
-    
-    -- or withouth
-        Elint_blue:enableController(false)
-
-    -- default is "false"
-        Elint_blue:enableController()
-
 ```
 
 and of course

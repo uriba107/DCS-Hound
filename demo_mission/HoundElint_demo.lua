@@ -5,7 +5,6 @@ do
 end
 
 do
-    
     Elint_blue = HoundElint:create()
     Elint_blue:addPlatform("ELINT_C17")
     Elint_blue:addPlatform("ELINT_C130")

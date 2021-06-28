@@ -14,6 +14,11 @@ function compile {
     echo "" >> ${TARGET_FILE}
     echo "env.info(\"Hound ELINT Loaded Successfully\")" >> ${TARGET_FILE}
     echo "-- Build date $(date +%d-%m-%Y)" >> ${TARGET_FILE}
+
+    # version
+    DEV_VER=$(grep -E "HOUND_VERSION=*.*.*-DEV" ${TARGET_FILE})
+    PROD_VER=$(echo $DEV_VER | sed 's/-DEV//')
+    sed -i "s/${DEV_VER}/${PROD_VER}/" ${TARGET_FILE} | grep HOUND
 } 
 
 function update_mission {

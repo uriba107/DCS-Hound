@@ -1,6 +1,7 @@
 -- Hound ELINT system for DCS 
 env.info("Hound ELINT Loading...")
 -- --------------------------------------
+HOUND_VERSION="0.1.1"
 -- Radar Database
 HoundDB = {}
 do
@@ -1433,11 +1434,11 @@ do
             self.coalitionId = canidate:getCoalition()
         end
         if canidate ~= nil and canidate:getCoalition() == self.coalitionId then
-            local mainCategoty = canidate:getCategory()
+            local mainCategory = canidate:getCategory()
             local type = canidate:getTypeName()
     
-            if setContains(HoundDB.Platform,mainCategoty) then
-                if setContains(HoundDB.Platform[mainCategoty],type) then
+            if setContains(HoundDB.Platform,mainCategory) then
+                if setContains(HoundDB.Platform[mainCategory],type) then
                     for k,v in pairs(self.platform) do
                         if v == canidate then
                             return
@@ -1688,12 +1689,12 @@ do
     --]]
 
     function HoundElint:getSensorPrecision(platform,emitterBand)
-        local mainCategoty = platform:getCategory()
+        local mainCategory = platform:getCategory()
         local type = platform:getTypeName()
 
-        if setContains(HoundDB.Platform,mainCategoty) then
-            if setContains(HoundDB.Platform[mainCategoty],type) then
-                local antenna_size = HoundDB.Platform[mainCategoty][type].antenna.size *  HoundDB.Platform[mainCategoty][type].antenna.factor
+        if setContains(HoundDB.Platform,mainCategory) then
+            if setContains(HoundDB.Platform[mainCategory],type) then
+                local antenna_size = HoundDB.Platform[mainCategory][type].antenna.size *  HoundDB.Platform[mainCategory][type].antenna.factor
                 -- local precision =  HoundUtils.getDefraction(emitterBand,antenna_size)
                 -- env.info(type .. " Precision: " .. antenna_size .. "m for "..emitterBand.. " Band = " .. precision .. " deg")
                 return  HoundUtils.getDefraction(emitterBand,antenna_size) -- precision
@@ -2045,7 +2046,7 @@ do
         local assigned = emitter.typeAssigned
         local uid = emitter.uid
         -- env.info(length(emitter) .. " uid: " .. uid .. " DCStypeName: " .. DCStypeName)
-        if self.radioMenu.data[assigned] == nil or not self.controller.enabled then
+        if not self.controller.enabled or self.radioMenu.data[assigned] == nil then
             return
         end
 
@@ -2082,7 +2083,13 @@ do
         contacts.sam.count = #contacts.sam.contacts or 0
         return contacts
     end
+
+end
+
+do
+    trigger.action.outText("Hound ELINT ("..HOUND_VERSION..") is loaded.", 15)
+    env.info("[ Hound ] - finished loading (".. HOUND_VERSION..")")
 end
 
 env.info("Hound ELINT Loaded Successfully")
--- Build date 25-06-2021
+-- Build date 28-06-2021

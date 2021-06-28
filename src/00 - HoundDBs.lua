@@ -1,4 +1,5 @@
 -- --------------------------------------
+HOUND_VERSION="0.1.1-DEV"
 -- Radar Database
 HoundDB = {}
 do
