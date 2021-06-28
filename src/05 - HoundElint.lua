@@ -648,13 +648,17 @@ do
     end
 
     function HoundElint:removeRadarRadioItem(emitter)
+        if self.radioMenu.root == nil then
+            return
+        end
         local DCStypeName = emitter.DCStypeName
         local assigned = emitter.typeAssigned
         local uid = emitter.uid
         -- env.info(length(emitter) .. " uid: " .. uid .. " DCStypeName: " .. DCStypeName)
-
-        if setContains(self.radioMenu.data[assigned].data,uid) then
-            self.radioMenu.data[assigned].data[uid] = missionCommands.removeItemForCoalition(self.coalitionId, self.radioMenu.data[assigned].data[uid])
+        if self.radioMenu and self.radioMenu.data and self.radioMenu.data[assigned] and self.radioMenu.data[assigned].data then
+            if setContains(self.radioMenu.data[assigned].data,uid) then
+                self.radioMenu.data[assigned].data[uid] = missionCommands.removeItemForCoalition(self.coalitionId, self.radioMenu.data[assigned].data[uid])
+            end
         end
     end
 
