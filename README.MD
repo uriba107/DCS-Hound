@@ -110,7 +110,7 @@ on a "ONCE" type action with "time more 1" condition, add the scripts in the fol
 
 #### some screenshot as hints
 
-![Add scripts](./images/hound_setup.jpg)
+![Add scripts](/images/hound_setup.jpg)
 
 ### Minimum required Code to get Hound working
 The bare minumum, more customization optionas are available.
@@ -126,7 +126,6 @@ do
   -- Elint_blue:enableATIS() -- ATIS requires STTS, as it is voice only
   -- Elint_blue:enableController(true) -- This will enable Voice+text controller messages
 end
-
 ```
 
 ### Adding Hound system to your mission scripts
