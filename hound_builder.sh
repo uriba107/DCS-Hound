@@ -13,12 +13,17 @@ function compile {
     done
     echo "" >> ${TARGET_FILE}
     echo "env.info(\"Hound ELINT Loaded Successfully\")" >> ${TARGET_FILE}
-    echo "-- Build date $(date +%d-%m-%Y)" >> ${TARGET_FILE}
+    echo "-- Build date $(date +%Y-%m-%d)" >> ${TARGET_FILE}
+
+    # remove dev stuff
+    echo "cleaning Dev comments"
+   sed -i '/StopWatch\|'':Stop()''/d' ${TARGET_FILE}
+   sed -i '/^[[:space:]]*-- /d' ${TARGET_FILE}
 
     # version
     DEV_VER=$(grep -E "HOUND_VERSION=*.*.*-DEV" ${TARGET_FILE})
     PROD_VER=$(echo $DEV_VER | sed 's/-DEV//')
-    sed -i "s/${DEV_VER}/${PROD_VER}/" ${TARGET_FILE} | grep HOUND
+    sed -i "s/${DEV_VER}/${PROD_VER}/" ${TARGET_FILE}
 } 
 
 function update_mission {
@@ -47,7 +52,35 @@ function update_mission {
     }
 
 ## main
-compile
-update_mission
-update_mission "demo_mission/Syria_POC" "Hound_Demo_SyADFGCI"
-update_mission "demo_mission/Syria_HARM" "SpudHound"
+
+
+# compile
+# update_mission
+# update_mission "demo_mission/Syria_POC" "Hound_Demo_SyADFGCI"
+# update_mission "demo_mission/Syria_HARM" "SpudHound"
+
+while (( $# ))
+do
+    case "$1" in
+        --compile | -c )
+            compile
+            shift
+        ;;
+
+        --missions | -m )
+            update_mission
+            update_mission "demo_mission/Syria_POC" "Hound_Demo_SyADFGCI"
+            update_mission "demo_mission/Syria_HARM" "SpudHound"
+            shift
+        ;;
+        --all )
+            compile
+            update_mission
+            update_mission "demo_mission/Syria_POC" "Hound_Demo_SyADFGCI"
+            update_mission "demo_mission/Syria_HARM" "SpudHound"
+            exit 0
+        ;;
+
+
+    esac
+done

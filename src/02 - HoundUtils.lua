@@ -1,16 +1,192 @@
 -- --------------------------------------
 do 
+    local l_mist = mist
+    local l_math = math
+    local pi_2 = 2*l_math.pi
+
+
     HoundUtils = {}
     HoundUtils.__index = HoundUtils
 
     HoundUtils.TTS = {}
     HoundUtils.Text = {}
+    HoundUtils.ELINT = {}
     HoundUtils.ReportId = nil
 
+    -- Markers handling --
+    HoundUtils._MarkId = 1
 
---[[ 
-    ----- TTS Functions ----
---]]    
+    function HoundUtils.getMarkId()
+        if UTILS and UTILS.GetMarkID 
+            then HoundUtils._MarkId = UTILS.GetMarkID()
+            else HoundUtils._MarkId = HoundUtils._MarkId + 1 
+            end
+        return HoundUtils._MarkId
+    end
+
+    --[[ 
+    ----- Generic Functions ----
+    --]]
+
+    function HoundUtils:timeDelta(t0, t1)
+        if t1 == nil then t1 = timer.getAbsTime() end
+        return t1 - t0
+    end
+
+    function HoundUtils.angleDeltaRad(rad1,rad2)
+        return l_math.abs(l_math.abs(rad1-l_math.pi)-l_math.abs(rad2-l_math.pi))
+    end
+
+    function HoundUtils.AzimuthAverage(azimuths)
+
+        local biasVector = nil
+        for i=1, length(azimuths) do
+            local V = {}
+            V.x = l_math.cos(azimuths[i])
+            V.z = l_math.sin(azimuths[i])
+            V.y = 0
+            if biasVector == nil then biasVector = V else biasVector = l_mist.vec.add(biasVector,V) end
+        end
+        return  (l_math.atan( (biasVector.z/length(azimuths)) / (biasVector.x/length(azimuths))+pi_2) ) % pi_2
+    end
+
+    function HoundUtils.RandomAngle()
+        -- actuallu a map
+        return l_math.random() * 2 * l_math.pi
+    end
+
+    function HoundUtils.getSamMaxRange(emitter)
+        local maxRng = 0
+        if emitter ~= nil then
+            local units = emitter:getGroup():getUnits()
+            for i, unit in ipairs(units) do
+                local weapons = unit:getAmmo()
+                if weapons ~= nil then
+                    for j, ammo in ipairs(weapons) do
+                        if ammo.desc.category == Weapon.Category.MISSILE and ammo.desc.missileCategory == Weapon.MissileCategory.SAM then
+                            maxRng = l_math.max(l_math.max(ammo.desc.rangeMaxAltMax,ammo.desc.rangeMaxAltMin),maxRng)
+                        end
+                    end
+                end
+            end
+        end
+        return maxRng
+    end
+
+    function HoundUtils.getRoundedElevationFt(elev)
+        return HoundUtils.roundToNearest(l_mist.utils.metersToFeet(elev),50)
+    end
+
+    function HoundUtils.roundToNearest(input,nearest)
+        return l_mist.utils.round(input/nearest) * nearest
+    end
+
+    function HoundUtils.getDefraction(band,antenna_size)
+        if band == nil or antenna_size == nil or antenna_size == 0 then return 30 end
+        return l_math.deg(HoundDB.Bands[band]/antenna_size)
+    end
+
+    
+    function HoundUtils.getAngularError(variance)
+        local MAG = l_math.abs(gaussian(0, variance * 10 ) / 10)
+        local ROT = l_math.random() * 2 * l_math.pi
+        
+        local epsilon = {}
+        epsilon.az = -MAG*l_math.sin(ROT)
+        epsilon.el = MAG*l_math.cos(ROT)
+        return epsilon
+    end
+
+    function HoundUtils.getControllerResponse()
+        local response = {
+            " ",
+            "Good Luck!",
+            "Happy Hunting!",
+            "Please send my regards.",
+            " "
+        }
+        return response[l_math.max(1,l_math.min(l_math.ceil(timer.getAbsTime() % length(response)),length(response)))]
+    end
+
+    function HoundUtils.getCoalitionString(coalitionID)
+        local coalitionStr = "RED"
+        if coalitionID == coalition.side.BLUE then
+            coalitionStr = "BLUE"
+        elseif coalitionID == coalition.side.NEUTRAL then
+            coalitionStr = "NEUTRAL"
+        end
+        return coalitionStr
+    end
+
+    function HoundUtils.getHemispheres(lat,lon,fullText)
+        local hemi = {
+            NS = "North",
+            EW = "East"
+        }
+        if lat < 0 then hemi.NS = "South" end
+        if lon < 0 then hemi.EW = "West" end
+        if fullText == nil or fullText == false then
+            hemi.NS = string.sub(hemi.NS, 1, 1)
+            hemi.EW = string.sub(hemi.EW, 1, 1)
+        end
+        return hemi
+    end
+
+    function HoundUtils.getReportId()
+        if HoundUtils.ReportId == nil or HoundUtils.ReportId == string.byte('Z') then
+            HoundUtils.ReportId = string.byte('A')
+        else
+            HoundUtils.ReportId = HoundUtils.ReportId + 1
+        end
+        return PHONETIC[string.char(HoundUtils.ReportId)]
+    end
+
+    function HoundUtils.DecToDMS(cood)
+        local deg = l_math.floor(cood)
+        local minutes = l_math.floor((cood - deg) * 60)
+        local sec = l_math.floor(((cood-deg) * 3600) % 60)
+        local dec = (cood-deg) * 60
+
+        return {
+            d = deg,
+            m = minutes,
+            s = sec,
+            mDec = l_mist.utils.round(dec ,3)
+        }
+    end
+
+    function HoundUtils.getBR(src,dst)
+        if not src or not dst then return end
+        local BR = {}
+        local dir = l_mist.utils.getDir(l_mist.vec.sub(dst,src))
+        local magvar = l_mist.getNorthCorrection(src)
+        BR.brg = l_mist.utils.round(l_mist.utils.toDegree( (dir + magvar +  pi_2) % pi_2 ))
+        BR.brStr = string.format("%03d",BR.brg)
+        BR.rng = l_mist.utils.round(l_mist.utils.metersToNM(l_mist.utils.get2DDist(dst,src)))
+        -- env.info("getBR: " .. dir .. "|".. magvar .. "="..BR.brg)
+        return BR
+    end
+
+    function HoundUtils.checkLOS(pos0,pos1)
+        if not pos0 or not pos1 then return false end
+        local dist = l_mist.utils.get2DDist(pos0,pos1)
+        local radarHorizon = HoundUtils.EarthLOS(pos0.y,pos1.y)
+        local dcsLOS = land.isVisible(pos0,pos1) 
+        return (dist <= radarHorizon*1.025 and dcsLOS)
+    end
+
+    function HoundUtils.EarthLOS(h0,h1)
+        local Re = 6371000 -- Radius of earth in M
+        local d0 = l_math.sqrt(h0^2+2*Re*h0)
+        local d1 = 0
+        if h1 then d1 = l_math.sqrt(h1^2+2*Re*h1) end
+        return d0+d1
+    end
+
+    --[[ 
+        ----- TTS Functions ----
+    --]]    
+    
     function HoundUtils.TTS.Transmit(msg,coalitionID,args,transmitterPos)
 
         if STTS == nil then return end
@@ -30,7 +206,7 @@ do
 
     function HoundUtils.TTS.getTtsTime(timestamp)
         if timestamp == nil then timestamp = timer.getAbsTime() end
-        local DHMS = mist.time.getDHMS(timestamp)
+        local DHMS = l_mist.time.getDHMS(timestamp)
         local hours = DHMS.h
         local minutes = DHMS.m
         local seconds = DHMS.s
@@ -57,7 +233,7 @@ do
             "Low",
             "Very Low"
         }
-        return score[math.min(#score,math.max(1,math.ceil(confidenceRadius/500)))]
+        return score[l_math.min(#score,l_math.max(1,l_math.ceil(confidenceRadius/500)))]
     end
 
     function HoundUtils.TTS.getVerbalContactAge(timestamp,isSimple,NATO)
@@ -74,8 +250,8 @@ do
             if ageSeconds < 300 then return "relevant" end
             return "stale"
         end
-        if ageSeconds < 60 then return tostring(math.floor(ageSeconds)) .. " seconds" end
-        return tostring(math.floor(ageSeconds/60)) .. " minutes"
+        if ageSeconds < 60 then return tostring(l_math.floor(ageSeconds)) .. " seconds" end
+        return tostring(l_math.floor(ageSeconds/60)) .. " minutes"
     end
 
     function HoundUtils.TTS.DecToDMS(cood,minDec)
@@ -117,21 +293,21 @@ do
             speedFactor = speed
         else
             if speed ~= 0 then
-                speedFactor = math.abs(speed) * (maxRateRatio - 1) / 10 + 1
+                speedFactor = l_math.abs(speed) * (maxRateRatio - 1) / 10 + 1
             end
             if speed < 0 then
                 speedFactor = 1/speedFactor
             end
         end
 
-        local wpm = math.ceil(100 * speedFactor)
-        local cps = math.floor((wpm * 5)/60)
+        local wpm = l_math.ceil(100 * speedFactor)
+        local cps = l_math.floor((wpm * 5)/60)
 
         if type(length) == "string" then
             length = string.len(length)
         end
 
-        return math.ceil(length/cps)
+        return l_math.ceil(length/cps)
     end
 
 
@@ -141,15 +317,15 @@ do
         if distanceM < 1000 then
             distance = HoundUtils.roundToNearest(distanceM,50)
         else
-            distance = mist.utils.round(distanceM / 1000,1)
+            distance = l_mist.utils.round(distanceM / 1000,1)
             distanceUnit = "kilometers"
         end
         return distance .. " " .. distanceUnit
     end
 
---[[ 
+    --[[ 
     ----- Text Functions ----
---]]
+    --]]
 
     function HoundUtils.Text.getLL(lat,lon,minDec)
         local hemi = HoundUtils.getHemispheres(lat,lon)
@@ -157,146 +333,13 @@ do
         local lon = HoundUtils.DecToDMS(lon)
         if minDec == true then
             return hemi.NS .. lat.d .. "°" .. lat.mDec .. "'".."\"" ..  " " ..  hemi.EW  .. lon.d .. "°" .. lon.mDec .. "'" .."\"" 
-
         end
         return hemi.NS .. lat.d .. "°" .. lat.m .. "'".. lat.s.."\"" ..  " " ..  hemi.EW  .. lon.d .. "°" .. lon.m .. "'".. lon.s .."\"" 
     end
 
     function HoundUtils.Text.getTime(timestamp)
         if timestamp == nil then timestamp = timer.getAbsTime() end
-        local DHMS = mist.time.getDHMS(timestamp)
+        local DHMS = l_mist.time.getDHMS(timestamp)
         return string.format("%02d",DHMS.h)  .. string.format("%02d",DHMS.m)
-    end
-
---[[ 
-    ----- Generic Functions ----
---]]
-    function HoundUtils.getControllerResponse()
-        local response = {
-            " ",
-            "Good Luck!",
-            "Happy Hunting!",
-            "Please send my regards.",
-            " "
-        }
-        return response[math.max(1,math.min(math.ceil(timer.getAbsTime() % length(response)),length(response)))]
-    end
-
-    function HoundUtils.getCoalitionString(coalitionID)
-        local coalitionStr = "RED"
-        if coalitionID == coalition.side.BLUE then
-            coalitionStr = "BLUE"
-        elseif coalitionID == coalition.side.NEUTRAL then
-            coalitionStr = "NEUTRAL"
-        end
-        return coalitionStr
-    end
-
-    function HoundUtils.getHemispheres(lat,lon,fullText)
-        local hemi = {
-            NS = "North",
-            EW = "East"
-        }
-        if lat < 0 then hemi.NS = "South" end
-        if lon < 0 then hemi.EW = "West" end
-        if fullText == nil or fullText == false then
-            hemi.NS = string.sub(hemi.NS, 1, 1)
-            hemi.EW = string.sub(hemi.EW, 1, 1)
-        end
-        return hemi
-    end
-
-    function HoundUtils.DecToDMS(cood)
-        local deg = math.floor(cood)
-        local minutes = math.floor((cood - deg) * 60)
-        local sec = math.floor(((cood-deg) * 3600) % 60)
-        local dec = (cood-deg) * 60
-
-        return {
-            d = deg,
-            m = minutes,
-            s = sec,
-            mDec = mist.utils.round(dec ,3)
-        }
-    end
-
-    function HoundUtils.TTS.getReportId()
-        if HoundUtils.ReportId == nil or HoundUtils.ReportId == string.byte('Z') then
-            HoundUtils.ReportId = string.byte('A')
-        else
-            HoundUtils.ReportId = HoundUtils.ReportId + 1
-        end
-        return PHONETIC[string.char(HoundUtils.ReportId)]
-    end
-
--- more functions
-    function HoundUtils:timeDelta(t0, t1)
-        if t1 == nil then t1 = timer.getAbsTime() end
-        return t1 - t0
-    end
-
-    function HoundUtils.angleDeltaRad(rad1,rad2)
-        return math.abs(math.abs(rad1-math.pi)-math.abs(rad2-math.pi))
-    end
-
-    function HoundUtils.AzimuthAverage(azimuths)
-
-        local biasVector = nil
-        for i=1, length(azimuths) do
-            local V = {}
-            V.x = math.cos(azimuths[i])
-            V.z = math.sin(azimuths[i])
-            V.y = 0
-            if biasVector == nil then biasVector = V else biasVector = mist.vec.add(biasVector,V) end
-        end
-        local pi_2 = 2*math.pi
-
-        return  (math.atan2(biasVector.z/length(azimuths), biasVector.x/length(azimuths))+pi_2) % pi_2
-    end
-
-    function HoundUtils.RandomAngle()
-        return math.random() * 2 * math.pi
-    end
-
-    function HoundUtils.getSamMaxRange(emitter)
-        local maxRng = 0
-        if emitter ~= nil then
-            local units = emitter:getGroup():getUnits()
-            for i, unit in ipairs(units) do
-                local weapons = unit:getAmmo()
-                if weapons ~= nil then
-                    for j, ammo in ipairs(weapons) do
-                        if ammo.desc.category == Weapon.Category.MISSILE and ammo.desc.missileCategory == Weapon.MissileCategory.SAM then
-                            maxRng = math.max(math.max(ammo.desc.rangeMaxAltMax,ammo.desc.rangeMaxAltMin),maxRng)
-                        end
-                    end
-                end
-            end
-        end
-        return maxRng
-    end
-
-    function HoundUtils.getRoundedElevationFt(elev)
-        return HoundUtils.roundToNearest(mist.utils.metersToFeet(elev),50)
-    end
-
-    function HoundUtils.roundToNearest(input,nearest)
-        return mist.utils.round(input/nearest) * nearest
-    end
-
-    function HoundUtils.getDefraction(band,antenna_size)
-        if band == nil or antenna_size == nil or antenna_size == 0 then return 30 end
-        return math.deg(HoundDB.Bands[band]/antenna_size)
-    end
-
-    
-    function HoundUtils.getAngularError(variance)
-        local MAG = math.abs(gaussian(0, variance * 10 ) / 10)
-        local ROT = math.random() * 2 * math.pi
-        
-        local epsilon = {}
-        epsilon.az = -MAG*math.sin(ROT)
-        epsilon.el = MAG*math.cos(ROT)
-        return epsilon
     end
 end
