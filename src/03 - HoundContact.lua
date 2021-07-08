@@ -78,7 +78,7 @@ do
         elintcontact.first_seen = timer.getAbsTime()
         elintcontact.maxRange = HoundUtils.getSamMaxRange(DCS_Unit)
         elintcontact.dataPoints = {}
-        elintcontact.markpointID = -1
+        elintcontact.markpointID = nil
         elintcontact.platformCoalition = platformCoalition
         return elintcontact
     end
@@ -120,7 +120,7 @@ do
         else
             local LastElementIndex = table.getn(self.dataPoints[datapoint.platformId])
             local DeltaT = HoundUtils:timeDelta(self.dataPoints[datapoint.platformId][LastElementIndex - 1].t, datapoint.t)
-            if  DeltaT >= 60 then
+            if  DeltaT >= 55 then
                 table.insert(self.dataPoints[datapoint.platformId], datapoint)
             else
                 self.dataPoints[datapoint.platformId][LastElementIndex] = datapoint
@@ -221,21 +221,21 @@ do
 
     function HoundContact:removeMarker()
         if self.markpointID ~= nil then
-            trigger.action.removeMark(self.markpointID)
-            trigger.action.removeMark(self.markpointID+1)
+            for _ = 1, length(self.markpointID) do
+                trigger.action.removeMark(table.remove(self.markpointID))
+            end
         end
     end
+
+    function HoundContact:getMarkerId()
+        if self.markpointID == nil then self.markpointID = {} end
+        local idx = HoundUtils.getMarkId()
+        table.insert(self.markpointID, idx)
+        return idx
+    end
+
     function HoundContact:updateMarker(coalitionID)
         if self.pos.p == nil or self.uncertenty_radius == nil then return end
-        local marker = world.getMarkPanels()
-        self:removeMarker()
-        if length(marker) > 0 then 
-            marker = (marker[#marker].idx + 1)
-        else 
-            marker = math.random(1,100)
-        end
-        self.markpointID = marker
-
         local fillcolor = {0,0,0,0.15}
         local linecolor = {0,0,0,0.3}
         if self.platformCoalition == coalition.side.BLUE then
@@ -245,11 +245,16 @@ do
         if self.platformCoalition == coalition.side.RED then
             fillcolor[3] = 1
             linecolor[3] = 1
-        end        
-        trigger.action.circleToAll(self.platformCoalition,self.markpointID,self.pos.p,self.uncertenty_radius.r,linecolor,fillcolor,3,true)
+        end  
+
+        -- local idx0 = self:getMarkerId()
+        self:removeMarker()
+
+        trigger.action.circleToAll(self.platformCoalition,self:getMarkerId(),self.pos.p,self.uncertenty_radius.r,linecolor,fillcolor,3,true)
+
+        trigger.action.markToCoalition(self:getMarkerId(), self.typeName .. " " .. (self.uid%100) .. " (" .. self.uncertenty_radius.major .. "/" .. self.uncertenty_radius.minor .. "@" .. self.uncertenty_radius.az .. "|" .. HoundUtils:timeDelta(self.last_seen) .. "s)",self.pos.p,self.platformCoalition,true)
         -- linecolor[4] = 0.6
         -- trigger.action.textToAll(self.platformCoalition , self.markpointID+1 , self.pos.p , linecolor,{0,0,0,0} , 12 , true , self.typeName .. " " .. (self.uid%100) .. "\n(" .. self.uncertenty_radius.major .. "/" .. self.uncertenty_radius.minor .. "@" .. self.uncertenty_radius.az .. "|" .. HoundUtils:timeDelta(self.last_seen) .. "s)")
-        trigger.action.markToCoalition(self.markpointID+1, self.typeName .. " " .. (self.uid%100) .. " (" .. self.uncertenty_radius.major .. "/" .. self.uncertenty_radius.minor .. "@" .. self.uncertenty_radius.az .. "|" .. HoundUtils:timeDelta(self.last_seen) .. "s)",self.pos.p,self.platformCoalition,true)
     end
 
     function HoundContact:getTextData(utmZone,MGRSdigits)

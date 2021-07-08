@@ -1,12 +1,8 @@
--- Hound ELINT system for DCS 
 env.info("Hound ELINT Loading...")
--- --------------------------------------
-HOUND_VERSION="0.1.1"
--- Radar Database
+HOUND_VERSION="0.1.2"
 HoundDB = {}
 do
     HoundDB.Sam = {
-        -- EWR --
         ['p-19 s-125 sr'] = {
             ['Name'] = "Flat Face",
             ['Assigned'] = "SA-2 or SA-3",
@@ -25,7 +21,6 @@ do
             ['Role'] = "EWR",
             ['Band'] = 'A'
         },
-        -- SAM radars --
         ['SNR_75V'] = {
             ['Name'] = "Fan-song",
             ['Assigned'] = "SA-2",
@@ -188,7 +183,6 @@ do
             ['Role'] = "SR",
             ['Band'] = 'G'
         },
-        -- highdigitsams radars --
         ['S-300PS 64H6E TRAILER sr'] = {
             ['Name'] = "Big Bird",
             ['Assigned'] = "SA-10",
@@ -353,10 +347,8 @@ do
     HoundDB.Platform = {
         [Object.Category.STATIC] = {["Comms tower M"] = {precision = 0.15, antenna = {size = 80, factor = 1}}},
         [Object.Category.UNIT] = {
-            -- Ground Units
             ["MLRS FDDM"] = {antenna = {size = 15, factor = 1}},
             ["SPK-11"] = {antenna = {size = 15, factor = 1}},
-            -- Helicopters
             ["CH-47D"] = {antenna = {size = 12, factor = 1}},
             ["CH-53E"] = {antenna = {size = 10, factor = 1}},
             ["MIL-26"] = {antenna = {size = 20, factor = 1}},
@@ -365,7 +357,6 @@ do
             ["Mi-8MT"] = {antenna = {size = 8, factor = 1}},
             ["UH-1H"] = {antenna = {size = 4, factor = 1}},
             ["KA-27"] = {antenna = {size = 4, factor = 1}},
-            -- Airplanes
             ["C-130"] = {antenna = {size = 35, factor = 1}},
             ["Hercules"] = {antenna = {size = 35, factor = 1}}, -- Anubis' C-130J
             ["C-17A"] = {antenna = {size = 50, factor = 1}},
@@ -399,7 +390,6 @@ do
         ["L"] = 0.005996,
     }
 end
--- --------------------------------------
 function length(T)
     local count = 0
     if T ~= nil then
@@ -420,7 +410,6 @@ end
 function setContains(set, key)
   return set[key] ~= nil
 end
--- --------------------------------------
 do 
     HoundUtils = {}
     HoundUtils.__index = HoundUtils
@@ -429,10 +418,148 @@ do
     HoundUtils.Text = {}
     HoundUtils.ReportId = nil
 
+    HoundUtils._MarkId = 100000
 
---[[ 
-    ----- TTS Functions ----
---]]    
+    function HoundUtils.getMarkId()
+        HoundUtils._MarkId = HoundUtils._MarkId + 1
+        return HoundUtils._MarkId
+    end
+
+    --[[ 
+    ----- Generic Functions ----
+    --]]
+
+    function HoundUtils:timeDelta(t0, t1)
+        if t1 == nil then t1 = timer.getAbsTime() end
+        return t1 - t0
+    end
+
+    function HoundUtils.angleDeltaRad(rad1,rad2)
+        return math.abs(math.abs(rad1-math.pi)-math.abs(rad2-math.pi))
+    end
+
+    function HoundUtils.AzimuthAverage(azimuths)
+
+        local biasVector = nil
+        for i=1, length(azimuths) do
+            local V = {}
+            V.x = math.cos(azimuths[i])
+            V.z = math.sin(azimuths[i])
+            V.y = 0
+            if biasVector == nil then biasVector = V else biasVector = mist.vec.add(biasVector,V) end
+        end
+        local pi_2 = 2*math.pi
+
+        return  (math.atan2(biasVector.z/length(azimuths), biasVector.x/length(azimuths))+pi_2) % pi_2
+    end
+
+    function HoundUtils.RandomAngle()
+        return math.random() * 2 * math.pi
+    end
+
+    function HoundUtils.getSamMaxRange(emitter)
+        local maxRng = 0
+        if emitter ~= nil then
+            local units = emitter:getGroup():getUnits()
+            for i, unit in ipairs(units) do
+                local weapons = unit:getAmmo()
+                if weapons ~= nil then
+                    for j, ammo in ipairs(weapons) do
+                        if ammo.desc.category == Weapon.Category.MISSILE and ammo.desc.missileCategory == Weapon.MissileCategory.SAM then
+                            maxRng = math.max(math.max(ammo.desc.rangeMaxAltMax,ammo.desc.rangeMaxAltMin),maxRng)
+                        end
+                    end
+                end
+            end
+        end
+        return maxRng
+    end
+
+    function HoundUtils.getRoundedElevationFt(elev)
+        return HoundUtils.roundToNearest(mist.utils.metersToFeet(elev),50)
+    end
+
+    function HoundUtils.roundToNearest(input,nearest)
+        return mist.utils.round(input/nearest) * nearest
+    end
+
+    function HoundUtils.getDefraction(band,antenna_size)
+        if band == nil or antenna_size == nil or antenna_size == 0 then return 30 end
+        return math.deg(HoundDB.Bands[band]/antenna_size)
+    end
+
+    
+    function HoundUtils.getAngularError(variance)
+        local MAG = math.abs(gaussian(0, variance * 10 ) / 10)
+        local ROT = math.random() * 2 * math.pi
+        
+        local epsilon = {}
+        epsilon.az = -MAG*math.sin(ROT)
+        epsilon.el = MAG*math.cos(ROT)
+        return epsilon
+    end
+
+    function HoundUtils.getControllerResponse()
+        local response = {
+            " ",
+            "Good Luck!",
+            "Happy Hunting!",
+            "Please send my regards.",
+            " "
+        }
+        return response[math.max(1,math.min(math.ceil(timer.getAbsTime() % length(response)),length(response)))]
+    end
+
+    function HoundUtils.getCoalitionString(coalitionID)
+        local coalitionStr = "RED"
+        if coalitionID == coalition.side.BLUE then
+            coalitionStr = "BLUE"
+        elseif coalitionID == coalition.side.NEUTRAL then
+            coalitionStr = "NEUTRAL"
+        end
+        return coalitionStr
+    end
+
+    function HoundUtils.getHemispheres(lat,lon,fullText)
+        local hemi = {
+            NS = "North",
+            EW = "East"
+        }
+        if lat < 0 then hemi.NS = "South" end
+        if lon < 0 then hemi.EW = "West" end
+        if fullText == nil or fullText == false then
+            hemi.NS = string.sub(hemi.NS, 1, 1)
+            hemi.EW = string.sub(hemi.EW, 1, 1)
+        end
+        return hemi
+    end
+
+    function HoundUtils.getReportId()
+        if HoundUtils.ReportId == nil or HoundUtils.ReportId == string.byte('Z') then
+            HoundUtils.ReportId = string.byte('A')
+        else
+            HoundUtils.ReportId = HoundUtils.ReportId + 1
+        end
+        return PHONETIC[string.char(HoundUtils.ReportId)]
+    end
+
+    function HoundUtils.DecToDMS(cood)
+        local deg = math.floor(cood)
+        local minutes = math.floor((cood - deg) * 60)
+        local sec = math.floor(((cood-deg) * 3600) % 60)
+        local dec = (cood-deg) * 60
+
+        return {
+            d = deg,
+            m = minutes,
+            s = sec,
+            mDec = mist.utils.round(dec ,3)
+        }
+    end
+
+    --[[ 
+        ----- TTS Functions ----
+    --]]    
     function HoundUtils.TTS.Transmit(msg,coalitionID,args,transmitterPos)
 
         if STTS == nil then return end
@@ -524,10 +651,6 @@ do
     end
 
     function HoundUtils.TTS.getReadTime(length,speed,isGoogle)
-        -- Assumptions for time calc: 100 Words per min, avarage of 5 letters for english word
-        -- so 5 chars * 100wpm = 500 characters per min = 8.3 chars per second
-        -- so lengh of msg / 8.3 = number of seconds needed to read it. rounded down to 8 chars per sec
-        -- map function:  (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
         if length == nil then return nil end
         local maxRateRatio = 3 -- can be chaned to 5 if windows TTSrate is up to 5x not 4x
 
@@ -569,9 +692,10 @@ do
         return distance .. " " .. distanceUnit
     end
 
---[[ 
+
+    --[[ 
     ----- Text Functions ----
---]]
+    --]]
 
     function HoundUtils.Text.getLL(lat,lon,minDec)
         local hemi = HoundUtils.getHemispheres(lat,lon)
@@ -589,139 +713,7 @@ do
         local DHMS = mist.time.getDHMS(timestamp)
         return string.format("%02d",DHMS.h)  .. string.format("%02d",DHMS.m)
     end
-
---[[ 
-    ----- Generic Functions ----
---]]
-    function HoundUtils.getControllerResponse()
-        local response = {
-            " ",
-            "Good Luck!",
-            "Happy Hunting!",
-            "Please send my regards.",
-            " "
-        }
-        return response[math.max(1,math.min(math.ceil(timer.getAbsTime() % length(response)),length(response)))]
-    end
-
-    function HoundUtils.getCoalitionString(coalitionID)
-        local coalitionStr = "RED"
-        if coalitionID == coalition.side.BLUE then
-            coalitionStr = "BLUE"
-        elseif coalitionID == coalition.side.NEUTRAL then
-            coalitionStr = "NEUTRAL"
-        end
-        return coalitionStr
-    end
-
-    function HoundUtils.getHemispheres(lat,lon,fullText)
-        local hemi = {
-            NS = "North",
-            EW = "East"
-        }
-        if lat < 0 then hemi.NS = "South" end
-        if lon < 0 then hemi.EW = "West" end
-        if fullText == nil or fullText == false then
-            hemi.NS = string.sub(hemi.NS, 1, 1)
-            hemi.EW = string.sub(hemi.EW, 1, 1)
-        end
-        return hemi
-    end
-
-    function HoundUtils.DecToDMS(cood)
-        local deg = math.floor(cood)
-        local minutes = math.floor((cood - deg) * 60)
-        local sec = math.floor(((cood-deg) * 3600) % 60)
-        local dec = (cood-deg) * 60
-
-        return {
-            d = deg,
-            m = minutes,
-            s = sec,
-            mDec = mist.utils.round(dec ,3)
-        }
-    end
-
-    function HoundUtils.TTS.getReportId()
-        if HoundUtils.ReportId == nil or HoundUtils.ReportId == string.byte('Z') then
-            HoundUtils.ReportId = string.byte('A')
-        else
-            HoundUtils.ReportId = HoundUtils.ReportId + 1
-        end
-        return PHONETIC[string.char(HoundUtils.ReportId)]
-    end
-
--- more functions
-    function HoundUtils:timeDelta(t0, t1)
-        if t1 == nil then t1 = timer.getAbsTime() end
-        return t1 - t0
-    end
-
-    function HoundUtils.angleDeltaRad(rad1,rad2)
-        return math.abs(math.abs(rad1-math.pi)-math.abs(rad2-math.pi))
-    end
-
-    function HoundUtils.AzimuthAverage(azimuths)
-
-        local biasVector = nil
-        for i=1, length(azimuths) do
-            local V = {}
-            V.x = math.cos(azimuths[i])
-            V.z = math.sin(azimuths[i])
-            V.y = 0
-            if biasVector == nil then biasVector = V else biasVector = mist.vec.add(biasVector,V) end
-        end
-        local pi_2 = 2*math.pi
-
-        return  (math.atan2(biasVector.z/length(azimuths), biasVector.x/length(azimuths))+pi_2) % pi_2
-    end
-
-    function HoundUtils.RandomAngle()
-        return math.random() * 2 * math.pi
-    end
-
-    function HoundUtils.getSamMaxRange(emitter)
-        local maxRng = 0
-        if emitter ~= nil then
-            local units = emitter:getGroup():getUnits()
-            for i, unit in ipairs(units) do
-                local weapons = unit:getAmmo()
-                if weapons ~= nil then
-                    for j, ammo in ipairs(weapons) do
-                        if ammo.desc.category == Weapon.Category.MISSILE and ammo.desc.missileCategory == Weapon.MissileCategory.SAM then
-                            maxRng = math.max(math.max(ammo.desc.rangeMaxAltMax,ammo.desc.rangeMaxAltMin),maxRng)
-                        end
-                    end
-                end
-            end
-        end
-        return maxRng
-    end
-
-    function HoundUtils.getRoundedElevationFt(elev)
-        return HoundUtils.roundToNearest(mist.utils.metersToFeet(elev),50)
-    end
-
-    function HoundUtils.roundToNearest(input,nearest)
-        return mist.utils.round(input/nearest) * nearest
-    end
-
-    function HoundUtils.getDefraction(band,antenna_size)
-        if band == nil or antenna_size == nil or antenna_size == 0 then return 30 end
-        return math.deg(HoundDB.Bands[band]/antenna_size)
-    end
-
-    
-    function HoundUtils.getAngularError(variance)
-        local MAG = math.abs(gaussian(0, variance * 10 ) / 10)
-        local ROT = math.random() * 2 * math.pi
-        
-        local epsilon = {}
-        epsilon.az = -MAG*math.sin(ROT)
-        epsilon.el = MAG*math.cos(ROT)
-        return epsilon
-    end
-end-- --------------------------------------
+end
 do
     HoundElintDatapoint = {}
     HoundElintDatapoint.__index = HoundElintDatapoint
@@ -743,7 +735,6 @@ do
 
     function HoundElintDatapoint:estimatePos()
         if self.el == nil then return end
-        -- env.info("decl is " .. mist.utils.toDegree(self.el))
         local maxSlant = self.platformPos.y/math.abs(math.sin(self.el))
 
         local unitVector = {
@@ -751,13 +742,8 @@ do
             z = math.cos(self.el)*math.sin(self.az),
             y = math.sin(self.el)
         }
-        -- env.info("unit Vector: X " ..unitVector.x .." ,Z "..unitVector.z..", Y:" .. unitVector.y .. " | maxSlant " .. maxSlant)
 
         self.estimatedPos = land.getIP(self.platformPos, unitVector , maxSlant+100 )
-        -- debugging
-        -- env.info(mist.utils.tableShow( self.estimatedPos))
-        -- local latitude, longitude, altitude = coord.LOtoLL(self.estimatedPos)
-        -- env.info("estimated 3d point: Lat " ..latitude.." ,lon "..longitude..", alt:" .. tostring(altitude) )
 
     end
 end
@@ -801,14 +787,13 @@ do
         elintcontact.first_seen = timer.getAbsTime()
         elintcontact.maxRange = HoundUtils.getSamMaxRange(DCS_Unit)
         elintcontact.dataPoints = {}
-        elintcontact.markpointID = -1
+        elintcontact.markpointID = nil
         elintcontact.platformCoalition = platformCoalition
         return elintcontact
     end
 
     function HoundContact:CleanTimedout()
         if HoundUtils:timeDelta(timer.getAbsTime(), self.last_seen) > 900 then
-            -- if contact wasn't seen for 15 minuts purge all currnent data
             self.dataPoints = {}
         end
     end
@@ -826,8 +811,6 @@ do
         end
 
         if datapoint.platformStatic then
-            -- if Reciver is static, just keep the last Datapoint, as position never changes.
-            -- if There is a datapoint, do rolling avarage on AZ to clean errors out.
             if length(self.dataPoints[datapoint.platformId]) > 0 then
                 datapoint.az =  HoundUtils.AzimuthAverage({datapoint.az,self.dataPoints[datapoint.platformId][1].az})
             end
@@ -843,7 +826,7 @@ do
         else
             local LastElementIndex = table.getn(self.dataPoints[datapoint.platformId])
             local DeltaT = HoundUtils:timeDelta(self.dataPoints[datapoint.platformId][LastElementIndex - 1].t, datapoint.t)
-            if  DeltaT >= 60 then
+            if  DeltaT >= 55 then
                 table.insert(self.dataPoints[datapoint.platformId], datapoint)
             else
                 self.dataPoints[datapoint.platformId][LastElementIndex] = datapoint
@@ -944,21 +927,21 @@ do
 
     function HoundContact:removeMarker()
         if self.markpointID ~= nil then
-            trigger.action.removeMark(self.markpointID)
-            trigger.action.removeMark(self.markpointID+1)
+            for _ = 1, length(self.markpointID) do
+                trigger.action.removeMark(table.remove(self.markpointID))
+            end
         end
     end
+
+    function HoundContact:getMarkerId()
+        if self.markpointID == nil then self.markpointID = {} end
+        local idx = HoundUtils.getMarkId()
+        table.insert(self.markpointID, idx)
+        return idx
+    end
+
     function HoundContact:updateMarker(coalitionID)
         if self.pos.p == nil or self.uncertenty_radius == nil then return end
-        local marker = world.getMarkPanels()
-        self:removeMarker()
-        if length(marker) > 0 then 
-            marker = (marker[#marker].idx + 1)
-        else 
-            marker = math.random(1,100)
-        end
-        self.markpointID = marker
-
         local fillcolor = {0,0,0,0.15}
         local linecolor = {0,0,0,0.3}
         if self.platformCoalition == coalition.side.BLUE then
@@ -968,11 +951,13 @@ do
         if self.platformCoalition == coalition.side.RED then
             fillcolor[3] = 1
             linecolor[3] = 1
-        end        
-        trigger.action.circleToAll(self.platformCoalition,self.markpointID,self.pos.p,self.uncertenty_radius.r,linecolor,fillcolor,3,true)
-        -- linecolor[4] = 0.6
-        -- trigger.action.textToAll(self.platformCoalition , self.markpointID+1 , self.pos.p , linecolor,{0,0,0,0} , 12 , true , self.typeName .. " " .. (self.uid%100) .. "\n(" .. self.uncertenty_radius.major .. "/" .. self.uncertenty_radius.minor .. "@" .. self.uncertenty_radius.az .. "|" .. HoundUtils:timeDelta(self.last_seen) .. "s)")
-        trigger.action.markToCoalition(self.markpointID+1, self.typeName .. " " .. (self.uid%100) .. " (" .. self.uncertenty_radius.major .. "/" .. self.uncertenty_radius.minor .. "@" .. self.uncertenty_radius.az .. "|" .. HoundUtils:timeDelta(self.last_seen) .. "s)",self.pos.p,self.platformCoalition,true)
+        end  
+
+        self:removeMarker()
+
+        trigger.action.circleToAll(self.platformCoalition,self:getMarkerId(),self.pos.p,self.uncertenty_radius.r,linecolor,fillcolor,3,true)
+
+        trigger.action.markToCoalition(self:getMarkerId(), self.typeName .. " " .. (self.uid%100) .. " (" .. self.uncertenty_radius.major .. "/" .. self.uncertenty_radius.minor .. "@" .. self.uncertenty_radius.az .. "|" .. HoundUtils:timeDelta(self.last_seen) .. "s)",self.pos.p,self.platformCoalition,true)
     end
 
     function HoundContact:getTextData(utmZone,MGRSdigits)
@@ -1121,7 +1106,6 @@ do
         local numStaticPoints = length(staticDataPoints)
 
         if numMobilepoints+numStaticPoints < 2 and length(estimatePosition) == 0 then return end
-        -- Static against all statics
         if numStaticPoints > 1 then
             for i=1,numStaticPoints-1 do
                 for j=i+1,numStaticPoints do
@@ -1133,7 +1117,6 @@ do
             end
         end
 
-        -- Statics against all mobiles
         if numStaticPoints > 0  and numMobilepoints > 0 then
             for i,staticDataPoint in ipairs(staticDataPoints) do
                 for j,mobileDataPoint in ipairs(mobileDataPoints) do
@@ -1145,7 +1128,6 @@ do
             end
          end
 
-        -- mobiles agains mobiles
         if numMobilepoints > 1 then
             for i=1,numMobilepoints-1 do
                 for j=i+1,numMobilepoints do
@@ -1243,7 +1225,6 @@ do
         return CommsManager
     end
 
-    -- Houskeeping functions
     function HoundCommsManager:updateSettings(settings)
         for k,v in pairs(settings) do self.settings[k] = v end
     end
@@ -1262,7 +1243,6 @@ do
         end
     end
     
-    -- Main functions
     function HoundCommsManager:addMessageObj(obj)
         if obj.coalition == nil then return end
         if obj.txt == nil and obj.tts == nil then return end
@@ -1289,7 +1269,6 @@ do
     end
 
     function HoundCommsManager:addTxtMsg(coalition,msg,prio)
-        -- TODO FIX!
         if msg == nil or string.len(tostring(msg)) == 0 or coalition == nil then return end
         if prio == nil then prio = 1 end
         local obj = {
@@ -1343,7 +1322,6 @@ do
         if gSelf.enabled and STTS ~= nil and msgObj.tts ~= nil then
             HoundUtils.TTS.Transmit(msgObj.tts,msgObj.coalition,gSelf.settings,transmitterPos)
             readTime = HoundUtils.TTS.getReadTime(msgObj.tts,gSelf.settings.speed)
-            -- return timer.getTime() + readTime -- temp till I figure out the speed
         end
 
         if gSelf.settings.enableText and msgObj.txt ~= nil then
@@ -1380,7 +1358,7 @@ do
             self.transmitter = nil
         end
     end
-end-- -------------------------------------------------------------
+end
 do
     HoundElint = {}
     HoundElint.__index = HoundElint
@@ -1402,6 +1380,11 @@ do
             mainInterval = 15,
             processInterval = 60,
             barkInterval = 120
+        }
+        elint.timingCounters = {
+            short = false,
+            long = 0
+            
         }
 
         if platformName ~= nil then
@@ -1491,7 +1474,6 @@ do
 
     function HoundElint:configureController(args)
         self.controller:updateSettings(args)
-
     end
 
     function HoundElint:configureAtis(args)
@@ -1518,7 +1500,7 @@ do
         end
      end
 
-     function HoundElint:enableController(textMode)
+    function HoundElint:enableController(textMode)
         self:toggleController(true)
         self.controller:enable()
         if textMode then
@@ -1600,18 +1582,20 @@ do
                 end
             end
         end
+
         if body == "" then body = "No threats had been detected " end
         if numberEWR > 0 then body = body .. ",  " .. numberEWR .. " EWRs are tracked. " end
         if body == gSelf.atis.loop.body then return end
         gSelf.atis.loop.body = body
 
-        local reportId = HoundUtils.TTS.getReportId()
+        local reportId = HoundUtils.getReportId()
         gSelf.atis.loop.header = gSelf.atis.settings.name 
         if gSelf.atis.settings.NATO then
             gSelf.atis.loop.header = gSelf.atis.loop.header .. " Lowdown "
         else
             gSelf.atis.loop.header = gSelf.atis.loop.header .. " SAM information "
         end 
+
         gSelf.atis.loop.header = gSelf.atis.loop.header .. reportId .. " " .. HoundUtils.TTS.getTtsTime() .. ". "
         gSelf.atis.loop.footer = "you have " .. reportId .. "."
         local msg = gSelf.atis.loop.header .. gSelf.atis.loop.body .. gSelf.atis.loop.footer
@@ -1654,7 +1638,6 @@ do
 
         gSelf.controller:addMessageObj(msgObj)
 
-
     end
 
     function HoundElint:notifyDeadEmitter(emitter)
@@ -1695,14 +1678,11 @@ do
         if setContains(HoundDB.Platform,mainCategory) then
             if setContains(HoundDB.Platform[mainCategory],type) then
                 local antenna_size = HoundDB.Platform[mainCategory][type].antenna.size *  HoundDB.Platform[mainCategory][type].antenna.factor
-                -- local precision =  HoundUtils.getDefraction(emitterBand,antenna_size)
-                -- env.info(type .. " Precision: " .. antenna_size .. "m for "..emitterBand.. " Band = " .. precision .. " deg")
                 return  HoundUtils.getDefraction(emitterBand,antenna_size) -- precision
             end
         end
         return 15.0
     end
-
 
     function HoundElint:getAzimuth(src, dst, sensorError)
         local dirRad = mist.utils.getDir(mist.vec.sub(dst, src))
@@ -1711,25 +1691,17 @@ do
         local randomError = HoundUtils.getAngularError(sensorError)
         local AzDeg = mist.utils.round((math.deg(dirRad) + randomError.az + 360) % 360, 3)
         local ElDeg = mist.utils.round((math.deg(elRad) + randomError.el), 3)
-        -- env.info("sensor is: ".. mist.utils.tableShow(randomError) .. "passing in " .. sensorError )
-        -- env.info("az: " .. math.deg(dirRad) .. " err: "..  randomError.az .. " final: " ..AzDeg)
-        -- env.info("el: " .. math.deg(elRad) .. " err: "..  randomError.el .. " final: " ..ElDeg)
         return math.rad(AzDeg),math.rad(ElDeg)
     end
 
     function HoundElint:getActiveRadars()
         local Radars = {}
 
-        -- start logic
         for coalitionId,coalitionName in pairs(coalition.side) do
             if coalitionName ~= self.coalitionId then
-                -- env.info("starting coalition ".. coalitionName)
                 for cid,CategoryId in pairs({Group.Category.GROUND,Group.Category.SHIP}) do
-                    -- env.info("starting categoty ".. CategoryId)
                     for gid, group in pairs(coalition.getGroups(coalitionName, CategoryId)) do
-                        -- env.info("starting group ".. group:getName())
                         for uid, unit in pairs(group:getUnits()) do
-                            -- env.info("looking at ".. unit:getName())
                             if (unit:isExist() and unit:isActive() and unit:getRadar()) then
                                 table.insert(Radars, unit:getName()) -- insert the name
                             end
@@ -1756,7 +1728,6 @@ do
             env.info("No Transmitting Radars")
             return
         end
-        -- env.info("Recivers: " .. table.getn(self.platform) .. " | Radars: " .. table.getn(Radars))
         for i,RadarName in ipairs(Radars) do
             local radar = Unit.getByName(RadarName)
             local RadarUid = radar:getID()
@@ -1779,8 +1750,6 @@ do
                     if PlatformUnitCategory == Unit.Category.HELICOPTER or PlatformUnitCategory == Unit.Category.AIRPLANE then
                         isAerialUnit = true
                         if self.addPositionError then
-                            -- TODO: make this work
-                            -- platformPos = mist.getRandPointInCircle( platformPos, self.positionErrorRadius)
                         end                    
                     end
 
@@ -1800,7 +1769,6 @@ do
                         if not isAerialUnit then
                             el = nil
                         end
-                        -- env.info(platform:getName() .. "-->"..  mist.utils.tableShow(platform:getPosition().x) )
                         local datapoint = HoundElintDatapoint:New(platform,platformPos, az, el, timer.getAbsTime(),platformIsStatic,sensorMargins)
                         self.emitters[RadarUid]:AddPoint(datapoint)
                     end
@@ -1811,9 +1779,6 @@ do
 
     function HoundElint:Process()
         local currentTime = timer.getTime() + 0.2
-        -- if self.controller.msgTimer < currentTime then
-        --     self.controller.msgTimer = currentTime
-        -- end
         for uid, emitter in pairs(self.emitters) do
             if emitter ~= nil then
                 local isNew = emitter:processData()
@@ -1837,32 +1802,36 @@ do
                 end
             end
         end
-        for uid, emitter in pairs(self.emitters) do
-            if self.useMarkers then emitter:updateMarker(self.coalitionId) end
-         end
     end
 
-    function HoundElint:Bark()
-        for uid, emitter in pairs(self.emitters) do
-           if self.useMarkers then emitter:updateMarker(self.coalitionId) end
+    function HoundElint:UpdateMarkers()
+        if self.useMarkers then
+            for _, emitter in pairs(self.emitters) do
+                emitter:updateMarker(self.coalitionId)
+            end
         end
     end
 
     function HoundElint.runCycle(self)
-        if self.coalitionId == nil then return end
+        local nextRun = timer.getTime() + gaussian(self.settings.mainInterval,3)
+        if self.coalitionId == nil then return nextRun end
         if self.platform then self:platformRefresh() end
         if length(self.platform) > 0 then
             self:Sniff()
         end
         if length(self.emitters) > 0 then
-            if timer.getAbsTime() % math.floor(gaussian(self.settings.processInterval,3)) < self.settings.mainInterval+5 then 
-                self:Process() 
-                self:populateRadioMenu()
+            self.timingCounters.short = not self.timingCounters.short
+            if self.timingCounters.short then
+                self:Process()
+                self.timingCounters.long = self.timingCounters.long + 1
             end
-            -- if timer.getAbsTime() % math.floor(gaussian(self.settings.barkInterval,7)) < self.settings.mainInterval+5 then
-            --     self:Bark()
-            -- end
+            if self.timingCounters.long == 2 then
+                self:populateRadioMenu()
+                self:UpdateMarkers()
+                self.timingCounters.long = 0
+            end
         end
+        return nextRun
     end
 
     function HoundElint.updatePlatformState(params)
@@ -1882,7 +1851,7 @@ do
         end
         self:systemOff(false)
 
-        self.elintTaskID = mist.scheduleFunction(self.runCycle, {self}, 1, self.settings.mainInterval)
+        self.elintTaskID = timer.scheduleFunction(self.runCycle, self, timer.getTime() + self.settings.mainInterval)
         if notify == nil or notify then
             trigger.action.outTextForCoalition(self.coalitionId,
                                            "Hound ELINT system is now Operating", 10)
@@ -1906,7 +1875,6 @@ do
     --[[
         Menu functions - Admin Menu
     --]]
-    -- TODO: Remove Menu when emitter dies:
     function HoundElint:addAdminRadioMenu()
         self.radioAdminMenu = missionCommands.addSubMenuForCoalition(
                                   self.coalitionId, 'ELINT managment')
@@ -1986,7 +1954,6 @@ do
             local uid = emitter.uid
             if emitter.pos.p ~= nil then
                 if length(self.radioMenu.data[assigned]) == 0 then
-                    -- env.info("create " .. assigned)
                     self.radioMenu.data[assigned] = {}
                     self.radioMenu.data[assigned].root =
                         missionCommands.addSubMenuForCoalition(self.coalitionId,
@@ -2019,8 +1986,7 @@ do
         if self.radioMenu.noData ~= nil then
             self.radioMenu.noData = missionCommands.removeItemForCoalition(self.coalitionId, self.radioMenu.noData)
         end
-
-        
+ 
         local submenu = 0
         if self.radioMenu.data[assigned].counter > 9 then
             submenu = math.floor((self.radioMenu.data[assigned].counter+1)/10)
@@ -2045,7 +2011,6 @@ do
         local DCStypeName = emitter.DCStypeName
         local assigned = emitter.typeAssigned
         local uid = emitter.uid
-        -- env.info(length(emitter) .. " uid: " .. uid .. " DCStypeName: " .. DCStypeName)
         if not self.controller.enabled or self.radioMenu.data[assigned] == nil then
             return
         end
@@ -2083,7 +2048,6 @@ do
         contacts.sam.count = #contacts.sam.contacts or 0
         return contacts
     end
-
 end
 
 do
@@ -2092,4 +2056,3 @@ do
 end
 
 env.info("Hound ELINT Loaded Successfully")
--- Build date 28-06-2021

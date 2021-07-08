@@ -1,5 +1,5 @@
 -- --------------------------------------
-HOUND_VERSION="0.1.1-DEV"
+HOUND_VERSION="0.1.2-DEV"
 -- Radar Database
 HoundDB = {}
 do
@@ -79,7 +79,7 @@ do
             ['Band'] = 'G'
         },
         ['SA-11 Buk LN 9A310M1'] = {
-            ['Name'] = "SA-11 LN/TR",
+            ['Name'] = "Fire Dome",
             ['Assigned'] = "SA-11",
             ['Role'] = "TR",
             ['Band'] = 'H'
@@ -290,7 +290,7 @@ do
             ['Band'] = 'K'
         },
         ['SA-17 Buk M1-2 LN 9A310M1-2'] = {
-            ['Name'] = "SA-17 LN/TR",
+            ['Name'] = "Fire Dome M",
             ['Assigned'] = "SA-17",
             ['Role'] = "TR",
             ['Band'] = 'H'
