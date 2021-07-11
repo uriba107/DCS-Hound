@@ -20,19 +20,20 @@ do
 
     function HoundElintDatapoint:estimatePos()
         if self.el == nil then return end
-        -- env.info("decl is " .. mist.utils.toDegree(self.el))
-        local maxSlant = self.platformPos.y/math.abs(math.sin(self.el))
+        local l_math = math
+        -- env.info("decl is " .. l_mist_utils.toDegree(self.el))
+        local maxSlant = self.platformPos.y/l_math.abs(l_math.sin(self.el))
 
         local unitVector = {
-            x = math.cos(self.el)*math.cos(self.az),
-            z = math.cos(self.el)*math.sin(self.az),
-            y = math.sin(self.el)
+            x = l_math.cos(self.el)*l_math.cos(self.az),
+            z = l_math.cos(self.el)*l_math.sin(self.az),
+            y = l_math.sin(self.el)
         }
         -- env.info("unit Vector: X " ..unitVector.x .." ,Z "..unitVector.z..", Y:" .. unitVector.y .. " | maxSlant " .. maxSlant)
 
         self.estimatedPos = land.getIP(self.platformPos, unitVector , maxSlant+100 )
         -- debugging
-        -- env.info(mist.utils.tableShow( self.estimatedPos))
+        -- env.info(l_mist_utils.tableShow( self.estimatedPos))
         -- local latitude, longitude, altitude = coord.LOtoLL(self.estimatedPos)
         -- env.info("estimated 3d point: Lat " ..latitude.." ,lon "..longitude..", alt:" .. tostring(altitude) )
 
@@ -42,6 +43,9 @@ end
 do
     HoundContact = {}
     HoundContact.__index = HoundContact
+
+    local l_math = math
+    local l_mist_utils = mist.utils
 
     function HoundContact:New(DCS_Unit,platformCoalition)
         local elintcontact = {}
@@ -135,8 +139,8 @@ do
         local p1 = earlyPoint.platformPos
         local p2 = latePoint.platformPos
 
-        local m1 = math.tan(earlyPoint.az)
-        local m2 = math.tan(latePoint.az)
+        local m1 = l_math.tan(earlyPoint.az)
+        local m2 = l_math.tan(latePoint.az)
 
         local b1 = -m1 * p1.x + p1.z
         local b2 = -m2 * p2.x + p2.z
@@ -163,16 +167,16 @@ do
     end
 
     function HoundContact:calculateEllipse(estimatedPositions,Theta)
-        table.sort(estimatedPositions,function(a,b) return tonumber(mist.utils.get2DDist(self.pos.p,a)) < tonumber(mist.utils.get2DDist(self.pos.p,b)) end)
+        table.sort(estimatedPositions,function(a,b) return tonumber(l_mist_utils.get2DDist(self.pos.p,a)) < tonumber(l_mist_utils.get2DDist(self.pos.p,b)) end)
 
-        local percentile = math.floor(length(estimatedPositions)*0.55)
+        local percentile = l_math.floor(length(estimatedPositions)*0.55)
         local RelativeToPos = {}
-        local NumToUse = math.max(math.min(2,length(estimatedPositions)),percentile)
+        local NumToUse = l_math.max(l_math.min(2,length(estimatedPositions)),percentile)
         for i = 1, NumToUse  do
             table.insert(RelativeToPos,mist.vec.sub(estimatedPositions[i],self.pos.p))
         end
-        local sinTheta = math.sin(Theta)
-        local cosTheta = math.cos(Theta)
+        local sinTheta = l_math.sin(Theta)
+        local cosTheta = l_math.cos(Theta)
 
         for k,v in ipairs(RelativeToPos) do
             local newPos = {}
@@ -191,18 +195,18 @@ do
         max.y = -99999
 
         for k,v in ipairs(RelativeToPos) do
-            min.x = math.min(min.x,v.x)
-            max.x = math.max(max.x,v.x)
-            min.y = math.min(min.y,v.z)
-            max.y = math.max(max.y,v.z)
+            min.x = l_math.min(min.x,v.x)
+            max.x = l_math.max(max.x,v.x)
+            min.y = l_math.min(min.y,v.z)
+            max.y = l_math.max(max.y,v.z)
         end
 
-        local x = mist.utils.round(math.abs(min.x)+math.abs(max.x))
-        local y = mist.utils.round(math.abs(min.y)+math.abs(max.y))
+        local x = l_mist_utils.round(l_math.abs(min.x)+l_math.abs(max.x))
+        local y = l_mist_utils.round(l_math.abs(min.y)+l_math.abs(max.y))
         self.uncertenty_radius = {}
-        self.uncertenty_radius.major = math.max(x,y)
-        self.uncertenty_radius.minor = math.min(x,y)
-        self.uncertenty_radius.az = mist.utils.round(mist.utils.toDegree(Theta))
+        self.uncertenty_radius.major = l_math.max(x,y)
+        self.uncertenty_radius.minor = l_math.min(x,y)
+        self.uncertenty_radius.az = l_mist_utils.round(l_mist_utils.toDegree(Theta))
         self.uncertenty_radius.r  = (x+y)/4
         
     end
@@ -215,8 +219,8 @@ do
         self.pos.LL.lat, self.pos.LL.lon =  coord.LOtoLL(self.pos.p)
         self.pos.elev = self.pos.p.y
         self.pos.grid  = coord.LLtoMGRS(self.pos.LL.lat, self.pos.LL.lon)
-        self.pos.be.brg = mist.utils.round(mist.utils.toDegree(mist.utils.getDir(mist.vec.sub(self.pos.p,bullsPos))))
-        self.pos.be.rng =  mist.utils.round(mist.utils.metersToNM(mist.utils.get2DDist(self.pos.p,bullsPos)))
+        self.pos.be.brg = l_mist_utils.round(l_mist_utils.toDegree(l_mist_utils.getDir(mist.vec.sub(self.pos.p,bullsPos))))
+        self.pos.be.rng =  l_mist_utils.round(l_mist_utils.metersToNM(l_mist_utils.get2DDist(self.pos.p,bullsPos)))
     end
 
     function HoundContact:removeMarker()
@@ -268,8 +272,8 @@ do
         if MGRSdigits == nil then
             return GridPos,BE
         end
-        local E = math.floor(self.pos.grid.Easting/math.pow(10,math.min(5,math.max(1,5-MGRSdigits))))
-        local N = math.floor(self.pos.grid.Northing/math.pow(10,math.min(5,math.max(1,5-MGRSdigits))))
+        local E = l_math.floor(self.pos.grid.Easting/(10^l_math.min(5,l_math.max(1,5-MGRSdigits))))
+        local N = l_math.floor(self.pos.grid.Northing/(10^l_math.min(5,l_math.max(1,5-MGRSdigits))))
         GridPos = GridPos .. " " .. E .. " " .. N
         
         return GridPos,BE
@@ -288,8 +292,8 @@ do
         if MGRSdigits==nil then
             return phoneticGridPos,phoneticBulls
         end
-        local E = math.floor(self.pos.grid.Easting/math.pow(10,math.min(5,math.max(1,5-MGRSdigits))))
-        local N = math.floor(self.pos.grid.Northing/math.pow(10,math.min(5,math.max(1,5-MGRSdigits))))
+        local E = l_math.floor(self.pos.grid.Easting/(10^l_math.min(5,l_math.max(1,5-MGRSdigits))))
+        local N = l_math.floor(self.pos.grid.Northing/(10^l_math.min(5,l_math.max(1,5-MGRSdigits))))
         phoneticGridPos = phoneticGridPos .. " " .. HoundUtils.TTS.toPhonetic(E) .. " " .. HoundUtils.TTS.toPhonetic(N)
 
         return phoneticGridPos,phoneticBulls
@@ -408,7 +412,7 @@ do
             for i=1,numStaticPoints-1 do
                 for j=i+1,numStaticPoints do
                     local err = (staticDataPoints[i].platformPrecision + staticDataPoints[j].platformPrecision)/2
-                    if math.deg(HoundUtils.angleDeltaRad(staticDataPoints[i].az,staticDataPoints[j].az)) > err then
+                    if l_math.deg(HoundUtils.angleDeltaRad(staticDataPoints[i].az,staticDataPoints[j].az)) > err then
                         table.insert(estimatePosition,self:triangulatePoints(staticDataPoints[i],staticDataPoints[j]))
                     end
                 end
@@ -420,7 +424,7 @@ do
             for i,staticDataPoint in ipairs(staticDataPoints) do
                 for j,mobileDataPoint in ipairs(mobileDataPoints) do
                     local err = (staticDataPoint.platformPrecision + mobileDataPoint.platformPrecision)/2
-                    if math.deg(HoundUtils.angleDeltaRad(staticDataPoint.az,mobileDataPoint.az)) > err then
+                    if l_math.deg(HoundUtils.angleDeltaRad(staticDataPoint.az,mobileDataPoint.az)) > err then
                         table.insert(estimatePosition,self:triangulatePoints(staticDataPoint,mobileDataPoint))
                     end
                 end
@@ -432,7 +436,7 @@ do
             for i=1,numMobilepoints-1 do
                 for j=i+1,numMobilepoints do
                     local err = (mobileDataPoints[i].platformPrecision + mobileDataPoints[j].platformPrecision)/2
-                    if math.deg(HoundUtils.angleDeltaRad(mobileDataPoints[i].az,mobileDataPoints[j].az)) > err then
+                    if l_math.deg(HoundUtils.angleDeltaRad(mobileDataPoints[i].az,mobileDataPoints[j].az)) > err then
                         table.insert(estimatePosition,self:triangulatePoints(mobileDataPoints[i],mobileDataPoints[j]))
                     end
                 end

@@ -1,5 +1,6 @@
 -- --------------------------------------
 do 
+    local l_math = math
     HoundUtils = {}
     HoundUtils.__index = HoundUtils
 
@@ -25,7 +26,7 @@ do
     end
 
     function HoundUtils.angleDeltaRad(rad1,rad2)
-        return math.abs(math.abs(rad1-math.pi)-math.abs(rad2-math.pi))
+        return l_math.abs(l_math.abs(rad1-l_math.pi)-l_math.abs(rad2-l_math.pi))
     end
 
     function HoundUtils.AzimuthAverage(azimuths)
@@ -33,18 +34,18 @@ do
         local biasVector = nil
         for i=1, length(azimuths) do
             local V = {}
-            V.x = math.cos(azimuths[i])
-            V.z = math.sin(azimuths[i])
+            V.x = l_math.cos(azimuths[i])
+            V.z = l_math.sin(azimuths[i])
             V.y = 0
             if biasVector == nil then biasVector = V else biasVector = mist.vec.add(biasVector,V) end
         end
-        local pi_2 = 2*math.pi
-
-        return  (math.atan2(biasVector.z/length(azimuths), biasVector.x/length(azimuths))+pi_2) % pi_2
+        local pi_2 = 2*l_math.pi
+        return  (l_math.atan( (biasVector.z/length(azimuths)) / (biasVector.x/length(azimuths))+pi_2) ) % pi_2
     end
 
     function HoundUtils.RandomAngle()
-        return math.random() * 2 * math.pi
+        -- actuallu a map
+        return l_math.random() * 2 * l_math.pi
     end
 
     function HoundUtils.getSamMaxRange(emitter)
@@ -56,7 +57,7 @@ do
                 if weapons ~= nil then
                     for j, ammo in ipairs(weapons) do
                         if ammo.desc.category == Weapon.Category.MISSILE and ammo.desc.missileCategory == Weapon.MissileCategory.SAM then
-                            maxRng = math.max(math.max(ammo.desc.rangeMaxAltMax,ammo.desc.rangeMaxAltMin),maxRng)
+                            maxRng = l_math.max(l_math.max(ammo.desc.rangeMaxAltMax,ammo.desc.rangeMaxAltMin),maxRng)
                         end
                     end
                 end
@@ -75,17 +76,17 @@ do
 
     function HoundUtils.getDefraction(band,antenna_size)
         if band == nil or antenna_size == nil or antenna_size == 0 then return 30 end
-        return math.deg(HoundDB.Bands[band]/antenna_size)
+        return l_math.deg(HoundDB.Bands[band]/antenna_size)
     end
 
     
     function HoundUtils.getAngularError(variance)
-        local MAG = math.abs(gaussian(0, variance * 10 ) / 10)
-        local ROT = math.random() * 2 * math.pi
+        local MAG = l_math.abs(gaussian(0, variance * 10 ) / 10)
+        local ROT = l_math.random() * 2 * l_math.pi
         
         local epsilon = {}
-        epsilon.az = -MAG*math.sin(ROT)
-        epsilon.el = MAG*math.cos(ROT)
+        epsilon.az = -MAG*l_math.sin(ROT)
+        epsilon.el = MAG*l_math.cos(ROT)
         return epsilon
     end
 
@@ -97,7 +98,7 @@ do
             "Please send my regards.",
             " "
         }
-        return response[math.max(1,math.min(math.ceil(timer.getAbsTime() % length(response)),length(response)))]
+        return response[l_math.max(1,l_math.min(l_math.ceil(timer.getAbsTime() % length(response)),length(response)))]
     end
 
     function HoundUtils.getCoalitionString(coalitionID)
@@ -134,9 +135,9 @@ do
     end
 
     function HoundUtils.DecToDMS(cood)
-        local deg = math.floor(cood)
-        local minutes = math.floor((cood - deg) * 60)
-        local sec = math.floor(((cood-deg) * 3600) % 60)
+        local deg = l_math.floor(cood)
+        local minutes = l_math.floor((cood - deg) * 60)
+        local sec = l_math.floor(((cood-deg) * 3600) % 60)
         local dec = (cood-deg) * 60
 
         return {
@@ -196,7 +197,7 @@ do
             "Low",
             "Very Low"
         }
-        return score[math.min(#score,math.max(1,math.ceil(confidenceRadius/500)))]
+        return score[l_math.min(#score,l_math.max(1,l_math.ceil(confidenceRadius/500)))]
     end
 
     function HoundUtils.TTS.getVerbalContactAge(timestamp,isSimple,NATO)
@@ -213,8 +214,8 @@ do
             if ageSeconds < 300 then return "relevant" end
             return "stale"
         end
-        if ageSeconds < 60 then return tostring(math.floor(ageSeconds)) .. " seconds" end
-        return tostring(math.floor(ageSeconds/60)) .. " minutes"
+        if ageSeconds < 60 then return tostring(l_math.floor(ageSeconds)) .. " seconds" end
+        return tostring(l_math.floor(ageSeconds/60)) .. " minutes"
     end
 
     function HoundUtils.TTS.DecToDMS(cood,minDec)
@@ -256,21 +257,21 @@ do
             speedFactor = speed
         else
             if speed ~= 0 then
-                speedFactor = math.abs(speed) * (maxRateRatio - 1) / 10 + 1
+                speedFactor = l_math.abs(speed) * (maxRateRatio - 1) / 10 + 1
             end
             if speed < 0 then
                 speedFactor = 1/speedFactor
             end
         end
 
-        local wpm = math.ceil(100 * speedFactor)
-        local cps = math.floor((wpm * 5)/60)
+        local wpm = l_math.ceil(100 * speedFactor)
+        local cps = l_math.floor((wpm * 5)/60)
 
         if type(length) == "string" then
             length = string.len(length)
         end
 
-        return math.ceil(length/cps)
+        return l_math.ceil(length/cps)
     end
 
 
