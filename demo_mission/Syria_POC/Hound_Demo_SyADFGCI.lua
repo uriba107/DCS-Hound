@@ -7,12 +7,13 @@ end
 do
     
     env.info("configuring Hound")    
-    Elint_blue = HoundElint:create("Mt_Meron_ELINT")
+    Elint_blue = HoundElint:create()
     Elint_blue:addPlatform("Mt_Hermon_ELINT")
+    Elint_blue:addPlatform("Mt_Meron_ELINT")
 
     Elint_blue:addPlatform("ELINT_C130_south")
     Elint_blue:addPlatform("ELINT_C130_north")
-    -- elint:addPlatform("ELINT_3")
+    -- Elint_blue:addPlatform("ELINT_C17_NORTH")
     -- elint:addPlatform("HELI_ELINT")
 
     

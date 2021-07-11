@@ -254,9 +254,9 @@ do
         -- local idx0 = self:getMarkerId()
         self:removeMarker()
 
-        trigger.action.circleToAll(self.platformCoalition,self:getMarkerId(),self.pos.p,self.uncertenty_radius.r,linecolor,fillcolor,3,true)
+        trigger.action.circleToAll(self.platformCoalition,self:getMarkerId(),self.pos.p,self.uncertenty_radius.r,linecolor,fillcolor,2,true)
 
-        trigger.action.markToCoalition(self:getMarkerId(), self.typeName .. " " .. (self.uid%100) .. " (" .. self.uncertenty_radius.major .. "/" .. self.uncertenty_radius.minor .. "@" .. self.uncertenty_radius.az .. "|" .. HoundUtils:timeDelta(self.last_seen) .. "s)",self.pos.p,self.platformCoalition,true)
+        trigger.action.markToCoalition(self:getMarkerId(), self.typeName .. " " .. (self.uid%100) .. " (" .. self.uncertenty_radius.major .. "/" .. self.uncertenty_radius.minor .. "@" .. self.uncertenty_radius.az .. "|" .. l_math.floor(HoundUtils:timeDelta(self.last_seen)) .. "s)",self.pos.p,self.platformCoalition,true)
         -- linecolor[4] = 0.6
         -- trigger.action.textToAll(self.platformCoalition , self.markpointID+1 , self.pos.p , linecolor,{0,0,0,0} , 12 , true , self.typeName .. " " .. (self.uid%100) .. "\n(" .. self.uncertenty_radius.major .. "/" .. self.uncertenty_radius.minor .. "@" .. self.uncertenty_radius.az .. "|" .. HoundUtils:timeDelta(self.last_seen) .. "s)")
     end

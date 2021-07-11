@@ -411,18 +411,24 @@ function setContains(set, key)
   return set[key] ~= nil
 end
 do 
+    local l_mist = mist
     local l_math = math
+
     HoundUtils = {}
     HoundUtils.__index = HoundUtils
 
     HoundUtils.TTS = {}
     HoundUtils.Text = {}
+    HoundUtils.ELINT = {}
     HoundUtils.ReportId = nil
 
-    HoundUtils._MarkId = 100000
+    HoundUtils._MarkId = 1
 
     function HoundUtils.getMarkId()
-        HoundUtils._MarkId = HoundUtils._MarkId + 1
+        if UTILS and UTILS.GetMarkID 
+            then HoundUtils._MarkId = UTILS.GetMarkID()
+            else HoundUtils._MarkId =  HoundUtils._MarkId + 1 
+            end
         return HoundUtils._MarkId
     end
 
@@ -447,7 +453,7 @@ do
             V.x = l_math.cos(azimuths[i])
             V.z = l_math.sin(azimuths[i])
             V.y = 0
-            if biasVector == nil then biasVector = V else biasVector = mist.vec.add(biasVector,V) end
+            if biasVector == nil then biasVector = V else biasVector = l_mist.vec.add(biasVector,V) end
         end
         local pi_2 = 2*l_math.pi
         return  (l_math.atan( (biasVector.z/length(azimuths)) / (biasVector.x/length(azimuths))+pi_2) ) % pi_2
@@ -476,11 +482,11 @@ do
     end
 
     function HoundUtils.getRoundedElevationFt(elev)
-        return HoundUtils.roundToNearest(mist.utils.metersToFeet(elev),50)
+        return HoundUtils.roundToNearest(l_mist.utils.metersToFeet(elev),50)
     end
 
     function HoundUtils.roundToNearest(input,nearest)
-        return mist.utils.round(input/nearest) * nearest
+        return l_mist.utils.round(input/nearest) * nearest
     end
 
     function HoundUtils.getDefraction(band,antenna_size)
@@ -553,7 +559,7 @@ do
             d = deg,
             m = minutes,
             s = sec,
-            mDec = mist.utils.round(dec ,3)
+            mDec = l_mist.utils.round(dec ,3)
         }
     end
 
@@ -579,7 +585,7 @@ do
 
     function HoundUtils.TTS.getTtsTime(timestamp)
         if timestamp == nil then timestamp = timer.getAbsTime() end
-        local DHMS = mist.time.getDHMS(timestamp)
+        local DHMS = l_mist.time.getDHMS(timestamp)
         local hours = DHMS.h
         local minutes = DHMS.m
         local seconds = DHMS.s
@@ -686,7 +692,7 @@ do
         if distanceM < 1000 then
             distance = HoundUtils.roundToNearest(distanceM,50)
         else
-            distance = mist.utils.round(distanceM / 1000,1)
+            distance = l_mist.utils.round(distanceM / 1000,1)
             distanceUnit = "kilometers"
         end
         return distance .. " " .. distanceUnit
@@ -710,8 +716,17 @@ do
 
     function HoundUtils.Text.getTime(timestamp)
         if timestamp == nil then timestamp = timer.getAbsTime() end
-        local DHMS = mist.time.getDHMS(timestamp)
+        local DHMS = l_mist.time.getDHMS(timestamp)
         return string.format("%02d",DHMS.h)  .. string.format("%02d",DHMS.m)
+    end
+
+    function HoundUtils.ELINT.EarthLOS(h0,h1)
+        local Re = 6371000 -- Radius of earth in M
+        local d0 = l_math.sqrt(h0^2+2*Re*h0)
+        local d1 = 0
+        if h1 then d1 = l_math.sqrt(h1^2+2*Re*h1) end
+        return d0+d1
+
     end
 end
 do
@@ -959,9 +974,9 @@ do
 
         self:removeMarker()
 
-        trigger.action.circleToAll(self.platformCoalition,self:getMarkerId(),self.pos.p,self.uncertenty_radius.r,linecolor,fillcolor,3,true)
+        trigger.action.circleToAll(self.platformCoalition,self:getMarkerId(),self.pos.p,self.uncertenty_radius.r,linecolor,fillcolor,2,true)
 
-        trigger.action.markToCoalition(self:getMarkerId(), self.typeName .. " " .. (self.uid%100) .. " (" .. self.uncertenty_radius.major .. "/" .. self.uncertenty_radius.minor .. "@" .. self.uncertenty_radius.az .. "|" .. HoundUtils:timeDelta(self.last_seen) .. "s)",self.pos.p,self.platformCoalition,true)
+        trigger.action.markToCoalition(self:getMarkerId(), self.typeName .. " " .. (self.uid%100) .. " (" .. self.uncertenty_radius.major .. "/" .. self.uncertenty_radius.minor .. "@" .. self.uncertenty_radius.az .. "|" .. l_math.floor(HoundUtils:timeDelta(self.last_seen)) .. "s)",self.pos.p,self.platformCoalition,true)
     end
 
     function HoundContact:getTextData(utmZone,MGRSdigits)
@@ -1738,7 +1753,7 @@ do
             local RadarType = radar:getTypeName()
             local RadarName = radar:getName()
             local radarPos = radar:getPosition().p
-            radarPos.y = radarPos.y + 20 -- assume 10 meters radar antenna
+            radarPos.y = radarPos.y + radar:getDesc()["box"]["max"]["y"] -- assume 10 meters radar antenna
 
             for j,platform in ipairs(self.platform) do
                 local platformPos = platform:getPosition().p
@@ -1748,7 +1763,7 @@ do
 
                 if platform:getCategory() == Object.Category.STATIC then
                     platformIsStatic = true
-                    platformPos.y = platformPos.y + 60
+                    platformPos.y = platformPos.y + platform:getDesc()["box"]["max"]["y"]
                 else
                     local PlatformUnitCategory = platform:getDesc()["category"]
                     if PlatformUnitCategory == Unit.Category.HELICOPTER or PlatformUnitCategory == Unit.Category.AIRPLANE then
@@ -1758,11 +1773,10 @@ do
                     end
 
                     if PlatformUnitCategory == Unit.Category.GROUND_UNIT then
-                        platformPos.y = platformPos.y + 15 
+                        platformPos.y = platformPos.y + platform:getDesc()["box"]["max"]["y"]
                     end
                 end
-
-                if land.isVisible(platformPos, radarPos) then
+                if (mist.utils.get2DDist(platformPos, radarPos) <= HoundUtils.ELINT.EarthLOS(platformPos.y,radarPos.y)) and land.isVisible(platformPos, radarPos) then
                     if (self.emitters[RadarUid] == nil) then
                         self.emitters[RadarUid] =
                             HoundContact:New(radar, self.coalitionId)

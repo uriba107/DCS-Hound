@@ -1,18 +1,24 @@
 -- --------------------------------------
 do 
+    local l_mist = mist
     local l_math = math
+
     HoundUtils = {}
     HoundUtils.__index = HoundUtils
 
     HoundUtils.TTS = {}
     HoundUtils.Text = {}
+    HoundUtils.ELINT = {}
     HoundUtils.ReportId = nil
 
     -- Markers handling --
-    HoundUtils._MarkId = 100000
+    HoundUtils._MarkId = 1
 
     function HoundUtils.getMarkId()
-        HoundUtils._MarkId = HoundUtils._MarkId + 1
+        if UTILS and UTILS.GetMarkID 
+            then HoundUtils._MarkId = UTILS.GetMarkID()
+            else HoundUtils._MarkId =  HoundUtils._MarkId + 1 
+            end
         return HoundUtils._MarkId
     end
 
@@ -37,7 +43,7 @@ do
             V.x = l_math.cos(azimuths[i])
             V.z = l_math.sin(azimuths[i])
             V.y = 0
-            if biasVector == nil then biasVector = V else biasVector = mist.vec.add(biasVector,V) end
+            if biasVector == nil then biasVector = V else biasVector = l_mist.vec.add(biasVector,V) end
         end
         local pi_2 = 2*l_math.pi
         return  (l_math.atan( (biasVector.z/length(azimuths)) / (biasVector.x/length(azimuths))+pi_2) ) % pi_2
@@ -67,11 +73,11 @@ do
     end
 
     function HoundUtils.getRoundedElevationFt(elev)
-        return HoundUtils.roundToNearest(mist.utils.metersToFeet(elev),50)
+        return HoundUtils.roundToNearest(l_mist.utils.metersToFeet(elev),50)
     end
 
     function HoundUtils.roundToNearest(input,nearest)
-        return mist.utils.round(input/nearest) * nearest
+        return l_mist.utils.round(input/nearest) * nearest
     end
 
     function HoundUtils.getDefraction(band,antenna_size)
@@ -144,7 +150,7 @@ do
             d = deg,
             m = minutes,
             s = sec,
-            mDec = mist.utils.round(dec ,3)
+            mDec = l_mist.utils.round(dec ,3)
         }
     end
 
@@ -170,7 +176,7 @@ do
 
     function HoundUtils.TTS.getTtsTime(timestamp)
         if timestamp == nil then timestamp = timer.getAbsTime() end
-        local DHMS = mist.time.getDHMS(timestamp)
+        local DHMS = l_mist.time.getDHMS(timestamp)
         local hours = DHMS.h
         local minutes = DHMS.m
         local seconds = DHMS.s
@@ -281,7 +287,7 @@ do
         if distanceM < 1000 then
             distance = HoundUtils.roundToNearest(distanceM,50)
         else
-            distance = mist.utils.round(distanceM / 1000,1)
+            distance = l_mist.utils.round(distanceM / 1000,1)
             distanceUnit = "kilometers"
         end
         return distance .. " " .. distanceUnit
@@ -305,7 +311,16 @@ do
 
     function HoundUtils.Text.getTime(timestamp)
         if timestamp == nil then timestamp = timer.getAbsTime() end
-        local DHMS = mist.time.getDHMS(timestamp)
+        local DHMS = l_mist.time.getDHMS(timestamp)
         return string.format("%02d",DHMS.h)  .. string.format("%02d",DHMS.m)
+    end
+
+    function HoundUtils.ELINT.EarthLOS(h0,h1)
+        local Re = 6371000 -- Radius of earth in M
+        local d0 = l_math.sqrt(h0^2+2*Re*h0)
+        local d1 = 0
+        if h1 then d1 = l_math.sqrt(h1^2+2*Re*h1) end
+        return d0+d1
+
     end
 end

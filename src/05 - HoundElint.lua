@@ -385,7 +385,7 @@ do
             local RadarType = radar:getTypeName()
             local RadarName = radar:getName()
             local radarPos = radar:getPosition().p
-            radarPos.y = radarPos.y + 20 -- assume 10 meters radar antenna
+            radarPos.y = radarPos.y + radar:getDesc()["box"]["max"]["y"] -- assume 10 meters radar antenna
 
             for j,platform in ipairs(self.platform) do
                 local platformPos = platform:getPosition().p
@@ -395,7 +395,7 @@ do
 
                 if platform:getCategory() == Object.Category.STATIC then
                     platformIsStatic = true
-                    platformPos.y = platformPos.y + 60
+                    platformPos.y = platformPos.y + platform:getDesc()["box"]["max"]["y"]
                 else
                     local PlatformUnitCategory = platform:getDesc()["category"]
                     if PlatformUnitCategory == Unit.Category.HELICOPTER or PlatformUnitCategory == Unit.Category.AIRPLANE then
@@ -407,11 +407,10 @@ do
                     end
 
                     if PlatformUnitCategory == Unit.Category.GROUND_UNIT then
-                        platformPos.y = platformPos.y + 15 
+                        platformPos.y = platformPos.y + platform:getDesc()["box"]["max"]["y"]
                     end
                 end
-
-                if land.isVisible(platformPos, radarPos) then
+                if (mist.utils.get2DDist(platformPos, radarPos) <= HoundUtils.ELINT.EarthLOS(platformPos.y,radarPos.y)) and land.isVisible(platformPos, radarPos) then
                     if (self.emitters[RadarUid] == nil) then
                         self.emitters[RadarUid] =
                             HoundContact:New(radar, self.coalitionId)
