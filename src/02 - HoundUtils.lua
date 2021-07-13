@@ -2,6 +2,8 @@
 do 
     local l_mist = mist
     local l_math = math
+    local pi_2 = 2*l_math.pi
+
 
     HoundUtils = {}
     HoundUtils.__index = HoundUtils
@@ -17,7 +19,7 @@ do
     function HoundUtils.getMarkId()
         if UTILS and UTILS.GetMarkID 
             then HoundUtils._MarkId = UTILS.GetMarkID()
-            else HoundUtils._MarkId =  HoundUtils._MarkId + 1 
+            else HoundUtils._MarkId = HoundUtils._MarkId + 1 
             end
         return HoundUtils._MarkId
     end
@@ -45,7 +47,6 @@ do
             V.y = 0
             if biasVector == nil then biasVector = V else biasVector = l_mist.vec.add(biasVector,V) end
         end
-        local pi_2 = 2*l_math.pi
         return  (l_math.atan( (biasVector.z/length(azimuths)) / (biasVector.x/length(azimuths))+pi_2) ) % pi_2
     end
 
@@ -154,9 +155,38 @@ do
         }
     end
 
+    function HoundUtils.getBR(src,dst)
+        if not src or not dst then return end
+        local BR = {}
+        local dir = l_mist.utils.getDir(l_mist.vec.sub(dst,src))
+        local magvar = l_mist.getNorthCorrection(src)
+        BR.brg = l_mist.utils.round(l_mist.utils.toDegree( (dir + magvar +  pi_2) % pi_2 ))
+        BR.brStr = string.format("%03d",BR.brg)
+        BR.rng = l_mist.utils.round(l_mist.utils.metersToNM(l_mist.utils.get2DDist(dst,src)))
+        -- env.info("getBR: " .. dir .. "|".. magvar .. "="..BR.brg)
+        return BR
+    end
+
+    function HoundUtils.checkLOS(pos0,pos1)
+        if not pos0 or not pos1 then return false end
+        local dist = l_mist.utils.get2DDist(pos0,pos1)
+        local radarHorizon = HoundUtils.EarthLOS(pos0.y,pos1.y)
+        local dcsLOS = land.isVisible(pos0,pos1) 
+        return (dist <= radarHorizon*1.025 and dcsLOS)
+    end
+
+    function HoundUtils.EarthLOS(h0,h1)
+        local Re = 6371000 -- Radius of earth in M
+        local d0 = l_math.sqrt(h0^2+2*Re*h0)
+        local d1 = 0
+        if h1 then d1 = l_math.sqrt(h1^2+2*Re*h1) end
+        return d0+d1
+    end
+
     --[[ 
         ----- TTS Functions ----
     --]]    
+    
     function HoundUtils.TTS.Transmit(msg,coalitionID,args,transmitterPos)
 
         if STTS == nil then return end
@@ -293,7 +323,6 @@ do
         return distance .. " " .. distanceUnit
     end
 
-
     --[[ 
     ----- Text Functions ----
     --]]
@@ -304,7 +333,6 @@ do
         local lon = HoundUtils.DecToDMS(lon)
         if minDec == true then
             return hemi.NS .. lat.d .. "°" .. lat.mDec .. "'".."\"" ..  " " ..  hemi.EW  .. lon.d .. "°" .. lon.mDec .. "'" .."\"" 
-
         end
         return hemi.NS .. lat.d .. "°" .. lat.m .. "'".. lat.s.."\"" ..  " " ..  hemi.EW  .. lon.d .. "°" .. lon.m .. "'".. lon.s .."\"" 
     end
@@ -313,14 +341,5 @@ do
         if timestamp == nil then timestamp = timer.getAbsTime() end
         local DHMS = l_mist.time.getDHMS(timestamp)
         return string.format("%02d",DHMS.h)  .. string.format("%02d",DHMS.m)
-    end
-
-    function HoundUtils.ELINT.EarthLOS(h0,h1)
-        local Re = 6371000 -- Radius of earth in M
-        local d0 = l_math.sqrt(h0^2+2*Re*h0)
-        local d1 = 0
-        if h1 then d1 = l_math.sqrt(h1^2+2*Re*h1) end
-        return d0+d1
-
     end
 end

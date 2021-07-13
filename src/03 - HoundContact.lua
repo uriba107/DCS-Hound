@@ -21,7 +21,7 @@ do
     function HoundElintDatapoint:estimatePos()
         if self.el == nil then return end
         local l_math = math
-        -- env.info("decl is " .. l_mist_utils.toDegree(self.el))
+        -- env.info("decl is " .. l_mist.utils.toDegree(self.el))
         local maxSlant = self.platformPos.y/l_math.abs(l_math.sin(self.el))
 
         local unitVector = {
@@ -33,10 +33,9 @@ do
 
         self.estimatedPos = land.getIP(self.platformPos, unitVector , maxSlant+100 )
         -- debugging
-        -- env.info(l_mist_utils.tableShow( self.estimatedPos))
+        -- env.info(l_mist.utils.tableShow( self.estimatedPos))
         -- local latitude, longitude, altitude = coord.LOtoLL(self.estimatedPos)
         -- env.info("estimated 3d point: Lat " ..latitude.." ,lon "..longitude..", alt:" .. tostring(altitude) )
-
     end
 end
 
@@ -45,7 +44,7 @@ do
     HoundContact.__index = HoundContact
 
     local l_math = math
-    local l_mist_utils = mist.utils
+    local l_mist = mist
 
     function HoundContact:New(DCS_Unit,platformCoalition)
         local elintcontact = {}
@@ -99,6 +98,22 @@ do
         return true
     end
 
+    function HoundContact:countDatapoints()
+        local count = 0
+        for _,platformDataPoints in pairs(self.dataPoints) do
+            count = count + length(platformDataPoints)
+        end
+        return count
+    end
+
+    function HoundContact:getName()
+        return self.typeName .. " " .. (self.uid%100)
+    end
+
+    function HoundContact:getId()
+        return self.uid%100
+    end
+
     function HoundContact:AddPoint(datapoint)
 
         self.last_seen = datapoint.t
@@ -129,7 +144,7 @@ do
             else
                 self.dataPoints[datapoint.platformId][LastElementIndex] = datapoint
             end
-            if table.getn(self.dataPoints[datapoint.platformId]) > 11 then
+            if table.getn(self.dataPoints[datapoint.platformId]) > 15 then
                 table.remove(self.dataPoints[datapoint.platformId], 1)
             end
         end
@@ -167,13 +182,13 @@ do
     end
 
     function HoundContact:calculateEllipse(estimatedPositions,Theta)
-        table.sort(estimatedPositions,function(a,b) return tonumber(l_mist_utils.get2DDist(self.pos.p,a)) < tonumber(l_mist_utils.get2DDist(self.pos.p,b)) end)
+        table.sort(estimatedPositions,function(a,b) return tonumber(l_mist.utils.get2DDist(self.pos.p,a)) < tonumber(l_mist.utils.get2DDist(self.pos.p,b)) end)
 
         local percentile = l_math.floor(length(estimatedPositions)*0.55)
         local RelativeToPos = {}
         local NumToUse = l_math.max(l_math.min(2,length(estimatedPositions)),percentile)
         for i = 1, NumToUse  do
-            table.insert(RelativeToPos,mist.vec.sub(estimatedPositions[i],self.pos.p))
+            table.insert(RelativeToPos,l_mist.vec.sub(estimatedPositions[i],self.pos.p))
         end
         local sinTheta = l_math.sin(Theta)
         local cosTheta = l_math.cos(Theta)
@@ -201,26 +216,25 @@ do
             max.y = l_math.max(max.y,v.z)
         end
 
-        local x = l_mist_utils.round(l_math.abs(min.x)+l_math.abs(max.x))
-        local y = l_mist_utils.round(l_math.abs(min.y)+l_math.abs(max.y))
+        local x = l_mist.utils.round(l_math.abs(min.x)+l_math.abs(max.x))
+        local y = l_mist.utils.round(l_math.abs(min.y)+l_math.abs(max.y))
         self.uncertenty_radius = {}
         self.uncertenty_radius.major = l_math.max(x,y)
         self.uncertenty_radius.minor = l_math.min(x,y)
-        self.uncertenty_radius.az = l_mist_utils.round(l_mist_utils.toDegree(Theta))
+        self.uncertenty_radius.az = l_mist.utils.round(l_mist.utils.toDegree(Theta))
         self.uncertenty_radius.r  = (x+y)/4
         
     end
 
     function HoundContact:calculatePos(estimatedPositions)
         if estimatedPositions == nil then return end
-        self.pos.p =  mist.getAvgPoint(estimatedPositions)
+        self.pos.p =  l_mist.getAvgPoint(estimatedPositions)
         self.pos.p.y = land.getHeight({x=self.pos.p.x,y=self.pos.p.z})
         local bullsPos = coalition.getMainRefPoint(self.platformCoalition)
         self.pos.LL.lat, self.pos.LL.lon =  coord.LOtoLL(self.pos.p)
         self.pos.elev = self.pos.p.y
         self.pos.grid  = coord.LLtoMGRS(self.pos.LL.lat, self.pos.LL.lon)
-        self.pos.be.brg = l_mist_utils.round(l_mist_utils.toDegree(l_mist_utils.getDir(mist.vec.sub(self.pos.p,bullsPos))))
-        self.pos.be.rng =  l_mist_utils.round(l_mist_utils.metersToNM(l_mist_utils.get2DDist(self.pos.p,bullsPos)))
+        self.pos.be = HoundUtils.getBR(bullsPos,self.pos.p)
     end
 
     function HoundContact:removeMarker()
@@ -268,7 +282,7 @@ do
             GridPos = GridPos .. self.pos.grid.UTMZone .. " " 
         end
         GridPos = GridPos .. self.pos.grid.MGRSDigraph
-        local BE = string.format("%03d",self.pos.be.brg) .. " for " .. self.pos.be.rng
+        local BE = self.pos.be.brStr .. " for " .. self.pos.be.rng
         if MGRSdigits == nil then
             return GridPos,BE
         end
@@ -287,7 +301,7 @@ do
         end
 
         phoneticGridPos =  phoneticGridPos ..  HoundUtils.TTS.toPhonetic(self.pos.grid.MGRSDigraph)
-        local phoneticBulls = HoundUtils.TTS.toPhonetic(string.format("%03d",self.pos.be.brg)) 
+        local phoneticBulls = HoundUtils.TTS.toPhonetic(self.pos.be.brStr) 
                                 .. " for " .. self.pos.be.rng
         if MGRSdigits==nil then
             return phoneticGridPos,phoneticBulls
@@ -302,7 +316,7 @@ do
     function HoundContact:generateTtsBrief(NATO)
         if self.pos.p == nil or self.uncertenty_radius == nil then return end
         local phoneticGridPos,phoneticBulls = self:getTtsData(false,1)
-        local reportedName = self.typeName .. " " .. (self.uid % 100)
+        local reportedName = self:getName()
         if NATO then
             reportedName = string.gsub(self.typeAssigned,"(SA)-",'')
         end
@@ -316,10 +330,20 @@ do
         return str
     end
 
-    function HoundContact:generateTtsReport()
+    function HoundContact:generateTtsReport(refPos)
         if self.pos.p == nil then return end
+        local BR = nil
+        if refPos ~= nil and refPos.x ~= nil and refPos.z ~= nil then
+            BR = HoundUtils.getBR(self.pos.p,refPos)
+        end
         local phoneticGridPos,phoneticBulls = self:getTtsData(true,3)
-        local msg =  self.typeName .. " " .. (self.uid % 100) .. ", " .. HoundUtils.TTS.getVerbalContactAge(self.last_seen,true) .." at bullseye " .. phoneticBulls -- .. ", grid ".. phoneticGridPos
+        local msg =  self:getName() .. ", " .. HoundUtils.TTS.getVerbalContactAge(self.last_seen,true) 
+        if BR ~= nil 
+            then
+                msg = msg .. " from you " .. HoundUtils.TTS.toPhonetic(BR.brStr) .. " for " .. BR.rng
+            else
+                msg = msg .." at bullseye " .. phoneticBulls 
+        end
         msg = msg .. ", accuracy " .. HoundUtils.TTS.getVerbalConfidenceLevel( self.uncertenty_radius.r )
         msg = msg .. ", position " .. HoundUtils.TTS.getVerbalLL(self.pos.LL.lat,self.pos.LL.lon)
         msg = msg .. ", I repeat " .. HoundUtils.TTS.getVerbalLL(self.pos.LL.lat,self.pos.LL.lon)
@@ -330,12 +354,19 @@ do
         return msg
     end
 
-    function HoundContact:generateTextReport()
+    function HoundContact:generateTextReport(refPos)
         if self.pos.p == nil then return end
         local GridPos,BePos = self:getTextData(true,3)
-        local msg =  self.typeName .. " " .. (self.uid % 100) .." (" .. HoundUtils.TTS.getVerbalContactAge(self.last_seen,true).. ")\n"
+        local BR = nil
+        if refPos ~= nil and refPos.x ~= nil and refPos.z ~= nil then
+            BR = HoundUtils.getBR(self.pos.p,refPos)
+        end
+        local msg =  self:getName() .." (" .. HoundUtils.TTS.getVerbalContactAge(self.last_seen,true).. ")\n"
         msg = msg .. "Accuracy: " .. HoundUtils.TTS.getVerbalConfidenceLevel( self.uncertenty_radius.r ) .. "\n"
         msg = msg .. "BE: " .. BePos .. "\n" -- .. " (grid ".. GridPos ..")\n"
+        if BR ~= nil then
+            msg = msg .. "BR: " .. BR.brStr .. " for " .. BR.rng
+        end
         msg = msg .. "LL: " .. HoundUtils.Text.getLL(self.pos.LL.lat,self.pos.LL.lon).."\n"
         msg = msg .. "MGRS: " .. GridPos .. "\n"
         msg = msg .. "Elev: " .. HoundUtils.getRoundedElevationFt(self.pos.elev) .. "ft\n"
@@ -368,7 +399,7 @@ do
     end
 
     function HoundContact:generateDeathReport(isTTS)
-        local msg = self.typeName .. " " .. (self.uid % 100)
+        local msg = self:getName()
         local GridPos,BePos 
         if isTTS then
             GridPos,BePos = self:getTtsData(true)
@@ -388,18 +419,18 @@ do
         local estimatePosition = {}
         local platforms = {}
 
-        for k,v in pairs(self.dataPoints) do 
-            if length(v) > 0 then
-                for k,v in pairs(v) do 
-                    if v.isReciverStatic then
-                        table.insert(staticDataPoints,v) 
+        for _,platformDatapoints in pairs(self.dataPoints) do 
+            if length(platformDatapoints) > 0 then
+                for _,datapoint in pairs(platformDatapoints) do 
+                    if datapoint.isReciverStatic then
+                        table.insert(staticDataPoints,datapoint) 
                     else
-                        table.insert(mobileDataPoints,v) 
+                        table.insert(mobileDataPoints,datapoint) 
                     end
-                    if v.estimatedPos ~= nil then
-                        table.insert(estimatePosition,v.estimatedPos)
+                    if datapoint.estimatedPos ~= nil then
+                        table.insert(estimatePosition,datapoint.estimatedPos)
                     end
-                    platforms[v.platfromName] = 1
+                    platforms[datapoint.platfromName] = 1
                 end
             end
         end
@@ -435,9 +466,11 @@ do
         if numMobilepoints > 1 then
             for i=1,numMobilepoints-1 do
                 for j=i+1,numMobilepoints do
-                    local err = (mobileDataPoints[i].platformPrecision + mobileDataPoints[j].platformPrecision)/2
-                    if l_math.deg(HoundUtils.angleDeltaRad(mobileDataPoints[i].az,mobileDataPoints[j].az)) > err then
-                        table.insert(estimatePosition,self:triangulatePoints(mobileDataPoints[i],mobileDataPoints[j]))
+                    if mobileDataPoints[i].platformPos  ~= mobileDataPoints[j].platformPos then
+                        local err = (mobileDataPoints[i].platformPrecision + mobileDataPoints[j].platformPrecision)/2
+                        if l_math.deg(HoundUtils.angleDeltaRad(mobileDataPoints[i].az,mobileDataPoints[j].az)) > err then
+                            table.insert(estimatePosition,self:triangulatePoints(mobileDataPoints[i],mobileDataPoints[j]))
+                        end
                     end
                 end
             end
@@ -464,6 +497,7 @@ do
         if newContact and self.pos.p ~= nil and self.isEWR == false then
             return true
         end
+        return false
 
     end
     function HoundContact:export()

@@ -24,7 +24,6 @@ do
         elint.timingCounters = {
             short = false,
             long = 0
-            
         }
 
         if platformName ~= nil then
@@ -277,7 +276,6 @@ do
         end
 
         gSelf.controller:addMessageObj(msgObj)
-
     end
 
     function HoundElint:notifyDeadEmitter(emitter)
@@ -410,14 +408,15 @@ do
                         platformPos.y = platformPos.y + platform:getDesc()["box"]["max"]["y"]
                     end
                 end
-                if (mist.utils.get2DDist(platformPos, radarPos) <= HoundUtils.ELINT.EarthLOS(platformPos.y,radarPos.y)) and land.isVisible(platformPos, radarPos) then
+
+                if HoundUtils.checkLOS(platformPos, radarPos) then
                     if (self.emitters[RadarUid] == nil) then
                         self.emitters[RadarUid] =
                             HoundContact:New(radar, self.coalitionId)
                     end
                     local sensorMargins = self:getSensorPrecision(platform,self.emitters[RadarUid].band)
                     if sensorMargins < 15 then
-                        local az,el = self:getAzimuth(platformPos, radarPos, sensorMargins )
+                        local az,el = self:getAzimuth( platformPos, radarPos, sensorMargins )
                         if not isAerialUnit then
                             el = nil
                         end
@@ -437,6 +436,7 @@ do
         -- end
         for uid, emitter in pairs(self.emitters) do
             if emitter ~= nil then
+                -- env.info("emitter " .. emitter:getName() .. " has " .. emitter:countDatapoints() .. " dataPoints")
                 local isNew = emitter:processData()
                 if isNew then
                     self:notifyNewEmitter(emitter)
