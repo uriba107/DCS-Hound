@@ -25,11 +25,11 @@ function compile {
     # PROD_VER=$(echo $DEV_VER | sed 's/-DEV//')
     # sed -i "s/${DEV_VER}/${PROD_VER}/" ${TARGET_FILE}
 
-    GIT_BRANCH="-$(git branch --show-current)"
+    GIT_BRANCH="-$(git branch --show-current | sed 's/[^a-zA-Z 0-9]/\\&/g')"
     if [ ${GIT_BRANCH} == "-main" ]; 
        then GIT_BRANCH="";
     fi
-    sed "s/-TRUNK/${GIT_BRANCH}/" ${TARGET_FILE} | head
+    sed -i "s/-TRUNK/""${GIT_BRANCH}""/" ${TARGET_FILE}
 } 
 
 function update_mission {
