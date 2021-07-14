@@ -1,5 +1,5 @@
 env.info("Hound ELINT Loading...")
-HOUND_VERSION="0.1.2"
+HOUND_VERSION="0.1.2-TRUNK"
 HoundDB = {}
 do
     HoundDB.Sam = {

@@ -21,9 +21,15 @@ function compile {
    sed -i '/^[[:space:]]*-- /d' ${TARGET_FILE}
 
     # version
-    DEV_VER=$(grep -E "HOUND_VERSION=*.*.*-DEV" ${TARGET_FILE})
-    PROD_VER=$(echo $DEV_VER | sed 's/-DEV//')
-    sed -i "s/${DEV_VER}/${PROD_VER}/" ${TARGET_FILE}
+    # DEV_VER=$(grep -E "HOUND_VERSION=*.*.*-DEV" ${TARGET_FILE})
+    # PROD_VER=$(echo $DEV_VER | sed 's/-DEV//')
+    # sed -i "s/${DEV_VER}/${PROD_VER}/" ${TARGET_FILE}
+
+    GIT_BRANCH="-$(git branch --show-current)"
+    if [ ${GIT_BRANCH} == "-main" ]; 
+       then GIT_BRANCH="";
+    fi
+    sed "s/-TRUNK/${GIT_BRANCH}/" ${TARGET_FILE} | head
 } 
 
 function update_mission {

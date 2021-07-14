@@ -177,7 +177,7 @@ HoundElint:enableMarkers()
 
 ## Text-To-Speech
 Hound allows user to recive information via two radio channles (using SRS).
-The are the [ATIS system](#atis-system) and the [SAM controller]
+The are the [ATIS system](#atis-system) and the [SAM controller](#sam-controller)
 
 both can be extensivly configured in the [Fine tuning TTS channels](#fine-tuning-tts-channels) segment below
 #### ATIS system
@@ -322,4 +322,4 @@ this is configured by the `NATO` argument.
   * __[Ciribob](https://github.com/ciribob)__ - without his help, support and acceptence of wierd merge requests. none of this would have been possible.
   * __flywaldair__ - Hound was initially inspired by [Skynet IADS](https://github.com/walder/Skynet-IADS).
   * __Nikos__ - That had to endure 2 am texts with screenshots.
-  * __Grimes__ - For [MIST](https://github.com/mrSkortch/MissionScriptingTools) and because Without the [Hoggit Wiki](https://wiki.hoggitworld.com/) we would all be fumbling in the dark.  
+  * __Grimes__ - For [MIST](https://github.com/mrSkortch/MissionScriptingTools) and because Without the [Hoggit Wiki](https://wiki.hoggitworld.com/) we would all be fumbling in the dark.
