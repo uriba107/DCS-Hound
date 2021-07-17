@@ -256,7 +256,7 @@ do
             local minorEnd = { x = self.pos.p.x - self.uncertenty_radius.minor / 2 * math.sin(theta), z = self.pos.p.z + self.uncertenty_radius.minor / 2 * math.cos(theta)}
             trigger.action.quadToAll(self.platformCoalition, self.markpointID+1, majorStart, minorStart, majorEnd, minorEnd, linecolor, fillcolor, 3, true)
         else
-            trigger.action.circleToAll(self.platformCoalition,self.markpointID,self.pos.p,self.uncertenty_radius.r,linecolor,fillcolor,3,true)
+            trigger.action.circleToAll(self.platformCoalition,self.markpointID+1,self.pos.p,self.uncertenty_radius.r,linecolor,fillcolor,3,true)
         end
     end
 
