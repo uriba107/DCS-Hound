@@ -758,7 +758,7 @@ do
     HoundContact = {}
     HoundContact.__index = HoundContact
 
-    function HoundContact:New(DCS_Unit,platformCoalition)
+    function HoundContact:New(DCS_Unit,platformCoalition,useDiamond)
         local elintcontact = {}
         setmetatable(elintcontact, HoundContact)
         elintcontact.unit = DCS_Unit
@@ -766,6 +766,7 @@ do
         elintcontact.DCStypeName = DCS_Unit:getTypeName()
         elintcontact.typeName = DCS_Unit:getTypeName()
         elintcontact.isEWR = false
+        elintcontact.useDiamond = useDiamond
         elintcontact.typeAssigned = "Unknown" 
         if setContains(HoundDB.Sam,DCS_Unit:getTypeName())  then
             local unitName = DCS_Unit:getTypeName()
@@ -1794,7 +1795,7 @@ do
                 if land.isVisible(platformPos, radarPos) then
                     if (self.emitters[RadarUid] == nil) then
                         self.emitters[RadarUid] =
-                            HoundContact:New(radar, self.coalitionId)
+                            HoundContact:New(radar, self.coalitionId, self.useDiamond)
                     end
                     local sensorMargins = self:getSensorPrecision(platform,self.emitters[RadarUid].band)
                     if sensorMargins < 15 then

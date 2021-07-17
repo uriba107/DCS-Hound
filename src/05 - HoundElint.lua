@@ -414,7 +414,7 @@ do
                 if land.isVisible(platformPos, radarPos) then
                     if (self.emitters[RadarUid] == nil) then
                         self.emitters[RadarUid] =
-                            HoundContact:New(radar, self.coalitionId)
+                            HoundContact:New(radar, self.coalitionId, self.useDiamond)
                     end
                     local sensorMargins = self:getSensorPrecision(platform,self.emitters[RadarUid].band)
                     if sensorMargins < 15 then
