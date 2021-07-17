@@ -13,6 +13,7 @@ do
         elint.radioAdminMenu = nil
         elint.coalitionId = nil
         elint.useMarkers = true
+        elint.useDiamond = true
         elint.addPositionError = false
         elint.positionErrorRadius = 30
 
@@ -182,6 +183,14 @@ do
         self.useMarkers = false 
     end
     
+    function HoundElint:enableDiamond()
+        self.useDiamond = true
+    end
+
+    function HoundElint:disableDiamond()
+        self.useDiamond = false
+    end
+
     --[[
         ATIS functions
     --]]

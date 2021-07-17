@@ -245,11 +245,22 @@ do
             fillcolor[3] = 1
             linecolor[3] = 1
         end        
-        trigger.action.circleToAll(self.platformCoalition,self.markpointID,self.pos.p,self.uncertenty_radius.r,linecolor,fillcolor,3,true)
-        -- linecolor[4] = 0.6
-        -- trigger.action.textToAll(self.platformCoalition , self.markpointID+1 , self.pos.p , linecolor,{0,0,0,0} , 12 , true , self.typeName .. " " .. (self.uid%100) .. "\n(" .. self.uncertenty_radius.major .. "/" .. self.uncertenty_radius.minor .. "@" .. self.uncertenty_radius.az .. "|" .. HoundUtils:timeDelta(self.last_seen) .. "s)")
-        trigger.action.markToCoalition(self.markpointID+1, self.typeName .. " " .. (self.uid%100) .. " (" .. self.uncertenty_radius.major .. "/" .. self.uncertenty_radius.minor .. "@" .. self.uncertenty_radius.az .. "|" .. HoundUtils:timeDelta(self.last_seen) .. "s)",self.pos.p,self.platformCoalition,true)
+        -- place the central marker
+        trigger.action.markToCoalition(self.markpointID, self.typeName .. " " .. (self.uid%100) .. " (" .. self.uncertenty_radius.major .. "/" .. self.uncertenty_radius.minor .. "@" .. self.uncertenty_radius.az .. "|" .. HoundUtils:timeDelta(self.last_seen) .. "s)",self.pos.p,self.platformCoalition,true)
+        if self.useDiamond then
+            -- draw the uncertainty lines
+            local theta = mist.utils.toRadian(self.uncertenty_radius.az)
+            local majorStart = { x = self.pos.p.x - self.uncertenty_radius.major / 2 * math.cos(theta), z = self.pos.p.z - self.uncertenty_radius.major / 2 * math.sin(theta)}
+            local majorEnd = { x = self.pos.p.x + self.uncertenty_radius.major / 2 * math.cos(theta), z = self.pos.p.z + self.uncertenty_radius.major / 2 * math.sin(theta)}
+            local minorStart = { x = self.pos.p.x + self.uncertenty_radius.minor / 2 * math.sin(theta), z = self.pos.p.z - self.uncertenty_radius.minor / 2 * math.cos(theta)}
+            local minorEnd = { x = self.pos.p.x - self.uncertenty_radius.minor / 2 * math.sin(theta), z = self.pos.p.z + self.uncertenty_radius.minor / 2 * math.cos(theta)}
+            trigger.action.quadToAll(self.platformCoalition, self.markpointID+1, majorStart, minorStart, majorEnd, minorEnd, linecolor, fillcolor, 3, true)
+        else
+            trigger.action.circleToAll(self.platformCoalition,self.markpointID,self.pos.p,self.uncertenty_radius.r,linecolor,fillcolor,3,true)
+        end
     end
+
+
 
     function HoundContact:getTextData(utmZone,MGRSdigits)
         if self.pos.p == nil then return end
