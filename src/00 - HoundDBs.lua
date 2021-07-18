@@ -1,5 +1,13 @@
 -- --------------------------------------
-HOUND_VERSION="0.1.2-TRUNK"
+HOUND = {
+    VERSION="0.1.2-TRUNK",
+    MARKER = {
+        NONE = 0,
+        CIRCLE = 1,
+        DIAMOND = 2,
+        POLYGON = 3
+    }
+}
 -- Radar Database
 HoundDB = {}
 do

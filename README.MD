@@ -15,7 +15,6 @@ Hound is compatible with MIST, MOOSE, Skynet IADS and High-Digit SAMs
 ## Video Intro (YouTube)
 [![Hound Cinematic Intro video](https://i.ytimg.com/vi/S4xxtKOqGqU/hq720.jpg?sqp=-oaymwEcCNAFEJQDSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLAAa-SdnDgNiWTKc0YNSvm5RRMa7g)](https://www.youtube.com/watch?v=S4xxtKOqGqU)
 
-
 ## Putting this to work
 Hound system triangulates positions of radars. It does this by taking bearing readings at set times, while recording the platform position. 
 using these plotted data points system can estimate the position. the more points you have, with greater intersection angles between them, there is a better chance of estimating the position correctly. you will never get a perfect "hit" but you may be able to get a position within a 200 meter radius, where you can can use other sensors to poinpoint for a strike, or know where you need to avoid flying.
@@ -113,6 +112,7 @@ on a "ONCE" type action with "time more 1" condition, add the scripts in the fol
 ![Add scripts](/images/hound_setup.jpg)
 
 ### Minimum required Code to get Hound working
+---
 The bare minumum, more customization optionas are available.
 ```lua
 do
@@ -129,6 +129,7 @@ end
 ```
 
 ### Adding Hound system to your mission scripts
+---
 ```lua
     Elint_blue = HoundElint:create()
 ```
@@ -161,6 +162,11 @@ You can of course turn it off for any reason with:
     Elint_blue:systemOff()
 ```
 
+### Adding Hound system to your mission scripts (YouTube Video)
+---
+[![Hound Mission Editor Tutorial](https://i.ytimg.com/vi/gmJmFR7UCfo/hq720.jpg?sqp=-oaymwEcCNAFEJQDSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLDiBxShzrFNarEs9uIUWvrDRLkwTQ)](https://www.youtube.com/watch?v=gmJmFR7UCfo)
+
+
 ## Map markers
 ---
 Hound uses Map markers to indicate the estimated position of the radar tracket. It's a product of the system, and only contains data user can get from the system in other ways. (equvilant to making marks on a paper map)
@@ -174,6 +180,22 @@ they can be turned back on with
 ```lua
 HoundElint:enableMarkers()
 ```
+
+`enableMarkers` recives and optional MarkerType argument from a set of ENUMs. for drawing the uncertanty area.
+
+```
+HOUND.MARKER.NONE 
+HOUND.MARKER.CIRCLE  
+HOUND.MARKER.DIAMOND <= default
+HOUND.MARKER.POLYGON <= same as DIAMOND 
+```
+
+Usage is
+```lua
+HoundElint:enableMarkers(HOUND.MARKER.DIAMOND)
+```
+Diamons were suggested by `[VEAF]Zip` due to bug in DCS (as of 2.7.4) that may lead to client crash when circles are enabled.
+Default was changed to Diamond for that reason.
 
 ## Text-To-Speech
 Hound allows user to recive information via two radio channles (using SRS).
@@ -323,3 +345,4 @@ this is configured by the `NATO` argument.
   * __flywaldair__ - Hound was initially inspired by [Skynet IADS](https://github.com/walder/Skynet-IADS).
   * __Nikos__ - That had to endure 2 am texts with screenshots.
   * __Grimes__ - For [MIST](https://github.com/mrSkortch/MissionScriptingTools) and because Without the [Hoggit Wiki](https://wiki.hoggitworld.com/) we would all be fumbling in the dark.
+  * __[davidp57](https://github.com/davidp57)__ - For all the bugs found and all the fixes suggested.

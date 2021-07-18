@@ -13,7 +13,7 @@ do
         elintDatapoint.platformId = platform0:getID()
         elintDatapoint.platfromName = platform0:getName()
         elintDatapoint.platformStatic = isPlatformStatic or false
-        elintDatapoint.platformPrecision = sensorMargins or 20
+        elintDatapoint.platformPrecision = sensorMargins or math.rad(20)
         elintDatapoint.estimatedPos = nil
         return elintDatapoint
     end
@@ -31,7 +31,7 @@ do
         }
         -- env.info("unit Vector: X " ..unitVector.x .." ,Z "..unitVector.z..", Y:" .. unitVector.y .. " | maxSlant " .. maxSlant)
 
-        self.estimatedPos = land.getIP(self.platformPos, unitVector , maxSlant+100 )
+        self.estimatedPos = land.getIP(self.platformPos, unitVector , maxSlant+1000 )
         -- debugging
         -- env.info(l_mist.utils.tableShow( self.estimatedPos))
         -- local latitude, longitude, altitude = coord.LOtoLL(self.estimatedPos)
@@ -45,6 +45,7 @@ do
 
     local l_math = math
     local l_mist = mist
+    local pi_2 = l_math.pi*2
 
     function HoundContact:New(DCS_Unit,platformCoalition)
         local elintcontact = {}
@@ -181,15 +182,51 @@ do
         return  HoundUtils.AzimuthAverage(azimuths)
     end
 
+    -- function HoundContact:calculateAvgPos(points)
+    --     local avgPos = l_mist.getAvgPoint(points)
+    --     local maxDist = 0
+    --     local avgDist = 0
+    --     local ldev = stdev()
+    --     local sd = 0
+    --     for _,point in ipairs(points) do
+    --         local dist = l_mist.utils.get2DDist(avgPos,point)
+    --         avgDist = avgDist + dist
+    --         maxDist = l_math.max(maxDist,dist)
+    --         sd = ldev(dist)
+    --     end
+    --     avgDist = avgDist / length(points)
+    --     return avgPos,sd,maxDist
+    -- end
+
     function HoundContact:calculateEllipse(estimatedPositions,Theta)
         table.sort(estimatedPositions,function(a,b) return tonumber(l_mist.utils.get2DDist(self.pos.p,a)) < tonumber(l_mist.utils.get2DDist(self.pos.p,b)) end)
 
-        local percentile = l_math.floor(length(estimatedPositions)*0.55)
+        -- for _,pos in ipairs(estimatedPositions) do
+        --     pos.dist = l_mist.utils.get2DDist(self.pos.p,pos)
+        -- end
+
+        -- table.sort(estimatedPositions,function(a,b) return a.dist < b.dist end)
+
+        local percentile = l_math.floor(length(estimatedPositions)*0.65)
         local RelativeToPos = {}
+
         local NumToUse = l_math.max(l_math.min(2,length(estimatedPositions)),percentile)
         for i = 1, NumToUse  do
             table.insert(RelativeToPos,l_mist.vec.sub(estimatedPositions[i],self.pos.p))
         end
+        -- -- experimental BS
+        if Theta == nil then
+
+            local AzBiasPool = {}
+
+            for _,pos in ipairs(estimatedPositions) do
+                local deltaVec = l_mist.vec.sub(self.pos.p,pos)
+                table.insert(AzBiasPool,l_math.atan2(deltaVec.z,deltaVec.x))
+            end
+
+            Theta = HoundUtils.AzimuthAverage(AzBiasPool)
+        end
+        -- working rotation matrix BS
         local sinTheta = l_math.sin(Theta)
         local cosTheta = l_math.cos(Theta)
 
@@ -226,6 +263,33 @@ do
         
     end
 
+    -- function HoundContact:calculateWeightedPos(estimatedPositions)
+    --     if estimatedPositions == nil then return end
+    --     local avgPos,stddev,maxDist = HoundContact:calculateAvgPos(estimatedPositions)
+    --     -- local avgPos = l_mist.getAvgPoint(estimatedPositions)
+    --     local weighted_x = 0
+    --     local weighted_z = 0
+    --     local scale_factor = 0
+    --     for _,pos in ipairs(estimatedPositions) do
+    --         local dist = l_mist.utils.get2DDist(avgPos,pos)
+    --         local weight = HoundUtils.gaussianWeight(dist,stddev)
+    --         weighted_x = weighted_x + (pos.x * weight)
+    --         weighted_z = weighted_z + (pos.z * weight)
+    --         scale_factor = scale_factor + weight
+    --         env.info("weight = ".. weight)
+    --     end
+    --     self.pos.p = {
+    --         x = weighted_x / scale_factor,
+    --         z = weighted_z / scale_factor
+    --     }
+    --     self.pos.p.y = land.getHeight({x=self.pos.p.x,z=self.pos.p.z})
+    --     local bullsPos = coalition.getMainRefPoint(self.platformCoalition)
+    --     self.pos.LL.lat, self.pos.LL.lon = coord.LOtoLL(self.pos.p)
+    --     self.pos.elev = self.pos.p.y
+    --     self.pos.grid  = coord.LLtoMGRS(self.pos.LL.lat, self.pos.LL.lon)
+    --     self.pos.be = HoundUtils.getBR(bullsPos,self.pos.p)
+    -- end
+
     function HoundContact:calculatePos(estimatedPositions)
         if estimatedPositions == nil then return end
         self.pos.p =  l_mist.getAvgPoint(estimatedPositions)
@@ -251,9 +315,8 @@ do
         table.insert(self.markpointID, idx)
         return idx
     end
-
-    function HoundContact:updateMarker(coalitionID)
-        if self.pos.p == nil or self.uncertenty_radius == nil then return end
+    
+    function HoundContact:drawMarkerCircle()
         local fillcolor = {0,0,0,0.15}
         local linecolor = {0,0,0,0.3}
         if self.platformCoalition == coalition.side.BLUE then
@@ -264,13 +327,66 @@ do
             fillcolor[3] = 1
             linecolor[3] = 1
         end  
+        trigger.action.circleToAll(self.platformCoalition,self:getMarkerId(),self.pos.p,self.uncertenty_radius.r,linecolor,fillcolor,2,true)
+    end
+
+    function HoundContact:drawMarkerPolygon(numPoints)
+        if numPoints == nil then numPoints = 4 end
+        if numPoints ~= 4 then 
+            env.info("DCS limitation, only 4 points are allowed")
+            numPoints = 4
+         end
+
+        -- x = minorAxis*cos(theta)
+        -- y = majorAxis*sin(theta)
+        local angleStep = pi_2/numPoints
+        local theta = l_math.rad(self.uncertenty_radius.az)
+
+        local polygonPoints = {}
+        -- generate ellips points
+        for pointAngle = angleStep, pi_2, angleStep do
+            -- env.info("polygon angle " .. l_math.deg(pointAngle))
+            local point = {}
+            point.x = self.uncertenty_radius.major/2 * l_math.cos(pointAngle)
+            point.z = self.uncertenty_radius.minor/2 * l_math.sin(pointAngle)
+            -- rotate and translate into correct position
+            local x = point.x * l_math.cos(theta) - point.z * l_math.sin(theta)
+            local z = point.x * l_math.sin(theta) + point.z * l_math.cos(theta)
+            point.x = x + self.pos.p.x
+            point.z = z + self.pos.p.z
+            point.y = land.getHeight({x=point.x,y=point.z})
+
+            table.insert(polygonPoints, point)
+        end
+
+        -- draw the marker
+        local fillcolor = {0,0,0,0.15}
+        local linecolor = {0,0,0,0.3}
+        if self.platformCoalition == coalition.side.BLUE then
+            fillcolor[1] = 1
+            linecolor[1] = 1
+        end
+        if self.platformCoalition == coalition.side.RED then
+            fillcolor[3] = 1
+            linecolor[3] = 1
+        end  
+        trigger.action.quadToAll(self.platformCoalition,self:getMarkerId(), polygonPoints[1] , polygonPoints[2] , polygonPoints[3] , polygonPoints[4] , linecolor,fillcolor,2,true)
+    end
+
+    function HoundContact:updateMarker(coalitionID,MarkerType)
+        if self.pos.p == nil or self.uncertenty_radius == nil then return end
+
 
         -- local idx0 = self:getMarkerId()
         self:removeMarker()
 
-        trigger.action.circleToAll(self.platformCoalition,self:getMarkerId(),self.pos.p,self.uncertenty_radius.r,linecolor,fillcolor,2,true)
-
         trigger.action.markToCoalition(self:getMarkerId(), self.typeName .. " " .. (self.uid%100) .. " (" .. self.uncertenty_radius.major .. "/" .. self.uncertenty_radius.minor .. "@" .. self.uncertenty_radius.az .. "|" .. l_math.floor(HoundUtils:timeDelta(self.last_seen)) .. "s)",self.pos.p,self.platformCoalition,true)
+        if MarkerType == HOUND.MARKER.CIRCLE then
+            self:drawMarkerCircle()
+        end
+        if MarkerType == HOUND.MARKER.DIAMOND or MarkerType == HOUND.MARKER.POLYGON then
+            self:drawMarkerPolygon(4)
+        end
         -- linecolor[4] = 0.6
         -- trigger.action.textToAll(self.platformCoalition , self.markpointID+1 , self.pos.p , linecolor,{0,0,0,0} , 12 , true , self.typeName .. " " .. (self.uid%100) .. "\n(" .. self.uncertenty_radius.major .. "/" .. self.uncertenty_radius.minor .. "@" .. self.uncertenty_radius.az .. "|" .. HoundUtils:timeDelta(self.last_seen) .. "s)")
     end
@@ -443,7 +559,7 @@ do
             for i=1,numStaticPoints-1 do
                 for j=i+1,numStaticPoints do
                     local err = (staticDataPoints[i].platformPrecision + staticDataPoints[j].platformPrecision)/2
-                    if l_math.deg(HoundUtils.angleDeltaRad(staticDataPoints[i].az,staticDataPoints[j].az)) > err then
+                    if HoundUtils.angleDeltaRad(staticDataPoints[i].az,staticDataPoints[j].az) > err then
                         table.insert(estimatePosition,self:triangulatePoints(staticDataPoints[i],staticDataPoints[j]))
                     end
                 end
@@ -455,7 +571,7 @@ do
             for i,staticDataPoint in ipairs(staticDataPoints) do
                 for j,mobileDataPoint in ipairs(mobileDataPoints) do
                     local err = (staticDataPoint.platformPrecision + mobileDataPoint.platformPrecision)/2
-                    if l_math.deg(HoundUtils.angleDeltaRad(staticDataPoint.az,mobileDataPoint.az)) > err then
+                    if HoundUtils.angleDeltaRad(staticDataPoint.az,mobileDataPoint.az) > err then
                         table.insert(estimatePosition,self:triangulatePoints(staticDataPoint,mobileDataPoint))
                     end
                 end
@@ -468,7 +584,7 @@ do
                 for j=i+1,numMobilepoints do
                     if mobileDataPoints[i].platformPos  ~= mobileDataPoints[j].platformPos then
                         local err = (mobileDataPoints[i].platformPrecision + mobileDataPoints[j].platformPrecision)/2
-                        if l_math.deg(HoundUtils.angleDeltaRad(mobileDataPoints[i].az,mobileDataPoints[j].az)) > err then
+                        if HoundUtils.angleDeltaRad(mobileDataPoints[i].az,mobileDataPoints[j].az) > err then
                             table.insert(estimatePosition,self:triangulatePoints(mobileDataPoints[i],mobileDataPoints[j]))
                         end
                     end
@@ -478,14 +594,16 @@ do
         
         if length(estimatePosition) > 2 then
             self:calculatePos(estimatePosition)
-            local combinedDataPoints = {} 
-            if numMobilepoints > 0 then
-                for k,v in ipairs(mobileDataPoints) do table.insert(combinedDataPoints,v) end
-            end
-            if numStaticPoints > 0 then
-                for k,v in ipairs(staticDataPoints) do table.insert(combinedDataPoints,v) end
-            end
-            self:calculateEllipse(estimatePosition,self:calculateAzimuthBias(combinedDataPoints))
+            -- local combinedDataPoints = {} 
+            -- if numMobilepoints > 0 then
+            --     for k,v in ipairs(mobileDataPoints) do table.insert(combinedDataPoints,v) end
+            -- end
+            -- if numStaticPoints > 0 then
+            --     for k,v in ipairs(staticDataPoints) do table.insert(combinedDataPoints,v) end
+            -- end
+            -- self:calculateEllipse(estimatePosition,self:calculateAzimuthBias(combinedDataPoints))
+            self:calculateEllipse(estimatePosition)
+
             local detected_by = {}
 
             for key, value in pairs(platforms) do

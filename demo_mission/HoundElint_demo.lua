@@ -31,6 +31,7 @@ do
 
     Elint_blue:enableController(true)
     Elint_blue:enableATIS()
+    -- Elint_blue:enableMarkers(HOUND.MARKER.DIAMOND)
 
     Elint_blue:systemOn()
 
