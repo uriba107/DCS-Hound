@@ -189,11 +189,11 @@ do
         if not pos0 or not pos1 then return false end
         local dist = l_mist.utils.get2DDist(pos0,pos1)
         local radarHorizon = HoundUtils.EarthLOS(pos0.y,pos1.y)
-        local dcsLOS = land.isVisible(pos0,pos1) 
-        return (dist <= radarHorizon*1.025 and dcsLOS)
+        return (dist <= radarHorizon*1.025 and land.isVisible(pos0,pos1))
     end
 
     function HoundUtils.EarthLOS(h0,h1)
+        if not h0 then return 0 end
         local Re = 6371000 -- Radius of earth in M
         local d0 = l_math.sqrt(h0^2+2*Re*h0)
         local d1 = 0

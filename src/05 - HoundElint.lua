@@ -33,7 +33,11 @@ do
         }
 
         if platformName ~= nil then
-            elint:addPlatform(platformName)
+            if type(platformName) == "string" then
+                elint:addPlatform(platformName)
+            else
+                elint:setCoalition(platformName)
+            end
         end
 
         elint.controller = HoundCommsManager:create()
@@ -51,6 +55,18 @@ do
     --[[
         Admin functions
     --]]
+
+    function HoundElint:setCoalition(side)
+        if self.coalitionId ~= nil then
+            env.info("[ Hound ] - coalition already set")
+            return false
+        end
+        if side == coalition.side.BLUE or side == coalition.side.RED then
+            self.coalitionId = side
+            return true
+        end
+    end
+
     function HoundElint:addPlatform(platformName)
 
         local canidate = Unit.getByName(platformName)
@@ -59,8 +75,9 @@ do
         end
 
         if self.coalitionId == nil and canidate ~= nil then
-            self.coalitionId = canidate:getCoalition()
+            self:setCoalition(canidate:getCoalition())
         end
+
         if canidate ~= nil and canidate:getCoalition() == self.coalitionId then
             local mainCategory = canidate:getCategory()
             local type = canidate:getTypeName()

@@ -19,3 +19,11 @@ end
 function setContains(set, key)
   return set[key] ~= nil
 end
+
+function stdev()
+  local sum, sumsq, k = 0,0,0
+  return function(n)
+    sum, sumsq, k = sum + n, sumsq + n^2, k+1
+    return math.sqrt((sumsq / k) - (sum/k)^2)
+  end
+end

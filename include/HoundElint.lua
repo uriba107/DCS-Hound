@@ -1,12 +1,13 @@
 env.info("Hound ELINT Loading...")
 HOUND = {
     VERSION="0.1.2-development",
+    PERCENTILE = 0.65,
     MARKER = {
         NONE = 0,
         CIRCLE = 1,
         DIAMOND = 2,
         POLYGON = 3
-    }
+    },
 }
 HoundDB = {}
 do
@@ -418,6 +419,14 @@ end
 function setContains(set, key)
   return set[key] ~= nil
 end
+
+function stdev()
+  local sum, sumsq, k = 0,0,0
+  return function(n)
+    sum, sumsq, k = sum + n, sumsq + n^2, k+1
+    return math.sqrt((sumsq / k) - (sum/k)^2)
+  end
+end
 do 
     local l_mist = mist
     local l_math = math
@@ -597,11 +606,11 @@ do
         if not pos0 or not pos1 then return false end
         local dist = l_mist.utils.get2DDist(pos0,pos1)
         local radarHorizon = HoundUtils.EarthLOS(pos0.y,pos1.y)
-        local dcsLOS = land.isVisible(pos0,pos1) 
-        return (dist <= radarHorizon*1.025 and dcsLOS)
+        return (dist <= radarHorizon*1.025 and land.isVisible(pos0,pos1))
     end
 
     function HoundUtils.EarthLOS(h0,h1)
+        if not h0 then return 0 end
         local Re = 6371000 -- Radius of earth in M
         local d0 = l_math.sqrt(h0^2+2*Re*h0)
         local d1 = 0
@@ -943,40 +952,26 @@ do
         return  HoundUtils.AzimuthAverage(azimuths)
     end
 
+    function HoundContact:getDeltaSubsetPercent(Table,referencePos,NthPercentile)
+        local t = l_mist.utils.deepCopy(Table)
+        for _,pt in ipairs(t) do
+            pt.dist = l_mist.utils.get2DDist(referencePos,pt)
+        end
+        table.sort(t,function(a,b) return a.dist < b.dist end)
+
+        local percentile = l_math.floor(length(t)*NthPercentile)
+        local NumToUse = l_math.max(l_math.min(2,length(t)),percentile)
+        local RelativeToPos = {}
+        for i = 1, NumToUse  do
+            table.insert(RelativeToPos,l_mist.vec.sub(t[i],referencePos))
+        end
+
+        return RelativeToPos
+    end
 
     function HoundContact:calculateEllipse(estimatedPositions,Theta)
-        table.sort(estimatedPositions,function(a,b) return tonumber(l_mist.utils.get2DDist(self.pos.p,a)) < tonumber(l_mist.utils.get2DDist(self.pos.p,b)) end)
 
-
-
-        local percentile = l_math.floor(length(estimatedPositions)*0.65)
-        local RelativeToPos = {}
-
-        local NumToUse = l_math.max(l_math.min(2,length(estimatedPositions)),percentile)
-        for i = 1, NumToUse  do
-            table.insert(RelativeToPos,l_mist.vec.sub(estimatedPositions[i],self.pos.p))
-        end
-        if Theta == nil then
-
-            local AzBiasPool = {}
-
-            for _,pos in ipairs(estimatedPositions) do
-                local deltaVec = l_mist.vec.sub(self.pos.p,pos)
-                table.insert(AzBiasPool,l_math.atan2(deltaVec.z,deltaVec.x))
-            end
-
-            Theta = HoundUtils.AzimuthAverage(AzBiasPool)
-        end
-        local sinTheta = l_math.sin(Theta)
-        local cosTheta = l_math.cos(Theta)
-
-        for k,v in ipairs(RelativeToPos) do
-            local newPos = {}
-            newPos.y = v.y
-            newPos.x = v.x*cosTheta - v.z*sinTheta
-            newPos.z = v.x*sinTheta + v.z*cosTheta
-            RelativeToPos[k] = newPos
-        end
+        local RelativeToPos = HoundContact:getDeltaSubsetPercent(estimatedPositions,self.pos.p,HOUND.PERCENTILE)
 
         local min = {}
         min.x = 99999
@@ -993,8 +988,33 @@ do
             max.y = l_math.max(max.y,v.z)
         end
 
+        
         local x = l_mist.utils.round(l_math.abs(min.x)+l_math.abs(max.x))
         local y = l_mist.utils.round(l_math.abs(min.y)+l_math.abs(max.y))
+
+        if Theta == nil then
+
+            local AzBiasPool = {}
+
+            for _,pos in ipairs(estimatedPositions) do
+                local deltaVec = l_mist.vec.sub(self.pos.p,pos)
+                table.insert(AzBiasPool,l_math.atan2(deltaVec.z,deltaVec.x))
+            end
+
+            Theta = HoundUtils.AzimuthAverage(AzBiasPool)
+        end
+        
+        local sinTheta = l_math.sin(Theta)
+        local cosTheta = l_math.cos(Theta)
+
+        for k,v in ipairs(RelativeToPos) do
+            local newPos = {}
+            newPos.y = v.y
+            newPos.x = v.x*cosTheta - v.z*sinTheta
+            newPos.z = v.x*sinTheta + v.z*cosTheta
+            RelativeToPos[k] = newPos
+        end
+
         self.uncertenty_radius = {}
         self.uncertenty_radius.major = l_math.max(x,y)
         self.uncertenty_radius.minor = l_math.min(x,y)
@@ -1003,10 +1023,22 @@ do
         
     end
 
-
-    function HoundContact:calculatePos(estimatedPositions)
+    function HoundContact:calculatePos(estimatedPositions,converge)
         if estimatedPositions == nil then return end
-        self.pos.p =  l_mist.getAvgPoint(estimatedPositions)
+        self.pos.p = l_mist.getAvgPoint(estimatedPositions)
+        if converge then
+            local subList = estimatedPositions
+            local subsetPos = self.pos.p
+            while length(subList) > 3 do
+                local NewsubList = HoundContact:getDeltaSubsetPercent(subList,subsetPos,HOUND.PERCENTILE)
+                subsetPos = l_mist.getAvgPoint(NewsubList)
+
+                self.pos.p.x = self.pos.p.x + (subsetPos.x )
+                self.pos.p.z = self.pos.p.z + (subsetPos.z )
+                subList = NewsubList
+
+            end
+        end
         self.pos.p.y = land.getHeight({x=self.pos.p.x,y=self.pos.p.z})
         local bullsPos = coalition.getMainRefPoint(self.platformCoalition)
         self.pos.LL.lat, self.pos.LL.lon =  coord.LOtoLL(self.pos.p)
@@ -1237,7 +1269,7 @@ do
         local newContact = (self.pos.p == nil)
         local mobileDataPoints = {}
         local staticDataPoints = {}
-        local estimatePosition = {}
+        local estimatePositions = {}
         local platforms = {}
 
         for _,platformDatapoints in pairs(self.dataPoints) do 
@@ -1249,7 +1281,7 @@ do
                         table.insert(mobileDataPoints,datapoint) 
                     end
                     if datapoint.estimatedPos ~= nil then
-                        table.insert(estimatePosition,datapoint.estimatedPos)
+                        table.insert(estimatePositions,datapoint.estimatedPos)
                     end
                     platforms[datapoint.platfromName] = 1
                 end
@@ -1258,13 +1290,13 @@ do
         local numMobilepoints = length(mobileDataPoints)
         local numStaticPoints = length(staticDataPoints)
 
-        if numMobilepoints+numStaticPoints < 2 and length(estimatePosition) == 0 then return end
+        if numMobilepoints+numStaticPoints < 2 and length(estimatePositions) == 0 then return end
         if numStaticPoints > 1 then
             for i=1,numStaticPoints-1 do
                 for j=i+1,numStaticPoints do
                     local err = (staticDataPoints[i].platformPrecision + staticDataPoints[j].platformPrecision)/2
                     if HoundUtils.angleDeltaRad(staticDataPoints[i].az,staticDataPoints[j].az) > err then
-                        table.insert(estimatePosition,self:triangulatePoints(staticDataPoints[i],staticDataPoints[j]))
+                        table.insert(estimatePositions,self:triangulatePoints(staticDataPoints[i],staticDataPoints[j]))
                     end
                 end
             end
@@ -1275,7 +1307,7 @@ do
                 for j,mobileDataPoint in ipairs(mobileDataPoints) do
                     local err = (staticDataPoint.platformPrecision + mobileDataPoint.platformPrecision)/2
                     if HoundUtils.angleDeltaRad(staticDataPoint.az,mobileDataPoint.az) > err then
-                        table.insert(estimatePosition,self:triangulatePoints(staticDataPoint,mobileDataPoint))
+                        table.insert(estimatePositions,self:triangulatePoints(staticDataPoint,mobileDataPoint))
                     end
                 end
             end
@@ -1287,16 +1319,17 @@ do
                     if mobileDataPoints[i].platformPos  ~= mobileDataPoints[j].platformPos then
                         local err = (mobileDataPoints[i].platformPrecision + mobileDataPoints[j].platformPrecision)/2
                         if HoundUtils.angleDeltaRad(mobileDataPoints[i].az,mobileDataPoints[j].az) > err then
-                            table.insert(estimatePosition,self:triangulatePoints(mobileDataPoints[i],mobileDataPoints[j]))
+                            table.insert(estimatePositions,self:triangulatePoints(mobileDataPoints[i],mobileDataPoints[j]))
                         end
                     end
                 end
             end
         end
         
-        if length(estimatePosition) > 2 then
-            self:calculatePos(estimatePosition)
-            self:calculateEllipse(estimatePosition)
+        if length(estimatePositions) > 2 then
+            self:calculatePos(estimatePositions,true)
+
+            self:calculateEllipse(estimatePositions)
 
             local detected_by = {}
 
@@ -1543,7 +1576,11 @@ do
         }
 
         if platformName ~= nil then
-            elint:addPlatform(platformName)
+            if type(platformName) == "string" then
+                elint:addPlatform(platformName)
+            else
+                elint:setCoalition(platformName)
+            end
         end
 
         elint.controller = HoundCommsManager:create()
@@ -1561,6 +1598,18 @@ do
     --[[
         Admin functions
     --]]
+
+    function HoundElint:setCoalition(side)
+        if self.coalitionId ~= nil then
+            env.info("[ Hound ] - coalition already set")
+            return false
+        end
+        if side == coalition.side.BLUE or side == coalition.side.RED then
+            self.coalitionId = side
+            return true
+        end
+    end
+
     function HoundElint:addPlatform(platformName)
 
         local canidate = Unit.getByName(platformName)
@@ -1569,8 +1618,9 @@ do
         end
 
         if self.coalitionId == nil and canidate ~= nil then
-            self.coalitionId = canidate:getCoalition()
+            self:setCoalition(canidate:getCoalition())
         end
+
         if canidate ~= nil and canidate:getCoalition() == self.coalitionId then
             local mainCategory = canidate:getCategory()
             local type = canidate:getTypeName()

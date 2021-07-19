@@ -182,61 +182,26 @@ do
         return  HoundUtils.AzimuthAverage(azimuths)
     end
 
-    -- function HoundContact:calculateAvgPos(points)
-    --     local avgPos = l_mist.getAvgPoint(points)
-    --     local maxDist = 0
-    --     local avgDist = 0
-    --     local ldev = stdev()
-    --     local sd = 0
-    --     for _,point in ipairs(points) do
-    --         local dist = l_mist.utils.get2DDist(avgPos,point)
-    --         avgDist = avgDist + dist
-    --         maxDist = l_math.max(maxDist,dist)
-    --         sd = ldev(dist)
-    --     end
-    --     avgDist = avgDist / length(points)
-    --     return avgPos,sd,maxDist
-    -- end
+    function HoundContact:getDeltaSubsetPercent(Table,referencePos,NthPercentile)
+        local t = l_mist.utils.deepCopy(Table)
+        for _,pt in ipairs(t) do
+            pt.dist = l_mist.utils.get2DDist(referencePos,pt)
+        end
+        table.sort(t,function(a,b) return a.dist < b.dist end)
+
+        local percentile = l_math.floor(length(t)*NthPercentile)
+        local NumToUse = l_math.max(l_math.min(2,length(t)),percentile)
+        local RelativeToPos = {}
+        for i = 1, NumToUse  do
+            table.insert(RelativeToPos,l_mist.vec.sub(t[i],referencePos))
+        end
+
+        return RelativeToPos
+    end
 
     function HoundContact:calculateEllipse(estimatedPositions,Theta)
-        table.sort(estimatedPositions,function(a,b) return tonumber(l_mist.utils.get2DDist(self.pos.p,a)) < tonumber(l_mist.utils.get2DDist(self.pos.p,b)) end)
 
-        -- for _,pos in ipairs(estimatedPositions) do
-        --     pos.dist = l_mist.utils.get2DDist(self.pos.p,pos)
-        -- end
-
-        -- table.sort(estimatedPositions,function(a,b) return a.dist < b.dist end)
-
-        local percentile = l_math.floor(length(estimatedPositions)*0.65)
-        local RelativeToPos = {}
-
-        local NumToUse = l_math.max(l_math.min(2,length(estimatedPositions)),percentile)
-        for i = 1, NumToUse  do
-            table.insert(RelativeToPos,l_mist.vec.sub(estimatedPositions[i],self.pos.p))
-        end
-        -- -- experimental BS
-        if Theta == nil then
-
-            local AzBiasPool = {}
-
-            for _,pos in ipairs(estimatedPositions) do
-                local deltaVec = l_mist.vec.sub(self.pos.p,pos)
-                table.insert(AzBiasPool,l_math.atan2(deltaVec.z,deltaVec.x))
-            end
-
-            Theta = HoundUtils.AzimuthAverage(AzBiasPool)
-        end
-        -- working rotation matrix BS
-        local sinTheta = l_math.sin(Theta)
-        local cosTheta = l_math.cos(Theta)
-
-        for k,v in ipairs(RelativeToPos) do
-            local newPos = {}
-            newPos.y = v.y
-            newPos.x = v.x*cosTheta - v.z*sinTheta
-            newPos.z = v.x*sinTheta + v.z*cosTheta
-            RelativeToPos[k] = newPos
-        end
+        local RelativeToPos = HoundContact:getDeltaSubsetPercent(estimatedPositions,self.pos.p,HOUND.PERCENTILE)
 
         local min = {}
         min.x = 99999
@@ -253,8 +218,35 @@ do
             max.y = l_math.max(max.y,v.z)
         end
 
+        
         local x = l_mist.utils.round(l_math.abs(min.x)+l_math.abs(max.x))
         local y = l_mist.utils.round(l_math.abs(min.y)+l_math.abs(max.y))
+
+        -- -- experimental BS
+        if Theta == nil then
+
+            local AzBiasPool = {}
+
+            for _,pos in ipairs(estimatedPositions) do
+                local deltaVec = l_mist.vec.sub(self.pos.p,pos)
+                table.insert(AzBiasPool,l_math.atan2(deltaVec.z,deltaVec.x))
+            end
+
+            Theta = HoundUtils.AzimuthAverage(AzBiasPool)
+        end
+        
+        -- working rotation matrix BS
+        local sinTheta = l_math.sin(Theta)
+        local cosTheta = l_math.cos(Theta)
+
+        for k,v in ipairs(RelativeToPos) do
+            local newPos = {}
+            newPos.y = v.y
+            newPos.x = v.x*cosTheta - v.z*sinTheta
+            newPos.z = v.x*sinTheta + v.z*cosTheta
+            RelativeToPos[k] = newPos
+        end
+
         self.uncertenty_radius = {}
         self.uncertenty_radius.major = l_math.max(x,y)
         self.uncertenty_radius.minor = l_math.min(x,y)
@@ -263,36 +255,30 @@ do
         
     end
 
-    -- function HoundContact:calculateWeightedPos(estimatedPositions)
-    --     if estimatedPositions == nil then return end
-    --     local avgPos,stddev,maxDist = HoundContact:calculateAvgPos(estimatedPositions)
-    --     -- local avgPos = l_mist.getAvgPoint(estimatedPositions)
-    --     local weighted_x = 0
-    --     local weighted_z = 0
-    --     local scale_factor = 0
-    --     for _,pos in ipairs(estimatedPositions) do
-    --         local dist = l_mist.utils.get2DDist(avgPos,pos)
-    --         local weight = HoundUtils.gaussianWeight(dist,stddev)
-    --         weighted_x = weighted_x + (pos.x * weight)
-    --         weighted_z = weighted_z + (pos.z * weight)
-    --         scale_factor = scale_factor + weight
-    --         env.info("weight = ".. weight)
-    --     end
-    --     self.pos.p = {
-    --         x = weighted_x / scale_factor,
-    --         z = weighted_z / scale_factor
-    --     }
-    --     self.pos.p.y = land.getHeight({x=self.pos.p.x,z=self.pos.p.z})
-    --     local bullsPos = coalition.getMainRefPoint(self.platformCoalition)
-    --     self.pos.LL.lat, self.pos.LL.lon = coord.LOtoLL(self.pos.p)
-    --     self.pos.elev = self.pos.p.y
-    --     self.pos.grid  = coord.LLtoMGRS(self.pos.LL.lat, self.pos.LL.lon)
-    --     self.pos.be = HoundUtils.getBR(bullsPos,self.pos.p)
-    -- end
-
-    function HoundContact:calculatePos(estimatedPositions)
+    function HoundContact:calculatePos(estimatedPositions,converge)
         if estimatedPositions == nil then return end
-        self.pos.p =  l_mist.getAvgPoint(estimatedPositions)
+        self.pos.p = l_mist.getAvgPoint(estimatedPositions)
+        if converge then
+            local subList = estimatedPositions
+            local subsetPos = self.pos.p
+            while length(subList) > 3 do
+                -- env.info("itterating Pos " .. length(subList))
+                local NewsubList = HoundContact:getDeltaSubsetPercent(subList,subsetPos,HOUND.PERCENTILE)
+                -- env.info("Before integration: x: " .. self.pos.p.x .. " Z: " .. self.pos.p.z )
+                subsetPos = l_mist.getAvgPoint(NewsubList)
+                -- env.info("delta : x: " ..subsetPos.x .. " Z: " ..subsetPos.z )
+                -- subsetPos.x = subsetPos.x/2
+                -- subsetPos.z = subsetPos.z/2
+                -- env.info("half delta : x: " ..subsetPos.x .. " Z: " ..subsetPos.z )
+
+                self.pos.p.x = self.pos.p.x + (subsetPos.x )
+                self.pos.p.z = self.pos.p.z + (subsetPos.z )
+                -- env.info("After integration: x: " .. self.pos.p.x .. " Z: " .. self.pos.p.z )
+                -- self.pos.p = l_mist.getAvgPoint({l_mist.vec.add(self.pos.p,subsetPos),self.pos.p})
+                subList = NewsubList
+
+            end
+        end
         self.pos.p.y = land.getHeight({x=self.pos.p.x,y=self.pos.p.z})
         local bullsPos = coalition.getMainRefPoint(self.platformCoalition)
         self.pos.LL.lat, self.pos.LL.lon =  coord.LOtoLL(self.pos.p)
@@ -532,7 +518,7 @@ do
         local newContact = (self.pos.p == nil)
         local mobileDataPoints = {}
         local staticDataPoints = {}
-        local estimatePosition = {}
+        local estimatePositions = {}
         local platforms = {}
 
         for _,platformDatapoints in pairs(self.dataPoints) do 
@@ -544,7 +530,7 @@ do
                         table.insert(mobileDataPoints,datapoint) 
                     end
                     if datapoint.estimatedPos ~= nil then
-                        table.insert(estimatePosition,datapoint.estimatedPos)
+                        table.insert(estimatePositions,datapoint.estimatedPos)
                     end
                     platforms[datapoint.platfromName] = 1
                 end
@@ -553,14 +539,14 @@ do
         local numMobilepoints = length(mobileDataPoints)
         local numStaticPoints = length(staticDataPoints)
 
-        if numMobilepoints+numStaticPoints < 2 and length(estimatePosition) == 0 then return end
+        if numMobilepoints+numStaticPoints < 2 and length(estimatePositions) == 0 then return end
         -- Static against all statics
         if numStaticPoints > 1 then
             for i=1,numStaticPoints-1 do
                 for j=i+1,numStaticPoints do
                     local err = (staticDataPoints[i].platformPrecision + staticDataPoints[j].platformPrecision)/2
                     if HoundUtils.angleDeltaRad(staticDataPoints[i].az,staticDataPoints[j].az) > err then
-                        table.insert(estimatePosition,self:triangulatePoints(staticDataPoints[i],staticDataPoints[j]))
+                        table.insert(estimatePositions,self:triangulatePoints(staticDataPoints[i],staticDataPoints[j]))
                     end
                 end
             end
@@ -572,7 +558,7 @@ do
                 for j,mobileDataPoint in ipairs(mobileDataPoints) do
                     local err = (staticDataPoint.platformPrecision + mobileDataPoint.platformPrecision)/2
                     if HoundUtils.angleDeltaRad(staticDataPoint.az,mobileDataPoint.az) > err then
-                        table.insert(estimatePosition,self:triangulatePoints(staticDataPoint,mobileDataPoint))
+                        table.insert(estimatePositions,self:triangulatePoints(staticDataPoint,mobileDataPoint))
                     end
                 end
             end
@@ -585,15 +571,16 @@ do
                     if mobileDataPoints[i].platformPos  ~= mobileDataPoints[j].platformPos then
                         local err = (mobileDataPoints[i].platformPrecision + mobileDataPoints[j].platformPrecision)/2
                         if HoundUtils.angleDeltaRad(mobileDataPoints[i].az,mobileDataPoints[j].az) > err then
-                            table.insert(estimatePosition,self:triangulatePoints(mobileDataPoints[i],mobileDataPoints[j]))
+                            table.insert(estimatePositions,self:triangulatePoints(mobileDataPoints[i],mobileDataPoints[j]))
                         end
                     end
                 end
             end
         end
         
-        if length(estimatePosition) > 2 then
-            self:calculatePos(estimatePosition)
+        if length(estimatePositions) > 2 then
+            self:calculatePos(estimatePositions,true)
+
             -- local combinedDataPoints = {} 
             -- if numMobilepoints > 0 then
             --     for k,v in ipairs(mobileDataPoints) do table.insert(combinedDataPoints,v) end
@@ -602,7 +589,7 @@ do
             --     for k,v in ipairs(staticDataPoints) do table.insert(combinedDataPoints,v) end
             -- end
             -- self:calculateEllipse(estimatePosition,self:calculateAzimuthBias(combinedDataPoints))
-            self:calculateEllipse(estimatePosition)
+            self:calculateEllipse(estimatePositions)
 
             local detected_by = {}
 

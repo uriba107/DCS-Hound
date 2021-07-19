@@ -139,7 +139,14 @@ will crate the system instance. Alternatively, you can crate the system with a p
 ```
 You will add units by using their names (or pilot name) not by a group name.
 
-Additional platforms can be added at any time
+you can also pass a coalition to create the Hound instance with
+```lua
+    Elint_blue = HoundElint:create(coalition.side.BLUE)
+```
+this will allow you to create and start Hound instance without any active platforms and add the dynamiclly later.
+
+
+Platforms can be added at any time (before or after system activation)
 ```lua
     Elint_blue:addPlatform("ELINT_C17")
 ```
@@ -147,7 +154,6 @@ and if need be the oposite is also available
 ```lua
     Elint_blue:removePlatform("ELINT_C17")
 ```
-
 Thats it, all you need to do now is to activate the system
 ```lua
     Elint_blue:systemOn()
@@ -194,8 +200,8 @@ Usage is
 ```lua
 HoundElint:enableMarkers(HOUND.MARKER.DIAMOND)
 ```
-Diamons were suggested by `[VEAF]Zip` due to bug in DCS (as of 2.7.4) that may lead to client crash when circles are enabled.
-Default was changed to Diamond for that reason.
+Diamonds were suggested by `[VEAF]Zip` possible bug (in DCS?) that may lead to client crash when circles are enabled.
+Default was changed to Diamonds for that reason.
 
 ## Text-To-Speech
 Hound allows user to recive information via two radio channles (using SRS).
