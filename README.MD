@@ -15,7 +15,6 @@ Hound is compatible with MIST, MOOSE, Skynet IADS and High-Digit SAMs
 ## Video Intro (YouTube)
 [![Hound Cinematic Intro video](https://i.ytimg.com/vi/S4xxtKOqGqU/hq720.jpg?sqp=-oaymwEcCNAFEJQDSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLAAa-SdnDgNiWTKc0YNSvm5RRMa7g)](https://www.youtube.com/watch?v=S4xxtKOqGqU)
 
-
 ## Putting this to work
 Hound system triangulates positions of radars. It does this by taking bearing readings at set times, while recording the platform position. 
 using these plotted data points system can estimate the position. the more points you have, with greater intersection angles between them, there is a better chance of estimating the position correctly. you will never get a perfect "hit" but you may be able to get a position within a 200 meter radius, where you can can use other sensors to poinpoint for a strike, or know where you need to avoid flying.
@@ -113,6 +112,7 @@ on a "ONCE" type action with "time more 1" condition, add the scripts in the fol
 ![Add scripts](/images/hound_setup.jpg)
 
 ### Minimum required Code to get Hound working
+---
 The bare minumum, more customization optionas are available.
 ```lua
 do
@@ -129,6 +129,7 @@ end
 ```
 
 ### Adding Hound system to your mission scripts
+---
 ```lua
     Elint_blue = HoundElint:create()
 ```
@@ -138,7 +139,14 @@ will crate the system instance. Alternatively, you can crate the system with a p
 ```
 You will add units by using their names (or pilot name) not by a group name.
 
-Additional platforms can be added at any time
+you can also pass a coalition to create the Hound instance with
+```lua
+    Elint_blue = HoundElint:create(coalition.side.BLUE)
+```
+this will allow you to create and start Hound instance without any active platforms and add the dynamiclly later.
+
+
+Platforms can be added at any time (before or after system activation)
 ```lua
     Elint_blue:addPlatform("ELINT_C17")
 ```
@@ -146,7 +154,6 @@ and if need be the oposite is also available
 ```lua
     Elint_blue:removePlatform("ELINT_C17")
 ```
-
 Thats it, all you need to do now is to activate the system
 ```lua
     Elint_blue:systemOn()
@@ -160,6 +167,11 @@ You can of course turn it off for any reason with:
 ```lua
     Elint_blue:systemOff()
 ```
+
+### Adding Hound system to your mission scripts (YouTube Video)
+---
+[![Hound Mission Editor Tutorial](https://i.ytimg.com/vi/gmJmFR7UCfo/hq720.jpg?sqp=-oaymwEcCNAFEJQDSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLDiBxShzrFNarEs9uIUWvrDRLkwTQ)](https://www.youtube.com/watch?v=gmJmFR7UCfo)
+
 
 ## Map markers
 ---
@@ -175,9 +187,25 @@ they can be turned back on with
 HoundElint:enableMarkers()
 ```
 
+`enableMarkers` recives and optional MarkerType argument from a set of ENUMs. for drawing the uncertanty area.
+
+```
+HOUND.MARKER.NONE 
+HOUND.MARKER.CIRCLE  
+HOUND.MARKER.DIAMOND <= default
+HOUND.MARKER.POLYGON <= same as DIAMOND 
+```
+
+Usage is
+```lua
+HoundElint:enableMarkers(HOUND.MARKER.DIAMOND)
+```
+Diamonds were suggested by `[VEAF]Zip` possible bug (in DCS?) that may lead to client crash when circles are enabled.
+Default was changed to Diamonds for that reason.
+
 ## Text-To-Speech
 Hound allows user to recive information via two radio channles (using SRS).
-The are the [ATIS system](#atis-system) and the [SAM controller]
+The are the [ATIS system](#atis-system) and the [SAM controller](#sam-controller)
 
 both can be extensivly configured in the [Fine tuning TTS channels](#fine-tuning-tts-channels) segment below
 #### ATIS system
@@ -249,6 +277,7 @@ possible settings are:
             name = "Hound", -- For ATIS this will be used in the opening line
             gender = "male"|"female",
             culture = "en-US"|"en-UK" -- (any installed on your system)
+            speed = -10 .. 10 -- default 0/1 (controller/ATIS)
         }
 ```
 you can override one or more, and you can also have mutiple frequencies.
@@ -275,15 +304,14 @@ for example:
 This will change ATIS freqency to 251.5 and enable ATIS
 and will enable Controller both in Text and in Voice, while transmitting on two frequencies 251.0 AM and 35 FM
 
-
 **More ATIS settings**  
 ---
 ATIS has a few more settings available in the args 
 ```lua
-        args = {
-            reportEWR = false -- [false]/true/nil
-            NATO = false -- [false]/true
-        }
+    args = {
+        reportEWR = false -- [false]/true/nil
+        NATO = false -- [false]/true
+    }
 ```
 they control additional settings.
 **EWR reporting**  
@@ -322,4 +350,5 @@ this is configured by the `NATO` argument.
   * __[Ciribob](https://github.com/ciribob)__ - without his help, support and acceptence of wierd merge requests. none of this would have been possible.
   * __flywaldair__ - Hound was initially inspired by [Skynet IADS](https://github.com/walder/Skynet-IADS).
   * __Nikos__ - That had to endure 2 am texts with screenshots.
-  * __Grimes__ - For [MIST](https://github.com/mrSkortch/MissionScriptingTools) and because Without the [Hoggit Wiki](https://wiki.hoggitworld.com/) we would all be fumbling in the dark.  
+  * __Grimes__ - For [MIST](https://github.com/mrSkortch/MissionScriptingTools) and because Without the [Hoggit Wiki](https://wiki.hoggitworld.com/) we would all be fumbling in the dark.
+  * __[davidp57](https://github.com/davidp57)__ - For all the bugs found and all the fixes suggested.

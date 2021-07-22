@@ -4,7 +4,6 @@ do
     local l_math = math
     local pi_2 = 2*l_math.pi
 
-
     HoundUtils = {}
     HoundUtils.__index = HoundUtils
 
@@ -47,7 +46,7 @@ do
             V.y = 0
             if biasVector == nil then biasVector = V else biasVector = l_mist.vec.add(biasVector,V) end
         end
-        return  (l_math.atan( (biasVector.z/length(azimuths)) / (biasVector.x/length(azimuths))+pi_2) ) % pi_2
+        return  (l_math.atan2( (biasVector.z/length(azimuths)) , (biasVector.x/length(azimuths)))  + pi_2 ) % pi_2
     end
 
     function HoundUtils.RandomAngle()
@@ -83,17 +82,36 @@ do
 
     function HoundUtils.getDefraction(band,antenna_size)
         if band == nil or antenna_size == nil or antenna_size == 0 then return 30 end
-        return l_math.deg(HoundDB.Bands[band]/antenna_size)
+        return HoundDB.Bands[band]/antenna_size
     end
 
     
-    function HoundUtils.getAngularError(variance)
-        local MAG = l_math.abs(gaussian(0, variance * 10 ) / 10)
-        local ROT = l_math.random() * 2 * l_math.pi
-        
+    function HoundUtils.getAngularError(sigma)
+        local MAG = gaussianRandom(0, sigma)
+        local ROT = l_math.random() * l_math.pi
+        -- env.info("MAG is " .. MAG .. " which is " .. l_math.deg(MAG))
         local epsilon = {}
-        epsilon.az = -MAG*l_math.sin(ROT)
+        epsilon.az = MAG*l_math.sin(ROT)
         epsilon.el = MAG*l_math.cos(ROT)
+        -- epsilon.az = 0
+        -- epsilon.el = 0
+        return epsilon
+    end
+
+    function HoundUtils.getNormalAngularError(variance)
+        -- https://en.m.wikipedia.org/wiki/Box%E2%80%93Muller_transform
+        local stddev = variance /2
+        local Magnitude = l_math.sqrt(-2 * l_math.log(l_math.random())) * stddev
+        local Theta = 2* math.pi * l_math.random()
+
+        -- from radius and angle you can get the point on the circles
+        local epsilon = {
+            az = Magnitude * l_math.cos(Theta),
+            el = Magnitude * l_math.sin(Theta)
+        }
+        -- epsilon.az = 0
+        -- epsilon.el = 0
+
         return epsilon
     end
 
@@ -158,9 +176,9 @@ do
     function HoundUtils.getBR(src,dst)
         if not src or not dst then return end
         local BR = {}
-        local dir = l_mist.utils.getDir(l_mist.vec.sub(dst,src))
-        local magvar = l_mist.getNorthCorrection(src)
-        BR.brg = l_mist.utils.round(l_mist.utils.toDegree( (dir + magvar +  pi_2) % pi_2 ))
+        local dir = l_mist.utils.getDir(l_mist.vec.sub(dst,src),src) -- pass src to get magvar included
+        -- local magvar = l_mist.getNorthCorrection(src)
+        BR.brg = l_mist.utils.round(l_mist.utils.toDegree( dir ))
         BR.brStr = string.format("%03d",BR.brg)
         BR.rng = l_mist.utils.round(l_mist.utils.metersToNM(l_mist.utils.get2DDist(dst,src)))
         -- env.info("getBR: " .. dir .. "|".. magvar .. "="..BR.brg)
@@ -171,11 +189,11 @@ do
         if not pos0 or not pos1 then return false end
         local dist = l_mist.utils.get2DDist(pos0,pos1)
         local radarHorizon = HoundUtils.EarthLOS(pos0.y,pos1.y)
-        local dcsLOS = land.isVisible(pos0,pos1) 
-        return (dist <= radarHorizon*1.025 and dcsLOS)
+        return (dist <= radarHorizon*1.025 and land.isVisible(pos0,pos1))
     end
 
     function HoundUtils.EarthLOS(h0,h1)
+        if not h0 then return 0 end
         local Re = 6371000 -- Radius of earth in M
         local d0 = l_math.sqrt(h0^2+2*Re*h0)
         local d1 = 0
@@ -183,6 +201,11 @@ do
         return d0+d1
     end
 
+    function HoundUtils.gaussianWeight(distance,bandwidth)
+        local val = (1/(bandwidth*l_math.sqrt(pi_2))) * l_math.exp(-0.5*((distance / bandwidth)^2))
+        -- env.info("gaussian " .. val)
+        return val
+    end
     --[[ 
         ----- TTS Functions ----
     --]]    

@@ -1,5 +1,9 @@
 -- -------------------------------------------------------------
 do
+
+    local l_math = math
+    local l_mist = mist
+
     HoundElint = {}
     HoundElint.__index = HoundElint
 
@@ -13,13 +17,15 @@ do
         elint.radioAdminMenu = nil
         elint.coalitionId = nil
         elint.useMarkers = true
+
         elint.addPositionError = false
         elint.positionErrorRadius = 30
 
         elint.settings = {
             mainInterval = 15,
             processInterval = 60,
-            barkInterval = 120
+            barkInterval = 120,
+            markerType = HOUND.MARKER.DIAMOND
         }
         elint.timingCounters = {
             short = false,
@@ -27,7 +33,11 @@ do
         }
 
         if platformName ~= nil then
-            elint:addPlatform(platformName)
+            if type(platformName) == "string" then
+                elint:addPlatform(platformName)
+            else
+                elint:setCoalition(platformName)
+            end
         end
 
         elint.controller = HoundCommsManager:create()
@@ -45,6 +55,18 @@ do
     --[[
         Admin functions
     --]]
+
+    function HoundElint:setCoalition(side)
+        if self.coalitionId ~= nil then
+            env.info("[ Hound ] - coalition already set")
+            return false
+        end
+        if side == coalition.side.BLUE or side == coalition.side.RED then
+            self.coalitionId = side
+            return true
+        end
+    end
+
     function HoundElint:addPlatform(platformName)
 
         local canidate = Unit.getByName(platformName)
@@ -53,8 +75,9 @@ do
         end
 
         if self.coalitionId == nil and canidate ~= nil then
-            self.coalitionId = canidate:getCoalition()
+            self:setCoalition(canidate:getCoalition())
         end
+
         if canidate ~= nil and canidate:getCoalition() == self.coalitionId then
             local mainCategory = canidate:getCategory()
             local type = canidate:getTypeName()
@@ -181,8 +204,11 @@ do
         self.atis:disable()
     end
 
-    function HoundElint:enableMarkers()
+    function HoundElint:enableMarkers(markerType)
         self.useMarkers = true
+        if markerType then
+            self.settings.markerType = markerType
+        end
     end
 
     function HoundElint:disableMarkers()
@@ -321,20 +347,58 @@ do
                 return  HoundUtils.getDefraction(emitterBand,antenna_size) -- precision
             end
         end
-        return 15.0
+        return l_math.rad(15.0)
     end
 
-    function HoundElint:getAzimuth(src, dst, sensorError)
-        local dirRad = mist.utils.getDir(mist.vec.sub(dst, src))
-        local elRad = math.atan((dst.y-src.y)/mist.utils.get2DDist(src,dst))
+    function HoundElint:getAzimuth(src, dst, sensorPrecision)
+        local pi_2 = 2*l_math.pi
+        local AngularErr = HoundUtils.getNormalAngularError(sensorPrecision)
+        -- env.info("angular error | in: " .. l_math.deg(sensorPrecision) .. " | az: " .. l_math.deg(AngularErr.az) .. " | el: " .. l_math.deg(AngularErr.el))
 
-        local randomError = HoundUtils.getAngularError(sensorError)
-        local AzDeg = mist.utils.round((math.deg(dirRad) + randomError.az + 360) % 360, 3)
-        local ElDeg = mist.utils.round((math.deg(elRad) + randomError.el), 3)
-        -- env.info("sensor is: ".. mist.utils.tableShow(randomError) .. "passing in " .. sensorError )
-        -- env.info("az: " .. math.deg(dirRad) .. " err: "..  randomError.az .. " final: " ..AzDeg)
-        -- env.info("el: " .. math.deg(elRad) .. " err: "..  randomError.el .. " final: " ..ElDeg)
-        return math.rad(AzDeg),math.rad(ElDeg)
+        local vec = l_mist.vec.sub(dst, src)
+        local az = l_math.atan2(vec.z,vec.x) + AngularErr.az
+        if az < 0 then
+            az = az + pi_2
+        end 
+        if az > pi_2 then
+            az = az - pi_2
+        end 
+
+        local el = (l_math.atan(vec.y/l_math.sqrt(vec.x^2 + vec.z^2)) + AngularErr.el)
+        -- if el < -l_math.pi then
+        --     el = l_math.abs(el) - pi_2
+        -- end
+        -- if el > l_math.pi then
+        --     el = l_math.abs(el - pi_2)
+        -- end
+
+        return az,el
+
+        -- old code remove after validation
+        -- local dirRad_o = l_mist.utils.getDir(l_mist.vec.sub(dst, src))
+        -- local elRad_o = l_math.atan((dst.y-src.y),l_mist.utils.get2DDist(src,dst))
+
+        -- local AzDeg = l_mist.utils.round((l_math.deg(dirRad_o) + l_math.deg(AngularErr.az) + 360) % 360, 3)
+        -- local ElDeg = l_mist.utils.round((l_math.deg(elRad_o) + l_math.deg(AngularErr.el)), 3)
+        -- -- env.info("el debugging - y : " .. (dst.y-src.y) .. " vs " .. vec.y)
+        -- -- env.info("el debugging - dist: " .. l_mist.utils.get2DDist(src,dst) .. " vs " .. l_math.sqrt(vec.x^2 + vec.z^2))
+
+        -- -- env.info("sensor is: ".. mist.utils.tableShow(randomError) .. "passing in " .. sensorError )
+        -- local sanity_az = {
+        --     old = AzDeg,
+        --     new = l_mist.utils.round(l_math.deg(az),3)
+        -- }
+        -- local sanity_el = {
+        --     old = ElDeg,
+        --     new = l_mist.utils.round(l_math.deg(el),3)
+        -- }
+
+        -- if sanity_az.new ~= sanity_az.old then
+        --     env.info("az sanity: old " ..AzDeg .. " | new : " .. l_mist.utils.round(l_math.deg(az),3))
+        --     env.info("elements " .. l_mist.utils.tableShow(vec) .. " " .. l_math.deg(l_mist.utils.getDir(vec)) .. " " .. l_math.deg(l_math.atan(vec.z/vec.x)) .. " " ..  l_math.deg(l_math.atan2(vec.z, vec.x)) .. " " .. l_math.deg(l_math.atan(vec.z,vec.x)))
+        -- end
+        -- env.info("el sanity: old " ..ElDeg .. " | new : " .. l_mist.utils.round(l_math.deg(el),3))
+        -- return l_math.rad(AzDeg),l_math.rad(ElDeg)
     end
 
     function HoundElint:getActiveRadars()
@@ -383,7 +447,7 @@ do
             local RadarType = radar:getTypeName()
             local RadarName = radar:getName()
             local radarPos = radar:getPosition().p
-            radarPos.y = radarPos.y + radar:getDesc()["box"]["max"]["y"] -- assume 10 meters radar antenna
+            radarPos.y = radarPos.y + radar:getDesc()["box"]["max"]["y"] -- use vehicle bounting box for height
 
             for j,platform in ipairs(self.platform) do
                 local platformPos = platform:getPosition().p
@@ -415,7 +479,7 @@ do
                             HoundContact:New(radar, self.coalitionId)
                     end
                     local sensorMargins = self:getSensorPrecision(platform,self.emitters[RadarUid].band)
-                    if sensorMargins < 15 then
+                    if sensorMargins < l_math.rad(15.0) then
                         local az,el = self:getAzimuth( platformPos, radarPos, sensorMargins )
                         if not isAerialUnit then
                             el = nil
@@ -440,7 +504,7 @@ do
                 local isNew = emitter:processData()
                 if isNew then
                     self:notifyNewEmitter(emitter)
-                    if self.useMarkers then emitter:updateMarker(self.coalitionId) end
+                    if self.useMarkers then emitter:updateMarker(self.coalitionId,self.settings.markerType) end
                 end
                 emitter:CleanTimedout()
                 if emitter:isAlive() == false and HoundUtils:timeDelta(emitter.last_seen, timer.getAbsTime()) > 60 then
@@ -459,14 +523,14 @@ do
             end
         end
         -- for uid, emitter in pairs(self.emitters) do
-        --     if self.useMarkers then emitter:updateMarker(self.coalitionId) end
+        --     if self.useMarkers then emitter:updateMarker(self.coalitionId,self.settings.markerType) end
         -- end
     end
 
     function HoundElint:UpdateMarkers()
         if self.useMarkers then
             for _, emitter in pairs(self.emitters) do
-                emitter:updateMarker(self.coalitionId)
+                emitter:updateMarker(self.coalitionId,self.settings.markerType)
             end
         end
     end
@@ -724,6 +788,6 @@ do
 end
 
 do
-    trigger.action.outText("Hound ELINT ("..HOUND_VERSION..") is loaded.", 15)
-    env.info("[ Hound ] - finished loading (".. HOUND_VERSION..")")
+    trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
+    env.info("[ Hound ] - finished loading (".. HOUND.VERSION..")")
 end

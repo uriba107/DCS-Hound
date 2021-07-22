@@ -145,10 +145,10 @@ do
 
         if gSelf.settings.enableText and msgObj.txt ~= nil then
             readTime =  HoundUtils.TTS.getReadTime(msgObj.tts,gSelf.settings.speed) or HoundUtils.TTS.getReadTime(msgObj.txt,gSelf.settings.speed)
-            trigger.action.outTextForCoalition(msgObj.coalition,msgObj.txt,readTime+2)
+            trigger.action.outTextForCoalition(msgObj.coalition,msgObj.txt,readTime + 2 )
         end
 
-        return timer.getTime() + readTime
+        return timer.getTime() + readTime + 2 + gSelf.settings.interval
     end
 
     function HoundCommsManager:enable()
@@ -175,6 +175,12 @@ do
     function HoundCommsManager:removeTransmitter()
         if self.transmitter ~= nil then
             self.transmitter = nil
+        end
+    end
+
+    function HoundCommsManager:setInterval(seconds)
+        if type(seconds) == "number" then
+            self.settings.interval = seconds
         end
     end
 end
