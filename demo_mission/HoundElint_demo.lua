@@ -5,7 +5,9 @@ do
 end
 
 do
-    Elint_blue = HoundElint:create()
+    Elint_blue = HoundElint:create(coalition.side.BLUE)
+    Elint_blue:systemOn()
+
     Elint_blue:addPlatform("ELINT_C17")
     Elint_blue:addPlatform("ELINT_C130")
     -- Elint_blue:addPlatform("Kokotse_Elint")
@@ -32,9 +34,6 @@ do
     Elint_blue:enableController(true)
     Elint_blue:enableATIS()
     -- Elint_blue:enableMarkers(HOUND.MARKER.DIAMOND)
-
-    Elint_blue:systemOn()
-
 end
 
 do

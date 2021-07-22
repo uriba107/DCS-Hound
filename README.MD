@@ -277,6 +277,7 @@ possible settings are:
             name = "Hound", -- For ATIS this will be used in the opening line
             gender = "male"|"female",
             culture = "en-US"|"en-UK" -- (any installed on your system)
+            speed = -10 .. 10 -- default 0/1 (controller/ATIS)
         }
 ```
 you can override one or more, and you can also have mutiple frequencies.
@@ -303,15 +304,14 @@ for example:
 This will change ATIS freqency to 251.5 and enable ATIS
 and will enable Controller both in Text and in Voice, while transmitting on two frequencies 251.0 AM and 35 FM
 
-
 **More ATIS settings**  
 ---
 ATIS has a few more settings available in the args 
 ```lua
-        args = {
-            reportEWR = false -- [false]/true/nil
-            NATO = false -- [false]/true
-        }
+    args = {
+        reportEWR = false -- [false]/true/nil
+        NATO = false -- [false]/true
+    }
 ```
 they control additional settings.
 **EWR reporting**  

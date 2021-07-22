@@ -1,7 +1,7 @@
 -- --------------------------------------
 HOUND = {
     VERSION="0.1.2-TRUNK",
-    PERCENTILE = 0.65,
+    PERCENTILE = 0.60,
     MARKER = {
         NONE = 0,
         CIRCLE = 1,
@@ -165,6 +165,12 @@ do
             ['Role'] = "TR",
             ['Band'] = 'J'
         },
+        ['NASAMS_Radar_MPQ64F1'] = {
+            ['Name'] = "Sentinel",
+            ['Assigned'] = "NASAMS",
+            ['Role'] = "SR",
+            ['Band'] = 'I'
+        },
         ['HQ-7_STR_SP'] = {
             ['Name'] = "HQ-7",
             ['Assigned'] = "HQ-7",
@@ -309,6 +315,31 @@ do
             ['Assigned'] = "SA-10",
             ['Role'] = "Decoy",
             ['Band'] = 'J'
+        },
+        -- SAM Assets pack
+        ['EWR 55G6U NEBO-U'] = {
+            ['Name'] = "Tall Rack",
+            ['Assigned'] = "EWR",
+            ['Role'] = "EWR",
+            ['Band'] = 'A'
+        },
+        ['EWR P-37 Bar Lock'] = {
+            ['Name'] = "Bar lock",
+            ['Assigned'] = "EWR",
+            ['Role'] = "EWR",
+            ['Band'] = 'E'
+        },
+        ['EWR 1L119 Nebo-SVU'] = {
+            ['Name'] = "Nebo-SVU",
+            ['Assigned'] = "EWR",
+            ['Role'] = "EWR",
+            ['Band'] = 'A' 
+        },
+        ['EWR Generic radar tower'] = {
+            ['Name'] = "Civilian Radar",
+            ['Assigned'] = "EWR",
+            ['Role'] = "EWR",
+            ['Band'] = 'C' 
         }
     }
 end

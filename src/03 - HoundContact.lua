@@ -261,7 +261,7 @@ do
         if converge then
             local subList = estimatedPositions
             local subsetPos = self.pos.p
-            while length(subList) > 3 do
+            while (length(subList) * HOUND.PERCENTILE) > 5 do
                 -- env.info("itterating Pos " .. length(subList))
                 local NewsubList = HoundContact:getDeltaSubsetPercent(subList,subsetPos,HOUND.PERCENTILE)
                 -- env.info("Before integration: x: " .. self.pos.p.x .. " Z: " .. self.pos.p.z )

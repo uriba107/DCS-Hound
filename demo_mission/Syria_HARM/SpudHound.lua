@@ -63,7 +63,8 @@ do
     MAIN_MENU.activateSa6 = missionCommands.addCommandForCoalition(coalition.side.BLUE,"Activate SA-6",MAIN_MENU.root,SA6.GoLive)
     -- MAIN_MENU.activateSa6 = missionCommands.addCommandForCoalition(coalition.side.BLUE,"Restart Mission",MAIN_MENU.root,RestartMission)
 
-
+    -- activate SA6 and keep trigerring it
+    mist.scheduleFunction(SA6.GoLive,nil,timer.getTime()+180,600)
 
 
     HoundBlue = HoundElint:create()
@@ -81,7 +82,8 @@ do
     }
     local atis_args = {
         freq = "253.000,124.000",
-        modulation = "AM,AM"
+        modulation = "AM,AM",
+        speed = 0
     }
 
     HoundBlue:configureController(controller_args)
