@@ -1,6 +1,6 @@
 env.info("Hound ELINT Loading...")
 HOUND = {
-    VERSION="0.1.2",
+    VERSION="0.1.2.1",
     PERCENTILE = 0.60,
     MARKER = {
         NONE = 0,
@@ -25,6 +25,18 @@ do
             ['Band'] = 'A'
         },
         ['55G6 EWR'] = {
+            ['Name'] = "EWR",
+            ['Assigned'] = "EWR",
+            ['Role'] = "EWR",
+            ['Band'] = 'A'
+        },
+        ['FuSe-65'] = {
+            ['Name'] = "EWR",
+            ['Assigned'] = "EWR",
+            ['Role'] = "EWR",
+            ['Band'] = 'A'
+        },
+        ['FuMG-401'] = {
             ['Name'] = "EWR",
             ['Assigned'] = "EWR",
             ['Role'] = "EWR",
@@ -197,6 +209,18 @@ do
             ['Assigned'] = "AAA",
             ['Role'] = "SR",
             ['Band'] = 'G'
+        },        
+        ['Flakscheinwerfer_37'] = {
+            ['Name'] = "AAA Searchlight",
+            ['Assigned'] = "AAA",
+            ['Role'] = "GND",
+            ['Band'] = 'L'
+        },
+        ['Silkworm_SR'] = {
+            ['Name'] = "SilkWorm ASM SR",
+            ['Assigned'] = "ASM",
+            ['Role'] = "GND",
+            ['Band'] = 'K'
         },
         ['S-300PS 64H6E TRAILER sr'] = {
             ['Name'] = "Big Bird",
