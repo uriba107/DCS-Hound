@@ -1,6 +1,6 @@
 env.info("Hound ELINT Loading...")
 HOUND = {
-    VERSION="0.1.2.1",
+    VERSION="0.1.2.2",
     PERCENTILE = 0.60,
     MARKER = {
         NONE = 0,
@@ -66,6 +66,24 @@ do
             ['Role'] = "STR",
             ['Band'] = 'H'
         },
+        ['SAM SA-5 S-200 "Square Pair" TR'] = {
+            ['Name'] = "Square Pair",
+            ['Assigned'] = "SA-5",
+            ['Role'] = "TR",
+            ['Band'] = 'H'
+        },
+        ['SAM SA-5 S-200 ST-68U "Tin Shield" SR'] = {
+            ['Name'] = "Tin Shield",
+            ['Assigned'] = "SA-5",
+            ['Role'] = "SR",
+            ['Band'] = 'E'
+        },
+        ['RLS_19J6'] = {
+            ['Name'] = "Tin Shield",
+            ['Assigned'] = "SA-10",
+            ['Role'] = "SR",
+            ['Band'] = 'E'
+        },
         ['S-300PS 40B6MD sr'] = {
             ['Name'] = "Clam Shell",
             ['Assigned'] = "SA-10",
@@ -77,12 +95,6 @@ do
             ['Assigned'] = "SA-10",
             ['Role'] = "SR",
             ['Band'] = 'C'
-        },
-        ['RLS_19J6'] = {
-            ['Name'] = "Tin Shield",
-            ['Assigned'] = "SA-10",
-            ['Role'] = "SR",
-            ['Band'] = 'E'
         },
         ['S-300PS 40B6M tr'] = {
             ['Name'] = "Tomb Stone",
