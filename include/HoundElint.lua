@@ -66,21 +66,15 @@ do
             ['Role'] = "STR",
             ['Band'] = 'H'
         },
-        ['SAM SA-5 S-200 "Square Pair" TR'] = {
+        ['RPC_5N62V'] = {
             ['Name'] = "Square Pair",
             ['Assigned'] = "SA-5",
             ['Role'] = "TR",
             ['Band'] = 'H'
         },
-        ['SAM SA-5 S-200 ST-68U "Tin Shield" SR'] = {
-            ['Name'] = "Tin Shield",
-            ['Assigned'] = "SA-5",
-            ['Role'] = "SR",
-            ['Band'] = 'E'
-        },
         ['RLS_19J6'] = {
             ['Name'] = "Tin Shield",
-            ['Assigned'] = "SA-10",
+            ['Assigned'] = "SA-5",
             ['Role'] = "SR",
             ['Band'] = 'E'
         },
