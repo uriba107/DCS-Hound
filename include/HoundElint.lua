@@ -1,6 +1,6 @@
 env.info("Hound ELINT Loading...")
 HOUND = {
-    VERSION="0.1.2-development",
+    VERSION="0.1.2.2-development",
     PERCENTILE = 0.60,
     MARKER = {
         NONE = 0,
@@ -30,6 +30,18 @@ do
             ['Role'] = "EWR",
             ['Band'] = 'A'
         },
+        ['FuSe-65'] = {
+            ['Name'] = "EWR",
+            ['Assigned'] = "EWR",
+            ['Role'] = "EWR",
+            ['Band'] = 'A'
+        },
+        ['FuMG-401'] = {
+            ['Name'] = "EWR",
+            ['Assigned'] = "EWR",
+            ['Role'] = "EWR",
+            ['Band'] = 'A'
+        },
         ['SNR_75V'] = {
             ['Name'] = "Fan-song",
             ['Assigned'] = "SA-2",
@@ -54,6 +66,24 @@ do
             ['Role'] = "STR",
             ['Band'] = 'H'
         },
+        ['SAM SA-5 S-200 "Square Pair" TR'] = {
+            ['Name'] = "Square Pair",
+            ['Assigned'] = "SA-5",
+            ['Role'] = "TR",
+            ['Band'] = 'H'
+        },
+        ['SAM SA-5 S-200 ST-68U "Tin Shield" SR'] = {
+            ['Name'] = "Tin Shield",
+            ['Assigned'] = "SA-5",
+            ['Role'] = "SR",
+            ['Band'] = 'E'
+        },
+        ['RLS_19J6'] = {
+            ['Name'] = "Tin Shield",
+            ['Assigned'] = "SA-10",
+            ['Role'] = "SR",
+            ['Band'] = 'E'
+        },
         ['S-300PS 40B6MD sr'] = {
             ['Name'] = "Clam Shell",
             ['Assigned'] = "SA-10",
@@ -65,12 +95,6 @@ do
             ['Assigned'] = "SA-10",
             ['Role'] = "SR",
             ['Band'] = 'C'
-        },
-        ['RLS_19J6'] = {
-            ['Name'] = "Tin Shield",
-            ['Assigned'] = "SA-10",
-            ['Role'] = "SR",
-            ['Band'] = 'E'
         },
         ['S-300PS 40B6M tr'] = {
             ['Name'] = "Tomb Stone",
@@ -197,6 +221,18 @@ do
             ['Assigned'] = "AAA",
             ['Role'] = "SR",
             ['Band'] = 'G'
+        },        
+        ['Flakscheinwerfer_37'] = {
+            ['Name'] = "AAA Searchlight",
+            ['Assigned'] = "AAA",
+            ['Role'] = "GND",
+            ['Band'] = 'L'
+        },
+        ['Silkworm_SR'] = {
+            ['Name'] = "SilkWorm ASM SR",
+            ['Assigned'] = "ASM",
+            ['Role'] = "GND",
+            ['Band'] = 'K'
         },
         ['S-300PS 64H6E TRAILER sr'] = {
             ['Name'] = "Big Bird",
@@ -1539,10 +1575,10 @@ do
 
         if gSelf.settings.enableText and msgObj.txt ~= nil then
             readTime =  HoundUtils.TTS.getReadTime(msgObj.tts,gSelf.settings.speed) or HoundUtils.TTS.getReadTime(msgObj.txt,gSelf.settings.speed)
-            trigger.action.outTextForCoalition(msgObj.coalition,msgObj.txt,readTime + 2 + gSelf.settings.interval)
+            trigger.action.outTextForCoalition(msgObj.coalition,msgObj.txt,readTime + 2 )
         end
 
-        return timer.getTime() + readTime + 2
+        return timer.getTime() + readTime + 2 + gSelf.settings.interval
     end
 
     function HoundCommsManager:enable()
