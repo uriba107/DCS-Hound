@@ -278,6 +278,7 @@ possible settings are:
             gender = "male"|"female",
             culture = "en-US"|"en-UK" -- (any installed on your system)
             speed = -10 .. 10 -- default 0/1 (controller/ATIS)
+            isGoogle = false/true - default is false. use google TTS. will require additional STTS settings
         }
 ```
 you can override one or more, and you can also have mutiple frequencies.
