@@ -8,7 +8,7 @@ end
 
 do
     HOUND = {
-        VERSION = "0.2.0-feature/radio_refactor",
+        VERSION = "0.2.0-develop",
         DEBUG = false,
         ELLIPSE_PERCENTILE = 0.6,
         NUM_DATAPOINTS = 15,
@@ -309,24 +309,6 @@ do
             ['Band'] = 'H',
             ['Primary'] = true
         },
-        ['SAM SA-5 S-200 "Square Pair" TR'] = {
-            ['Name'] = "Square Pair",
-            ['Assigned'] = "SA-5",
-            ['Role'] = "TR",
-            ['Band'] = 'H'
-        },
-        ['SAM SA-5 S-200 ST-68U "Tin Shield" SR'] = {
-            ['Name'] = "Tin Shield",
-            ['Assigned'] = "SA-5",
-            ['Role'] = "SR",
-            ['Band'] = 'E'
-        },
-        ['RLS_19J6'] = {
-            ['Name'] = "Tin Shield",
-            ['Assigned'] = "SA-10",
-            ['Role'] = "SR",
-            ['Band'] = 'E'
-        },
         ['S-300PS 40B6MD sr'] = {
             ['Name'] = "Clam Shell",
             ['Assigned'] = {"SA-10"},
@@ -459,12 +441,6 @@ do
             ['Role'] = {"TR"},
             ['Band'] = 'J',
             ['Primary'] = false
-        },
-        ['NASAMS_Radar_MPQ64F1'] = {
-            ['Name'] = "Sentinel",
-            ['Assigned'] = "NASAMS",
-            ['Role'] = "SR",
-            ['Band'] = 'I'
         },
         ['HQ-7_STR_SP'] = {
             ['Name'] = "HQ-7",
@@ -4200,6 +4176,7 @@ do
                 end
             end
         end
+
     end
 
     function HoundSector:populateRadioMenu()
@@ -5227,7 +5204,6 @@ do
         for _,sector in pairs(sectors) do
             sector:populateRadioMenu()
         end
-        return nextRun
     end
 
     function HoundElint.updateSystemState(params)
@@ -5350,9 +5326,10 @@ do
     function HoundElint:removeEventHandler(handler)
         HoundEventHandler.removeEventHandler(handler)
     end
+
 end
 do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.2.0-feature/radio_refactor - Compiled on 2021-10-20 21:30
+-- Hound version 0.2.0-develop - Compiled on 2021-10-20 22:01
