@@ -7,7 +7,7 @@ end
 do
     
     env.info("configuring Hound")    
-    Elint_blue = HoundElint:create()
+    Elint_blue = HoundElint:create(coalition.side.BLUE)
     Elint_blue:addPlatform("Mt_Hermon_ELINT")
     Elint_blue:addPlatform("Mt_Meron_ELINT")
 
@@ -28,8 +28,10 @@ do
     -- Elint_blue:configureTTS(tts_args)
     -- Elint_blue:configureAtis(atis_args)
 
-    Elint_blue:enableController(true)
-    Elint_blue:enableATIS()
+    Elint_blue:enableController()
+    Elint_blue:enableText()
+
+    Elint_blue:enableAtis()
 
     Elint_blue:systemOn()
     env.info("Hound - End of config")    

@@ -1,5 +1,4 @@
 import math
-import random
 
 bands = {
     "A": {"Freq": 175000000.0},
@@ -45,6 +44,7 @@ platforms = {
             "Su-25T": {"category": 2, "antenna":{"size":1.6, "factor":1}},
             "AJS37": {"category": 2, "antenna":{"size":1.6, "factor":1}},
             "EA-6B": {"category": 2, "antenna":{"size":9, "factor":1}}
+
         }
 
 def genBandTable():
@@ -73,7 +73,6 @@ def showRes(band,antenna):
     wavelength = bands[band]["wavelength"]
     print("%.2f antenna on %s Band resolution is %f deg"%(antenna,band,calcResolution(wavelength,antenna)))
     return calcResolution(wavelength,antenna)
-
 
 print("=== Band wavelength data ===")
 genBandTable()

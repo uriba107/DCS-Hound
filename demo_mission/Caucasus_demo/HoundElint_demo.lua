@@ -6,6 +6,7 @@ end
 
 do
     Elint_blue = HoundElint:create(coalition.side.BLUE)
+    
     Elint_blue:systemOn()
 
     Elint_blue:addPlatform("ELINT_C17")
@@ -13,10 +14,6 @@ do
     -- Elint_blue:addPlatform("Kokotse_Elint")
     -- Elint_blue:addPlatform("Khvamli_Elint")
     -- Elint_blue:addPlatform("Migariya_Elint")
-
-
-    Elint_blue:addAdminRadioMenu()
-
 
     tts_args = {
         freq = "251.000,35.000",
@@ -31,9 +28,11 @@ do
     Elint_blue:configureController(tts_args)
     Elint_blue:configureAtis(atis_args)
 
-    Elint_blue:enableController(true)
-    Elint_blue:enableATIS()
-    -- Elint_blue:enableMarkers(HOUND.MARKER.DIAMOND)
+    Elint_blue:enableController()
+    Elint_blue:enableText()
+    Elint_blue:enableAtis()
+
+
 end
 
 do
@@ -55,12 +54,12 @@ do
     end
 
     function testing.spawnPlatform(hound)
-        env.info("No. platforms before: " .. length(hound.platform))
+        env.info("No. platforms before: " .. Length(hound.platform))
         local newGrp = mist.cloneGroup("ELINT_C17_SPAWN",true)
         local newUnit = newGrp.units[1].name
         env.info("MIST Spawn - Grp:" .. newGrp.name .. " Unit: " .. newUnit)
         hound:addPlatform(newUnit)
-        env.info("No. platforms after: " .. length(hound.platform))
+        env.info("No. platforms after: " .. Length(hound.platform))
     end
 
     testing.Menu = missionCommands.addSubMenu("Hound Testing")
@@ -72,5 +71,4 @@ do
     missionCommands.addCommand("Destroy transmitter",testing.Menu,Unit.destroy,	Unit.getByName("Migariya_Elint"))
     missionCommands.addCommand("Remove transmitter",testing.Menu,testing.removeTransmitter,Elint_blue.controller)
     missionCommands.addCommand("Get Contacts",testing.Menu,testing.getContacts,Elint_blue)
-
 end

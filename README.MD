@@ -10,7 +10,7 @@ Hound presents data in sevral methods.
 
 System can gather information about Enemy radar deployments and help understand the tactical situation or penetrate enemy defences. Because the System is asset based, you also need to be protecting these assets, as if they are destroyed, you loose your tactical data.
 
-Hound is compatible with MIST, MOOSE, Skynet IADS and High-Digit SAMs
+Hound requires MIST and is compatible with MOOSE, Skynet IADS and High-Digit SAMs and more.
 
 ## Video Intro (YouTube)
 [![Hound Cinematic Intro video](https://i.ytimg.com/vi/S4xxtKOqGqU/hq720.jpg?sqp=-oaymwEcCNAFEJQDSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLAAa-SdnDgNiWTKc0YNSvm5RRMa7g)](https://www.youtube.com/watch?v=S4xxtKOqGqU)
@@ -89,9 +89,10 @@ Resolution of platforms are derrived from antenna size and emitter frequency. sh
 
 ## Can I haz syntax pls?
 Yes you can.
-### Adding Hound scripts
+if upgrading from Hound 0.1 please see [Breaking changes](#breaking-changes)
 
-#### Required external scripts
+# Adding Hound to a Mission
+### Required external scripts
 [MIST (by mrSkortch)](https://github.com/mrSkortch/MissionScriptingTools/releases/latest)  
 [DCS-SimpleTextToSpeech (by ciribob)](https://github.com/ciribob/DCS-SimpleTextToSpeech) - Optional (required for TTS)
 
@@ -99,8 +100,7 @@ Yes you can.
 for TTS you'll need to set up STTS properly. consult Ciribob's repo for that. You will require you to comment out the sanitation in "DCS World/Scripts/MissionScripting.lua"
 `
 
-#### adding to the mission
----
+### adding scripts in mission editor
 ``` NOTE the order of scripts - it's important ```  
 on a "ONCE" type action with "time more 1" condition, add the scripts in the following order
 1. `MIST`
@@ -116,28 +116,77 @@ on a "ONCE" type action with "time more 1" condition, add the scripts in the fol
 The bare minumum, more customization optionas are available.
 ```lua
 do
-  Elint_blue = HoundElint:create()
+  Elint_blue = HoundElint:create(coalition.side.blue)
   Elint_blue:addPlatform("NAME_OF_UNIT_1")
   -- it's recommended to have at least two active platform to make system faster and more accurate
   Elint_blue:addPlatform("NAME_OF_UNIT_2")
   Elint_blue:systemOn()
   -- This is a basic setup with map markers only
   -- additional stuff (uncomment if desired)
-  -- Elint_blue:enableATIS() -- ATIS requires STTS, as it is voice only
-  -- Elint_blue:enableController(true) -- This will enable Voice+text controller messages
+  -- Elint_blue:enableAtis() -- ATIS requires STTS, as it is voice only
+  -- Elint_blue:enableController() -- This will enable Voice+text controller messages
 end
 ```
 
-### Adding Hound system to your mission scripts
+### Basic Hound setup (YouTube)
+[![Hound mission editor video](https://i.ytimg.com/vi/gmJmFR7UCfo/hqdefault.jpg)](https://www.youtube.com/watch?v=gmJmFR7UCfo)
+
+### Advanced config
+It doesn't need to make sense to you, there is actually more explenations ahead.
+But this is an example of a more compex configuration.
+```lua
+    HoundBlue = HoundElint:create(coalition.side.BLUE)
+    HoundBlue:addPlatform("ELINT North") -- C-130
+    HoundBlue:addPlatform("ELINT South") -- C-130
+    HoundBlue:addPlatform("ELINT Galil") -- C-130
+    HoundBlue:addPlatform("ELINT HERMON") -- Ground Station
+    HoundBlue:addPlatform("ELINT MERON") -- Ground Station
+
+    HoundBlue:addSector("Lebanon")
+    -- HoundBlue:addSector("North Syria")
+    -- HoundBlue:addSector("South Syria")
+
+    local controller_args = {
+        freq = "251.000,122.000,35.000",
+        modulation = "AM,AM,FM",
+        gender = "male"
+    }
+    local atis_args = {
+        freq = "253.000,124.000",
+        modulation = "AM,AM"
+    }
+    HoundBlue:enableController("Lebanon",controller_args)
+    HoundBlue:enableAtis("Lebanon",atis_args)
+    HoundBlue:enableNotifier("default")
+
+    HoundBlue:setTransmitter("all","ELINT MERON")
+    HoundBlue:enableText("all")
+
+    HoundBlue:setZone("Lebanon","Sector_Lebanon")
+
+    HoundBlue:setMarkerType(HOUND.MARKER.POLYGON)
+    HoundBlue:enableMarkers()
+    HoundBlue:enableBDA()
+    HoundBlue:systemOn()
+```
+# Deep Dive
 ---
+## Initialization
+First we create hound instance. on creation Hound must have a coalition assigned. this can be done in several ways.
 ```lua
-    Elint_blue = HoundElint:create()
+    -- direct coalition assignment
+    HoundInstance = HoundElint:create(coalition.side.BLUE)
 ```
-will crate the system instance. Alternatively, you can crate the system with a platform.
+An instance without any platforms would be created.
+
+you can also create Hound with an initial platform. coalition will be taken from the Unit assigned.
+Hound adds units by using their names (or pilot name) not by a group name.
+
 ```lua
-    Elint_blue = HoundElint:create("Migariya_Elint")
+    -- create with platform (static object in this case)
+    HoundInstance = HoundElint:create("Migariya_Elint")
 ```
-You will add units by using their names (or pilot name) not by a group name.
+## Platforms
 
 you can also pass a coalition to create the Hound instance with
 ```lua
@@ -148,15 +197,18 @@ this will allow you to create and start Hound instance without any active platfo
 
 Platforms can be added at any time (before or after system activation)
 ```lua
-    Elint_blue:addPlatform("ELINT_C17")
+    HoundInstance:addPlatform("ELINT_C17")
 ```
 and if need be the oposite is also available
 ```lua
-    Elint_blue:removePlatform("ELINT_C17")
+    HoundInstance:removePlatform("ELINT_C17")
 ```
+
+## Enrgize
+
 Thats it, all you need to do now is to activate the system
 ```lua
-    Elint_blue:systemOn()
+    HoundInstance:systemOn()
 ```
 Once activated the system will use all avaliable platforms to locate transmitting radars. 
 Information about these radars is updated periodicly onto the F10 map.
@@ -165,105 +217,332 @@ Information about these radars is updated periodicly onto the F10 map.
 
 You can of course turn it off for any reason with:
 ```lua
-    Elint_blue:systemOff()
+    HoundInstance:systemOff()
 ```
+## Global settings
+Global settings are bet set early, which is why I'm listing them here. However they might effect resources that will only be explained later in this document. So if something looks out of place, don't worry about it.
 
-### Adding Hound system to your mission scripts (YouTube Video)
 ---
-[![Hound Mission Editor Tutorial](https://i.ytimg.com/vi/gmJmFR7UCfo/hq720.jpg?sqp=-oaymwEcCNAFEJQDSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLDiBxShzrFNarEs9uIUWvrDRLkwTQ)](https://www.youtube.com/watch?v=gmJmFR7UCfo)
-
-
-## Map markers
----
+### Map markers
 Hound uses Map markers to indicate the estimated position of the radar tracket. It's a product of the system, and only contains data user can get from the system in other ways. (equvilant to making marks on a paper map)
 Map markers are enabled by default
 
 However, some mission designers may want to disable the markers. 
 ```lua
-HoundElint:disableMarkers()
+    HoundInstance:disableMarkers()
 ```
 they can be turned back on with
 ```lua
-HoundElint:enableMarkers()
+    HoundInstance:enableMarkers()
 ```
+Hound Supports a few different marker types for the uncertenty ellipse that can be selected. 
+The type of marker is set per Hound instance.
+the available marker types are:
+|  HOUND.MARKER | Description |
+| ---- | ------------|
+| NONE | no ellipse is drawn (only position marker)|
+| CIRCLE | a circle of uncertenty will be drawn |
+| DIAMOND | a diamond will be drawn with 4 points representing uncertenty ellipse |
+| OCTAGON | ellipse will be drawn with 8 points (diamon with midpoints) |
+| POLYGON | ellipse will be drawn as a 16 sides polygon |
 
-`enableMarkers` recives and optional MarkerType argument from a set of ENUMs. for drawing the uncertanty area.
-
-```
-HOUND.MARKER.NONE 
-HOUND.MARKER.CIRCLE  
-HOUND.MARKER.DIAMOND <= default
-HOUND.MARKER.POLYGON <= same as DIAMOND 
-```
-
-Usage is
 ```lua
-HoundElint:enableMarkers(HOUND.MARKER.DIAMOND)
+    HoundInstance:setMarkerType(HOUND.MARKER.POLYGON)
 ```
-Diamonds were suggested by `[VEAF]Zip` possible bug (in DCS?) that may lead to client crash when circles are enabled.
-Default was changed to Diamonds for that reason.
+---
+### DBA reports
+By default the [Controller](#sam-controller) and [Notifier](#notifier) will push alerts when a radar is destroyed when track is dropped.
+you may choose to disable this behaviour
+```lua
+    HoundInstance:disableBDA()
 
+-- enable (default)
+    HoundInstance:enableBDA()
+
+-- get current value
+local bool = HoundInstance:getBDA()
+```
+---
+### Reposition Controller radio menu
+By default the [Controller](#sam-controller) will generate the "ELINT" root menu in the base F10 menu.
+You may choose to change this to a different base location in some cases.  
+`NOTE: there a needs to be a very clear order of events for this to funtion properly` 
+```lua
+-- target menu MUST be created BEFORE it's assigned to Radio menu
+SuperDuperMenu = missionCommands.addSubMenuForCoalition(coalition.side.BLUE,"Fantastic functionality")
+
+-- new parent menu must be called BEFORE calling enableController (but can be after configureController if called speratly)
+    HoundInstance:setRadioMenuParent(SuperDuperMenu)
+
+-- after parent has been assinged you can enable controller
+    HoundInstance:enableController()
+```
+---
+### NATO callsigns
+[Sectors](#sectors) get automaticlly assigned [callsigns](#callsigns). The callsignes are picked from a pool of names. Howwever there is an alternate list, taken from callsignes used by RC-135 squadrons. to use this alternate callsign list by default, you'll need to set the following.
+```lua
+-- enable use of alternate pool
+    HoundInstance:useNATOCallsignes(true)
+-- disable this setting (return to use default pool)
+    HoundInstance:useNATOCallsignes(false)
+```
+---
+### NATO Lowdown
+The [ATIS system](#atis-system) has two modes, Normal and NATO lowdown.
+same report in both will look slightly different.
+in the Normal default format, ATIS will also call out radar names and Grid position.  
+`Straight Flush 17, grid GG20, accuracy very high`
+
+it is possible to switch it to NATO LOWDOWN format.  
+`6, ACTIVE, BULLSEYE 012 of 13, accuracy very high`
+
+This change is global and preformed via the use of the following:
+```lua
+-- enable Lowdown
+    HoundInstance:enableNATO()
+-- disable lowdown (revert to default)
+    HoundInstance:disableNATO()
+
+-- get current setting
+local bool = HoundInstance:getNATO()
+```
+---
+### ATIS update interval
+The [ATIS system](#atis-system) by default will generate a new message every 5 minutes. you can change the update rate if desired.
+```lua
+-- pass desired update interval in seconds
+    HoundInstance:setAtisUpdateInterval(120)
+
+-- Default setting is
+    HoundInstance:setAtisUpdateInterval(5*60)
+```
+---
+## Sectors
+The next big building block of Hound are the sectors. 
+Introduced in 0.2 this aims to solve a problem in large servers. in the past there was only one "default" sector that everyone contacted for information. In practice in large missions it was just un-manageable. 
+
+A "Sector" is a internal named object that manages communication with players. each sector is assigned a name and a callsing.
+when initilizing Hound a "default" sector is created with the callsign "HOUND". when not passing any sector name argument, "default" sector is the sector that would be affected.
+
+A Sector can be geofenced, if such geofencing is is set (more on this later) only radars in and around the sector will be reported. see more under [Zone managment](#zones)
+
+There are two reserved sector names:
+  * `default` - default sector name created with hound instance. it cannot be removed and some features such as geofencing is not available on it
+  * `all` - all sectors. some settings can be changes accross all sectors using the "all" keyword. this is available on generic config functions not on 
+
+### Managing sectors
+The most basic command is to add a sector. you will need to provide a name for the sector (not a callsign), this name will be used in the comms menu for example. so you can make it human descriptive or match your SOP .
+
+```lua 
+-- Sector name must be provided
+-- here are a few random examples
+    HoundInstance:addSector("Sukhumi")
+    HoundInstance:addSector("Abkazia")
+    HoundInstance:addSector("North Syria")
+    HoundInstance:addSector("RANGE 13")
+```
+You can request a list of all sector names
+```lua
+    HoundInstance:listSectors()
+```
+
+or if from some bizzare reason you would like to remove a sector
+```lua
+    HoundInstance:removeSector("sectorName")
+``` 
+
+### Sector configuration
+Sectors have a few options worth knowing.
+#### ***Text messages***
+By default Hound will only broadcast using SRS. You can optionally enable Text messages of all controller messages (ATIS and notifier will remain Voice only). Text notification will only show up for groups that are currently checked in with a controller. enable and disable is per-sector
+```lua
+    HoundInstance:enableText("sectorName")
+    HoundInstance:disableText("anotherSector")
+```
+or to all of them using the "all" keyword
+```lua
+    HoundInstance:enableText("all")
+```
+#### ***TTS transmissions***
+Hound is primary built to use Text-To-Speach messages to communicate. However if from any reason you wish to disable this feature. (which is strictly enabled by default)
+you can use the following
+```lua
+    HoundInstance:disableTTS("sectorName")
+-- to re-enable
+    HoundInstance:enableTTS("sectorName")
+```
+or to all of them using the "all" keyword
+```lua
+    HoundInstance:disableTTS("all")
+```
+#### ***Zones***
+Geofencing a sector will be achived by assigning a "Zone".
+It's following the standard DCS method of using a group waypoints. it's recommended to add a helicopter group set for late activation.
+it is then added to the sector using the following:
+```lua
+    HoundInstance:setZone("sectorName","GroupName")
+```
+
+You can also get the currently set zone on the sector (nil means not zone is set)
+```lua
+    HoundInstance:getZone("sectorName")
+```
+
+To remove a zone from sector use:
+```lua
+    HoundInstance:removeZone("sectorName")
+```
+
+#### ***Transmitter***
+A sector can have a transmitter which will broadcast all the TTS messages for the sector.
+when no transmitter is assigned, everyone on the frequency will be able to hear then transmissions.
+
+Once transmitter is set, SRS will use transmitter's current position for the transmition forcing line-of-sight, maximum radio range and any other SRS limitation that comes with it. If transmitter unit is destroyed, no TTS transmissions will occure until the transmitter is removed or re-assigned.
+
+Transmitter can be a Unit or a static object, and it's called by Unit/Pilot name
+```lua
+    HoundInstance:setTransmitter("sectorName","AWACS_Unit")
+```
+
+Remove transmitter using
+```lua
+    HoundInstance:removeTransmitter("sectorName")
+```
+
+you can also use the "all" keyword for apply the transmitter to all sectors
+```lua
+    HoundInstance:setTransmitter("all","GCI_bunker")
+```
+#### ***Callsigns***
+each sector has a randomly assigned callsign. these callsignes are selected from a pool of callsignes.
+you can get currenly assigned callsign using 
+```lua
+local assignedCallsign = HoundInstance:getCallsign("sectorName")
+```
+
+If you wish you can also assign a new callsign
+```lua
+-- choose random callsign from the "generic" pool (default behaviour, not need to use this)
+    HoundInstance:setCallsign("sectorName")
+
+-- assign the callsign "CALLSIGN" to the sector "sectorName"
+    HoundInstance:setCallsign("sectorName","CALLSIGN")
+```
+there are two callsign pools, one is generic the other is a list of callsignes for RC-135s in the USAF. 
+if you with for a specific sector to use a callsign from the NATO list you can call
+```lua
+    HoundInstance:setCallsign("sectorName",true)
+-- or
+    HoundInstance:setCallsign("sectorName","NATO")
+```
+if you want ALL sectors to use callsignes from this pool there is a global setting for this. See [Global settings -> NATO callsigns](#nato-callsigns)
 ## Text-To-Speech
-Hound allows user to recive information via two radio channles (using SRS).
-The are the [ATIS system](#atis-system) and the [SAM controller](#sam-controller)
+In addition to the map markers described above. Hound is utilizing Text-To-Speech to provide the player with information via SRS.
+The three communication types are:
+  * Automated Information System [ATIS system](#atis-system)
+  * User interactable [SAM controller](#sam-controller)
+  * Alert Agency dubbed [Notifier](#notifier)
 
-both can be extensivly configured in the [Fine tuning TTS channels](#fine-tuning-tts-channels) segment below
+they are all configureable as will be described the [Text-To-Speach configuration](#text-to-speach-configuration) segment below.
+
 #### ATIS system
 ---
-As mentioned Hound includes Text-To-Speech using SRS. You players can recive updates via their radio.
+The Automated Tactical Information System (ATIS). Will provide an automated information message loop on a set frequency.
 Default frequency for ATIS is 250.500 AM.
-This feature can be activated using:
+This feature can be activated in the default sector with default config using:
 ```lua
-    Elint_blue:enableATIS()
+    HoundInstance:enableAtis()
 ```
 and turned off with
 ```lua
-    Elint_blue:disableATIS()
+    HoundInstance:disableAtis()
+```
+this however is just the very very basic way to configure it and will only affect the "default" sector.
+The better way to use it would be to enable it on a non-default [sector](#sectors)
+```lua
+    HoundInstance:enableAtis("Lebanon")
+    HoundInstance:disableAtis("Lebanon")
+```
+However, having all the ATIS in all the sectors broadcast on the same frequency isn't really useful. so you can pass [configuration](#text-to-speach-configuration) table then enable
+```lua
+    HoundInstance:configureAtis("Sukhumi",atis_conf)
+    HoundInstance:enableAtis("Sukhumi")
+```
+or you can pass the configuration on enable
+```lua
+    HoundInstance:enableAtis("Sukhumi",atis_conf)
 ```
 
+##### **additional settings**
+  * ATIS by default will not report EWR radars as threat, but will only notify you on their presence (and how many of them are tracket in the sector). If from some reason you prefer to get a normal brief on them as well you can enable it using the following:
+```lua
+    HoundInstance:reportEWR("Sukhumi",true)
+-- disable again with
+    HoundInstance:reportEWR("Sukhumi",false)
+
+-- and set for all of them with
+    HoundInstance:reportEWR("all",true)
+```
+  * NATO Lowdown format is available as global setting. see [Global Settings -> NATO Lowdown](#nato-lowdown)
+  * Changing the ATIS update interval is avilable via global settings. see [Global Settings -> ATIS update interval](#atis-update-interval)
 #### SAM controller
 ---
-Like the ATIS this is also an TTS system using SRS (defaults to 250.00 AM). This functinality allows users to recive a detailed description of a specific radar (with extended information) by selecting that radar from the F10 menu.
-This functinality is available also via the standard DCS text notification interface.
+The SAM controller is the main user interface with the system. Via the F10 menu, you can request detailed information about specific tracked radars. the controller defaults to 250.00 AM
 
+basic enable is done via 
 ```lua
-    -- Elint_blue:enableController([showText|bool])
-    -- default is "false" - no text notification
-        Elint_blue:enableController()
+    HoundInstance:enableController()
 ```
-to explicitly control text use:
+
+as with the ATIS, it's recommended to activate on a non-default sector and pass [configuration](#text-to-speach-configuration)
+```lua
+    HoundInstance:configureController("Saipan",controller_config)
+    HoundInstance:enableController("Saipan")
+```
+or the one liner
 ```lua 
-    -- verbouse equivilant
-        Elint_blue:enableController(false)
-    -- so with text:
-        Elint_blue:enableController(true)
+    HoundInstance:enableController("Saipan",controller_config)
 ```
+disable is done via 
 
-and of course
 ```lua
-    Elint_blue:disableController()
+    HoundInstance:disableController()
+    --- or the named sector
+    HoundInstance:disableController("Saipan")
 ```
+ ##### ***Additional settings***
+ By default a controller will alert you on new radars detected and on dead emitters.
+ you can disable all controller alerts (does not affect the [Notifier](#notifier)).
+ ```lua
+    HoundInstance:disableAlerts("Sukhumi")
+-- enable again (default behaviour)
+    HoundInstance:enableAlerts("Sukhumi")
 
-` Note: during this first implementation, menus are updated every 1 minute`
-
-#### Transmitter Unit (or static Object)
-Both ATIS system and SAM controller both support a transmitter unit. This assigned unit will broadcast over SRS which respects unit's LOS and transmitter range. so ground unit will have terrain masking and add some intrest. 
-if Transmitter unit is destroyed no Transmissions will be made until a new transmitter Unit is assinged.
-
-You can assign (and Update) a transmitting unit to either by calling an internal function in the Comm device
-```lua
-Elint_blue.atis:setTransmitter("Migariya_Elint")
-Elint_blue.controller:setTransmitter("Migariya_Elint")
+-- and set for all of them with
+    HoundInstance:disableAlerts("all")
 ```
+ #### Notifier
+ ---
+ This, as the name suggests is notification only agent. it functions independently of controller or ATIS and will only report pop-up and if enable radar destruction alerts. this is intended to be operated on a different freqency then the controller (which has the same alerting capacity). This may be used for improving SA on Air-To-Air frequency or on general strike channels.
+ 
+ Notifier has a special case when used under "default" sector when radar is inside a geofenced sector. In this scenario it will report using sector name rather then with location. for example:
+  * Normal: `Attention All Aircraft! This is HOUND. New threat detected! Straight flush 11 is now Alive, bullseye XXX for YY, Grid ZZ 1 4.`<br>
+  * Special case: `Attention All Aircraft! this is HOUND. New thread detected! Straigh flush 11 is now Alive in Bander Abbas.`
 
-if you want to remove the unit (which will broadcast without any limitations)
-```lua
-Elint_blue.atis:removeTransmitter()
-Elint_blue.controller:removeTransmitter()
-```
+  by default it will broadcast on 243.000AM and 121.500AM, i.e Guard frequency. but will accept [TTS configuration](#text-to-speach-configuration).
 
+  Example snippets:
+  ```lua
+    -- enable on default sector with default settings
+    HoundInstance:enableNotifier()
+    -- enable with custom config on seperate sector
+    HoundInstace:enableNotifier("Bander Abbas",notifier_config)
 
-#### Fine tuning TTS channels
+    -- configure and set frequency inline without enabling
+    HoundInstace:enableNotifier("Qeshem",{freq=254,modulation="AM",gender="male"})
+  ```
+
+#### Text-To-Speach configuration
 ---
 Oviously, you may want to tweak the radio to better work with you mission.
 this can be done using an arguments table and passing it to the configuration funtion.
@@ -274,17 +553,17 @@ possible settings are:
             freq = 250.000,
             modulation = "AM",
             volume = "1.0",
-            name = "Hound", -- For ATIS this will be used in the opening line
+            speed = <speed> -- number default is 0/1 for controller/atis. range is -10 to +10 on windows TTS. for google it's 0.25 to 4.0
             gender = "male"|"female",
             culture = "en-US"|"en-UK" -- (any installed on your system)
-            speed = -10 .. 10 -- default 0/1 (controller/ATIS)
+            isGoogle = true/false -- use google TTS (requires additional STTS config)
         }
 ```
 you can override one or more, and you can also have mutiple frequencies.
 you then pass the table into the appropriet functions
 ```lua
-    Elint_blue:configureController(args)
-    Elint_blue:configureAtis(args)
+    HoundInstance:configureController(args)
+    HoundInstance:configureAtis(args)
 ```
 for example:
 ```lua
@@ -295,60 +574,86 @@ for example:
     atis_args = {
         freq = 251.500,
     }
-    Elint_blue:configureController(controller_args)
-    Elint_blue:configureAtis(atis_args)
+    HoundInstance:configureController(controller_args)
+    HoundInstance:configureAtis(atis_args)
 
-    Elint_blue:enableController(true)
-    Elint_blue:enableATIS()
+    HoundInstance:enableController()
+    HoundInstance:enableAtis()
 ```
 This will change ATIS freqency to 251.5 and enable ATIS
 and will enable Controller both in Text and in Voice, while transmitting on two frequencies 251.0 AM and 35 FM
 
-**More ATIS settings**  
----
-ATIS has a few more settings available in the args 
+## Event handlers
+Introduced with Hound 0.2 you now have Hound event handling. This for example allows you to preform scripted actions on specific events.
+available events are:
+| name | id |
+| ---|-----|
+| HOUND_ENABLED |  1 |
+| HOUND_DISABLED |  2 |
+| PLATFORM_ADDED |  3 |
+| PLATFORM_REMOVED |  4 |
+| PLATFORM_DESTROYED |  5 |
+| TRANSMITTER_ADDED |  6 |
+| TRANSMITTER_REMOVED |  7 |
+| TRANSMITTER_DESTROYED |  8 |
+| RADAR_NEW |  9 |
+| RADAR_DETECTED  | 10 |
+| RADAR_UPDATED  | 11 |
+| RADAR_DESTROYED  | 12 |
+| RADAR_ALIVE  | 13 |
+| RADAR_ASLEEP  | 14 |
+| SITE_NEW  | 15 |
+| SITE_CREATED  | 16 |
+| SITE_UPDATED  | 17 |
+| SITE_REMOVED  | 18 |
+| SITE_ALIVE  | 19 |
+| SITE_ASLEEP |  20 |
+
+Event structure is as follows
 ```lua
-    args = {
-        reportEWR = false -- [false]/true/nil
-        NATO = false -- [false]/true
-    }
+houndEvent = {
+    id = <HOUND.EVENT> enum,
+    coalition = <coalition.side> enum of coalition emitting the event,
+    houndId = Hound Instance ID that emitted the event,
+    initiator = DCS unit or HoundContact
+    time = time of the event (timer.getTimer())
+}
 ```
-they control additional settings.
-**EWR reporting**  
-By default system will only report number of EWR radars tracked. you can activate EWR detailed report by setting the ATIS argument `reportEWR` to `true`.
-if set to `nil` it will not count nor report EWRs.
+to use them you need to create a table with the function `onHoundEvent(event)` and register it.
+```lua
+CustomHoundScript = {}
+function CustomHoundScript:onHoundEvent(houndEvent)
+    if houndEvent.id == HOUND.EVENTS.PLATFROM_DESTROYED and houndEvent.coalition == coalition.side.BLUE then
+       trigger.action.outTextForCoalition(houndEvent.coalition,initiator:getName() .. "has been destroyed")
+    end
+end
 
-`false` (default) - ATIS will inform you on how many EWR radars are tracked.  
-`true` - ATIS will treat EWRs are threats and report them in full.  
-`nil` - ATIS will ignore EWRs completly in the report. 
-
-**NATO LOWDOWN**  
-by ATIS will also call out radar names and Grid position.  
+HoundInstace:addEventHandler(CustomHoundScript)
 ```
-Straight Flush 17, grid GG20, accuracy very high
+to remove use
+```lua
+HoundInstace:removeEventHandler(CustomHoundScript)
 ```
-it is possible to switch it to NATO LOWDOWN format
-```
-6, ACTIVE, BULLSEYE 012 of 13, accuracy very high
-```
-
-this is configured by the `NATO` argument.  
-`false` (default) - report using radar name and grid.  
-`true` - report using SAM type number and Bullseye
-
-
-## That's all folks!
+`NOTE: Event handlers are global so make sure you validate coalition or houndId as the event might be from a different Instance from a different coalition`
 
 ---
 ## Known Issues
   * On initial detection accuracy will usually be very high with solution nowhere near the radar actual position. This is sorted by the system as more datapoints are gathered. allow at least 2 minutes for contact to stablize.
-  * In some cases, when all markers are removed, they might not appear again until a manual marker is added. 
-  * not a bug but a feature. system only provides LL in DMS format. if your aircraft only accepts DMM.MMM (Viper and Hawg, looking at you).. Pilot will neet to know to to convert seconds to decimal minutes. (i.e 6 seconds = 0.1 minute)
-  * Text alerts will appear for all coalition memebers regarless of tuned radio channles and such. so consider turning them off. This will be addressed in an undetermind date in the future :)
+  * Adding low resolution platforms will degrade the solution as Hound currently does not reject "bad data".
+  * Demo missions have not been updated (except for `Syria_HARM`)
+
+## Breaking changes
+If you are upgrading from 0.1 please note that some changes will be required.
+  * `enableController()` no longer accepts boolean to enable or disable text. please use [`enableText()`](#text-messages) call.
+  * every function that has `ATIS` in it needs to be changesd to have `Atis` - note the capitalization.
+
+## More Docs
+  * [Main script Documentation](https://uriba107.github.io/DCS-Hound/) - all the options available, even those I didn't write here
+  * [Developers Documentation](https://uriba107.github.io/DCS-Hound/dev_docs/) - this is actually everything. You don't need this unless you intend to hack your way to glory.
 
 ## Special thanks
   * __[Ciribob](https://github.com/ciribob)__ - without his help, support and acceptence of wierd merge requests. none of this would have been possible.
-  * __flywaldair__ - Hound was initially inspired by [Skynet IADS](https://github.com/walder/Skynet-IADS).
-  * __Nikos__ - That had to endure 2 am texts with screenshots.
   * __Grimes__ - For [MIST](https://github.com/mrSkortch/MissionScriptingTools) and because Without the [Hoggit Wiki](https://wiki.hoggitworld.com/) we would all be fumbling in the dark.
-  * __[davidp57](https://github.com/davidp57)__ - For all the bugs found and all the fixes suggested.
+  * __flywaldair__ - Hound was initially inspired by [Skynet IADS](https://github.com/walder/Skynet-IADS).
+  * __Nikos__, __[Jester](https://github.com/hbjonsson)__,__[davidp57](https://github.com/davidp57)__ and all the rest - For the feeback and suggestions pushing Hound even further
+

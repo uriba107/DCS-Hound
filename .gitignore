@@ -1,3 +1,7 @@
+.ignore
+._.DS_Store
+.DS_Store
+.vscode
 logo
 not_working
 test

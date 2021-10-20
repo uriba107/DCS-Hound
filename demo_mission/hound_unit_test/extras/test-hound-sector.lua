@@ -1,0 +1,3 @@
+do
+    TestHoundSector = {}
+end

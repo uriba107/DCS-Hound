@@ -1,0 +1,2066 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Reference</title>
+    <link rel="stylesheet" href="../ldoc_fixed.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Hound<br> ELINT for DCS</h1>
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Tables">Tables</a></li>
+<li><a href="#General_functions">General functions </a></li>
+<li><a href="#TTS_Functions">TTS Functions </a></li>
+<li><a href="#Text_Functions">Text Functions </a></li>
+<li><a href="#Elint_functions">Elint functions </a></li>
+<li><a href="#Vector_functions">Vector functions </a></li>
+<li><a href="#Polygon_functions">Polygon functions </a></li>
+<li><a href="#Clustering_algorithems__for_future_use_">Clustering algorithems (for future use) </a></li>
+<li><a href="#Sort_Functions">Sort Functions </a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><a href="../modules/HOUND.html">HOUND</a></li>
+  <li><a href="../modules/HoundLogger.html">HoundLogger</a></li>
+  <li><a href="../modules/HoundDB.html">HoundDB</a></li>
+  <li><a href="../modules/HoundConfig.html">HoundConfig</a></li>
+  <li><strong>HoundUtils</strong></li>
+  <li><a href="../modules/HoundEventHandler.html">HoundEventHandler</a></li>
+  <li><a href="../modules/HoundDatapoint.html">HoundDatapoint</a></li>
+  <li><a href="../modules/HoundContact.html">HoundContact</a></li>
+  <li><a href="../modules/HoundCommsManager.html">HoundCommsManager</a></li>
+  <li><a href="../modules/HoundInformationSystem.html">HoundInformationSystem</a></li>
+  <li><a href="../modules/HoundController.html">HoundController</a></li>
+  <li><a href="../modules/HoundElintWorker.html">HoundElintWorker</a></li>
+  <li><a href="../modules/HoundContactManager.html">HoundContactManager</a></li>
+  <li><a href="../modules/HoundSector.html">HoundSector</a></li>
+</ul>
+<h2>Scripts</h2>
+<ul class="nowrap">
+  <li><a href="../scripts/HoundElint.html">HoundElint</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>HoundUtils</code></h1>
+<p>HoundUtils
+
+ This class holds generic function used by all of Hound Components</p>
+<p></p>
+
+
+<h2><a href="#Tables">Tables</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils">HoundUtils</a></td>
+	<td class="summary">HoundUtils decleration</td>
+	</tr>
+</table>
+<h2><a href="#General_functions">General functions </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#getHoundId">getHoundId ()</a></td>
+	<td class="summary">get next Hound Instance Id</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#getMarkId">getMarkId ()</a></td>
+	<td class="summary">Get next Markpoint Id</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#absTimeDelta">absTimeDelta (t0[, t1])</a></td>
+	<td class="summary">Get time delta between two timestemps</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#angleDeltaRad">angleDeltaRad (rad1, rad2)</a></td>
+	<td class="summary">return difference in radias between two angles (bearings)</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#AzimuthAverage">AzimuthAverage (azimuths)</a></td>
+	<td class="summary">return avarage azimuth</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#PointClusterTilt">PointClusterTilt (points[, refPos])</a></td>
+	<td class="summary">return the tilt of a point cluster</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#RandomAngle">RandomAngle ()</a></td>
+	<td class="summary">returns a random angle</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#getSamMaxRange">getSamMaxRange (DCS_Unit)</a></td>
+	<td class="summary">return maximum weapon range in the group of DCS Unit</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#getRadarDetectionRange">getRadarDetectionRange (DCS_Unit)</a></td>
+	<td class="summary">return Radar detection Range for provided unit</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#getRoundedElevationFt">getRoundedElevationFt (elev)</a></td>
+	<td class="summary">return ground elevation rouded to 50 feet</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#roundToNearest">roundToNearest (input, nearest)</a></td>
+	<td class="summary">return rounted number nearest a set interval</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#getNormalAngularError">getNormalAngularError (variance)</a></td>
+	<td class="summary">get normal distribution angular error.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#getControllerResponse">getControllerResponse ()</a></td>
+	<td class="summary">get random controller snarky remark</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#getCoalitionString">getCoalitionString (coalitionID)</a></td>
+	<td class="summary">get coalition string</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#getHemispheres">getHemispheres (lat, lon, fullText)</a></td>
+	<td class="summary">returns hemisphere information for LatLon</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#getReportId">getReportId ([ReportId])</a></td>
+	<td class="summary">get "ATIS" report ID
+
+ returns next Phonetic report ID.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#DecToDMS">DecToDMS (cood)</a></td>
+	<td class="summary">Convert Decimal Degrees to DMS (D.DD to DMS)</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#getBR">getBR (src, dst)</a></td>
+	<td class="summary">retrun Bearing (magnetic) and range between two points</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#checkLOS">checkLOS (pos0, pos1)</a></td>
+	<td class="summary">Return if the is LOS between two DCS points
+
+ checks both radar horizon (round earth) and DCS terrain LOS</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#EarthLOS">EarthLOS (h0[, h1])</a></td>
+	<td class="summary">Returns maximum horizon distance given heigh above the earth of two points
+
+ assumes earth radius of 6371 Km
+
+ if only one observer hight is provided, result would be maximum view distance to Sea Level</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#getFormationCallsign">getFormationCallsign (player[, flightMember])</a></td>
+	<td class="summary">Get group callsign from unit</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#getHoundCallsign">getHoundCallsign ([namePool])</a></td>
+	<td class="summary">get Callsign</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#isDMM">isDMM (DCS_Unit)</a></td>
+	<td class="summary">Unit use DMM</td>
+	</tr>
+</table>
+<h2><a href="#TTS_Functions">TTS Functions </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.TTS.Transmit">HoundUtils.TTS.Transmit (msg, coalitionID, args[, transmitterPos])</a></td>
+	<td class="summary">Transmit message using STTS (private)</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.TTS.getTtsTime">HoundUtils.TTS.getTtsTime ([timestamp])</a></td>
+	<td class="summary">returns current DCS time in military time string for TTS</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.TTS.getVerbalConfidenceLevel">HoundUtils.TTS.getVerbalConfidenceLevel (confidenceRadius)</a></td>
+	<td class="summary">return verbal accuracy description
+
+ in 500 meters interval</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.TTS.getVerbalContactAge">HoundUtils.TTS.getVerbalContactAge (timestamp[, isSimple[, NATO]])</a></td>
+	<td class="summary">Get Verbal description of contact age
+
+ has multiple "modes of operation"</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.TTS.getVerbalLL">HoundUtils.TTS.getVerbalLL (lat, lon[, minDec])</a></td>
+	<td class="summary">convert LL to TTS string</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.TTS.toPhonetic">HoundUtils.TTS.toPhonetic (str)</a></td>
+	<td class="summary">Convert string to phonetic text</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.TTS.getReadTime">HoundUtils.TTS.getReadTime (length[, speed[, isGoogle]])</a></td>
+	<td class="summary">get estimated message read time
+
+ returns estimated time in seconds STTS will need to read a message</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.TTS.simplfyDistance">HoundUtils.TTS.simplfyDistance (distanceM)</a></td>
+	<td class="summary">simplify distance</td>
+	</tr>
+</table>
+<h2><a href="#Text_Functions">Text Functions </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Text.getLL">HoundUtils.Text.getLL (lat, lon[, minDec])</a></td>
+	<td class="summary">convert LL to displayable string</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Text.getTime">HoundUtils.Text.getTime ([timestamp])</a></td>
+	<td class="summary">Text Function - returns current DCS time in military time format string</td>
+	</tr>
+</table>
+<h2><a href="#Elint_functions">Elint functions </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Elint.getDefraction">HoundUtils.Elint.getDefraction (band, antenna_size)</a></td>
+	<td class="summary">Get defraction
+
+ for band and effective antenna size return angular resolution</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Elint.getApertureSize">HoundUtils.Elint.getApertureSize (DCS_Unit)</a></td>
+	<td class="summary">get Effective Aperture size for unit</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Elint.getEmitterBand">HoundUtils.Elint.getEmitterBand (DCS_Unit)</a></td>
+	<td class="summary">Get emitter Band</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Elint.getSensorPrecision">HoundUtils.Elint.getSensorPrecision (platform, emitterBand)</a></td>
+	<td class="summary">Elint Function - Get sensor precision</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Elint.generateAngularError">HoundUtils.Elint.generateAngularError (variance)</a></td>
+	<td class="summary">Elint Function - Generate angular error</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Elint.getAzimuth">HoundUtils.Elint.getAzimuth (src, dst, sensorPrecision)</a></td>
+	<td class="summary">Get Azimuth (and elevation) between two points</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Elint.getActiveRadars">HoundUtils.Elint.getActiveRadars (instanceCoalition)</a></td>
+	<td class="summary">Get currently transmitting Ground and Ship radars that are not in the Hound Instance coalition</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Elint.getRwrContacts">HoundUtils.Elint.getRwrContacts (platform)</a></td>
+	<td class="summary">Get RWR contacts for platfom</td>
+	</tr>
+</table>
+<h2><a href="#Vector_functions">Vector functions </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Vector.getUnitVector">HoundUtils.Vector.getUnitVector (Theta[, Phi])</a></td>
+	<td class="summary">get UnitVector</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Vector.getRandomVec2">HoundUtils.Vector.getRandomVec2 (variance)</a></td>
+	<td class="summary">Get random 2D vector
+
+ use Box–Muller transform to randomize errors on 2D vector
+
+ https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform}</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Vector.getRandomVec3">HoundUtils.Vector.getRandomVec3 (variance)</a></td>
+	<td class="summary">Get random 3d vector
+
+ use Box–Muller transform to randomize errors on 3D vector
+
+ https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform}</td>
+	</tr>
+</table>
+<h2><a href="#Polygon_functions">Polygon functions </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Polygon.isDcsPoint">HoundUtils.Polygon.isDcsPoint (point)</a></td>
+	<td class="summary">check if point is DCS point</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Polygon.threatOnSector">HoundUtils.Polygon.threatOnSector (polygon, point, radius)</a></td>
+	<td class="summary">Check if polygon is under threat of SAM</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Polygon.clipPolygons">HoundUtils.Polygon.clipPolygons (subjectPolygon, clipPolygon)</a></td>
+	<td class="summary">calculate cliping of polygons</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Polygon.giftWrap">HoundUtils.Polygon.giftWrap (points)</a></td>
+	<td class="summary">Gift wrapping algorithem
+
+ Returns the convex hull (using <a href="http://en.wikipedia.org/wiki/Gift_wrapping_algorithm">Jarvis' Gift wrapping algorithm</a>).</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Polygon.circumcirclePoints">HoundUtils.Polygon.circumcirclePoints (points)</a></td>
+	<td class="summary">calculate Smallest circle around point cloud
+
+ Welzel algorithm for <a href="https://en.wikipedia.org/wiki/Smallest-circle_problem">Smallest-circle problem</a>
+
+ Implementation taken from <a href="https://github.com/rowanwins/smallest-enclosing-circle/blob/master/src/main.js">github/rowins</a></td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Polygon.getArea">HoundUtils.Polygon.getArea (polygon)</a></td>
+	<td class="summary">return the area of a convex polygon</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Polygon.clipOrHull">HoundUtils.Polygon.clipOrHull (polyA, polyB)</a></td>
+	<td class="summary">clip or hull two polygons</td>
+	</tr>
+</table>
+<h2><a href="#Clustering_algorithems__for_future_use_">Clustering algorithems (for future use) </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Cluster.getCentroids">HoundUtils.Cluster.getCentroids (contacts)</a></td>
+	<td class="summary">convert contacts to centroieds for meanShift</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Cluster.meanShift">HoundUtils.Cluster.meanShift (contacts[, iterations])</a></td>
+	<td class="summary">Mean-shift algorithem to group radars to sites
+
+ http://www.chioka.in/meanshift-algorithm-for-the-rest-of-us-python/</td>
+	</tr>
+</table>
+<h2><a href="#Sort_Functions">Sort Functions </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Sort.ContactsByRange">HoundUtils.Sort.ContactsByRange (a, b)</a></td>
+	<td class="summary">Sort contacts by engament range</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Sort.ContactsById">HoundUtils.Sort.ContactsById (a, b)</a></td>
+	<td class="summary">Sort contacts by ID</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Sort.sectorsByPriorityLowFirst">HoundUtils.Sort.sectorsByPriorityLowFirst (a, b)</a></td>
+	<td class="summary">sort sectors by priority (low first)</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Sort.sectorsByPriorityLowLast">HoundUtils.Sort.sectorsByPriorityLowLast (a, b)</a></td>
+	<td class="summary">sort sectors by priority (Low last)</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header "><a name="Tables"></a>Tables</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HoundUtils"></a>
+    <strong>HoundUtils</strong>
+    </dt>
+    <dd>
+    HoundUtils decleration
+
+
+    <h3>Fields:</h3>
+    <ul>
+        <li><span class="parameter">TTS</span>
+         TTS Functions
+        </li>
+        <li><span class="parameter">Text</span>
+         Text functions
+        </li>
+        <li><span class="parameter">Elint</span>
+         Elint functions
+        </li>
+        <li><span class="parameter">Sort</span>
+         Sort funtions
+        </li>
+        <li><span class="parameter">ReportId</span>
+         intrnal ATIS numerator
+        </li>
+        <li><span class="parameter">_MarkId</span>
+         internal markId Counter
+        </li>
+        <li><span class="parameter">_HoundId</span>
+         internal HoundId counter
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="General_functions"></a>General functions </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "getHoundId"></a>
+    <strong>getHoundId ()</strong>
+    </dt>
+    <dd>
+    get next Hound Instance Id
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        #number Next HoundId
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "getMarkId"></a>
+    <strong>getMarkId ()</strong>
+    </dt>
+    <dd>
+    Get next Markpoint Id
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Next MarkId
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "absTimeDelta"></a>
+    <strong>absTimeDelta (t0[, t1])</strong>
+    </dt>
+    <dd>
+    Get time delta between two timestemps
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">t0</span>
+         time to test (in number of seconds)
+        </li>
+        <li><span class="parameter">t1</span>
+         time in number of seconds. if not provided, will use current DCS mission time
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        time delta between t0 and t1
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">HoundUtils.absTimeDelta(&lt;<span class="number">10</span>s ago&gt;,now) ==&gt; <span class="number">10</span></pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "angleDeltaRad"></a>
+    <strong>angleDeltaRad (rad1, rad2)</strong>
+    </dt>
+    <dd>
+    return difference in radias between two angles (bearings)
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">rad1</span>
+         angle in radians
+        </li>
+        <li><span class="parameter">rad2</span>
+         angle in radians
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        angle difference between rad1 and rad2 (between pi and -pi)
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "AzimuthAverage"></a>
+    <strong>AzimuthAverage (azimuths)</strong>
+    </dt>
+    <dd>
+    return avarage azimuth
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">azimuths</span>
+         a list of azimuths in radians
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        the avarage azimuth of the list provided in radians (between 0 and 2*pi)
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "PointClusterTilt"></a>
+    <strong>PointClusterTilt (points[, refPos])</strong>
+    </dt>
+    <dd>
+    return the tilt of a point cluster
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">points</span>
+         a list of DCS points
+        </li>
+        <li><span class="parameter">refPos</span>
+         a DCS point that will be the reference for azimuth
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        azimuth in radians (between 0 and pi)
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "RandomAngle"></a>
+    <strong>RandomAngle ()</strong>
+    </dt>
+    <dd>
+    returns a random angle
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        random angle in radians between 0 and 2*pi
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "getSamMaxRange"></a>
+    <strong>getSamMaxRange (DCS_Unit)</strong>
+    </dt>
+    <dd>
+    return maximum weapon range in the group of DCS Unit
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">DCS_Unit</span>
+         DCS unit - in Hound context unit with emitting radar
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        maximum weapon range in meters of the DCS Group the emitter is part of
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "getRadarDetectionRange"></a>
+    <strong>getRadarDetectionRange (DCS_Unit)</strong>
+    </dt>
+    <dd>
+    return Radar detection Range for provided unit
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">DCS_Unit</span>
+         DCS Unit with radars sensor
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Unit radar detection range agains airborne targers in meters
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "getRoundedElevationFt"></a>
+    <strong>getRoundedElevationFt (elev)</strong>
+    </dt>
+    <dd>
+    return ground elevation rouded to 50 feet
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">elev</span>
+         Height in meters
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        elevation converted to feet, rounded to the nearest 50 ft
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "roundToNearest"></a>
+    <strong>roundToNearest (input, nearest)</strong>
+    </dt>
+    <dd>
+    return rounted number nearest a set interval
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">input</span>
+         numeric value to be rounded
+        </li>
+        <li><span class="parameter">nearest</span>
+         numeric value of the step to round input to (e.g 10,50,500)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        input number rounded to the nearest interval provided.(e.g 3244 -> 3250)
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "getNormalAngularError"></a>
+    <strong>getNormalAngularError (variance)</strong>
+    </dt>
+    <dd>
+    get normal distribution angular error.
+
+ will generate gaussian magnitude based on variance and random angle
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">variance</span>
+         error margin requester (in radians)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table {el,az}, contining error in Azimuth and elevation in radians
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "getControllerResponse"></a>
+    <strong>getControllerResponse ()</strong>
+    </dt>
+    <dd>
+    get random controller snarky remark
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        random response string from pool
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "getCoalitionString"></a>
+    <strong>getCoalitionString (coalitionID)</strong>
+    </dt>
+    <dd>
+    get coalition string
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">coalitionID</span>
+         integer of DCS coalition id
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        string name of coalition
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "getHemispheres"></a>
+    <strong>getHemispheres (lat, lon, fullText)</strong>
+    </dt>
+    <dd>
+    returns hemisphere information for LatLon
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">lat</span>
+         (float) latitude in decimal Degrees
+        </li>
+        <li><span class="parameter">lon</span>
+         (float) longitude in decimal Degrees
+        </li>
+        <li><span class="parameter">fullText</span>
+         (bool) determin if function should return "E" or "East"
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        (table) {NS=string,EW=string} return hemisphere strings
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "getReportId"></a>
+    <strong>getReportId ([ReportId])</strong>
+    </dt>
+    <dd>
+    get "ATIS" report ID
+
+ returns next Phonetic report ID.
+
+ Report ID loops around, i.e "Alpha" --> "Bravo" -> .. -> "Zulu" -> "Alpha"
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ReportId</span>
+         char, current report ID if not using global var
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+        (string) phonetic ID ("Alpha","Bravo", "charlie"...)</li>
+        <li>
+        (Char) letter of ReportId ('A','B','C','D')</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "DecToDMS"></a>
+    <strong>DecToDMS (cood)</strong>
+    </dt>
+    <dd>
+    Convert Decimal Degrees to DMS (D.DD to DMS)
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">cood</span>
+         (float) lat or lon (e.g. 35.443, -124.5543)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+         DMS (table)
+
+ { d=deg,
+
+   m=minutes,
+
+   s=sec,
+
+   mDec = Decimal minutes
+
+ }
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "getBR"></a>
+    <strong>getBR (src, dst)</strong>
+    </dt>
+    <dd>
+    retrun Bearing (magnetic) and range between two points
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">src</span>
+         (DCS pos) Position of source
+        </li>
+        <li><span class="parameter">dst</span>
+         (DCS pos) Position of destination
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        (table) {br = bearing(float), brStr=bearing(string, 3 chars rounded, e.g "044"), rng = Range in NM}
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "checkLOS"></a>
+    <strong>checkLOS (pos0, pos1)</strong>
+    </dt>
+    <dd>
+    Return if the is LOS between two DCS points
+
+ checks both radar horizon (round earth) and DCS terrain LOS
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">pos0</span>
+         (DCS pos)
+        </li>
+        <li><span class="parameter">pos1</span>
+         (DCS pos)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        (bool) true if both units have LOS between them
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "EarthLOS"></a>
+    <strong>EarthLOS (h0[, h1])</strong>
+    </dt>
+    <dd>
+    Returns maximum horizon distance given heigh above the earth of two points
+
+ assumes earth radius of 6371 Km
+
+ if only one observer hight is provided, result would be maximum view distance to Sea Level
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">h0</span>
+         height of observer 1 in meters
+        </li>
+        <li><span class="parameter">h1</span>
+         height of observer 2 in meters
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        distance maximum LOS distance in meters
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "getFormationCallsign"></a>
+    <strong>getFormationCallsign (player[, flightMember])</strong>
+    </dt>
+    <dd>
+    Get group callsign from unit
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">player</span>
+         mist.DB entry to get formation callsign for
+        </li>
+        <li><span class="parameter">flightMember</span>
+         if True. value returned will be the full callsign (i.e "Uzi 1 1" rather then the default "Uzi 1")
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Formation callsign string
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "getHoundCallsign"></a>
+    <strong>getHoundCallsign ([namePool])</strong>
+    </dt>
+    <dd>
+    get Callsign
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">namePool</span>
+         string "GENERIC" or "NATO"
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        string random callsign from pool
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "isDMM"></a>
+    <strong>isDMM (DCS_Unit)</strong>
+    </dt>
+    <dd>
+    Unit use DMM
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">DCS_Unit</span>
+         DCS Unit or typeName string
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="TTS_Functions"></a>TTS Functions </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HoundUtils.TTS.Transmit"></a>
+    <strong>HoundUtils.TTS.Transmit (msg, coalitionID, args[, transmitterPos])</strong>
+    </dt>
+    <dd>
+    Transmit message using STTS (private)
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">msg</span>
+         The message to transmit
+        </li>
+        <li><span class="parameter">coalitionID</span>
+         Coalition to recive transmission
+        </li>
+        <li><span class="parameter">args</span>
+         STTS settings in hash table (minimum required is {freq=})
+        </li>
+        <li><span class="parameter">transmitterPos</span>
+         DCS Position point for transmitter
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        STTS.TextToSpeech return value recived from STTS, currently estimated speechTime
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HoundUtils.TTS.getTtsTime"></a>
+    <strong>HoundUtils.TTS.getTtsTime ([timestamp])</strong>
+    </dt>
+    <dd>
+    returns current DCS time in military time string for TTS
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">timestamp</span>
+         DCS time in seconds (timer.getAbsTime()) - if not arg provided will return for current game time
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        timeString e.g. "14 30 local", "08 hundred local"
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HoundUtils.TTS.getVerbalConfidenceLevel"></a>
+    <strong>HoundUtils.TTS.getVerbalConfidenceLevel (confidenceRadius)</strong>
+    </dt>
+    <dd>
+    return verbal accuracy description
+
+ in 500 meters interval
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">confidenceRadius</span>
+         meters
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        (string) Description of accuracy e.g "Very High","High","Low"...
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HoundUtils.TTS.getVerbalContactAge"></a>
+    <strong>HoundUtils.TTS.getVerbalContactAge (timestamp[, isSimple[, NATO]])</strong>
+    </dt>
+    <dd>
+    Get Verbal description of contact age
+
+ has multiple "modes of operation"
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">timestamp</span>
+         dcs time in seconds of last time a target was seen
+        </li>
+        <li><span class="parameter">isSimple</span>
+         (bool) switch between output modes. true: "Active", "recent"... False: "3 seconds","5 minutes"
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">NATO</span>
+         (bool) requires isSimple=true, will return only "Active" or "Awake" as per NATO Lowdown
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        string of time passed based on selected flags.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HoundUtils.TTS.getVerbalLL"></a>
+    <strong>HoundUtils.TTS.getVerbalLL (lat, lon[, minDec])</strong>
+    </dt>
+    <dd>
+    convert LL to TTS string
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">lat</span>
+         Latitude in decimal degrees ("32.343","-14.44333")
+        </li>
+        <li><span class="parameter">lon</span>
+         Longitude in decimal degrees ("42.343","-144.432")
+        </li>
+        <li><span class="parameter">minDec</span>
+         (bool) if true, function will return LL in DM.M format
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        LL string.
+
+ eg. "North, 33 degrees, 15 minutes, 12 seconds, East, 42 degrees, 10 minutes, 45 seconds "
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HoundUtils.TTS.toPhonetic"></a>
+    <strong>HoundUtils.TTS.toPhonetic (str)</strong>
+    </dt>
+    <dd>
+    Convert string to phonetic text
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">str</span>
+         String to convert
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        string broken up to phonetics
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">HoundUtils.TTS.toPhonetic(<span class="string">"B29"</span>) will <span class="keyword">return</span> <span class="string">"Bravo Two Niner"</span></pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "HoundUtils.TTS.getReadTime"></a>
+    <strong>HoundUtils.TTS.getReadTime (length[, speed[, isGoogle]])</strong>
+    </dt>
+    <dd>
+    get estimated message read time
+
+ returns estimated time in seconds STTS will need to read a message
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">length</span>
+         length of string to estimate (also except the string itself)
+        </li>
+        <li><span class="parameter">speed</span>
+         speed setting for reading them message
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">isGoogle</span>
+         Bool, if true calculation will be done for GoogleTTS engine
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        estimated message read time in seconds
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HoundUtils.TTS.simplfyDistance"></a>
+    <strong>HoundUtils.TTS.simplfyDistance (distanceM)</strong>
+    </dt>
+    <dd>
+    simplify distance
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">distanceM</span>
+         Distance in meters to simplify
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+         Simplified distance
+
+ below 1km function will return number in meters
+
+ eg. 140m => 150m, 520m => 500m, 4539m => 4.5km
+
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Text_Functions"></a>Text Functions </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HoundUtils.Text.getLL"></a>
+    <strong>HoundUtils.Text.getLL (lat, lon[, minDec])</strong>
+    </dt>
+    <dd>
+    convert LL to displayable string
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">lat</span>
+         Latitude in decimal degrees ("32.343","-14.44333")
+        </li>
+        <li><span class="parameter">lon</span>
+         Longitude in decimal degrees ("42.343","-144.432")
+        </li>
+        <li><span class="parameter">minDec</span>
+         (bool) if true, function will return LL in DM.M format
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        LL string.
+
+ eg. "N33°15'12" E42°10'45"" or  "N33°15.200' E42°10.750'"
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HoundUtils.Text.getTime"></a>
+    <strong>HoundUtils.Text.getTime ([timestamp])</strong>
+    </dt>
+    <dd>
+    Text Function - returns current DCS time in military time format string
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">timestamp</span>
+         DCS time in seconds (timer.getAbsTime()) - Optional, if not arg provided will return for current game time
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        time in human radable format e.g. "1430", "0812"
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Elint_functions"></a>Elint functions </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HoundUtils.Elint.getDefraction"></a>
+    <strong>HoundUtils.Elint.getDefraction (band, antenna_size)</strong>
+    </dt>
+    <dd>
+    Get defraction
+
+ for band and effective antenna size return angular resolution
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">band</span>
+         Radar transmission band (A-L) as defined in HoundDB
+        </li>
+        <li><span class="parameter">antenna_size</span>
+         Effective antenna size for platform as defined in HoundDB
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        angular resolution in Radians for Band Antenna combo
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HoundUtils.Elint.getApertureSize"></a>
+    <strong>HoundUtils.Elint.getApertureSize (DCS_Unit)</strong>
+    </dt>
+    <dd>
+    get Effective Aperture size for unit
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">DCS_Unit</span>
+         Unit requested (used as platform)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Effective aperture size in meters
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HoundUtils.Elint.getEmitterBand"></a>
+    <strong>HoundUtils.Elint.getEmitterBand (DCS_Unit)</strong>
+    </dt>
+    <dd>
+    Get emitter Band
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">DCS_Unit</span>
+         Radar unit
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Char radar band
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HoundUtils.Elint.getSensorPrecision"></a>
+    <strong>HoundUtils.Elint.getSensorPrecision (platform, emitterBand)</strong>
+    </dt>
+    <dd>
+    Elint Function - Get sensor precision
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">platform</span>
+         Instance of DCS Unit which is the detecting platform
+        </li>
+        <li><span class="parameter">emitterBand</span>
+         Radar Band (frequency) of radar (A-L)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        angular resolution in Radians of platform against specific Radar frequency
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HoundUtils.Elint.generateAngularError"></a>
+    <strong>HoundUtils.Elint.generateAngularError (variance)</strong>
+    </dt>
+    <dd>
+    Elint Function - Generate angular error
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">variance</span>
+         amount of variance in gausian random function
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table {az,el} error in radians per element
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HoundUtils.Elint.getAzimuth"></a>
+    <strong>HoundUtils.Elint.getAzimuth (src, dst, sensorPrecision)</strong>
+    </dt>
+    <dd>
+    Get Azimuth (and elevation) between two points
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">src</span>
+         position of the source (i.e Hound platform)
+        </li>
+        <li><span class="parameter">dst</span>
+         position of the destination (i.e emitting radar)
+        </li>
+        <li><span class="parameter">sensorPrecision</span>
+         angular resolution (in rad) of platform against radar <a href="../modules/HoundUtils.html#HoundUtils.Elint.getSensorPrecision">HoundUtils.Elint.getSensorPrecision</a>
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+        Azimuth (radians) from source to destination (0 to 2*pi)</li>
+        <li>
+        elevation angle (radians) from source to destination (-pi to pi)</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HoundUtils.Elint.getActiveRadars"></a>
+    <strong>HoundUtils.Elint.getActiveRadars (instanceCoalition)</strong>
+    </dt>
+    <dd>
+    Get currently transmitting Ground and Ship radars that are not in the Hound Instance coalition
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">instanceCoalition</span>
+         CoalitionID for current Hound Instance
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Table of all currently transmitting Ground and Ship radars that are not in the Hound Instance coalition
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HoundUtils.Elint.getRwrContacts"></a>
+    <strong>HoundUtils.Elint.getRwrContacts (platform)</strong>
+    </dt>
+    <dd>
+    Get RWR contacts for platfom
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">platform</span>
+         DCS Unit of platform
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Table of all currently transmitting Ground and Ship radars that RWR detected by supplied platform
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Vector_functions"></a>Vector functions </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HoundUtils.Vector.getUnitVector"></a>
+    <strong>HoundUtils.Vector.getUnitVector (Theta[, Phi])</strong>
+    </dt>
+    <dd>
+    get UnitVector
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">Theta</span>
+         azimuth in radians
+        </li>
+        <li><span class="parameter">Phi</span>
+         elevation in radians
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Unit vector {x,y,z}
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HoundUtils.Vector.getRandomVec2"></a>
+    <strong>HoundUtils.Vector.getRandomVec2 (variance)</strong>
+    </dt>
+    <dd>
+    Get random 2D vector
+
+ use Box–Muller transform to randomize errors on 2D vector
+
+ https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform}
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">variance</span>
+         amount of variance in gausian random function
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        DCS standard {x,z,y} vector
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HoundUtils.Vector.getRandomVec3"></a>
+    <strong>HoundUtils.Vector.getRandomVec3 (variance)</strong>
+    </dt>
+    <dd>
+    Get random 3d vector
+
+ use Box–Muller transform to randomize errors on 3D vector
+
+ https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform}
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">variance</span>
+         amount of variance in gausian random function
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        DCS standard {x,z,y} vector
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Polygon_functions"></a>Polygon functions </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HoundUtils.Polygon.isDcsPoint"></a>
+    <strong>HoundUtils.Polygon.isDcsPoint (point)</strong>
+    </dt>
+    <dd>
+    check if point is DCS point
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">point</span>
+         DCS point candidate
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Bool True if is valid point
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HoundUtils.Polygon.threatOnSector"></a>
+    <strong>HoundUtils.Polygon.threatOnSector (polygon, point, radius)</strong>
+    </dt>
+    <dd>
+    Check if polygon is under threat of SAM
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">polygon</span>
+         Table of point reprasenting a polygon
+        </li>
+        <li><span class="parameter">point</span>
+         DCS position (x,z)
+        </li>
+        <li><span class="parameter">radius</span>
+         Radius in Meters around point to test
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+        Bool True if point is in polygon</li>
+        <li>
+        Bool True if radius around point intersects polygon</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HoundUtils.Polygon.clipPolygons"></a>
+    <strong>HoundUtils.Polygon.clipPolygons (subjectPolygon, clipPolygon)</strong>
+    </dt>
+    <dd>
+    calculate cliping of polygons
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">subjectPolygon</span>
+         List of points of first polygon
+        </li>
+        <li><span class="parameter">clipPolygon</span>
+         list of points of second polygon
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        List of points of the clipped polygon or nil if not clipping found
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HoundUtils.Polygon.giftWrap"></a>
+    <strong>HoundUtils.Polygon.giftWrap (points)</strong>
+    </dt>
+    <dd>
+    Gift wrapping algorithem
+
+ Returns the convex hull (using <a href="http://en.wikipedia.org/wiki/Gift_wrapping_algorithm">Jarvis' Gift wrapping algorithm</a>).
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">points</span>
+         array of DCS points ({x=&ltvalue&gt,z=&ltvalue&gt})
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        the convex hull as an array of points
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HoundUtils.Polygon.circumcirclePoints"></a>
+    <strong>HoundUtils.Polygon.circumcirclePoints (points)</strong>
+    </dt>
+    <dd>
+    calculate Smallest circle around point cloud
+
+ Welzel algorithm for <a href="https://en.wikipedia.org/wiki/Smallest-circle_problem">Smallest-circle problem</a>
+
+ Implementation taken from <a href="https://github.com/rowanwins/smallest-enclosing-circle/blob/master/src/main.js">github/rowins</a>
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">points</span>
+         Table containing cloud points
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Circle {x=&ltCenter X&gt,z=&ltCenter Z&gt, y=&ltLand height at XZ&gt,r=&ltradius in meters&gt}
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HoundUtils.Polygon.getArea"></a>
+    <strong>HoundUtils.Polygon.getArea (polygon)</strong>
+    </dt>
+    <dd>
+    return the area of a convex polygon
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">polygon</span>
+         list of DCS points
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        area of polygon
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HoundUtils.Polygon.clipOrHull"></a>
+    <strong>HoundUtils.Polygon.clipOrHull (polyA, polyB)</strong>
+    </dt>
+    <dd>
+    clip or hull two polygons
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">polyA</span>
+         polygon
+        </li>
+        <li><span class="parameter">polyB</span>
+         polygon
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Polygon which is clip or convexHull of the two input polygons
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Clustering_algorithems__for_future_use_"></a>Clustering algorithems (for future use) </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HoundUtils.Cluster.getCentroids"></a>
+    <strong>HoundUtils.Cluster.getCentroids (contacts)</strong>
+    </dt>
+    <dd>
+    convert contacts to centroieds for meanShift
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">contacts</span>
+         list of HoundContact instances to evaluate
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        list of centrods where centroid = {p=&ltDCS pos&gt,r=&ltradius&gt,members={&ltHoundContact&gt}}
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HoundUtils.Cluster.meanShift"></a>
+    <strong>HoundUtils.Cluster.meanShift (contacts[, iterations])</strong>
+    </dt>
+    <dd>
+    Mean-shift algorithem to group radars to sites
+
+ http://www.chioka.in/meanshift-algorithm-for-the-rest-of-us-python/
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">contacts</span>
+         list of HoundContact instances to cluster
+        </li>
+        <li><span class="parameter">iterations</span>
+         maximum nuber of itteratoins to run
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        List of centroieds {p=&ltDCS position&gt,r=&ltuncertenty radius&gt,members={&ltlist of HoundContacts&gt}}
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Sort_Functions"></a>Sort Functions </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HoundUtils.Sort.ContactsByRange"></a>
+    <strong>HoundUtils.Sort.ContactsByRange (a, b)</strong>
+    </dt>
+    <dd>
+    Sort contacts by engament range
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+         HoundContact instance
+        </li>
+        <li><span class="parameter">b</span>
+         HoundContact Instance
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Bool
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="global">table</span>.sort(unSorted,HoundUtils.Sort.ContactsByRange)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "HoundUtils.Sort.ContactsById"></a>
+    <strong>HoundUtils.Sort.ContactsById (a, b)</strong>
+    </dt>
+    <dd>
+    Sort contacts by ID
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+         HoundContact instance
+        </li>
+        <li><span class="parameter">b</span>
+         HoundContact Instance
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Bool
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="global">table</span>.sort(unSorted,HoundUtils.Sort.ContactsById)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "HoundUtils.Sort.sectorsByPriorityLowFirst"></a>
+    <strong>HoundUtils.Sort.sectorsByPriorityLowFirst (a, b)</strong>
+    </dt>
+    <dd>
+    sort sectors by priority (low first)
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+         HoundSector instance
+        </li>
+        <li><span class="parameter">b</span>
+         HoundSector Instance
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Bool
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="global">table</span>.sort(unSorted,HoundUtils.Sort.sectorsByPriorityLowFirst)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "HoundUtils.Sort.sectorsByPriorityLowLast"></a>
+    <strong>HoundUtils.Sort.sectorsByPriorityLowLast (a, b)</strong>
+    </dt>
+    <dd>
+    sort sectors by priority (Low last)
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+         HoundSector instance
+        </li>
+        <li><span class="parameter">b</span>
+         HoundSector Instance
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Bool
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="global">table</span>.sort(unSorted,HoundUtils.Sort.sectorsByPriorityLowLast)</pre>
+    </ul>
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+<i style="float:right;">Last updated 2021-10-21 00:29:54 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

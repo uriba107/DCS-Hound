@@ -1,0 +1,361 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Reference</title>
+    <link rel="stylesheet" href="../ldoc_fixed.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Hound<br> ELINT for DCS</h1>
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Tables">Tables</a></li>
+<li><a href="#Class_HoundDatapoint">Class HoundDatapoint </a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><a href="../modules/HOUND.html">HOUND</a></li>
+  <li><a href="../modules/HoundLogger.html">HoundLogger</a></li>
+  <li><a href="../modules/HoundDB.html">HoundDB</a></li>
+  <li><a href="../modules/HoundConfig.html">HoundConfig</a></li>
+  <li><a href="../modules/HoundUtils.html">HoundUtils</a></li>
+  <li><a href="../modules/HoundEventHandler.html">HoundEventHandler</a></li>
+  <li><strong>HoundDatapoint</strong></li>
+  <li><a href="../modules/HoundContact.html">HoundContact</a></li>
+  <li><a href="../modules/HoundCommsManager.html">HoundCommsManager</a></li>
+  <li><a href="../modules/HoundInformationSystem.html">HoundInformationSystem</a></li>
+  <li><a href="../modules/HoundController.html">HoundController</a></li>
+  <li><a href="../modules/HoundElintWorker.html">HoundElintWorker</a></li>
+  <li><a href="../modules/HoundContactManager.html">HoundContactManager</a></li>
+  <li><a href="../modules/HoundSector.html">HoundSector</a></li>
+</ul>
+<h2>Scripts</h2>
+<ul class="nowrap">
+  <li><a href="../scripts/HoundElint.html">HoundElint</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>HoundDatapoint</code></h1>
+<p>HoundDatapoint</p>
+<p></p>
+
+
+<h2><a href="#Tables">Tables</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HoundDatapoint">HoundDatapoint</a></td>
+	<td class="summary"></td>
+	</tr>
+</table>
+<h2><a href="#Class_HoundDatapoint">Class HoundDatapoint </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HoundDatapoint:New">HoundDatapoint:New (platform0, p0, az0, el0, t0[, angularResolution[, isPlatformStatic]])</a></td>
+	<td class="summary">Create new HoundDatapoint instance</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundDatapoint:isStatic">HoundDatapoint:isStatic (self)</a></td>
+	<td class="summary">check if platform is static</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundDatapoint:getPos">HoundDatapoint:getPos (self)</a></td>
+	<td class="summary">Get estimated position</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundDatapoint:get2dPoly">HoundDatapoint:get2dPoly (self)</a></td>
+	<td class="summary">Get 2D polygon</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundDatapoint:get3dPoly">HoundDatapoint:get3dPoly (self)</a></td>
+	<td class="summary">Get 3D polygon</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundDatapoint.estimatePos">HoundDatapoint.estimatePos (self)</a></td>
+	<td class="summary">Estimate contact position from Datapoint information only</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundDatapoint.calcPolygons">HoundDatapoint.calcPolygons (self)</a></td>
+	<td class="summary">generate Az only Triangle and if possible Az/El polygon footprint</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header "><a name="Tables"></a>Tables</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HoundDatapoint"></a>
+    <strong>HoundDatapoint</strong>
+    </dt>
+    <dd>
+
+
+
+    <h3>Fields:</h3>
+    <ul>
+        <li><span class="parameter">platformPos</span>
+         position of platform at time of sample
+        </li>
+        <li><span class="parameter">az</span>
+         Azimuth from platformPos to emitter
+        </li>
+        <li><span class="parameter">el</span>
+         Elevation from platfromPos to emitter
+        </li>
+        <li><span class="parameter">t</span>
+         Time of sample
+        </li>
+        <li><span class="parameter">platformId</span>
+         uid of platform DCS unit
+        </li>
+        <li><span class="parameter">platformName</span>
+         Name of platform DCS unit
+        </li>
+        <li><span class="parameter">platformStatic</span>
+         True if platform is static object
+        </li>
+        <li><span class="parameter">platformPrecision</span>
+         Angular resolution of platform in radians
+        </li>
+        <li><span class="parameter">estimatedPos</span>
+         estimated position of emitter from AZ/EL (if applicable)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Class_HoundDatapoint"></a>Class HoundDatapoint </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HoundDatapoint:New"></a>
+    <strong>HoundDatapoint:New (platform0, p0, az0, el0, t0[, angularResolution[, isPlatformStatic]])</strong>
+    </dt>
+    <dd>
+    Create new HoundDatapoint instance
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">platform0</span>
+         DCS Unit of locating platform
+        </li>
+        <li><span class="parameter">p0</span>
+         Position of platform on detection
+        </li>
+        <li><span class="parameter">az0</span>
+         Azimuth (rad) from platform to emitter
+        </li>
+        <li><span class="parameter">el0</span>
+         Elevation (rad) from platform to emitter
+        </li>
+        <li><span class="parameter">t0</span>
+         Abs time of datapoint
+        </li>
+        <li><span class="parameter">angularResolution</span>
+         angular resolution of datapoint
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">isPlatformStatic</span>
+         (bool)
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Datapoint instance
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HoundDatapoint:isStatic"></a>
+    <strong>HoundDatapoint:isStatic (self)</strong>
+    </dt>
+    <dd>
+    check if platform is static
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Bool True if platform is static
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HoundDatapoint:getPos"></a>
+    <strong>HoundDatapoint:getPos (self)</strong>
+    </dt>
+    <dd>
+    Get estimated position
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        DCS point
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HoundDatapoint:get2dPoly"></a>
+    <strong>HoundDatapoint:get2dPoly (self)</strong>
+    </dt>
+    <dd>
+    Get 2D polygon
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table of DCS points
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HoundDatapoint:get3dPoly"></a>
+    <strong>HoundDatapoint:get3dPoly (self)</strong>
+    </dt>
+    <dd>
+    Get 3D polygon
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table of DCS points
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HoundDatapoint.estimatePos"></a>
+    <strong>HoundDatapoint.estimatePos (self)</strong>
+    </dt>
+    <dd>
+    Estimate contact position from Datapoint information only
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HoundDatapoint.calcPolygons"></a>
+    <strong>HoundDatapoint.calcPolygons (self)</strong>
+    </dt>
+    <dd>
+    generate Az only Triangle and if possible Az/El polygon footprint
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+<i style="float:right;">Last updated 2021-10-21 00:29:54 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>
