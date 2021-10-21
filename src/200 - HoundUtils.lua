@@ -898,6 +898,7 @@ do
     end
 
     --- calculate cliping of polygons
+    -- <a href="https://rosettacode.org/wiki/Sutherland-Hodgman_polygon_clipping#Lua">Sutherland-Hodgman polygon clipping</a>
     -- @param  subjectPolygon List of points of first polygon
     -- @param  clipPolygon list of points of second polygon
     -- @return List of points of the clipped polygon or nil if not clipping found
