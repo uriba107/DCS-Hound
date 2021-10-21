@@ -187,14 +187,6 @@ Hound adds units by using their names (or pilot name) not by a group name.
     HoundInstance = HoundElint:create("Migariya_Elint")
 ```
 ## Platforms
-
-you can also pass a coalition to create the Hound instance with
-```lua
-    Elint_blue = HoundElint:create(coalition.side.BLUE)
-```
-this will allow you to create and start Hound instance without any active platforms and add the dynamiclly later.
-
-
 Platforms can be added at any time (before or after system activation)
 ```lua
     HoundInstance:addPlatform("ELINT_C17")
@@ -203,6 +195,7 @@ and if need be the oposite is also available
 ```lua
     HoundInstance:removePlatform("ELINT_C17")
 ```
+please make sure you go over the [available assets list](#available-assets) of each to determin what would work best for your mission.
 
 ## Enrgize
 
@@ -237,6 +230,10 @@ they can be turned back on with
 ```
 Hound Supports a few different marker types for the uncertenty ellipse that can be selected. 
 The type of marker is set per Hound instance.
+```lua
+    HoundInstance:setMarkerType(HOUND.MARKER.POLYGON)
+```
+
 the available marker types are:
 |  HOUND.MARKER | Description |
 | ---- | ------------|
@@ -246,9 +243,6 @@ the available marker types are:
 | OCTAGON | ellipse will be drawn with 8 points (diamon with midpoints) |
 | POLYGON | ellipse will be drawn as a 16 sides polygon |
 
-```lua
-    HoundInstance:setMarkerType(HOUND.MARKER.POLYGON)
-```
 ---
 ### DBA reports
 By default the [Controller](#sam-controller) and [Notifier](#notifier) will push alerts when a radar is destroyed when track is dropped.
@@ -266,12 +260,12 @@ local bool = HoundInstance:getBDA()
 ### Reposition Controller radio menu
 By default the [Controller](#sam-controller) will generate the "ELINT" root menu in the base F10 menu.
 You may choose to change this to a different base location in some cases.  
-`NOTE: there a needs to be a very clear order of events for this to funtion properly` 
+`NOTE: there a needs to be a very clear order of events for this to function properly` 
 ```lua
 -- target menu MUST be created BEFORE it's assigned to Radio menu
-SuperDuperMenu = missionCommands.addSubMenuForCoalition(coalition.side.BLUE,"Fantastic functionality")
+    SuperDuperMenu = missionCommands.addSubMenuForCoalition(coalition.side.BLUE,"Fantastic functionality")
 
--- new parent menu must be called BEFORE calling enableController (but can be after configureController if called speratly)
+-- new parent menu must be called BEFORE calling enableController (but can be after configureController if called separately)
     HoundInstance:setRadioMenuParent(SuperDuperMenu)
 
 -- after parent has been assinged you can enable controller
@@ -279,7 +273,7 @@ SuperDuperMenu = missionCommands.addSubMenuForCoalition(coalition.side.BLUE,"Fan
 ```
 ---
 ### NATO callsigns
-[Sectors](#sectors) get automaticlly assigned [callsigns](#callsigns). The callsignes are picked from a pool of names. Howwever there is an alternate list, taken from callsignes used by RC-135 squadrons. to use this alternate callsign list by default, you'll need to set the following.
+[Sectors](#sectors) get automatically assigned [callsigns](#callsigns). The callsignes are picked from a pool of names. Howwever there is an alternate list, taken from callsignes used by RC-135 squadrons. to use this alternate callsign list by default, you'll need to set the following.
 ```lua
 -- enable use of alternate pool
     HoundInstance:useNATOCallsignes(true)
@@ -304,7 +298,7 @@ This change is global and preformed via the use of the following:
     HoundInstance:disableNATO()
 
 -- get current setting
-local bool = HoundInstance:getNATO()
+    local bool = HoundInstance:getNATO()
 ```
 ---
 ### ATIS update interval
@@ -395,9 +389,12 @@ To remove a zone from sector use:
 
 #### ***Transmitter***
 A sector can have a transmitter which will broadcast all the TTS messages for the sector.
-when no transmitter is assigned, everyone on the frequency will be able to hear then transmissions.
+when no transmitter is assigned, everyone on the frequency will be able to hear then transmissions, without any limitations, a "Magic Satlink" if you wish.
 
-Once transmitter is set, SRS will use transmitter's current position for the transmition forcing line-of-sight, maximum radio range and any other SRS limitation that comes with it. If transmitter unit is destroyed, no TTS transmissions will occure until the transmitter is removed or re-assigned.
+Once transmitter is set, SRS will use transmitter's current position for the transmition forcing line-of-sight, maximum radio range and any other SRS limitation that comes with it.  
+If transmitter unit is destroyed, no TTS transmissions will occure. To resolve it you would either need to set a new transmitter to take over.
+
+you can also remove the transmitter at any time to return to the default "Magic Satlink" state.
 
 Transmitter can be a Unit or a static object, and it's called by Unit/Pilot name
 ```lua
@@ -585,7 +582,7 @@ and will enable Controller both in Text and in Voice, while transmitting on two 
 
 ## Event handlers
 Introduced with Hound 0.2 you now have Hound event handling. This for example allows you to preform scripted actions on specific events.
-available events are:
+available events are (Note that reserved events are not yet emitted):
 | name | id |
 | ---|-----|
 | HOUND_ENABLED |  1 |
@@ -602,12 +599,12 @@ available events are:
 | RADAR_DESTROYED  | 12 |
 | RADAR_ALIVE  | 13 |
 | RADAR_ASLEEP  | 14 |
-| SITE_NEW  | 15 |
-| SITE_CREATED  | 16 |
-| SITE_UPDATED  | 17 |
-| SITE_REMOVED  | 18 |
-| SITE_ALIVE  | 19 |
-| SITE_ASLEEP |  20 |
+| SITE_NEW  | 15 (RESERVED)|
+| SITE_CREATED  | 16 (RESERVED)|
+| SITE_UPDATED  | 17 (RESERVED)|
+| SITE_REMOVED  | 18 (RESERVED)|
+| SITE_ALIVE  | 19 (RESERVED) |
+| SITE_ASLEEP |  20 (RESERVED) |
 
 Event structure is as follows
 ```lua
