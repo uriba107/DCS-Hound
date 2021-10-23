@@ -746,7 +746,7 @@ do
     -- same as MOOSE. use late activation invisible helicopter group is recommended.
     function HoundElint:setZone(sectorName,zoneCandidate)
         if type(sectorName) ~= "string" then return end
-        if type(zoneCandidate) ~= "string" then return end
+        if type(zoneCandidate) ~= "string" and zoneCandidate ~= nil then return end
         if self.sectors[sectorName] then
             self.sectors[sectorName]:setZone(zoneCandidate)
         end
@@ -860,7 +860,11 @@ do
     -- @param parent desired parent menu (pass nil to clear)
     -- @return Bool True if no errors
     function HoundElint:setRadioMenuParent(parent)
-        return self.settings:setRadioMenuParent(parent) or false
+        local retval = self.settings:setRadioMenuParent(parent)
+        if retval == true then
+            self:populateRadioMenu()
+        end
+        return retval or false
     end
 
     -------------------------------
@@ -889,7 +893,7 @@ do
                 self.timingCounters.long = self.timingCounters.long + 1
                 fastloop:Stop()
                 for sectorName,_ in pairs(self.sectors) do
-                    HoundLogger.trace(sectorName .. " has " .. self.contacts:countContacts(sectorName).. "Contacts")
+                    HoundLogger.trace(sectorName .. " has " .. self.contacts:countContacts(sectorName).. " Contacts")
                 end
             end
             -- end
@@ -1028,7 +1032,7 @@ do
             HoundLogger.trace("Detected HoundElintEvent")
 
             for _,sector in pairs(sectors) do
-                HoundLogger.trace("check loop - "..sector:getName().."("..sector:getPriority()..")")
+                -- HoundLogger.trace("check loop - "..sector:getName().."("..sector:getPriority()..")")
                 sector:updateSectorMembership(houndEvent.initiator)
             end
             for _,sector in pairs(sectors) do

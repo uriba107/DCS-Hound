@@ -239,12 +239,42 @@ do
         lu.assertIsNil(self.houndBlue:getZone("default"))
         lu.assertIsNil(self.houndBlue:getZone("Saipan"))
         lu.assertIsNil(self.houndBlue:getZone("Tinian"))
+        self.houndBlue:setZone("Tinian")
+        lu.assertIsTable(self.houndBlue:getZone("Tinian"))
+
+        local zoneAutomatic = mist.utils.deepCopy(self.houndBlue:getZone("Tinian"))
+
+        self.houndBlue:removeZone("Tinian")
+        lu.assertIsNil(self.houndBlue:getZone("Tinian"))
+
 
         self.houndBlue:setZone("Saipan","Sector_Saipan")
-        self.houndBlue:setZone("Tinian","Sector_Tinian")
+        self.houndBlue:setZone("Tinian","Tinian Sector")
 
         lu.assertIsNil(self.houndBlue:getZone("default"))
         lu.assertIsTable(self.houndBlue:getZone("Saipan"))
         lu.assertIsTable(self.houndBlue:getZone("Tinian"))
+        local zoneManual = mist.utils.deepCopy(self.houndBlue:getZone("Tinian"))
+
+        lu.assertItemsEquals(zoneManual,zoneAutomatic)
     end
+
+    function TestHoundFunctionalInit:Test_02_base_06_radio_menu()
+        lu.assertIsTable(self.houndBlue.settings:getRadioMenu())
+        local originalMenu = mist.utils.deepCopy(self.houndBlue.settings:getRadioMenu())
+        local test_root = missionCommands.addSubMenu("new root")
+        self.houndBlue:setRadioMenuParent(test_root)
+        env.info(mist.utils.tableShow(test_root))
+        lu.assertIsTable(self.houndBlue.settings:getRadioMenu())
+        local shiftedRoot = mist.utils.deepCopy(self.houndBlue.settings:getRadioMenu())
+
+        lu.assertNotEquals(originalMenu,shiftedRoot)
+        self.houndBlue:setRadioMenuParent(nil)
+        local postRootMenu = mist.utils.deepCopy(self.houndBlue.settings:getRadioMenu())
+        lu.assertIsTable(self.houndBlue.settings:getRadioMenu())
+        lu.assertItemsEquals(originalMenu,postRootMenu)
+
+
+    end
+
 end

@@ -260,12 +260,13 @@ local bool = HoundInstance:getBDA()
 ### Reposition Controller radio menu
 By default the [Controller](#sam-controller) will generate the "ELINT" root menu in the base F10 menu.
 You may choose to change this to a different base location in some cases.  
-`NOTE: there a needs to be a very clear order of events for this to function properly` 
+
 ```lua
 -- target menu MUST be created BEFORE it's assigned to Radio menu
     SuperDuperMenu = missionCommands.addSubMenuForCoalition(coalition.side.BLUE,"Fantastic functionality")
 
--- new parent menu must be called BEFORE calling enableController (but can be after configureController if called separately)
+-- it is highly recommended to set the new parent menu BEFORE calling enableController (but can be after configureController if called separately). 
+-- If set after "enableController()" is called, in some cases a user will be required to retake his slot.
     HoundInstance:setRadioMenuParent(SuperDuperMenu)
 
 -- after parent has been assinged you can enable controller
@@ -371,10 +372,22 @@ or to all of them using the "all" keyword
 ```
 #### ***Zones***
 Geofencing a sector will be achived by assigning a "Zone".
-It's following the standard DCS method of using a group waypoints. it's recommended to add a helicopter group set for late activation.
+There are two valid polygon inputs to the Sector.
+  * Draw tool freeform polygon
+  * DCS Group waypoints (standard method - best practis is to use a late activation helicopter group)
+
 it is then added to the sector using the following:
 ```lua
+    HoundInstance:setZone("sectorName","drawToolPolygon")
+    -- or 
     HoundInstance:setZone("sectorName","GroupName")
+```
+if both polygon and group share the same name. Polygon will take precedence. 
+
+There is also a special case, if "sectorName Sector" is a valid draw polygon you can use it without passing any arguments.
+```lua
+    -- This will try and use a polygon called "sectorName Sector" if one exists.
+    HoundInstance:setZone("sectorName")
 ```
 
 You can also get the currently set zone on the sector (nil means not zone is set)

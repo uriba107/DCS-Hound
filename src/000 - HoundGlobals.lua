@@ -93,7 +93,7 @@ do
     -- @field houndId Hound Instace ID that emitted the event
     -- @field coalition coalition ID of the Hound Instance that emitted the event
     -- @field Initiator DCS Unit or HoundContact Subclass that triggered the event
-    -- @field time of event 
+    -- @field time of event
 
 
     --- Global helper functions

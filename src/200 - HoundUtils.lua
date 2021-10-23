@@ -1095,6 +1095,31 @@ do
         return polygon
     end
 
+    --- Get zone from drawing
+    -- @param zoneName
+    -- @return table of points
+    function HoundUtils.Polygon.getDrawnZone(zoneName)
+        if type(zoneName) ~= "string" then return nil end
+        if not _G.env.mission.drawings or not _G.env.mission.drawings.layers then return nil end
+        for _,drawLayer in pairs(_G.env.mission.drawings.layers) do
+            if type(drawLayer["objects"]) == "table" then
+                for _,drawObject in pairs(drawLayer["objects"]) do
+                    env.info(type(drawObject))
+                    if drawObject["name"] == zoneName then
+                        if drawObject["primitiveType"] ~= "Polygon" and Length(drawObject["points"]) < 3 then return nil end
+                        local points = l_mist.utils.deepCopy(drawObject["points"])
+                        local objectX,objecty = drawObject["mapX"],drawObject["mapY"]
+                        for _,point in pairs(points) do
+                            point.x = point.x + objectX
+                            point.y = point.y + objecty
+                        end
+                        return points
+                    end
+                end
+            end
+        end
+        return nil
+    end
     --- Clustering algorithems (for future use)
     -- @section Clusters
 

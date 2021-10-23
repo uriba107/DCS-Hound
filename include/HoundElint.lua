@@ -442,6 +442,13 @@ do
             ['Band'] = 'J',
             ['Primary'] = false
         },
+        ['NASAMS_Radar_MPQ64F1'] = {
+            ['Name'] = "Sentinel",
+            ['Assigned'] = {"NASAMS"},
+            ['Role'] = {"SR"},
+            ['Band'] = 'I',
+            ['Primary'] = true
+        },
         ['HQ-7_STR_SP'] = {
             ['Name'] = "HQ-7",
             ['Assigned'] = {"HQ-7"},
@@ -1133,6 +1140,7 @@ do
 
         instance.removeRadioMenu = function (self)
             if self.radioMenu.root ~= nil then
+                missionCommands.removeItem(self.radioMenu.root)
                 self.radioMenu.root = nil
                 return true
             end
@@ -1144,7 +1152,8 @@ do
         end
 
         instance.setRadioMenuParent = function (self,parent)
-            if type(parent) == "table" then
+            if type(parent) == "table" or (parent == nil and self.radioMenu.parent) then
+                self:removeRadioMenu()
                 self.radioMenu.parent = parent
                 return true
             end
@@ -1947,6 +1956,28 @@ do
         return polygon
     end
 
+    function HoundUtils.Polygon.getDrawnZone(zoneName)
+        if type(zoneName) ~= "string" then return nil end
+        if not _G.env.mission.drawings or not _G.env.mission.drawings.layers then return nil end
+        for _,drawLayer in pairs(_G.env.mission.drawings.layers) do
+            if type(drawLayer["objects"]) == "table" then
+                for _,drawObject in pairs(drawLayer["objects"]) do
+                    env.info(type(drawObject))
+                    if drawObject["name"] == zoneName then
+                        if drawObject["primitiveType"] ~= "Polygon" and Length(drawObject["points"]) < 3 then return nil end
+                        local points = l_mist.utils.deepCopy(drawObject["points"])
+                        local objectX,objecty = drawObject["mapX"],drawObject["mapY"]
+                        for _,point in pairs(points) do
+                            point.x = point.x + objectX
+                            point.y = point.y + objecty
+                        end
+                        return points
+                    end
+                end
+            end
+        end
+        return nil
+    end
 
     function HoundUtils.Cluster.getCentroids(contacts)
         local centroids = {}
@@ -3857,8 +3888,19 @@ do
             HoundLogger.warn("[Hound] - cannot set zone to default sector")
             return
         end
-        if zonecandidate and Group.getByName(zonecandidate) then
-            self.settings.zone = mist.getGroupPoints(zonecandidate)
+        if type(zonecandidate) == "string" then
+            local zone = HoundUtils.Polygon.getDrawnZone(zonecandidate)
+            if not zone and (Group.getByName(zonecandidate)) then
+                zone = mist.getGroupPoints(zonecandidate)
+            end
+            self.settings.zone = zone
+            return
+        end
+        if not zonecandidate then
+            local zone = HoundUtils.Polygon.getDrawnZone(self.name .. " Sector")
+            if zone then
+                self.settings.zone = zone
+            end
         end
     end
 
@@ -3885,7 +3927,6 @@ do
 
     function HoundSector:updateSectorMembership(contact)
         local inSector, threatsSector = HoundUtils.Polygon.threatOnSector(self.settings.zone,contact:getPos(),contact:getMaxWeaponsRange())
-        HoundLogger.trace(tostring(inSector) .. " " .. tostring(threatsSector))
         contact:updateSector(self.name, inSector, threatsSector)
     end
 
@@ -5078,7 +5119,7 @@ do
 
     function HoundElint:setZone(sectorName,zoneCandidate)
         if type(sectorName) ~= "string" then return end
-        if type(zoneCandidate) ~= "string" then return end
+        if type(zoneCandidate) ~= "string" and zoneCandidate ~= nil then return end
         if self.sectors[sectorName] then
             self.sectors[sectorName]:setZone(zoneCandidate)
         end
@@ -5156,7 +5197,11 @@ do
     end
 
     function HoundElint:setRadioMenuParent(parent)
-        return self.settings:setRadioMenuParent(parent) or false
+        local retval = self.settings:setRadioMenuParent(parent)
+        if retval == true then
+            self:populateRadioMenu()
+        end
+        return retval or false
     end
 
 
@@ -5175,7 +5220,7 @@ do
                 self.contacts:Process()
                 self.timingCounters.long = self.timingCounters.long + 1
                 for sectorName,_ in pairs(self.sectors) do
-                    HoundLogger.trace(sectorName .. " has " .. self.contacts:countContacts(sectorName).. "Contacts")
+                    HoundLogger.trace(sectorName .. " has " .. self.contacts:countContacts(sectorName).. " Contacts")
                 end
             end
             if self.timingCounters.long == 2 then
@@ -5332,4 +5377,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.2.0-develop - Compiled on 2021-10-20 22:01
+-- Hound version 0.2.0-develop - Compiled on 2021-10-23 21:08

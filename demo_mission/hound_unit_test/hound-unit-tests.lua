@@ -59,5 +59,5 @@ do
     UserSpaceLogging("Starting Modules Testing")
 
     runTest.TaskId = timer.scheduleFunction(runTest.run, runTest, timer.getTime() + 1)
-
+    -- env.info(mist.utils.tableShow(_G.env.mission.drawings.layers[2]["objects"][1]))
 end

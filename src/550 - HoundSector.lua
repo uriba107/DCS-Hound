@@ -195,14 +195,25 @@ do
     end
 
     --- Set zone in sector
-    -- @param zonecandidate (String) DCS group name, sector borders will be group waypoints
+    -- @param zonecandidate (String) DCS group name, or a drawn map freeform Polygon. sector borders will be group waypoints or polygon points
     function HoundSector:setZone(zonecandidate)
         if self.name == "default" then
             HoundLogger.warn("[Hound] - cannot set zone to default sector")
             return
         end
-        if zonecandidate and Group.getByName(zonecandidate) then
-            self.settings.zone = mist.getGroupPoints(zonecandidate)
+        if type(zonecandidate) == "string" then
+            local zone = HoundUtils.Polygon.getDrawnZone(zonecandidate)
+            if not zone and (Group.getByName(zonecandidate)) then
+                zone = mist.getGroupPoints(zonecandidate)
+            end
+            self.settings.zone = zone
+            return
+        end
+        if not zonecandidate then
+            local zone = HoundUtils.Polygon.getDrawnZone(self.name .. " Sector")
+            if zone then
+                self.settings.zone = zone
+            end
         end
     end
 
@@ -235,9 +246,9 @@ do
     --- update contact for zone memberships
     -- @param contact HoundContact instance
     function HoundSector:updateSectorMembership(contact)
-        HoundLogger.trace("Evaluating " .. contact:getName() .. " for " .. self.name)
+        -- HoundLogger.trace("Evaluating " .. contact:getName() .. " for " .. self.name)
         local inSector, threatsSector = HoundUtils.Polygon.threatOnSector(self.settings.zone,contact:getPos(),contact:getMaxWeaponsRange())
-        HoundLogger.trace(tostring(inSector) .. " " .. tostring(threatsSector))
+        -- HoundLogger.trace(tostring(inSector) .. " " .. tostring(threatsSector))
         contact:updateSector(self.name, inSector, threatsSector)
     end
 

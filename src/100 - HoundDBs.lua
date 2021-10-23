@@ -202,6 +202,13 @@ do
             ['Band'] = 'J',
             ['Primary'] = false
         },
+        ['NASAMS_Radar_MPQ64F1'] = {
+            ['Name'] = "Sentinel",
+            ['Assigned'] = {"NASAMS"},
+            ['Role'] = {"SR"},
+            ['Band'] = 'I',
+            ['Primary'] = true
+        },
         ['HQ-7_STR_SP'] = {
             ['Name'] = "HQ-7",
             ['Assigned'] = {"HQ-7"},

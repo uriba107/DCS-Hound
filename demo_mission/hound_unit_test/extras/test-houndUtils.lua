@@ -200,6 +200,11 @@ do
     end
 
     function TestHoundUtils:TestPolygon()
+        local zone = HoundUtils.Polygon.getDrawnZone("Tinian Sector")
+        lu.assertNotNil(zone)
+        lu.assertEquals(Length(zone),16)
+        lu.assertItemsEquals(zone[1],zone[Length(zone)])
+        
     end
 
     function TestHoundUtils:tearDown()

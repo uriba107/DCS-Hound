@@ -2,6 +2,7 @@ do
     if STTS ~= nil then
         STTS.DIRECTORY = "C:\\Program Files\\DCS-SimpleRadio-Standalone"
     end
+
 end
 
 do
@@ -32,6 +33,9 @@ do
     Elint_blue:enableText()
     Elint_blue:enableAtis()
 
+    Elint_blue:addSector("Fake")    
+    Elint_blue:setZone("Fake")
+
 
 end
 
@@ -51,6 +55,7 @@ do
 
     function testing.getContacts(hound)
         env.info(mist.utils.tableShow(hound:getContacts()))
+        env.info(net.lua2json(hound:getContacts()))
     end
 
     function testing.spawnPlatform(hound)

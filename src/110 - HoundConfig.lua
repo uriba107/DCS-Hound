@@ -263,7 +263,7 @@ do
         -- @return Bool True if menu was removed
         instance.removeRadioMenu = function (self)
             if self.radioMenu.root ~= nil then
-                -- missionCommands.removeItem(self.radioMenu.root)
+                missionCommands.removeItem(self.radioMenu.root)
                 self.radioMenu.root = nil
                 return true
             end
@@ -287,7 +287,8 @@ do
         --          coalition.side.BLUE, 'AWACS, Tankers and ELINT..')
         -- HoundConfig:setRadioMenuParent(servicesMenu)
         instance.setRadioMenuParent = function (self,parent)
-            if type(parent) == "table" then
+            if type(parent) == "table" or (parent == nil and self.radioMenu.parent) then
+                self:removeRadioMenu()
                 self.radioMenu.parent = parent
                 return true
             end
