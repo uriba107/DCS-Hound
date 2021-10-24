@@ -447,6 +447,7 @@ if you with for a specific sector to use a callsign from the NATO list you can c
 ```
 if you want ALL sectors to use callsignes from this pool there is a global setting for this. See [Global settings -> NATO callsigns](#nato-callsigns)
 ## Text-To-Speech
+---
 In addition to the map markers described above. Hound is utilizing Text-To-Speech to provide the player with information via SRS.
 The three communication types are:
   * Automated Information System [ATIS system](#atis-system)
@@ -455,7 +456,7 @@ The three communication types are:
 
 they are all configureable as will be described the [Text-To-Speach configuration](#text-to-speach-configuration) segment below.
 
-#### ATIS system
+### ATIS system
 ---
 The Automated Tactical Information System (ATIS). Will provide an automated information message loop on a set frequency.
 Default frequency for ATIS is 250.500 AM.
@@ -483,7 +484,7 @@ or you can pass the configuration on enable
     HoundInstance:enableAtis("Sukhumi",atis_conf)
 ```
 
-##### **additional settings**
+#### **additional settings**
   * ATIS by default will not report EWR radars as threat, but will only notify you on their presence (and how many of them are tracket in the sector). If from some reason you prefer to get a normal brief on them as well you can enable it using the following:
 ```lua
     HoundInstance:reportEWR("Sukhumi",true)
@@ -495,7 +496,7 @@ or you can pass the configuration on enable
 ```
   * NATO Lowdown format is available as global setting. see [Global Settings -> NATO Lowdown](#nato-lowdown)
   * Changing the ATIS update interval is avilable via global settings. see [Global Settings -> ATIS update interval](#atis-update-interval)
-#### SAM controller
+### SAM controller
 ---
 The SAM controller is the main user interface with the system. Via the F10 menu, you can request detailed information about specific tracked radars. the controller defaults to 250.00 AM
 
@@ -520,7 +521,7 @@ disable is done via
     --- or the named sector
     HoundInstance:disableController("Saipan")
 ```
- ##### ***Additional settings***
+ #### ***Additional settings***
  By default a controller will alert you on new radars detected and on dead emitters.
  you can disable all controller alerts (does not affect the [Notifier](#notifier)).
  ```lua
@@ -531,7 +532,38 @@ disable is done via
 -- and set for all of them with
     HoundInstance:disableAlerts("all")
 ```
- #### Notifier
+
+By default the controller will provide you with MGRS in 6 digits format (3 for easting and 3 northing).
+this is set by a global variable 
+```lua
+HOUND.MGRS_PRECISION = 3
+```
+you can override this to get defferent precision (i.e 5 will give you 10 digits MGRS)  
+
+ #### ***Controller message format***
+ The controller has a fixed message structure as follows.
+   * Radar UID (unique for every radar)
+  * Roughly WHEN this radar was last seen
+  * Roughly WHERE this radar is (using bullseye)
+  * Roughly HOW ACCURATE the system is estimating the solution to be
+  * Precise estimated position - using LL (repeated twice for readback/VR)
+  * Precise estimated position - using MGRS
+  * Elevation of Radar above Sea-level (in 50ft increments)
+  * Extended uncertenty ellipse information (Major axis, Minor Axis, rotation of major axis)
+  * Extended Tracking time information (How long is tracked, when last seed)
+
+This Reads like this:
+ ```
+ <Radar Type> <Radar UID>, [Active/Recent/stale etc.] at Bullseye XXX for YY, accuracy [Very High/High/Medium/Low etc.], 
+ position <LL in Aricraft format>, I repeate <LL in Aricraft format>,
+ MGRS <MGRS with HOUND.MGRS_PRECISION>,
+ elevation XXXX feet MSL,
+ ellipse is XX by YY, aligned bearing ZZ,
+ Tracked for XX [minutes/seconds], last seen YY [minutes/seconds] ago.
+ ```
+
+Advanced users what wish to change this structure may do it. The recommended way to achieve this is to `COPY` the `HoundContact:generateTtsReport` function from `src/301 - HoundContact_comms.lua` file in this repo to a new file. In that new file perform the changes you want load the new file to the mission using `Do script file` AFTER the main Hound script is loaded. this will replace the original implementation without  editing the original file. allowing a simpler upgrades to newer Hound versions without loosing you changes.
+ ### Notifier
  ---
  This, as the name suggests is notification only agent. it functions independently of controller or ATIS and will only report pop-up and if enable radar destruction alerts. this is intended to be operated on a different freqency then the controller (which has the same alerting capacity). This may be used for improving SA on Air-To-Air frequency or on general strike channels.
  
@@ -552,7 +584,7 @@ disable is done via
     HoundInstace:enableNotifier("Qeshem",{freq=254,modulation="AM",gender="male"})
   ```
 
-#### Text-To-Speach configuration
+### Text-To-Speach configuration
 ---
 Oviously, you may want to tweak the radio to better work with you mission.
 this can be done using an arguments table and passing it to the configuration funtion.
