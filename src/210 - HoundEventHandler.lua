@@ -51,9 +51,7 @@ do
         end
         for _, handler in pairs(HoundEventHandler.subscribers) do
             if handler.onHoundEvent and type(handler.onHoundEvent) == "function" then
-                if handler then
-                    handler:onHoundEvent(event)
-                end
+                handler:onHoundEvent(event)
             end
         end
     end

@@ -14,7 +14,7 @@ do
     function HoundCommsManager:create(sector,houndConfig,settings)
         if (not houndConfig and type(houndConfig) ~= "table") or
             (not sector and type(sector) ~= "string") then
-                env.info("[Hound] - Comm Controller could not be initilized, missing params")
+                HoundLogger.warn("[Hound] - Comm Controller could not be initilized, missing params")
                 return nil
         end
         local CommsManager = {}

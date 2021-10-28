@@ -470,7 +470,7 @@ do
     function HoundContact:drawAreaMarker(numPoints,debug)
         if numPoints == nil then numPoints = 1 end
         if numPoints ~= 1 and numPoints ~= 4 and numPoints ~=8 and numPoints ~= 16 then
-            env.info("DCS limitation, only 1,4,8 or 16 points are allowed")
+            HoundLogger.error("DCS limitation, only 1,4,8 or 16 points are allowed")
             numPoints = 1
             end
 

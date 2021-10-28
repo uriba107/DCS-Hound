@@ -343,7 +343,6 @@ do
     end
 
     --- Returns maximum horizon distance given heigh above the earth of two points
-    -- assumes earth radius of 6371 Km
     -- if only one observer hight is provided, result would be maximum view distance to Sea Level
     -- @param h0 height of observer 1 in meters
     -- @param[opt] h1 height of observer 2 in meters
@@ -351,7 +350,7 @@ do
 
     function HoundUtils.EarthLOS(h0,h1)
         if not h0 then return 0 end
-        local Re = 6371000 -- Radius of earth in M
+        local Re = 6367444 -- Radius of earth in M (avarage radius of WGS84)
         local d0 = l_math.sqrt(h0^2+2*Re*h0)
         local d1 = 0
         if h1 then d1 = l_math.sqrt(h1^2+2*Re*h1) end
@@ -371,7 +370,7 @@ do
         end
 
         local DCS_Unit = Unit.getByName(player.unitName)
-        if not DCS_Unit then return string.upper(callsign) end
+        if not DCS_Unit then return string.upper(callsign:match( "^%s*(.-)%s*$" )) end
 
         local playerName = DCS_Unit:getPlayerName()
         if playerName then
@@ -392,10 +391,10 @@ do
                     end
                 end
                 HoundLogger.trace("callsign " .. type(callsign) .. " " .. tostring(callsign) )
-                return string.upper(callsign)
+                return string.upper(callsign:match( "^%s*(.-)%s*$" ))
             end
         end
-        return string.upper(callsign)
+        return string.upper(callsign:match( "^%s*(.-)%s*$" ))
     end
 
     --- get Callsign
@@ -521,14 +520,25 @@ do
     -- TTS Function - convert Decimal degrees to DMS/DM.M speech string
     -- @param cood (float) input coordinate arg in decimal deg (e.g "32.443232", "-144.3432")
     -- @param[opt] minDec (bool) if true output will return in DM.M else in DMS
+    -- @param[opt] padDeg (Bool) if true degrees will be zero padded. (32 -> 032 )
     -- @return TTS ready stings. e.g "32 degrees, 15 mintes, 6 seconds", "32 degrees, 15.100 seconds"
 
-    function HoundUtils.TTS.DecToDMS(cood,minDec)
+    function HoundUtils.TTS.DecToDMS(cood,minDec,padDeg)
         local DMS = HoundUtils.DecToDMS(cood)
-        if minDec == true then
-            return l_math.abs(DMS.d) .. " degrees, " .. string.format("%02d",DMS.m) .. ", " .. HoundUtils.TTS.toPhonetic( "." .. string.format("%03d",DMS.sDec))..  " minutes"
+        local strTab = {
+            l_math.abs(DMS.d) .. " degrees",
+            string.format("%02d",DMS.m) .. " minutes",
+            string.format("%02d",DMS.s) .. " seconds"
+        }
+        if padDeg == true then
+            strTab[1] = string.format("%03d",l_math.abs(DMS.d)) .. " degrees"
         end
-        return l_math.abs(DMS.d) .. " degrees, " .. string.format("%02d",DMS.m) .. " minutes, " .. string.format("%02d",DMS.s) .. " seconds"
+        if minDec == true then
+            strTab[2] = string.format("%02d",DMS.m)
+            strTab[3] = HoundUtils.TTS.toPhonetic( "." .. string.format("%03d",DMS.sDec)) .. " minutes"
+        end
+        -- return degStr .. ", " .. minStr .. ", " .. secStr
+        return table.concat(strTab,", ")
     end
 
     --- convert LL to TTS string
@@ -541,7 +551,7 @@ do
     function HoundUtils.TTS.getVerbalLL(lat,lon,minDec)
         minDec = minDec or false
         local hemi = HoundUtils.getHemispheres(lat,lon,true)
-        return hemi.NS .. ", " .. HoundUtils.TTS.DecToDMS(lat,minDec)  ..  ", " .. hemi.EW .. ", " .. HoundUtils.TTS.DecToDMS(lon,minDec)
+        return hemi.NS .. ", " .. HoundUtils.TTS.DecToDMS(lat,minDec)  ..  ", " .. hemi.EW .. ", " .. HoundUtils.TTS.DecToDMS(lon,minDec,true)
     end
 
     --- Convert string to phonetic text
@@ -1104,7 +1114,6 @@ do
         for _,drawLayer in pairs(_G.env.mission.drawings.layers) do
             if type(drawLayer["objects"]) == "table" then
                 for _,drawObject in pairs(drawLayer["objects"]) do
-                    env.info(type(drawObject))
                     if drawObject["name"] == zoneName then
                         if drawObject["primitiveType"] ~= "Polygon" and Length(drawObject["points"]) < 3 then return nil end
                         local points = l_mist.utils.deepCopy(drawObject["points"])

@@ -77,7 +77,7 @@ do
 
     --- Generate TTS report for the contact (for controller)
     -- @param[opt] useDMM if true. output will be DM.M rather then the default DMS
-    -- @param[opt] refPos position of reference point for BR
+    -- @param[opt] refPos position of reference point for BR (Not Currently Used)
     -- @return generated message
     function HoundContact:generateTtsReport(useDMM,refPos)
         if self.pos.p == nil then return end
@@ -98,10 +98,10 @@ do
         local LLstr = HoundUtils.TTS.getVerbalLL(self.pos.LL.lat,self.pos.LL.lon,useDMM)
         msg = msg .. ", accuracy " .. HoundUtils.TTS.getVerbalConfidenceLevel( self.uncertenty_data.r )
         msg = msg .. ", position " .. LLstr
-        msg = msg .. ", I repeat " .. LLstr
+        msg = msg .. ", I say again " .. LLstr
         msg = msg .. ", MGRS " .. phoneticGridPos
         msg = msg .. ", elevation  " .. HoundUtils.getRoundedElevationFt(self.pos.elev) .. " feet MSL"
-        HoundLogger.trace("az: " .. string.format("%03d",self.uncertenty_data.az))
+        -- HoundLogger.trace("az: " .. string.format("%03d",self.uncertenty_data.az))
         msg = msg .. ", ellipse " ..  HoundUtils.TTS.simplfyDistance(self.uncertenty_data.major) .. " by " ..  HoundUtils.TTS.simplfyDistance(self.uncertenty_data.minor) .. ", aligned bearing " .. HoundUtils.TTS.toPhonetic(string.format("%03d",self.uncertenty_data.az))
         msg = msg .. ", Tracked for " .. HoundUtils.TTS.getVerbalContactAge(self.first_seen) .. ", last seen " .. HoundUtils.TTS.getVerbalContactAge(self.last_seen) .. " ago. " .. HoundUtils.getControllerResponse()
         return msg

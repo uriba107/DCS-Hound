@@ -67,7 +67,7 @@ do
                 end
             end
         end
-        env.info("[Hound] - Failed to add platform "..platformName..". Make sure you use unit name.")
+        HoundLogger.warn("[Hound] - Failed to add platform "..platformName..". Make sure you use unit name.")
         return false
     end
 
@@ -304,14 +304,14 @@ do
         self:removeDeadPlatforms()
 
         if Length(self._platforms) == 0 then
-            env.info("no active platform")
+            HoundLogger.trace("no active platform")
             return
         end
 
         local Radars = HoundUtils.Elint.getActiveRadars(self:getCoalition())
 
         if Length(Radars) == 0 then
-            env.info("No Transmitting Radars")
+            HoundLogger.trace("No Transmitting Radars")
             return
         end
         -- env.info("Recivers: " .. table.getn(self.platform) .. " | Radars: " .. table.getn(Radars))

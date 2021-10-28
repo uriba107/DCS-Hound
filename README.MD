@@ -696,6 +696,5 @@ If you are upgrading from 0.1 please note that some changes will be required.
 ## Special thanks
   * __[Ciribob](https://github.com/ciribob)__ - without his help, support and acceptence of wierd merge requests. none of this would have been possible.
   * __Grimes__ - For [MIST](https://github.com/mrSkortch/MissionScriptingTools) and because Without the [Hoggit Wiki](https://wiki.hoggitworld.com/) we would all be fumbling in the dark.
-  * __flywaldair__ - Hound was initially inspired by [Skynet IADS](https://github.com/walder/Skynet-IADS).
-  * __Nikos__, __[Jester](https://github.com/hbjonsson)__,__[davidp57](https://github.com/davidp57)__ and all the rest - For the feeback and suggestions pushing Hound even further
-
+  * __[flywaldair](https://github.com/walder)__ - Hound was initially inspired by [Skynet IADS](https://github.com/walder/Skynet-IADS).
+  * __Nikos__, __[Jester](https://github.com/hbjonsson)__, __[davidp57](https://github.com/davidp57)__, __Pene__ and all the rest - For the feeback and suggestions pushing Hound even further

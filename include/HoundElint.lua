@@ -1412,7 +1412,7 @@ do
 
     function HoundUtils.EarthLOS(h0,h1)
         if not h0 then return 0 end
-        local Re = 6371000 -- Radius of earth in M
+        local Re = 6367444 -- Radius of earth in M (avarage radius of WGS84)
         local d0 = l_math.sqrt(h0^2+2*Re*h0)
         local d1 = 0
         if h1 then d1 = l_math.sqrt(h1^2+2*Re*h1) end
@@ -1428,7 +1428,7 @@ do
         end
 
         local DCS_Unit = Unit.getByName(player.unitName)
-        if not DCS_Unit then return string.upper(callsign) end
+        if not DCS_Unit then return string.upper(callsign:match( "^%s*(.-)%s*$" )) end
 
         local playerName = DCS_Unit:getPlayerName()
         if playerName then
@@ -1448,10 +1448,10 @@ do
                         callsign = callsign .. " " .. num
                     end
                 end
-                return string.upper(callsign)
+                return string.upper(callsign:match( "^%s*(.-)%s*$" ))
             end
         end
-        return string.upper(callsign)
+        return string.upper(callsign:match( "^%s*(.-)%s*$" ))
     end
 
     function HoundUtils.getHoundCallsign(namePool)
@@ -1548,19 +1548,28 @@ do
     end
 
 
-    function HoundUtils.TTS.DecToDMS(cood,minDec)
+    function HoundUtils.TTS.DecToDMS(cood,minDec,padDeg)
         local DMS = HoundUtils.DecToDMS(cood)
-        if minDec == true then
-            return l_math.abs(DMS.d) .. " degrees, " .. string.format("%02d",DMS.m) .. ", " .. HoundUtils.TTS.toPhonetic( "." .. string.format("%03d",DMS.sDec))..  " minutes"
+        local strTab = {
+            l_math.abs(DMS.d) .. " degrees",
+            string.format("%02d",DMS.m) .. " minutes",
+            string.format("%02d",DMS.s) .. " seconds"
+        }
+        if padDeg == true then
+            strTab[1] = string.format("%03d",l_math.abs(DMS.d)) .. " degrees"
         end
-        return l_math.abs(DMS.d) .. " degrees, " .. string.format("%02d",DMS.m) .. " minutes, " .. string.format("%02d",DMS.s) .. " seconds"
+        if minDec == true then
+            strTab[2] = string.format("%02d",DMS.m)
+            strTab[3] = HoundUtils.TTS.toPhonetic( "." .. string.format("%03d",DMS.sDec)) .. " minutes"
+        end
+        return table.concat(strTab,", ")
     end
 
 
     function HoundUtils.TTS.getVerbalLL(lat,lon,minDec)
         minDec = minDec or false
         local hemi = HoundUtils.getHemispheres(lat,lon,true)
-        return hemi.NS .. ", " .. HoundUtils.TTS.DecToDMS(lat,minDec)  ..  ", " .. hemi.EW .. ", " .. HoundUtils.TTS.DecToDMS(lon,minDec)
+        return hemi.NS .. ", " .. HoundUtils.TTS.DecToDMS(lat,minDec)  ..  ", " .. hemi.EW .. ", " .. HoundUtils.TTS.DecToDMS(lon,minDec,true)
     end
 
 
@@ -1962,7 +1971,6 @@ do
         for _,drawLayer in pairs(_G.env.mission.drawings.layers) do
             if type(drawLayer["objects"]) == "table" then
                 for _,drawObject in pairs(drawLayer["objects"]) do
-                    env.info(type(drawObject))
                     if drawObject["name"] == zoneName then
                         if drawObject["primitiveType"] ~= "Polygon" and Length(drawObject["points"]) < 3 then return nil end
                         local points = l_mist.utils.deepCopy(drawObject["points"])
@@ -2160,9 +2168,7 @@ do
         end
         for _, handler in pairs(HoundEventHandler.subscribers) do
             if handler.onHoundEvent and type(handler.onHoundEvent) == "function" then
-                if handler then
-                    handler:onHoundEvent(event)
-                end
+                handler:onHoundEvent(event)
             end
         end
     end
@@ -2617,7 +2623,7 @@ do
     function HoundContact:drawAreaMarker(numPoints,debug)
         if numPoints == nil then numPoints = 1 end
         if numPoints ~= 1 and numPoints ~= 4 and numPoints ~=8 and numPoints ~= 16 then
-            env.info("DCS limitation, only 1,4,8 or 16 points are allowed")
+            HoundLogger.error("DCS limitation, only 1,4,8 or 16 points are allowed")
             numPoints = 1
             end
 
@@ -2867,7 +2873,7 @@ do
         local LLstr = HoundUtils.TTS.getVerbalLL(self.pos.LL.lat,self.pos.LL.lon,useDMM)
         msg = msg .. ", accuracy " .. HoundUtils.TTS.getVerbalConfidenceLevel( self.uncertenty_data.r )
         msg = msg .. ", position " .. LLstr
-        msg = msg .. ", I repeat " .. LLstr
+        msg = msg .. ", I say again " .. LLstr
         msg = msg .. ", MGRS " .. phoneticGridPos
         msg = msg .. ", elevation  " .. HoundUtils.getRoundedElevationFt(self.pos.elev) .. " feet MSL"
         msg = msg .. ", ellipse " ..  HoundUtils.TTS.simplfyDistance(self.uncertenty_data.major) .. " by " ..  HoundUtils.TTS.simplfyDistance(self.uncertenty_data.minor) .. ", aligned bearing " .. HoundUtils.TTS.toPhonetic(string.format("%03d",self.uncertenty_data.az))
@@ -2947,7 +2953,7 @@ do
     function HoundCommsManager:create(sector,houndConfig,settings)
         if (not houndConfig and type(houndConfig) ~= "table") or
             (not sector and type(sector) ~= "string") then
-                env.info("[Hound] - Comm Controller could not be initilized, missing params")
+                HoundLogger.warn("[Hound] - Comm Controller could not be initilized, missing params")
                 return nil
         end
         local CommsManager = {}
@@ -3429,7 +3435,7 @@ do
                 end
             end
         end
-        env.info("[Hound] - Failed to add platform "..platformName..". Make sure you use unit name.")
+        HoundLogger.warn("[Hound] - Failed to add platform "..platformName..". Make sure you use unit name.")
         return false
     end
 
@@ -3627,14 +3633,12 @@ do
         self:removeDeadPlatforms()
 
         if Length(self._platforms) == 0 then
-            env.info("no active platform")
             return
         end
 
         local Radars = HoundUtils.Elint.getActiveRadars(self:getCoalition())
 
         if Length(Radars) == 0 then
-            env.info("No Transmitting Radars")
             return
         end
         for _,RadarName in ipairs(Radars) do
@@ -5377,4 +5381,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.2.0-develop - Compiled on 2021-10-23 21:08
+-- Hound version 0.2.0-develop - Compiled on 2021-10-28 22:37
