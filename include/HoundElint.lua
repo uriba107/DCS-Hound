@@ -1175,6 +1175,7 @@ do
         Text = {},
         Elint = {},
         Vector={},
+        Zone={},
         Polygon={},
         Cluster={},
         Sort = {},
@@ -1779,6 +1780,80 @@ do
     end
 
 
+    function HoundUtils.Zone.listDrawnZones()
+        local zoneNames = {}
+        local base = _G.env.mission
+        if not base or not base.drawings or not base.drawings.layers then return zoneNames end
+        for _,drawLayer in pairs(base.drawings.layers) do
+            if type(drawLayer["objects"]) == "table" then
+                for _,drawObject in pairs(drawLayer["objects"]) do
+                    if drawObject["primitiveType"] == "Polygon" and (setContainsValue({"free","rect","oval"},drawObject["polygonMode"])) then
+                        table.insert(zoneNames,drawObject["name"])
+                    end
+                end
+            end
+        end
+        return zoneNames
+    end
+
+    function HoundUtils.Zone.getDrawnZone(zoneName)
+        if type(zoneName) ~= "string" then return nil end
+        if not _G.env.mission.drawings or not _G.env.mission.drawings.layers then return nil end
+        for _,drawLayer in pairs(_G.env.mission.drawings.layers) do
+            if type(drawLayer["objects"]) == "table" then
+                for _,drawObject in pairs(drawLayer["objects"]) do
+                    if drawObject["name"] == zoneName and drawObject["primitiveType"] == "Polygon" then
+                        local points = {}
+                        local theta = nil
+                        if drawObject["polygonMode"] == "free" and Length(drawObject["points"]) >2 then
+                            points = l_mist.utils.deepCopy(drawObject["points"])
+                        end
+                        if drawObject["polygonMode"] == "rect" then
+                            theta = l_math.rad(drawObject["angle"])
+                            local w,h = drawObject["width"],drawObject["height"]
+
+
+                            table.insert(points,{x=h/2,y=w/2})
+                            table.insert(points,{x=-h/2,y=w/2})
+                            table.insert(points,{x=-h/2,y=-w/2})
+                            table.insert(points,{x=h/2,y=-w/2})
+                        end
+                        if drawObject["polygonMode"] == "oval" then
+                            theta = l_math.rad(drawObject["angle"])
+                            local r1,r2 = drawObject["r1"],drawObject["r2"]
+                            local numPoints = 16
+                            local angleStep = pi_2/numPoints
+
+                            for i = 1, numPoints do
+                                local pointAngle = i * angleStep
+                                local x = r1 * l_math.cos(pointAngle)
+                                local y = r2 * l_math.sin(pointAngle)
+                                table.insert(points,{x=x,y=y})
+                            end
+                        end
+                        if theta then
+                            for _,point in pairs(points) do
+                                local x = point.x
+                                local y = point.y
+                                point.x = x * l_math.cos(theta) - y * l_math.sin(theta)
+                                point.y = x * l_math.sin(theta) + y * l_math.cos(theta)
+                            end
+                        end
+                        if Length(points) < 3 then return nil end
+                        local objectX,objecty = drawObject["mapX"],drawObject["mapY"]
+                        for _,point in pairs(points) do
+                            point.x = point.x + objectX
+                            point.y = point.y + objecty
+                        end
+                        return points
+                    end
+                end
+            end
+        end
+        return nil
+    end
+
+
     function HoundUtils.Polygon.isDcsPoint(point)
         if type(point) ~= "table" then return false end
         return (point.x and type(point.x) == "number") and  (point.z and type(point.z) == "number")
@@ -1965,27 +2040,6 @@ do
         return polygon
     end
 
-    function HoundUtils.Polygon.getDrawnZone(zoneName)
-        if type(zoneName) ~= "string" then return nil end
-        if not _G.env.mission.drawings or not _G.env.mission.drawings.layers then return nil end
-        for _,drawLayer in pairs(_G.env.mission.drawings.layers) do
-            if type(drawLayer["objects"]) == "table" then
-                for _,drawObject in pairs(drawLayer["objects"]) do
-                    if drawObject["name"] == zoneName then
-                        if drawObject["primitiveType"] ~= "Polygon" and Length(drawObject["points"]) < 3 then return nil end
-                        local points = l_mist.utils.deepCopy(drawObject["points"])
-                        local objectX,objecty = drawObject["mapX"],drawObject["mapY"]
-                        for _,point in pairs(points) do
-                            point.x = point.x + objectX
-                            point.y = point.y + objecty
-                        end
-                        return points
-                    end
-                end
-            end
-        end
-        return nil
-    end
 
     function HoundUtils.Cluster.getCentroids(contacts)
         local centroids = {}
@@ -3893,7 +3947,7 @@ do
             return
         end
         if type(zonecandidate) == "string" then
-            local zone = HoundUtils.Polygon.getDrawnZone(zonecandidate)
+            local zone = HoundUtils.Zone.getDrawnZone(zonecandidate)
             if not zone and (Group.getByName(zonecandidate)) then
                 zone = mist.getGroupPoints(zonecandidate)
             end
@@ -3901,7 +3955,7 @@ do
             return
         end
         if not zonecandidate then
-            local zone = HoundUtils.Polygon.getDrawnZone(self.name .. " Sector")
+            local zone = HoundUtils.Zone.getDrawnZone(self.name .. " Sector")
             if zone then
                 self.settings.zone = zone
             end
@@ -5381,4 +5435,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.2.0-develop - Compiled on 2021-10-28 22:37
+-- Hound version 0.2.0-develop - Compiled on 2021-10-29 17:04

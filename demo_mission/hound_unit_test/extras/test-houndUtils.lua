@@ -138,9 +138,9 @@ do
         -- HoundUtils.TTS.getVerbalLL
         lu.assertEquals(HoundUtils.TTS.getVerbalLL(35.443,-124.5543),"North, 35 degrees, 26 minutes, 34 seconds, West, 124 degrees, 33 minutes, 15 seconds")
         lu.assertEquals(HoundUtils.TTS.getVerbalLL(35.443,-124.5543,true),"North, 35 degrees, 26, Decimal Five Eight Zero minutes, West, 124 degrees, 33, Decimal Two Five Eight minutes")
-        lu.assertEquals(HoundUtils.TTS.getVerbalLL(35.443,37.5543),"North, 35 degrees, 26 minutes, 34 seconds, East, 37 degrees, 33 minutes, 15 seconds")
-        lu.assertEquals(HoundUtils.TTS.getVerbalLL(-35.443,37.5543,false),"South, 35 degrees, 26 minutes, 34 seconds, East, 37 degrees, 33 minutes, 15 seconds")
-        lu.assertEquals(HoundUtils.TTS.getVerbalLL(-35.443,37.5543,true),"South, 35 degrees, 26, Decimal Five Eight Zero minutes, East, 37 degrees, 33, Decimal Two Five Eight minutes")
+        lu.assertEquals(HoundUtils.TTS.getVerbalLL(35.443,37.5543),"North, 35 degrees, 26 minutes, 34 seconds, East, 037 degrees, 33 minutes, 15 seconds")
+        lu.assertEquals(HoundUtils.TTS.getVerbalLL(-35.443,37.5543,false),"South, 35 degrees, 26 minutes, 34 seconds, East, 037 degrees, 33 minutes, 15 seconds")
+        lu.assertEquals(HoundUtils.TTS.getVerbalLL(-35.443,37.5543,true),"South, 35 degrees, 26, Decimal Five Eight Zero minutes, East, 037 degrees, 33, Decimal Two Five Eight minutes")
 
         -- HoundUtils.TTS.simplfyDistance
         lu.assertEquals(HoundUtils.TTS.simplfyDistance(150),"150 meters")
@@ -199,12 +199,15 @@ do
     function TestHoundUtils:TestVector()
     end
 
-    function TestHoundUtils:TestPolygon()
-        local zone = HoundUtils.Polygon.getDrawnZone("Tinian Sector")
+    function TestHoundUtils:TestZone()
+
+        local zone = HoundUtils.Zone.getDrawnZone("Tinian Sector")
         lu.assertNotNil(zone)
         lu.assertEquals(Length(zone),16)
         lu.assertItemsEquals(zone[1],zone[Length(zone)])
-        
+
+        lu.assertItemsEquals(HoundUtils.Zone.listDrawnZones(),{"Tinian Sector"})
+
     end
 
     function TestHoundUtils:tearDown()

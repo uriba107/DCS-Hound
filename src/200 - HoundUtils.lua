@@ -20,6 +20,7 @@ do
         Text = {},
         Elint = {},
         Vector={},
+        Zone={},
         Polygon={},
         Cluster={},
         Sort = {},
@@ -872,6 +873,87 @@ do
         return epsilon
     end
 
+    --- Zone functions
+    -- @section Zone
+
+    --- List all Useable zones from drawings.
+    -- @return list of strings
+    function HoundUtils.Zone.listDrawnZones()
+        local zoneNames = {}
+        local base = _G.env.mission
+        if not base or not base.drawings or not base.drawings.layers then return zoneNames end
+        for _,drawLayer in pairs(base.drawings.layers) do
+            if type(drawLayer["objects"]) == "table" then
+                for _,drawObject in pairs(drawLayer["objects"]) do
+                    if drawObject["primitiveType"] == "Polygon" and (setContainsValue({"free","rect","oval"},drawObject["polygonMode"])) then
+                        table.insert(zoneNames,drawObject["name"])
+                    end
+                end
+            end
+        end
+        return zoneNames
+    end
+
+    --- Get zone from drawing
+    -- @param zoneName
+    -- @return table of points
+    function HoundUtils.Zone.getDrawnZone(zoneName)
+        if type(zoneName) ~= "string" then return nil end
+        if not _G.env.mission.drawings or not _G.env.mission.drawings.layers then return nil end
+        for _,drawLayer in pairs(_G.env.mission.drawings.layers) do
+            if type(drawLayer["objects"]) == "table" then
+                for _,drawObject in pairs(drawLayer["objects"]) do
+                    if drawObject["name"] == zoneName and drawObject["primitiveType"] == "Polygon" then
+                        local points = {}
+                        local theta = nil
+                        if drawObject["polygonMode"] == "free" and Length(drawObject["points"]) >2 then
+                            points = l_mist.utils.deepCopy(drawObject["points"])
+                        end
+                        if drawObject["polygonMode"] == "rect" then
+                            theta = l_math.rad(drawObject["angle"])
+                            local w,h = drawObject["width"],drawObject["height"]
+
+
+                            table.insert(points,{x=h/2,y=w/2})
+                            table.insert(points,{x=-h/2,y=w/2})
+                            table.insert(points,{x=-h/2,y=-w/2})
+                            table.insert(points,{x=h/2,y=-w/2})
+                        end
+                        if drawObject["polygonMode"] == "oval" then
+                            theta = l_math.rad(drawObject["angle"])
+                            local r1,r2 = drawObject["r1"],drawObject["r2"]
+                            local numPoints = 16
+                            local angleStep = pi_2/numPoints
+
+                            for i = 1, numPoints do
+                                local pointAngle = i * angleStep
+                                local x = r1 * l_math.cos(pointAngle)
+                                local y = r2 * l_math.sin(pointAngle)
+                                table.insert(points,{x=x,y=y})
+                            end
+                        end
+                        if theta then
+                            for _,point in pairs(points) do
+                                local x = point.x
+                                local y = point.y
+                                point.x = x * l_math.cos(theta) - y * l_math.sin(theta)
+                                point.y = x * l_math.sin(theta) + y * l_math.cos(theta)
+                            end
+                        end
+                        if Length(points) < 3 then return nil end
+                        local objectX,objecty = drawObject["mapX"],drawObject["mapY"]
+                        for _,point in pairs(points) do
+                            point.x = point.x + objectX
+                            point.y = point.y + objecty
+                        end
+                        return points
+                    end
+                end
+            end
+        end
+        return nil
+    end
+
     --- Polygon functions
     -- @section Polygon
 
@@ -1105,30 +1187,6 @@ do
         return polygon
     end
 
-    --- Get zone from drawing
-    -- @param zoneName
-    -- @return table of points
-    function HoundUtils.Polygon.getDrawnZone(zoneName)
-        if type(zoneName) ~= "string" then return nil end
-        if not _G.env.mission.drawings or not _G.env.mission.drawings.layers then return nil end
-        for _,drawLayer in pairs(_G.env.mission.drawings.layers) do
-            if type(drawLayer["objects"]) == "table" then
-                for _,drawObject in pairs(drawLayer["objects"]) do
-                    if drawObject["name"] == zoneName then
-                        if drawObject["primitiveType"] ~= "Polygon" and Length(drawObject["points"]) < 3 then return nil end
-                        local points = l_mist.utils.deepCopy(drawObject["points"])
-                        local objectX,objecty = drawObject["mapX"],drawObject["mapY"]
-                        for _,point in pairs(points) do
-                            point.x = point.x + objectX
-                            point.y = point.y + objecty
-                        end
-                        return points
-                    end
-                end
-            end
-        end
-        return nil
-    end
     --- Clustering algorithems (for future use)
     -- @section Clusters
 

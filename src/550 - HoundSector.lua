@@ -202,7 +202,7 @@ do
             return
         end
         if type(zonecandidate) == "string" then
-            local zone = HoundUtils.Polygon.getDrawnZone(zonecandidate)
+            local zone = HoundUtils.Zone.getDrawnZone(zonecandidate)
             if not zone and (Group.getByName(zonecandidate)) then
                 zone = mist.getGroupPoints(zonecandidate)
             end
@@ -210,7 +210,7 @@ do
             return
         end
         if not zonecandidate then
-            local zone = HoundUtils.Polygon.getDrawnZone(self.name .. " Sector")
+            local zone = HoundUtils.Zone.getDrawnZone(self.name .. " Sector")
             if zone then
                 self.settings.zone = zone
             end
