@@ -877,6 +877,7 @@ do
     -- @section Zone
 
     --- List all Useable zones from drawings.
+    -- (supported types are freeForm Polygon, rectangle and Oval)
     -- @return list of strings
     function HoundUtils.Zone.listDrawnZones()
         local zoneNames = {}
@@ -894,7 +895,8 @@ do
         return zoneNames
     end
 
-    --- Get zone from drawing
+    --- Get zone from drawing\
+    -- (supported types are freeForm Polygon, rectangle and Oval)
     -- @param zoneName
     -- @return table of points
     function HoundUtils.Zone.getDrawnZone(zoneName)
@@ -908,6 +910,7 @@ do
                         local theta = nil
                         if drawObject["polygonMode"] == "free" and Length(drawObject["points"]) >2 then
                             points = l_mist.utils.deepCopy(drawObject["points"])
+                            table.remove(points)
                         end
                         if drawObject["polygonMode"] == "rect" then
                             theta = l_math.rad(drawObject["angle"])
@@ -1193,123 +1196,123 @@ do
     --- convert contacts to centroieds for meanShift
     -- @param contacts list of HoundContact instances to evaluate
     -- @return list of centrods where centroid = {p=&ltDCS pos&gt,r=&ltradius&gt,members={&ltHoundContact&gt}}
-    function HoundUtils.Cluster.getCentroids(contacts)
-        local centroids = {}
-        -- populate centroids with all emitters
-        for _,contact in ipairs(contacts) do
-            local centroid = {
-                p = contact.pos.p,
-                r = contact.uncertenty_radius.r,
-                members = {}
-            }
-            table.insert(centroid.members,contact)
-            table.insert(centroids,centroid)
-        end
-        return centroids
-    end
+    -- function HoundUtils.Cluster.getCentroids(contacts)
+    --     local centroids = {}
+    --     -- populate centroids with all emitters
+    --     for _,contact in ipairs(contacts) do
+    --         local centroid = {
+    --             p = contact.pos.p,
+    --             r = contact.uncertenty_radius.r,
+    --             members = {}
+    --         }
+    --         table.insert(centroid.members,contact)
+    --         table.insert(centroids,centroid)
+    --     end
+    --     return centroids
+    -- end
 
     --- Mean-shift algorithem to group radars to sites
     -- http://www.chioka.in/meanshift-algorithm-for-the-rest-of-us-python/
     -- @param contacts list of HoundContact instances to cluster
     -- @param[opt] iterations maximum nuber of itteratoins to run
     -- @return List of centroieds {p=&ltDCS position&gt,r=&ltuncertenty radius&gt,members={&ltlist of HoundContacts&gt}}
-    function HoundUtils.Cluster.meanShift(contacts,iterations)
-        local kernel_bandwidth = 1000
+    -- function HoundUtils.Cluster.meanShift(contacts,iterations)
+    --     local kernel_bandwidth = 1000
 
-        -- Helper functions
-        local function gaussianKernel(distance,bandwidth)
-            return (1/(bandwidth*l_math.sqrt(2*l_math.pi))) * l_math.exp(-0.5*((distance / bandwidth))^2)
-        end
+    --     -- Helper functions
+    --     local function gaussianKernel(distance,bandwidth)
+    --         return (1/(bandwidth*l_math.sqrt(2*l_math.pi))) * l_math.exp(-0.5*((distance / bandwidth))^2)
+    --     end
 
-        local function findNeighbours(centroids,centroid,distance)
-            if distance == nil then distance = centroid.r or kernel_bandwidth end
-            local eligable = {}
-            for _,candidate in ipairs(centroids) do
-                local dist = l_mist.utils.get2DDist(candidate.p,centroid.p)
-                if dist <= distance then
-                    table.insert(eligable,candidate)
-                end
-            end
-            return eligable
-        end
+    --     local function findNeighbours(centroids,centroid,distance)
+    --         if distance == nil then distance = centroid.r or kernel_bandwidth end
+    --         local eligable = {}
+    --         for _,candidate in ipairs(centroids) do
+    --             local dist = l_mist.utils.get2DDist(candidate.p,centroid.p)
+    --             if dist <= distance then
+    --                 table.insert(eligable,candidate)
+    --             end
+    --         end
+    --         return eligable
+    --     end
 
-        local function compareCentroids(item1,item2)
-            if item1.p.x ~= item2.p.x or item1.p.z ~= item2.p.z or item1.r ~= item2.r then return false end
-            if Length(item1.members) ~= Length(item2.members) then return false end
-            return true
-        end
+    --     local function compareCentroids(item1,item2)
+    --         if item1.p.x ~= item2.p.x or item1.p.z ~= item2.p.z or item1.r ~= item2.r then return false end
+    --         if Length(item1.members) ~= Length(item2.members) then return false end
+    --         return true
+    --     end
 
-        local function compareCentroidLists(t1,t2)
-            if Length(t1) ~= Length(t2) then return false end
-            for _,item1 in ipairs(t1) do
-                for _,item2 in ipairs(t2) do
-                    if not compareCentroids(item1,item2) then return false end
-                end
-            end
-            return true
-        end
+    --     local function compareCentroidLists(t1,t2)
+    --         if Length(t1) ~= Length(t2) then return false end
+    --         for _,item1 in ipairs(t1) do
+    --             for _,item2 in ipairs(t2) do
+    --                 if not compareCentroids(item1,item2) then return false end
+    --             end
+    --         end
+    --         return true
+    --     end
 
-        local function insertUniq(t,candidate)
-            if type(t) ~= "table" or not candidate then return end
-            for _,item in ipairs(t) do
-                if not compareCentroids(item,candidate) then return end
-            end
-            env.info("Adding uniq: " .. candidate.p.x .. "/" .. candidate.p.z ..  " r=".. candidate.r .. " with " .. Length(candidate.members) .. " members")
-            table.insert(t,candidate)
-        end
+    --     local function insertUniq(t,candidate)
+    --         if type(t) ~= "table" or not candidate then return end
+    --         for _,item in ipairs(t) do
+    --             if not compareCentroids(item,candidate) then return end
+    --         end
+    --         env.info("Adding uniq: " .. candidate.p.x .. "/" .. candidate.p.z ..  " r=".. candidate.r .. " with " .. Length(candidate.members) .. " members")
+    --         table.insert(t,candidate)
+    --     end
 
-        -- Function starts here
-        local centroids = {}
-        -- populate centroids with all emitters
-        for _,contact in ipairs(contacts) do
-            local centroid = {
-                p = contact.pos.p,
-                r = l_math.min(contact.uncertenty_radius.r,kernel_bandwidth),
-                members = {}
-            }
-            table.insert(centroid.members,contact)
-            table.insert(centroids,centroid)
-        end
+    --     -- Function starts here
+    --     local centroids = {}
+    --     -- populate centroids with all emitters
+    --     for _,contact in ipairs(contacts) do
+    --         local centroid = {
+    --             p = contact.pos.p,
+    --             r = l_math.min(contact.uncertenty_radius.r,kernel_bandwidth),
+    --             members = {}
+    --         }
+    --         table.insert(centroid.members,contact)
+    --         table.insert(centroids,centroid)
+    --     end
 
-        local past_centroieds = {}
-        local converged = false
-        local itr = 1
-        while not converged do
-            env.info("itteration " .. itr .. " starting with " .. Length(centroids) .. " centroids")
-            local new_centroids = {}
-            for _,centroid in ipairs(centroids) do
-                local neighbours = findNeighbours(centroids,centroid)
-                local num_z = 0
-                local num_x = 0
-                local num_r = 0
-                local denominator = 0
-                local new_members = {}
-                for _,neighbour in ipairs(neighbours) do
-                    local dist = l_mist.utils.get2DDist(neighbour.p,centroid.p)
-                    local weight = gaussianKernel(dist,centroid.r)
-                    num_z = num_z + (neighbour.p.z * weight)
-                    num_x = num_x + (neighbour.p.x * weight)
-                    num_r = num_r + (neighbour.r * weight)
-                    denominator = denominator + weight
-                    for _,memeber in ipairs(neighbour.members) do
-                        table.insert(new_members,memeber)
-                    end
-                end
-                local new_centroid = l_mist.utils.deepCopy(centroid)
-                new_centroid.p.x = num_x/denominator
-                new_centroid.p.z = num_z/denominator
-                new_centroid.r = num_r/denominator
-                new_centroid.members = new_members
-                insertUniq(new_centroids,new_centroid)
-            end
-            past_centroieds = centroids
-            centroids = new_centroids
-            itr = itr + 1
-            converged = (compareCentroidLists(centroids,past_centroieds) or (iterations ~= nil and iterations <= itr))
-        end
-        env.info("meanShift() converged")
-        return centroids
-    end
+    --     local past_centroieds = {}
+    --     local converged = false
+    --     local itr = 1
+    --     while not converged do
+    --         env.info("itteration " .. itr .. " starting with " .. Length(centroids) .. " centroids")
+    --         local new_centroids = {}
+    --         for _,centroid in ipairs(centroids) do
+    --             local neighbours = findNeighbours(centroids,centroid)
+    --             local num_z = 0
+    --             local num_x = 0
+    --             local num_r = 0
+    --             local denominator = 0
+    --             local new_members = {}
+    --             for _,neighbour in ipairs(neighbours) do
+    --                 local dist = l_mist.utils.get2DDist(neighbour.p,centroid.p)
+    --                 local weight = gaussianKernel(dist,centroid.r)
+    --                 num_z = num_z + (neighbour.p.z * weight)
+    --                 num_x = num_x + (neighbour.p.x * weight)
+    --                 num_r = num_r + (neighbour.r * weight)
+    --                 denominator = denominator + weight
+    --                 for _,memeber in ipairs(neighbour.members) do
+    --                     table.insert(new_members,memeber)
+    --                 end
+    --             end
+    --             local new_centroid = l_mist.utils.deepCopy(centroid)
+    --             new_centroid.p.x = num_x/denominator
+    --             new_centroid.p.z = num_z/denominator
+    --             new_centroid.r = num_r/denominator
+    --             new_centroid.members = new_members
+    --             insertUniq(new_centroids,new_centroid)
+    --         end
+    --         past_centroieds = centroids
+    --         centroids = new_centroids
+    --         itr = itr + 1
+    --         converged = (compareCentroidLists(centroids,past_centroieds) or (iterations ~= nil and iterations <= itr))
+    --     end
+    --     env.info("meanShift() converged")
+    --     return centroids
+    -- end
 
     --- Sort Functions
     -- @section Sort

@@ -1,5 +1,6 @@
 do
     local currentDir = "F:\\Dropbox\\uri\\Dropbox\\DCS\\Mission Building\\HoundElint\\"
+    -- assert(loadfile(currentDir..'include\\DCS-SimpleTextToSpeech.lua'))()
 
     function UserSpaceLogging(msg)
         trigger.action.outText(msg,10)
@@ -60,4 +61,6 @@ do
 
     runTest.TaskId = timer.scheduleFunction(runTest.run, runTest, timer.getTime() + 1)
     -- env.info(mist.utils.tableShow(_G.env.mission.drawings.layers[2]["objects"][1]))
+    -- local socket = _G.loadfile('socket.lua')
+    -- env.info(type(base.require))
 end

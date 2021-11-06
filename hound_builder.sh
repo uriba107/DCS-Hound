@@ -23,6 +23,9 @@ WHITE_ON_BLUE="\e[1;37;1;44m"
 BLUE="\e[1;34m"
 CLEAR="\e[0m"
 
+function highlight {
+    echo -e "${WHITE_ON_BLUE}${1}${CLEAR}"
+}
 
 function check_dependecies {
     APT=""
@@ -51,27 +54,27 @@ function check_dependecies {
 }
 
 function lint_src {
-    echo -e "${WHITE_ON_BLUE}lint Hound source${CLEAR}"
+    highlight "lint Hound source"
     for FILE in src/*.lua; do
         luacheck -g --no-self --no-max-line-length "${FILE}"
     done
 }
 function build_docs {
     # build Docs
-    echo -e "${WHITE_ON_BLUE}building public docs${CLEAR}"
+    highlight "building public docs"
     $LDOC -p "Hound<br> ELINT for DCS" --merge --style !fixed .
 
-    echo -e "${WHITE_ON_BLUE}Building Dev Docs${CLEAR}"
+    highlight "Building Dev Docs$"
     $LDOC -p "Hound<br> ELINT for DCS" -a -d docs/dev_docs --merge --style !fixed src
 }
 
 function lint_compiled {
-    echo -e "${WHITE_ON_BLUE}lint compiled Hound${CLEAR}"
+    highlight "lint compiled Hound"
     luacheck -g --no-self --no-max-line-length "${TARGET_FILE}"
 }
 
 function compile {
-    echo -e "${WHITE_ON_BLUE}Compile script${CLEAR}"
+    highlight "Compile script"
     echo "-- Hound ELINT system for DCS" > ${TARGET_FILE}
     echo 'env.info("Starting to load Hound ELINT...")' >> ${TARGET_FILE}
 
@@ -81,7 +84,7 @@ function compile {
     done
 
     # remove dev stuff
-    echo -e "${BLUE}cleaning Dev comments${CLEAR}"
+    highlight "cleaning Dev comments"
     sed -E ${SED_ARGS} '/StopWatch|:Stop()/d' ${TARGET_FILE}
     sed ${SED_ARGS} '/HoundLogger.trace("/d' ${TARGET_FILE}
 
@@ -90,7 +93,7 @@ function compile {
 
     # clean comments
     sed ${SED_ARGS} '/^[[:space:]]*--/d' ${TARGET_FILE}
-    sed ${SED_ARGS} 's/^[[:space:]]*\n^[[:space:]]*\n/^$/g' ${TARGET_FILE}
+    sed ${SED_ARGS} '$!N;/^[[:space:]]*$/{$q;D;};P;D;' ${TARGET_FILE}
 
     GIT_BRANCH="-$(git branch --show-current | sed 's/[^a-zA-Z 0-9]/\\&/g')"
     if [ ${GIT_BRANCH} == "-main" ]; 

@@ -7,7 +7,7 @@ do
     -- @param utmZone (bool) True will add UTM zone to response
     -- @param MGRSdigits (Number) number of digits in the MGRS part of the response (eg. 2 = 12, 5=12345)
     -- @return GridPos (string) MGRS grid position (eg. "CY 564 123", "DN 2 4")
-    -- Return BE (string) Bullseye position string (eg. "035 for 15", "187 for 120")
+    -- Return BE (string) Bullseye position string (eg. "035/15", "187/120")
     function HoundContact:getTextData(utmZone,MGRSdigits)
         if self.pos.p == nil then return end
         local GridPos = ""
@@ -15,7 +15,7 @@ do
             GridPos = GridPos .. self.pos.grid.UTMZone .. " "
         end
         GridPos = GridPos .. self.pos.grid.MGRSDigraph
-        local BE = self.pos.be.brStr .. " for " .. self.pos.be.rng
+        local BE = self.pos.be.brStr .. "/" .. self.pos.be.rng
         if MGRSdigits == nil then
             return GridPos,BE
         end
@@ -30,7 +30,7 @@ do
     -- @param utmZone (bool) True will add UTM zone to response
     -- @param MGRSdigits (Number) number of digits in the MGRS part of the response (eg. 2 = 12, 5=12345)
     -- @return GridPos (string) MGRS grid position (eg. "Charlie Yankee one two   Three  four")
-    -- Return BE (string) Bullseye position string (eg. "Zero Three Five for 15")
+    -- Return BE (string) Bullseye position string (eg. "Zero Three Five 15")
     function HoundContact:getTtsData(utmZone,MGRSdigits)
         if self.pos.p == nil then return end
         local phoneticGridPos = ""
@@ -40,7 +40,7 @@ do
 
         phoneticGridPos =  phoneticGridPos ..  HoundUtils.TTS.toPhonetic(self.pos.grid.MGRSDigraph)
         local phoneticBulls = HoundUtils.TTS.toPhonetic(self.pos.be.brStr)
-                                .. " for " .. self.pos.be.rng
+                                .. "  " .. self.pos.be.rng
         if MGRSdigits==nil then
             return phoneticGridPos,phoneticBulls
         end
@@ -102,8 +102,11 @@ do
         msg = msg .. ", MGRS " .. phoneticGridPos
         msg = msg .. ", elevation  " .. HoundUtils.getRoundedElevationFt(self.pos.elev) .. " feet MSL"
         -- HoundLogger.trace("az: " .. string.format("%03d",self.uncertenty_data.az))
-        msg = msg .. ", ellipse " ..  HoundUtils.TTS.simplfyDistance(self.uncertenty_data.major) .. " by " ..  HoundUtils.TTS.simplfyDistance(self.uncertenty_data.minor) .. ", aligned bearing " .. HoundUtils.TTS.toPhonetic(string.format("%03d",self.uncertenty_data.az))
-        msg = msg .. ", Tracked for " .. HoundUtils.TTS.getVerbalContactAge(self.first_seen) .. ", last seen " .. HoundUtils.TTS.getVerbalContactAge(self.last_seen) .. " ago. " .. HoundUtils.getControllerResponse()
+        if HOUND.EXTENDED_INFO then
+            msg = msg .. ", ellipse " ..  HoundUtils.TTS.simplfyDistance(self.uncertenty_data.major) .. " by " ..  HoundUtils.TTS.simplfyDistance(self.uncertenty_data.minor) .. ", aligned bearing " .. HoundUtils.TTS.toPhonetic(string.format("%03d",self.uncertenty_data.az))
+            msg = msg .. ", Tracked for " .. HoundUtils.TTS.getVerbalContactAge(self.first_seen) .. ", last seen " .. HoundUtils.TTS.getVerbalContactAge(self.last_seen) .. " ago"
+        end
+        msg = msg .. ". " .. HoundUtils.getControllerResponse()
         return msg
     end
 
@@ -128,9 +131,11 @@ do
         end
         msg = msg .. "LL: " .. HoundUtils.Text.getLL(self.pos.LL.lat,self.pos.LL.lon,useDMM).."\n"
         msg = msg .. "MGRS: " .. GridPos .. "\n"
-        msg = msg .. "Elev: " .. HoundUtils.getRoundedElevationFt(self.pos.elev) .. "ft\n"
-        msg = msg .. "Ellipse: " ..  self.uncertenty_data.major .. " by " ..  self.uncertenty_data.minor .. " aligned bearing " .. string.format("%03d",self.uncertenty_data.az) .. "\n"
-        msg = msg .. "Tracked for: " .. HoundUtils.TTS.getVerbalContactAge(self.first_seen) .. " Last Contact: " ..  HoundUtils.TTS.getVerbalContactAge(self.last_seen) .. " ago. "
+        msg = msg .. "Elev: " .. HoundUtils.getRoundedElevationFt(self.pos.elev) .. "ft"
+        if HOUND.EXTENDED_INFO then
+            msg = msg .. "\nEllipse: " ..  self.uncertenty_data.major .. " by " ..  self.uncertenty_data.minor .. " aligned bearing " .. string.format("%03d",self.uncertenty_data.az) .. "\n"
+            msg = msg .. "Tracked for: " .. HoundUtils.TTS.getVerbalContactAge(self.first_seen) .. " Last Contact: " ..  HoundUtils.TTS.getVerbalContactAge(self.last_seen) .. " ago. "
+        end
         return msg
     end
 

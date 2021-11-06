@@ -217,8 +217,8 @@ Global settings are bet set early, which is why I'm listing them here. However t
 
 ---
 ### Map markers
-Hound uses Map markers to indicate the estimated position of the radar tracket. It's a product of the system, and only contains data user can get from the system in other ways. (equvilant to making marks on a paper map)
-Map markers are enabled by default
+Hound uses Map markers to indicate the estimated position of the radar tracket. It's a product of the system, and only contains data user can get from the system in other ways (equvilant to making marks on a paper map).
+Map markers are enabled by default. In addition, if radar went offline, the marker fill will fade slowly over time until it reaches a minimum value on contact timeout (thee time in which all past contact datapoints are deleted).
 
 However, some mission designers may want to disable the markers. 
 ```lua
@@ -535,10 +535,10 @@ disable is done via
 
 By default the controller will provide you with MGRS in 6 digits format (3 for easting and 3 northing).
 this is set by a global variable 
-```lua
-HOUND.MGRS_PRECISION = 3
-```
 you can override this to get defferent precision (i.e 5 will give you 10 digits MGRS)  
+```lua
+    HOUND.setMgrsPresicion(5)
+```
 
  #### ***Controller message format***
  The controller has a fixed message structure as follows.
@@ -562,10 +562,16 @@ This Reads like this:
  Tracked for XX [minutes/seconds], last seen YY [minutes/seconds] ago.
  ```
 
-Advanced users what wish to change this structure may do it. The recommended way to achieve this is to `COPY` the `HoundContact:generateTtsReport` function from `src/301 - HoundContact_comms.lua` file in this repo to a new file. In that new file perform the changes you want load the new file to the mission using `Do script file` AFTER the main Hound script is loaded. this will replace the original implementation without  editing the original file. allowing a simpler upgrades to newer Hound versions without loosing you changes.
+Advanced users what wish to change this structure may do it. 
+If you are satisfied by only supressing the Extended uncertenty and the Extended Tracking time info you can do so by invoking `HOUND.showExtendedInfo()` function. This will have an affect globally.
+```lua
+  HOUND.showExtendedInfo(false)
+```
+If a more extensive change is desired, The recommended way to achieve it is to `COPY` the `HoundContact:generateTtsReport` and `HoundContact:generateTextReport` functions from `src/301 - HoundContact_comms.lua` file in this repo to a new file. In that new file perform the changes you want. To activate load the new file to the mission using `Do script file` **AFTER** the main Hound script is loaded. this will replace the original implementation without  editing the original file. allowing a simpler upgrades to newer Hound versions without loosing you changes.  
+
  ### Notifier
  ---
- This, as the name suggests is notification only agent. it functions independently of controller or ATIS and will only report pop-up and if enable radar destruction alerts. this is intended to be operated on a different freqency then the controller (which has the same alerting capacity). This may be used for improving SA on Air-To-Air frequency or on general strike channels.
+ This, as the name suggests is notification only agent. it functions independently of controller or ATIS and will only report pop-up and if enable radar destruction alerts. this is intended to be operated on a di`fferent freqency then the controller (which has the same alerting capacity). This may be used for improving SA on Air-To-Air frequency or on general strike channels.
  
  Notifier has a special case when used under "default" sector when radar is inside a geofenced sector. In this scenario it will report using sector name rather then with location. for example:
   * Normal: `Attention All Aircraft! This is HOUND. New threat detected! Straight flush 11 is now Alive, bullseye XXX for YY, Grid ZZ 1 4.`<br>
@@ -663,26 +669,32 @@ houndEvent = {
 ```
 to use them you need to create a table with the function `onHoundEvent(event)` and register it.
 ```lua
-CustomHoundScript = {}
-function CustomHoundScript:onHoundEvent(houndEvent)
-    if houndEvent.id == HOUND.EVENTS.PLATFROM_DESTROYED and houndEvent.coalition == coalition.side.BLUE then
-       trigger.action.outTextForCoalition(houndEvent.coalition,initiator:getName() .. "has been destroyed")
-    end
-end
 
-HoundInstace:addEventHandler(CustomHoundScript)
+    FakeEventHandler = {}
+    function FakeEventHandler:onHoundEvent(event)
+        if event.coalition == coalition.side.BLUE then
+            if event.id == HOUND.EVENTS.RADAR_DETECTED then
+                local contact = event.initiator
+                trigger.action.outTextForCoalition(event.coalition,"Let's pretend a SEAD flight was fragged to strike " .. contact:getName())
+            end
+            if event.id == HOUND.EVENTS.PLATFROM_DESTROYED  then
+                trigger.action.outTextForCoalition(event.coalition,initiator:getName() .. "has been destroyed")
+            end
+        end
+    end
+
+    HOUND.addEventHandler(FakeEventHandler)
 ```
 to remove use
 ```lua
-HoundInstace:removeEventHandler(CustomHoundScript)
+    HOUND.removeEventHandler(CustomHoundScript)
 ```
 `NOTE: Event handlers are global so make sure you validate coalition or houndId as the event might be from a different Instance from a different coalition`
 
 ---
 ## Known Issues
   * On initial detection accuracy will usually be very high with solution nowhere near the radar actual position. This is sorted by the system as more datapoints are gathered. allow at least 2 minutes for contact to stablize.
-  * Adding low resolution platforms will degrade the solution as Hound currently does not reject "bad data".
-  * Demo missions have not been updated (except for `Syria_HARM`)
+  * Adding low resolution platforms will degrade the solution as Hound currently does not reject "bad data". Hound will drop readings that have more then 10 degrees of error. but if resolution is above the threashold, but very far away, it may still degrate the resolution.
 
 ## Breaking changes
 If you are upgrading from 0.1 please note that some changes will be required.

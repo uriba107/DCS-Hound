@@ -666,7 +666,7 @@ do
     -- @string sectorName sector to change
     -- @string sectorCallsign callsign for sector. if not provided, a random one will be selected from pool. "NATO" will draw from the NATO pool
     -- @return Bool. True if callsign was changes. False otherwise
-    function HoundElint:setSectorCallsign(sectorName,sectorCallsign)
+    function HoundElint:setCallsign(sectorName,sectorCallsign)
         if not sectorName then return false end
         local NATO = self.settings:getUseNATOCallsigns()
         if sectorCallsign == "NATO" then
@@ -683,10 +683,10 @@ do
         return false
     end
 
-    --- Set sector callsign
+    --- get sector callsign
     -- @string sectorName sector to change
     -- @return String - callsign for sector. will return empty string if err
-    function HoundElint:getSectorCallsign(sectorName)
+    function HoundElint:getCallsign(sectorName)
         if not sectorName then return "" end
         if self.sectors[sectorName] then
             return self.sectors[sectorName]:getCallsign()
@@ -1071,19 +1071,4 @@ do
         HoundEventHandler.addInternalEventHandler(self)
         world.addEventHandler(self)
     end
-
-    --- register new event handler (global)
-    -- @param handler handler to register
-    -- @see HOUND.EVENTS
-    function HoundElint:addEventHandler(handler)
-        HoundEventHandler.addEventHandler(handler)
-    end
-
-    --- deregister event handler (global)
-    -- @param handler handler to remove
-    -- @see HOUND.EVENTS
-    function HoundElint:removeEventHandler(handler)
-        HoundEventHandler.removeEventHandler(handler)
-    end
-
 end

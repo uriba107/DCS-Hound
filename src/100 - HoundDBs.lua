@@ -20,7 +20,7 @@ do
     HoundDB.Sam = {
         -- EWR --
         ['1L13 EWR'] = {
-            ['Name'] = "Box Spring",
+            ['Name'] = "EWR",
             ['Assigned'] = {"EWR"},
             ['Role'] = {"EWR"},
             ['Band'] = 'A',

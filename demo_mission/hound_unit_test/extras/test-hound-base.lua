@@ -93,7 +93,7 @@ do
         lu.assertEquals(self.houndBlue:countPlatforms(),2)
         lu.assertEquals(self.houndBlue:countContacts(),0)
         lu.assertItemsEquals(self.houndBlue:listSectors(),{"default"})
-        lu.assertEquals(self.houndBlue:getSectorCallsign("default"),"HOUND")
+        lu.assertEquals(self.houndBlue:getCallsign("default"),"HOUND")
         self.houndBlue:setAtisUpdateInterval(15)
 
         local tts_args = {
@@ -228,6 +228,12 @@ do
         lu.assertItemsEquals(saipan:getAtisFreq(),{"252.500 AM"})
         self.houndBlue:enableText("all")
         self.houndBlue:setMarkerType(HOUND.MARKER.POLYGON)
+
+        local testCallsign = "OPTIMUS"
+        lu.assertNotEquals(self.houndBlue:getCallsign("Saipan"),testCallsign)
+        self.houndBlue:setCallsign("Saipan","OPTIMUS")
+        lu.assertEquals(self.houndBlue:getCallsign("Saipan"),testCallsign)
+
 
     end
 

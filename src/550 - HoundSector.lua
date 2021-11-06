@@ -166,7 +166,8 @@ do
         if NATO == true then namePool = "NATO" end
 
         callsign = string.upper(callsign or HoundUtils.getHoundCallsign(namePool))
-        while setContains(self._hSettings.callsigns, callsign) do
+
+        while setContainsValue(self._hSettings.callsigns, callsign) do
             callsign = HoundUtils.getHoundCallsign(namePool)
         end
 

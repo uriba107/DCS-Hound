@@ -27,6 +27,7 @@ do
         NUM_DATAPOINTS = 15,
         CONTACT_TIMEOUT = 900,
         MGRS_PRECISION = 3,
+        EXTENDED_INFO = true,
         MIST_VERSION = tonumber(table.concat({mist.majorVersion,mist.minorVersion},"."))
     }
 
@@ -92,12 +93,43 @@ do
     -- @field id event enum from HOUND.EVENTS
     -- @field houndId Hound Instace ID that emitted the event
     -- @field coalition coalition ID of the Hound Instance that emitted the event
-    -- @field Initiator DCS Unit or HoundContact Subclass that triggered the event
+    -- @field initiator DCS Unit or HoundContact Subclass that triggered the event
     -- @field time of event
 
-
-    --- Global helper functions
+    --- Global functions
     -- @section globals
+
+    --- set default MGRS presicion for grid calls
+    -- @param value (Int) Requested value. allowed values 1-5, default is 3
+    function HOUND.setMgrsPresicion(value)
+        if type(value) == "number" then
+            HOUND.MGRS_PRECISION = math.min(1,math.max(5,math.floor(value)))
+        end
+    end
+
+    --- set detailed messages to include or exclude extended tracking data
+    -- if true, will read and display extended ellipse info and tracking times. (default)
+    -- if false, will skip that information. only the shortened info will be used
+    -- @param value (Bool) Requested state
+    function HOUND.showExtendedInfo(value)
+        if type(value) == "boolean" then
+            HOUND.EXTENDED_INFO = value
+        end
+    end
+
+    --- register new event handler (global)
+    -- @param handler handler to register
+    -- @see HOUND.EVENTS
+    function HOUND.addEventHandler(handler)
+        HoundEventHandler.addEventHandler(handler)
+    end
+
+    --- deregister event handler (global)
+    -- @param handler handler to remove
+    -- @see HOUND.EVENTS
+    function HOUND.removeEventHandler(handler)
+        HoundEventHandler.removeEventHandler(handler)
+    end
 
     --- helper code for class inheritance
     -- @local

@@ -348,7 +348,7 @@ do
                 if HoundUtils.checkLOS(platformPos, radarPos) then
                     local contact = self:getContact(radar)
                     local sampleAngularResolution = HoundUtils.Elint.getSensorPrecision(platform,contact.band)
-                    if sampleAngularResolution < l_math.rad(15.0) then
+                    if sampleAngularResolution < l_math.rad(10.0) then
                         local az,el = HoundUtils.Elint.getAzimuth( platformPos, radarPos, sampleAngularResolution )
                         if not isAerialUnit then
                             el = nil
