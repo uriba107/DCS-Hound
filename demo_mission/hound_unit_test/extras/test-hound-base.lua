@@ -279,7 +279,11 @@ do
         local postRootMenu = mist.utils.deepCopy(self.houndBlue.settings:getRadioMenu())
         lu.assertIsTable(self.houndBlue.settings:getRadioMenu())
         lu.assertItemsEquals(originalMenu,postRootMenu)
+    end
 
+    function TestHoundFunctionalInit:Test_02_base_07_prebriefed()
+        self.houndBlue:preBriefedContact('EWR_SAIPAN')
+        self.houndBlue:preBriefedContact('SA-5_SAIPAN')
 
     end
 

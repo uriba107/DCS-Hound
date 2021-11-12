@@ -3,6 +3,8 @@ do
         STTS.DIRECTORY = "C:\\Program Files\\DCS-SimpleRadio-Standalone"
     end
 
+    env.info("Test")
+
     -- SA-6 activation logic
 
     SA6 = {}
@@ -108,13 +110,10 @@ do
 
     HoundBlue:setZone("Lebanon","Sector_Lebanon")
 
-    HoundBlue:preBriefedContact('SYR_SA-2')
-
     HoundBlue:setMarkerType(HOUND.MARKER.POLYGON)
     HoundBlue:enableMarkers()
     HoundBlue:enableBDA()
     HoundBlue:systemOn()
-
 
     humanElint = {}
     function humanElint:onEvent(DcsEvent)

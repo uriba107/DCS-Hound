@@ -1014,6 +1014,23 @@ do
         return contacts
     end
 
+    --- set/create a pre Briefed contacts
+    -- @param DCS_Object_Name name of DCS Unit or Group to add
+    function HoundElint:preBriefedContact(DCS_Object_Name)
+        local units = {}
+        local obj = Group.getByName(DCS_Object_Name) or Unit.getByName(DCS_Object_Name)
+        if obj and obj.getUnits then
+            units = obj:getUnits()
+        elseif obj and obj.getGroup then
+            table.insert(units,obj)
+        end
+        for _,unit in pairs(units) do
+            if setContains(HoundDB.Sam,unit:getTypeName()) then
+                self.contacts:setPreBriefedContact(unit)
+            end
+        end
+    end
+
     --- EventHandler functions
     -- @section eventHandler
 

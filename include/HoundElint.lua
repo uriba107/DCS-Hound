@@ -1503,6 +1503,8 @@ do
     end
 
     function HoundUtils.TTS.getVerbalConfidenceLevel(confidenceRadius)
+        if confidenceRadius == 0.1 then return "Precise" end
+
         local score={
             "Very High", -- 500
             "High", -- 1000
@@ -2239,7 +2241,9 @@ do
         elintcontact.threatSectors = {
             default = true
         }
+        elintcontact.detected_by = {}
         elintcontact.state = HOUND.EVENTS.RADAR_NEW
+        elintcontact.preBriefed = false
         return elintcontact
     end
 
@@ -2432,6 +2436,14 @@ do
     end
 
     function HoundContact:processData()
+        if self.preBriefed then
+            HoundLogger.trace(self:getName().." is PB..")
+            local unitPos = self.unit:getPosition().p
+            if l_mist.utils.get3DDist(unitPos,self.pos.p) < 0.1 then
+                return
+            end
+            self.preBriefed = false
+        end
         local newContact = (self.state == HOUND.EVENTS.RADAR_NEW)
         local mobileDataPoints = {}
         local staticDataPoints = {}
@@ -2679,6 +2691,31 @@ do
 
     function HoundContact:isThreatsSector(sectorName)
         return self.threatSectors[sectorName] or false
+    end
+
+    function HoundContact:useUnitPos()
+        local state = HOUND.EVENTS.RADAR_DETECTED
+        if type(self.pos.p) == "table" then
+            state = HOUND.EVENTS.RADAR_UPDATED
+        end
+        local bullsPos = coalition.getMainRefPoint(self._platformCoalition)
+        local unitPos = self.unit:getPosition()
+        self.preBriefed = true
+
+        self.pos.p = unitPos.p
+        self.pos.LL.lat, self.pos.LL.lon =  coord.LOtoLL(self.pos.p)
+        self.pos.elev = self.pos.p.y
+        self.pos.grid  = coord.LLtoMGRS(self.pos.LL.lat, self.pos.LL.lon)
+        self.pos.be = HoundUtils.getBR(bullsPos,self.pos.p)
+
+        self.uncertenty_data = {}
+        self.uncertenty_data.major = 0.1
+        self.uncertenty_data.minor = 0.1
+        self.uncertenty_data.az = 0
+        self.uncertenty_data.r  = 0.1
+
+        table.insert(self.detected_by,"External")
+        return state
     end
 
     function HoundContact:export()
@@ -3455,6 +3492,19 @@ do
         return true
     end
 
+    function HoundElintWorker:setPreBriefedContact(emitter)
+        local contact = self:getContact(emitter)
+        local contactState = contact:useUnitPos()
+        if contactState then
+            HoundEventHandler.publishEvent({
+                id = contactState,
+                initiator = contact,
+                houndId = self._settings:getId(),
+                coalition = self._settings:getCoalition()
+            })
+        end
+    end
+
     function HoundElintWorker:isTracked(emitter)
         if emitter == nil then return false end
         if type(emitter) =="number" and self._contacts[emitter] ~= nil then return true end
@@ -3611,12 +3661,14 @@ do
                     self:removeContact(uid)
 
                 else
-                    HoundEventHandler.publishEvent({
-                        id = contactState,
-                        initiator = contact,
-                        houndId = self._settings:getId(),
-                        coalition = self._settings:getCoalition()
-                    })
+                    if contactState then
+                        HoundEventHandler.publishEvent({
+                            id = contactState,
+                            initiator = contact,
+                            houndId = self._settings:getId(),
+                            coalition = self._settings:getCoalition()
+                        })
+                    end
                 end
             end
         end
@@ -5218,6 +5270,21 @@ do
         return contacts
     end
 
+    function HoundElint:preBriefedContact(DCS_Object_Name)
+        local units = {}
+        local obj = Group.getByName(DCS_Object_Name) or Unit.getByName(DCS_Object_Name)
+        if obj and obj.getUnits then
+            units = obj:getUnits()
+        elseif obj and obj.getGroup then
+            table.insert(units,obj)
+        end
+        for _,unit in pairs(units) do
+            if setContains(HoundDB.Sam,unit:getTypeName()) then
+                self.contacts:setPreBriefedContact(unit)
+            end
+        end
+    end
+
     function HoundElint:onHoundEvent(houndEvent)
         if houndEvent.id == HOUND.EVENTS.HOUND_DISABLED then return end
         if houndEvent.houndId ~= self.settings:getId() then
@@ -5266,4 +5333,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.2.0-develop - Compiled on 2021-11-06 20:44
+-- Hound version 0.2.0-develop - Compiled on 2021-11-12 19:01

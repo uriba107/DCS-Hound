@@ -170,7 +170,7 @@ But this is an example of a more compex configuration.
     HoundBlue:systemOn()
 ```
 # Deep Dive
----
+
 ## Initialization
 First we create hound instance. on creation Hound must have a coalition assigned. this can be done in several ways.
 ```lua
@@ -211,6 +211,18 @@ Information about these radars is updated periodicly onto the F10 map.
 You can of course turn it off for any reason with:
 ```lua
     HoundInstance:systemOff()
+```
+### Hadnling pre-briefed contacts
+In some cases you would want to always provide accurate positional information on a contact. for exmpale a stationaty SAM site you provided strike coordianted for in the Briefing.
+you can sync Hound to use the actual unit data as position. The contact will be treated as "Pre-Briefed" and will not update position like the others.
+However if a PB concat moves more then 100m from it's original position the special "pre-brifed" flag will be removed and radar will be processed as a normal contact from that point on.
+
+you can mark Unit or Group, only valid Hound Radars will be added (it will not add units it will not normally track). if a group was passed and in contains more then one valid radar, all of the radars will be added
+
+```lua
+    HoundInstance:preBriefedContact('UNIT_NAME')
+    HoundInstance:preBriefedContact('GROUP_NAME')
+
 ```
 ## Global settings
 Global settings are bet set early, which is why I'm listing them here. However they might effect resources that will only be explained later in this document. So if something looks out of place, don't worry about it.

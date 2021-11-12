@@ -476,6 +476,8 @@ do
     -- @return (string) Description of accuracy e.g "Very High","High","Low"...
 
     function HoundUtils.TTS.getVerbalConfidenceLevel(confidenceRadius)
+        if confidenceRadius == 0.1 then return "Precise" end
+
         local score={
             "Very High", -- 500
             "High", -- 1000

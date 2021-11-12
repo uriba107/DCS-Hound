@@ -69,7 +69,9 @@ do
         elintcontact.threatSectors = {
             default = true
         }
+        elintcontact.detected_by = {}
         elintcontact.state = HOUND.EVENTS.RADAR_NEW
+        elintcontact.preBriefed = false
         return elintcontact
     end
 
@@ -353,6 +355,16 @@ do
     -- @return HoundEvent
     -- @see HOUND.EVENTS
     function HoundContact:processData()
+        if self.preBriefed then
+            HoundLogger.trace(self:getName().." is PB..")
+            local unitPos = self.unit:getPosition().p
+            if l_mist.utils.get3DDist(unitPos,self.pos.p) < 0.1 then
+                HoundLogger.trace("No change in position.. skipping..")
+                return
+            end
+            HoundLogger.trace("position changed.. removing PB mark..")
+            self.preBriefed = false
+        end
         local newContact = (self.state == HOUND.EVENTS.RADAR_NEW)
         local mobileDataPoints = {}
         local staticDataPoints = {}
@@ -655,6 +667,32 @@ do
 
     --- Helper functions
     -- @section helpers
+
+    --- Use Unit Position
+    function HoundContact:useUnitPos()
+        local state = HOUND.EVENTS.RADAR_DETECTED
+        if type(self.pos.p) == "table" then
+            state = HOUND.EVENTS.RADAR_UPDATED
+        end
+        local bullsPos = coalition.getMainRefPoint(self._platformCoalition)
+        local unitPos = self.unit:getPosition()
+        self.preBriefed = true
+
+        self.pos.p = unitPos.p
+        self.pos.LL.lat, self.pos.LL.lon =  coord.LOtoLL(self.pos.p)
+        self.pos.elev = self.pos.p.y
+        self.pos.grid  = coord.LLtoMGRS(self.pos.LL.lat, self.pos.LL.lon)
+        self.pos.be = HoundUtils.getBR(bullsPos,self.pos.p)
+
+        self.uncertenty_data = {}
+        self.uncertenty_data.major = 0.1
+        self.uncertenty_data.minor = 0.1
+        self.uncertenty_data.az = 0
+        self.uncertenty_data.r  = 0.1
+
+        table.insert(self.detected_by,"External")
+        return state
+    end
 
     --- Generate contact export object
     -- @return exported object

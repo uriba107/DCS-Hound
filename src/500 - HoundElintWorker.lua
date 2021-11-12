@@ -199,6 +199,21 @@ do
         return true
     end
 
+    --- set contact as Prebriefed
+    -- @param emitter DCS Unit/UID of radar
+    function HoundElintWorker:setPreBriefedContact(emitter)
+        local contact = self:getContact(emitter)
+        local contactState = contact:useUnitPos()
+        if contactState then
+            HoundEventHandler.publishEvent({
+                id = contactState,
+                initiator = contact,
+                houndId = self._settings:getId(),
+                coalition = self._settings:getCoalition()
+            })
+        end
+    end
+
     --- is contact is tracked
     -- @param emitter DCS Unit/UID of requested emitter
     -- @return Bool. is Unit is being tracked by current HoundWorker instance.
@@ -402,12 +417,14 @@ do
                 --     end
                 else
                     -- publish event (in case of destroyed radar, event is handled by the notify function)
-                    HoundEventHandler.publishEvent({
-                        id = contactState,
-                        initiator = contact,
-                        houndId = self._settings:getId(),
-                        coalition = self._settings:getCoalition()
-                    })
+                    if contactState then
+                        HoundEventHandler.publishEvent({
+                            id = contactState,
+                            initiator = contact,
+                            houndId = self._settings:getId(),
+                            coalition = self._settings:getCoalition()
+                        })
+                    end
                 end
             end
         end
