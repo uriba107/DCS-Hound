@@ -712,8 +712,10 @@ do
             ['A-50'] = {antenna = {size = 9, factor = 0.5}},
             ['An-26B'] = {antenna = {size = 26, factor = 0.9}},
             ['EA_6B'] = {antenna = {size = 9, factor = 1}}, -- VSN EA-6B
-            ['Su-25T'] = {antenna = {size = 1.6, factor = 1}},
-            ['AJS37'] = {antenna = {size = 1.6, factor = 1}}
+            ['Su-25T'] = {antenna = {size = 3.5, factor = 1}},
+            ['AJS37'] = {antenna = {size = 4.5, factor = 1}},
+            ['F-16C_50'] = {antenna = {size = 1.45, factor = 1}},
+
         }
     }
 

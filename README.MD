@@ -32,57 +32,61 @@ Remember that the system is using a simulated DF to determin the bearing of the 
 
 Resolution of platforms are derrived from antenna size and emitter frequency. shout out to TLTeo for explaining the physics of this.
 
-``` Note: While currently not implemented. Intention of including both Viggen and the Su-25T is that they will only be able to participate if they are carrying their ELINT and SEAD pods respectivly ```  
+Hound Currently has a 10 degrees angular resolution cutoff point to avoid introduing "bad data". The the first band that is valid for a platform is denoted in the `Minimum Band` column.
 
+``` Note: While currently not implemented. Intention of including both Viggen and the Su-25T is that they will only be able to participate if they are carrying their ELINT pods ```  
 
 ## Available assets
 ### Airborn assets
 #### Airplanes
 ---
-| Platform  | Accuracy (C/H Bands degrees)|
-| --------  | -------- |
-| C-130     | 0.65 / 0.07 |
-| C-17      | 0.46 / 0.05 |
-| An-30M    | 0.92 / 0.10 |
-| Tu-95     | 0.46 / 0.05 |
-| Tu-142    | 0.46 / 0.05 |
-| IL-76MD   | 0.60 / 0.06 |
-| S-3B      | 1.59 / 0.17 |
-| E-2D      | 6.54 / 0.70 |
-| E-3A      | 5.09 / 0.55 |
-| An-26B    | 0.98 / 0.10 |
-| A-50      | 5.09 / 0.55 |
-| Viggen    | 14.31 / 1.53 |
-| Su-25T    | 14.31 / 1.53 |  
+| Platform  | Accuracy Deg. (C/H Bands)| Min. Band | Remarks |
+| --------  | ----------- | - | - |
+| C-130     | 0.65 / 0.07 | A ||
+| C-17      | 0.46 / 0.05 | A ||
+| An-30M    | 0.92 / 0.10 | A ||
+| Tu-95     | 0.46 / 0.05 | A ||
+| Tu-142    | 0.46 / 0.05 | A ||
+| IL-76MD   | 0.60 / 0.06 | A ||
+| S-3B      | 1.59 / 0.17 | A ||
+| E-2D      | 6.54 / 0.70 | C ||
+| E-3A      | 5.09 / 0.55 | C ||
+| An-26B    | 0.98 / 0.10 | A ||
+| A-50      | 5.09 / 0.55 | C ||
+| Viggen    | 5.09 / 0.55 | C | U22 |
+| Su-25T    | 6.54 / 0.70 | C | Fantasmagoria |  
+| F-16C     | 15.79 / 1.69| D | Block 50 w/HTS |
 
-<sup>*</sup> Data with resolution below 15 deg is rejected
+<sup>*</sup> Data with angular resolution below 10 deg is rejected. That is de
   
 #### Helicopters
 ---
-| Platform  | Accuracy (C/H Bands degrees)|
-| --------  | --------  |
-| CH-47D    | 1.91 / 0.20 |
-| CH-53E    | 2.29 / 0.25 |
-| MIL-26    | 1.15 / 0.12 |
-| UH-60A    | 2.86 / 0.31 |
-| SH-60B    | 2.86 / 0.31 |
-| Mi-8MT    | 2.86 / 0.31 |
-| UH-1H     | 5.73 / 0.61 |
-| Ka-27     | 5.73 / 0.61 |  
+| Platform  | Accuracy Deg. (C/H Bands)| Min. Band |
+| --------  | ----------  | - |
+| CH-47D    | 1.91 / 0.20 | A |
+| CH-53E    | 2.29 / 0.25 | A |
+| MIL-26    | 1.15 / 0.12 | A |
+| UH-60A    | 2.86 / 0.31 | B |
+| SH-60B    | 2.86 / 0.31 | B |
+| Mi-8MT    | 2.86 / 0.31 | B |
+| UH-1H     | 5.73 / 0.61 | B |
+| Ka-27     | 5.73 / 0.61 | C | 
 
 ### Ground Units
-| Platform  | Accuracy (C/H Bands degrees)|
-| --------  | --------  |
-| SPK-11    | 1.53 / 0.16 |
-| MLRS FDDM | 1.53 / 0.16 |  
+| Platform  | Accuracy Deg. (C/H Bands) | Min. Band |
+| --------  | --------    | - |
+| SPK-11    | 1.53 / 0.16 | A |
+| MLRS FDDM | 1.53 / 0.16 | A | 
 
 ### Static Objects
-| Platform  | Accuracy (C/H Bands degrees)|
-| --------  | --------  |
-| Comms tower M | 0.29 / 0.03 |
+| Platform  | Accuracy Deg. (C/H Bands) | Min. Band |
+| --------  | --------  | --------  |
+| Comms tower M | 0.29 / 0.03 | A |
+
+
 
 ### Community Mods
-| Platform  | Accuracy (C/H Bands degrees)|
+| Platform  | Accuracy Deg. (C/H Bands)|
 | --------  | -------- |
 | Anubis C-130J | 0.65 / 0.07 |
 | VSN EA-6B Prowler   |  2.54 / 0.27  |

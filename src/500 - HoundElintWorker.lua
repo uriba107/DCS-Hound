@@ -202,6 +202,7 @@ do
     --- set contact as Prebriefed
     -- @param emitter DCS Unit/UID of radar
     function HoundElintWorker:setPreBriefedContact(emitter)
+        if not emitter:isExist() then return end
         local contact = self:getContact(emitter)
         local contactState = contact:useUnitPos()
         if contactState then

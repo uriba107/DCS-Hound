@@ -1025,7 +1025,7 @@ do
             table.insert(units,obj)
         end
         for _,unit in pairs(units) do
-            if setContains(HoundDB.Sam,unit:getTypeName()) then
+            if unit:getCoalition() ~= self.settings:getCoalition() and unit:isExist() and setContains(HoundDB.Sam,unit:getTypeName()) then
                 self.contacts:setPreBriefedContact(unit)
             end
         end

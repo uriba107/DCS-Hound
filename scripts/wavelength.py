@@ -41,10 +41,10 @@ platforms = {
             "An-30M": {"category": 2, "antenna":{"size":25, "factor":1}},
             "A-50": {"category": 2, "antenna":{"size":9, "factor":0.5}},
             "An-26B": {"category": 2, "antenna":{"size":26, "factor":0.9}},
-            "Su-25T": {"category": 2, "antenna":{"size":1.6, "factor":1}},
-            "AJS37": {"category": 2, "antenna":{"size":1.6, "factor":1}},
+            "Su-25T": {"category": 2, "antenna":{"size":3.5, "factor":1}},
+            "AJS37": {"category": 2, "antenna":{"size":4.5, "factor":1}},
+            "F-16C": {"category": 2, "antenna":{"size":1.45, "factor":1}},
             "EA-6B": {"category": 2, "antenna":{"size":9, "factor":1}}
-
         }
 
 def genBandTable():
@@ -57,12 +57,19 @@ def genBandTable():
 def calcResolution(wavelength,antenna):
     return math.degrees(wavelength/antenna)
 
+def calcMinBand(antenna):
+    for band in sorted(bands):
+        val = calcResolution(bands[band]["wavelength"],antenna)
+        if val < 10:
+            return band
+
 def genResolutionTable():
     for platform in sorted(platforms,key=lambda  item:  (platforms[item]['category'],item)):
         antenna = platforms[platform]["antenna"]["size"]*platforms[platform]["antenna"]["factor"]
         Hband = calcResolution(bands["H"]["wavelength"],antenna)
         CBand = calcResolution(bands["C"]["wavelength"],antenna)
-        print ("| %s   |  %.2f / %.2f  | "%(platform,CBand,Hband))
+        MinBand = calcMinBand(antenna)
+        print ("| %s   |  %.2f / %.2f  | %s |"%(platform,CBand,Hband,MinBand))
 
 def getAntennaSize(resDeg,band):
     resRad = math.radians(resDeg)

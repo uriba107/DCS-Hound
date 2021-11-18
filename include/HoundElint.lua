@@ -946,8 +946,10 @@ do
             ['A-50'] = {antenna = {size = 9, factor = 0.5}},
             ['An-26B'] = {antenna = {size = 26, factor = 0.9}},
             ['EA_6B'] = {antenna = {size = 9, factor = 1}}, -- VSN EA-6B
-            ['Su-25T'] = {antenna = {size = 1.6, factor = 1}},
-            ['AJS37'] = {antenna = {size = 1.6, factor = 1}}
+            ['Su-25T'] = {antenna = {size = 3.5, factor = 1}},
+            ['AJS37'] = {antenna = {size = 4.5, factor = 1}},
+            ['F-16C_50'] = {antenna = {size = 1.45, factor = 1}},
+
         }
     }
 
@@ -2438,8 +2440,8 @@ do
     function HoundContact:processData()
         if self.preBriefed then
             HoundLogger.trace(self:getName().." is PB..")
-            local unitPos = self.unit:getPosition().p
-            if l_mist.utils.get3DDist(unitPos,self.pos.p) < 0.1 then
+            local unitPos = self.unit:getPosition()
+            if l_mist.utils.get3DDist(unitPos.p,self.pos.p) < 0.1 then
                 return
             end
             self.preBriefed = false
@@ -2725,6 +2727,8 @@ do
         contact.DCSunitName = self.unit:getName()
         if self.pos.p ~= nil and self.uncertenty_data ~= nil then
             contact.pos = self.pos.p
+            contact.LL = self.pos.LL
+
             contact.accuracy = HoundUtils.TTS.getVerbalConfidenceLevel( self.uncertenty_data.r )
             contact.uncertenty = {
                 major = self.uncertenty_data.major,
@@ -2735,7 +2739,7 @@ do
         contact.maxWeaponsRange = self.maxWeaponsRange
         contact.last_seen = self.last_seen
         contact.detected_by = self.detected_by
-        return contact
+        return l_mist.utils.deepCopy(contact)
     end
 end
 do
@@ -3493,6 +3497,7 @@ do
     end
 
     function HoundElintWorker:setPreBriefedContact(emitter)
+        if not emitter:isExist() then return end
         local contact = self:getContact(emitter)
         local contactState = contact:useUnitPos()
         if contactState then
@@ -5279,7 +5284,7 @@ do
             table.insert(units,obj)
         end
         for _,unit in pairs(units) do
-            if setContains(HoundDB.Sam,unit:getTypeName()) then
+            if unit:getCoalition() ~= self.settings:getCoalition() and unit:isExist() and setContains(HoundDB.Sam,unit:getTypeName()) then
                 self.contacts:setPreBriefedContact(unit)
             end
         end
@@ -5333,4 +5338,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.2.0-develop - Compiled on 2021-11-12 19:01
+-- Hound version 0.2.0-develop - Compiled on 2021-11-18 22:37

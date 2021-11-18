@@ -357,8 +357,8 @@ do
     function HoundContact:processData()
         if self.preBriefed then
             HoundLogger.trace(self:getName().." is PB..")
-            local unitPos = self.unit:getPosition().p
-            if l_mist.utils.get3DDist(unitPos,self.pos.p) < 0.1 then
+            local unitPos = self.unit:getPosition()
+            if l_mist.utils.get3DDist(unitPos.p,self.pos.p) < 0.1 then
                 HoundLogger.trace("No change in position.. skipping..")
                 return
             end
@@ -703,6 +703,8 @@ do
         contact.DCSunitName = self.unit:getName()
         if self.pos.p ~= nil and self.uncertenty_data ~= nil then
             contact.pos = self.pos.p
+            contact.LL = self.pos.LL
+
             contact.accuracy = HoundUtils.TTS.getVerbalConfidenceLevel( self.uncertenty_data.r )
             contact.uncertenty = {
                 major = self.uncertenty_data.major,
@@ -713,6 +715,6 @@ do
         contact.maxWeaponsRange = self.maxWeaponsRange
         contact.last_seen = self.last_seen
         contact.detected_by = self.detected_by
-        return contact
+        return l_mist.utils.deepCopy(contact)
     end
 end
