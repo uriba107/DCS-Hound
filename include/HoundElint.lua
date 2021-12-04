@@ -2181,6 +2181,19 @@ do
         end
         return poly2D,poly3D
     end
+
+    function HoundDatapoint.AzKalman(self,newAz)
+        if not self.platformPrecision and not self.platformStatic then return end
+        if not self.kalman then
+            self.kalman = {}
+            self.kalman.P = 1
+        end
+
+        self.kalman.K = self.kalman.P / (self.kalman.P+self.platformPrecision)
+        self.az = ((self.az + self.kalman.K * (newAz-self.az)) + PI_2) % PI_2
+        self.kalman.P = (1-self.kalman.K)
+        return self.az
+    end
 end
 do
     HoundContact = {}
@@ -2308,7 +2321,8 @@ do
 
         if datapoint.platformStatic then
             if Length(self._dataPoints[datapoint.platformId]) > 0 then
-                datapoint.az =  HoundUtils.AzimuthAverage({datapoint.az,self._dataPoints[datapoint.platformId][1].az})
+                self._dataPoints[datapoint.platformId][1]:AzKalman(datapoint.az)
+                datapoint = self._dataPoints[datapoint.platformId][1]
             end
             self._dataPoints[datapoint.platformId] = {datapoint}
             return
@@ -2440,11 +2454,15 @@ do
     function HoundContact:processData()
         if self.preBriefed then
             HoundLogger.trace(self:getName().." is PB..")
-            local unitPos = self.unit:getPosition()
-            if l_mist.utils.get3DDist(unitPos.p,self.pos.p) < 0.1 then
+            if self.unit:isExist() then
+                local unitPos = self.unit:getPosition()
+                if l_mist.utils.get3DDist(unitPos.p,self.pos.p) < 0.1 then
+                    return
+                end
+                self.preBriefed = false
+            else
                 return
             end
-            self.preBriefed = false
         end
         local newContact = (self.state == HOUND.EVENTS.RADAR_NEW)
         local mobileDataPoints = {}
@@ -2696,6 +2714,10 @@ do
     end
 
     function HoundContact:useUnitPos()
+        if not self.unit:isExist() then
+            HoundLogger.info("PB failed - unit does not exist")
+            return
+        end
         local state = HOUND.EVENTS.RADAR_DETECTED
         if type(self.pos.p) == "table" then
             state = HOUND.EVENTS.RADAR_UPDATED
@@ -5338,4 +5360,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.2.0-develop - Compiled on 2021-11-18 22:37
+-- Hound version 0.2.0-develop - Compiled on 2021-12-04 19:54

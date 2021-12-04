@@ -63,4 +63,5 @@ do
     -- env.info(mist.utils.tableShow(_G.env.mission.drawings.layers[2]["objects"][1]))
     -- local socket = _G.loadfile('socket.lua')
     -- env.info(type(base.require))
+
 end

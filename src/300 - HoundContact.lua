@@ -163,7 +163,10 @@ do
             -- if Reciver is static, just keep the last Datapoint, as position never changes.
             -- if There is a datapoint, do rolling avarage on AZ to clean errors out.
             if Length(self._dataPoints[datapoint.platformId]) > 0 then
-                datapoint.az =  HoundUtils.AzimuthAverage({datapoint.az,self._dataPoints[datapoint.platformId][1].az})
+                -- poor man's Kalman
+                self._dataPoints[datapoint.platformId][1]:AzKalman(datapoint.az)
+                datapoint = self._dataPoints[datapoint.platformId][1]
+                -- datapoint.az =  HoundUtils.AzimuthAverage({datapoint.az,self._dataPoints[datapoint.platformId][1].az})
             end
             self._dataPoints[datapoint.platformId] = {datapoint}
             return
@@ -357,13 +360,18 @@ do
     function HoundContact:processData()
         if self.preBriefed then
             HoundLogger.trace(self:getName().." is PB..")
-            local unitPos = self.unit:getPosition()
-            if l_mist.utils.get3DDist(unitPos.p,self.pos.p) < 0.1 then
-                HoundLogger.trace("No change in position.. skipping..")
+            if self.unit:isExist() then
+                local unitPos = self.unit:getPosition()
+                if l_mist.utils.get3DDist(unitPos.p,self.pos.p) < 0.1 then
+                    HoundLogger.trace("No change in position.. skipping..")
+                    return
+                end
+                HoundLogger.trace("position changed.. removing PB mark..")
+                self.preBriefed = false
+            else
+                HoundLogger.trace("PB Unit does not exist")
                 return
             end
-            HoundLogger.trace("position changed.. removing PB mark..")
-            self.preBriefed = false
         end
         local newContact = (self.state == HOUND.EVENTS.RADAR_NEW)
         local mobileDataPoints = {}
@@ -670,6 +678,10 @@ do
 
     --- Use Unit Position
     function HoundContact:useUnitPos()
+        if not self.unit:isExist() then
+            HoundLogger.info("PB failed - unit does not exist")
+            return
+        end
         local state = HOUND.EVENTS.RADAR_DETECTED
         if type(self.pos.p) == "table" then
             state = HOUND.EVENTS.RADAR_UPDATED

@@ -123,4 +123,22 @@ do
         -- self.posPolygon["3D"] = poly3D
         return poly2D,poly3D
     end
+
+    --- Smooth azimuth using Kalman filter
+    -- @local
+    -- @param self Datapoint instance
+    -- @param newAz new Az input
+    function HoundDatapoint.AzKalman(self,newAz)
+        if not self.platformPrecision and not self.platformStatic then return end
+        if not self.kalman then
+            self.kalman = {}
+            self.kalman.P = 1
+        end
+
+        self.kalman.K = self.kalman.P / (self.kalman.P+self.platformPrecision)
+        self.az = ((self.az + self.kalman.K * (newAz-self.az)) + PI_2) % PI_2
+        self.kalman.P = (1-self.kalman.K)
+        -- env.info(self.platformName.." Kalman: z="..math.deg(newAz).." | out="..math.deg(self.az).." | vars=".. mist.utils.tableShow(self.kalman) )
+        return self.az
+    end
 end

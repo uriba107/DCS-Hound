@@ -5,7 +5,6 @@ do
 end
 
 do
-    
     env.info("configuring Hound")    
     Elint_blue = HoundElint:create(coalition.side.BLUE)
     Elint_blue:addPlatform("Mt_Hermon_ELINT")
@@ -80,8 +79,20 @@ do
     Elint_blue:setTransmitter("all","Mt_Meron_ELINT")
     Elint_blue:systemOn()
 
-    env.info("Hound - End of config")
+    -- faking Satellite intel, add all enemy IADS EW radars as prebriefed.
+    env.info("importing Skynet IADS EWRs")
+    for _,ewRadar in pairs(redIADS:getEarlyWarningRadars()) do
 
+        local ewRadarName = nil
+        if type(ewRadar.getDCSName) == "function" then
+            ewRadarName = ewRadar:getDCSName()
+        end
+        if ewRadarName then
+            Elint_blue:preBriefedContact(ewRadarName)
+        end
+    end
+
+    env.info("Hound - End of config")
 end
 
 do
