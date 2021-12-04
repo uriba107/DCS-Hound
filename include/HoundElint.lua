@@ -8,7 +8,7 @@ end
 
 do
     HOUND = {
-        VERSION = "0.2.0-develop",
+        VERSION = "0.2.0",
         DEBUG = false,
         ELLIPSE_PERCENTILE = 0.6,
         NUM_DATAPOINTS = 15,
@@ -5360,4 +5360,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.2.0-develop - Compiled on 2021-12-04 19:54
+-- Hound version 0.2.0 - Compiled on 2021-12-04 20:27
