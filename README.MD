@@ -120,7 +120,7 @@ on a "ONCE" type action with "time more 1" condition, add the scripts in the fol
 The bare minumum, more customization optionas are available.
 ```lua
 do
-  Elint_blue = HoundElint:create(coalition.side.blue)
+  Elint_blue = HoundElint:create(coalition.side.BLUE)
   Elint_blue:addPlatform("NAME_OF_UNIT_1")
   -- it's recommended to have at least two active platform to make system faster and more accurate
   Elint_blue:addPlatform("NAME_OF_UNIT_2")
