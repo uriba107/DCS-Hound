@@ -255,9 +255,11 @@ the available marker types are:
 | ---- | ------------|
 | NONE | no ellipse is drawn (only position marker)|
 | CIRCLE | a circle of uncertenty will be drawn |
-| DIAMOND | a diamond will be drawn with 4 points representing uncertenty ellipse |
+| DIAMOND | a diamond will be drawn with 4 points representing uncertenty ellipse (Default) |
 | OCTAGON | ellipse will be drawn with 8 points (diamon with midpoints) |
 | POLYGON | ellipse will be drawn as a 16 sides polygon |
+
+`Note: More points causes higher CPU usage. DIAMOND is default`
 
 ---
 ### DBA reports
