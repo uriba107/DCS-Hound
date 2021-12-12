@@ -307,7 +307,7 @@ in the Normal default format, ATIS will also call out radar names and Grid posit
 `Straight Flush 17, grid GG20, accuracy very high`
 
 it is possible to switch it to NATO LOWDOWN format.  
-`6, ACTIVE, BULLSEYE 012 of 13, accuracy very high`
+`6, ACTIVE, BULLSEYE 012 13, accuracy very high`
 
 This change is global and preformed via the use of the following:
 ```lua
@@ -572,7 +572,7 @@ you can override this to get defferent precision (i.e 5 will give you 10 digits 
 
 This Reads like this:
  ```
- <Radar Type> <Radar UID>, [Active/Recent/stale etc.] at Bullseye XXX for YY, accuracy [Very High/High/Medium/Low etc.], 
+ <Radar Type> <Radar UID>, [Active/Recent/stale etc.] at Bullseye XXX YY, accuracy [Very High/High/Medium/Low etc.], 
  position <LL in Aricraft format>, I repeate <LL in Aricraft format>,
  MGRS <MGRS with HOUND.MGRS_PRECISION>,
  elevation XXXX feet MSL,
@@ -592,7 +592,7 @@ If a more extensive change is desired, The recommended way to achieve it is to `
  This, as the name suggests is notification only agent. it functions independently of controller or ATIS and will only report pop-up and if enable radar destruction alerts. this is intended to be operated on a di`fferent freqency then the controller (which has the same alerting capacity). This may be used for improving SA on Air-To-Air frequency or on general strike channels.
  
  Notifier has a special case when used under "default" sector when radar is inside a geofenced sector. In this scenario it will report using sector name rather then with location. for example:
-  * Normal: `Attention All Aircraft! This is HOUND. New threat detected! Straight flush 11 is now Alive, bullseye XXX for YY, Grid ZZ 1 4.`<br>
+  * Normal: `Attention All Aircraft! This is HOUND. New threat detected! Straight flush 11 is now Alive, bullseye XXX YY, Grid ZZ 1 4.`<br>
   * Special case: `Attention All Aircraft! this is HOUND. New thread detected! Straigh flush 11 is now Alive in Bander Abbas.`
 
   by default it will broadcast on 243.000AM and 121.500AM, i.e Guard frequency. but will accept [TTS configuration](#text-to-speach-configuration).
@@ -713,11 +713,15 @@ to remove use
 ## Known Issues
   * On initial detection accuracy will usually be very high with solution nowhere near the radar actual position. This is sorted by the system as more datapoints are gathered. allow at least 2 minutes for contact to stablize.
   * Adding low resolution platforms will degrade the solution as Hound currently does not reject "bad data". Hound will drop readings that have more then 10 degrees of error. but if resolution is above the threashold, but very far away, it may still degrate the resolution.
+  * Overlapping of sectors is currently not recommended. you can add a small high priority sector on top of a larger sector, but this is the ONLY tested overlap, and there might be some un-expected behavour with that.
+  * MIST 4.4 is REQUIRED. However if used with MIST 4.5.103+ some a additional functionality is enabled. (e.g SAM that threaten )
 
 ## Breaking changes
 If you are upgrading from 0.1 please note that some changes will be required.
   * `enableController()` no longer accepts boolean to enable or disable text. please use [`enableText()`](#text-messages) call.
-  * every function that has `ATIS` in it needs to be changesd to have `Atis` - note the capitalization.
+  * Every function that has `ATIS` in it needs to be changesd to have `Atis` - note the capitalization.
+  * "name" argument passed in the TTS config table is no longer used. (silent failure)
+  * `setTransmitter()` is now a sector function. in general passing everything directly to `Istance.controller` or `Instance.atis` will no longer work due to changes in the internal architecture. 
 
 ## More Docs
   * [Main script Documentation](https://uriba107.github.io/DCS-Hound/) - all the options available, even those I didn't write here
