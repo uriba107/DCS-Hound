@@ -164,12 +164,15 @@ do
         -- TODO: fix for ships
         local detectionRange = 0
         local unit_sensors = DCS_Unit:getSensors()
-        if not unit_sensors then return end
+        if not unit_sensors then return detectionRange end
+        if not setContains(unit_sensors,Unit.SensorType.RADAR) then return detectionRange end
         for _,radar in pairs(unit_sensors[Unit.SensorType.RADAR]) do
-            for _,aspects in pairs(radar["detectionDistanceAir"]) do
-                for _,range in pairs(aspects) do
-                    detectionRange = l_math.max(detectionRange,range)
-                    -- env.info(radar["typeName"].. " Detection range is " .. range)
+            if setContains(radar,"detectionDistanceAir") then
+                for _,aspects in pairs(radar["detectionDistanceAir"]) do
+                    for _,range in pairs(aspects) do
+                        detectionRange = l_math.max(detectionRange,range)
+                        -- env.info(radar["typeName"].. " Detection range is " .. range)
+                    end
                 end
             end
         end
