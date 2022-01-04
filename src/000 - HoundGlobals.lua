@@ -21,7 +21,7 @@ do
     -- @field CONTACT_TIMEOUT Timout for emitter to be silent before being dropped from contacts
     -- @field MGRS_PRECISION Number of digits in MGRS conversion
     HOUND = {
-        VERSION = "0.2.0-TRUNK",
+        VERSION = "0.2.1-TRUNK",
         DEBUG = true,
         ELLIPSE_PERCENTILE = 0.6,
         NUM_DATAPOINTS = 15,

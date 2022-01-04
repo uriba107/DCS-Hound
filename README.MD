@@ -48,6 +48,7 @@ Hound Currently has a 10 degrees angular resolution cutoff point to avoid introd
 | Tu-95     | 0.46 / 0.05 | A ||
 | Tu-142    | 0.46 / 0.05 | A ||
 | IL-76MD   | 0.60 / 0.06 | A ||
+| H-6J      | 6.54 / 0.70 | C ||
 | S-3B      | 1.59 / 0.17 | A ||
 | E-2D      | 6.54 / 0.70 | C ||
 | E-3A      | 5.09 / 0.55 | C ||
@@ -55,6 +56,7 @@ Hound Currently has a 10 degrees angular resolution cutoff point to avoid introd
 | A-50      | 5.09 / 0.55 | C ||
 | Viggen    | 5.09 / 0.55 | C | U22 |
 | Su-25T    | 6.54 / 0.70 | C | Fantasmagoria |  
+| JF-17     | 7.05 / 0.76 | C | KG-600 SPJ |
 | F-16C     | 15.79 / 1.69| D | Block 50 w/HTS |
 
 <sup>*</sup> Data with angular resolution below 10 deg is rejected. That is de
