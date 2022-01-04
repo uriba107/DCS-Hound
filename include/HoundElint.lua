@@ -1449,6 +1449,7 @@ do
                         callsign = callsign .. " " .. num
                     end
                 end
+                HoundLogger.trace("callsign " .. type(callsign) .. " " .. tostring(callsign) )
                 return string.upper(callsign:match( "^%s*(.-)%s*$" ))
             end
         end
@@ -2465,10 +2466,13 @@ do
             if self.unit:isExist() then
                 local unitPos = self.unit:getPosition()
                 if l_mist.utils.get3DDist(unitPos.p,self.pos.p) < 0.1 then
+                    HoundLogger.trace("No change in position.. skipping..")
                     return
                 end
+                HoundLogger.trace("position changed.. removing PB mark..")
                 self.preBriefed = false
             else
+                HoundLogger.trace("PB Unit does not exist")
                 return
             end
         end
@@ -2477,12 +2481,14 @@ do
         local staticDataPoints = {}
         local estimatePositions = {}
         local platforms = {}
+        local staticPlatformsOnly = true
         for _,platformDatapoints in pairs(self._dataPoints) do
             if Length(platformDatapoints) > 0 then
                 for _,datapoint in pairs(platformDatapoints) do
-                    if datapoint.isReciverStatic then
+                    if datapoint:isStatic() then
                         table.insert(staticDataPoints,datapoint)
                     else
+                        staticPlatformsOnly = false
                         table.insert(mobileDataPoints,datapoint)
                     end
                     if datapoint.estimatedPos ~= nil then
@@ -2531,7 +2537,7 @@ do
             end
         end
 
-        if Length(estimatePositions) > 2 then
+        if Length(estimatePositions) > 2 or (Length(estimatePositions) > 0 and staticPlatformsOnly) then
             self:calculatePos(estimatePositions,true)
             self:calculateEllipse(estimatePositions)
 
@@ -3628,12 +3634,14 @@ do
         self:removeDeadPlatforms()
 
         if Length(self._platforms) == 0 then
+            HoundLogger.trace("no active platform")
             return
         end
 
         local Radars = HoundUtils.Elint.getActiveRadars(self:getCoalition())
 
         if Length(Radars) == 0 then
+            HoundLogger.trace("No Transmitting Radars")
             return
         end
         for _,RadarName in ipairs(Radars) do
@@ -5333,6 +5341,7 @@ do
         table.sort(sectors,HoundUtils.Sort.sectorsByPriorityLowFirst)
 
         if houndEvent.id == HOUND.EVENTS.RADAR_DETECTED then
+            HoundLogger.trace("Detected HoundElintEvent")
 
             for _,sector in pairs(sectors) do
                 sector:updateSectorMembership(houndEvent.initiator)
@@ -5372,4 +5381,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.2.1-develop - Compiled on 2022-01-04 21:41
+-- Hound version 0.2.1-develop - Compiled on 2022-01-04 22:54

@@ -383,12 +383,14 @@ do
         local staticDataPoints = {}
         local estimatePositions = {}
         local platforms = {}
+        local staticPlatformsOnly = true
         for _,platformDatapoints in pairs(self._dataPoints) do
             if Length(platformDatapoints) > 0 then
                 for _,datapoint in pairs(platformDatapoints) do
-                    if datapoint.isReciverStatic then
+                    if datapoint:isStatic() then
                         table.insert(staticDataPoints,datapoint)
                     else
+                        staticPlatformsOnly = false
                         table.insert(mobileDataPoints,datapoint)
                     end
                     if datapoint.estimatedPos ~= nil then
@@ -440,7 +442,7 @@ do
             end
         end
 
-        if Length(estimatePositions) > 2 then
+        if Length(estimatePositions) > 2 or (Length(estimatePositions) > 0 and staticPlatformsOnly) then
             self:calculatePos(estimatePositions,true)
             self:calculateEllipse(estimatePositions)
 
