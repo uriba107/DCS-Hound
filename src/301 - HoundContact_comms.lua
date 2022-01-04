@@ -142,7 +142,7 @@ do
     --- generate Text for the Radio menu item
     -- @return string
     function HoundContact:generateRadioItemText()
-        if self.pos.p == nil then return end
+        if not self:hasPos() then return end
         local GridPos,BePos = self:getTextData(true,1)
         BePos = BePos:gsub(" for ","/")
         return self:getName() .. " - BE: " .. BePos .. " (".. GridPos ..")"
@@ -158,13 +158,15 @@ do
         if sectorName then
             msg = msg .. " in " .. sectorName
         else
-            local GridPos,BePos
-            if isTTS then
-                GridPos,BePos = self:getTtsData(true,1)
-                msg = msg .. ", bullseye " .. BePos .. ", grid ".. GridPos
-            else
-                GridPos,BePos = self:getTextData(true,1)
-                msg = msg .. " BE: " .. BePos .. " (grid ".. GridPos ..")"
+            if self:hasPos() then
+                local GridPos,BePos
+                if isTTS then
+                    GridPos,BePos = self:getTtsData(true,1)
+                    msg = msg .. ", bullseye " .. BePos .. ", grid ".. GridPos
+                else
+                    GridPos,BePos = self:getTextData(true,1)
+                    msg = msg .. " BE: " .. BePos .. " (grid ".. GridPos ..")"
+                end
             end
         end
         return msg .. "."
@@ -179,13 +181,15 @@ do
         if sectorName then
             msg = msg .. " in " .. sectorName
         else
-            local GridPos,BePos
-            if isTTS then
-                GridPos,BePos = self:getTtsData(true,1)
-                msg = msg .. ", bullseye " .. BePos .. ", grid ".. GridPos
-            else
-                GridPos,BePos = self:getTextData(true,1)
-                msg = msg .. " BE: " .. BePos .. " (grid ".. GridPos ..")"
+            if self:hasPos() then
+                local GridPos,BePos
+                if isTTS then
+                    GridPos,BePos = self:getTtsData(true,1)
+                    msg = msg .. ", bullseye " .. BePos .. ", grid ".. GridPos
+                else
+                    GridPos,BePos = self:getTextData(true,1)
+                    msg = msg .. " BE: " .. BePos .. " (grid ".. GridPos ..")"
+                end
             end
         end
         return msg .. "."

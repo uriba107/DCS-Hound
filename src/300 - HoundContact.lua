@@ -106,6 +106,11 @@ do
         return self.pos.p
     end
 
+    --- check if contact has estimated position
+    function HoundContact:hasPos()
+        return HoundUtils.Polygon.isDcsPoint(self.pos.p)
+    end
+
     --- get max weapons range
     function HoundContact:getMaxWeaponsRange()
         return self.maxWeaponsRange

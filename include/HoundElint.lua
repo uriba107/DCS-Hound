@@ -8,7 +8,7 @@ end
 
 do
     HOUND = {
-        VERSION = "0.2.0",
+        VERSION = "0.2.1-develop",
         DEBUG = false,
         ELLIPSE_PERCENTILE = 0.6,
         NUM_DATAPOINTS = 15,
@@ -942,6 +942,7 @@ do
             ['Tu-95MS'] = {antenna = {size = 50, factor = 1}},
             ['Tu-142'] = {antenna = {size = 50, factor = 1}},
             ['IL-76MD'] = {antenna = {size = 48, factor = 0.8}},
+            ['H-6J'] = {antenna = {size = 3.5, factor = 1}},
             ['An-30M'] = {antenna = {size = 25, factor = 1}},
             ['A-50'] = {antenna = {size = 9, factor = 0.5}},
             ['An-26B'] = {antenna = {size = 26, factor = 0.9}},
@@ -949,7 +950,7 @@ do
             ['Su-25T'] = {antenna = {size = 3.5, factor = 1}},
             ['AJS37'] = {antenna = {size = 4.5, factor = 1}},
             ['F-16C_50'] = {antenna = {size = 1.45, factor = 1}},
-
+            ['JF-17'] = {antenna = {size = 3.25, factor = 1}},
         }
     }
 
@@ -1287,11 +1288,14 @@ do
     function HoundUtils.getRadarDetectionRange(DCS_Unit)
         local detectionRange = 0
         local unit_sensors = DCS_Unit:getSensors()
-        if not unit_sensors then return end
+        if not unit_sensors then return detectionRange end
+        if not setContains(unit_sensors,Unit.SensorType.RADAR) then return detectionRange end
         for _,radar in pairs(unit_sensors[Unit.SensorType.RADAR]) do
-            for _,aspects in pairs(radar["detectionDistanceAir"]) do
-                for _,range in pairs(aspects) do
-                    detectionRange = l_math.max(detectionRange,range)
+            if setContains(radar,"detectionDistanceAir") then
+                for _,aspects in pairs(radar["detectionDistanceAir"]) do
+                    for _,range in pairs(aspects) do
+                        detectionRange = l_math.max(detectionRange,range)
+                    end
                 end
             end
         end
@@ -2282,6 +2286,10 @@ do
         return self.pos.p
     end
 
+    function HoundContact:hasPos()
+        return HoundUtils.Polygon.isDcsPoint(self.pos.p)
+    end
+
     function HoundContact:getMaxWeaponsRange()
         return self.maxWeaponsRange
     end
@@ -2881,7 +2889,7 @@ do
     end
 
     function HoundContact:generateRadioItemText()
-        if self.pos.p == nil then return end
+        if not self:hasPos() then return end
         local GridPos,BePos = self:getTextData(true,1)
         BePos = BePos:gsub(" for ","/")
         return self:getName() .. " - BE: " .. BePos .. " (".. GridPos ..")"
@@ -2893,13 +2901,15 @@ do
         if sectorName then
             msg = msg .. " in " .. sectorName
         else
-            local GridPos,BePos
-            if isTTS then
-                GridPos,BePos = self:getTtsData(true,1)
-                msg = msg .. ", bullseye " .. BePos .. ", grid ".. GridPos
-            else
-                GridPos,BePos = self:getTextData(true,1)
-                msg = msg .. " BE: " .. BePos .. " (grid ".. GridPos ..")"
+            if self:hasPos() then
+                local GridPos,BePos
+                if isTTS then
+                    GridPos,BePos = self:getTtsData(true,1)
+                    msg = msg .. ", bullseye " .. BePos .. ", grid ".. GridPos
+                else
+                    GridPos,BePos = self:getTextData(true,1)
+                    msg = msg .. " BE: " .. BePos .. " (grid ".. GridPos ..")"
+                end
             end
         end
         return msg .. "."
@@ -2910,13 +2920,15 @@ do
         if sectorName then
             msg = msg .. " in " .. sectorName
         else
-            local GridPos,BePos
-            if isTTS then
-                GridPos,BePos = self:getTtsData(true,1)
-                msg = msg .. ", bullseye " .. BePos .. ", grid ".. GridPos
-            else
-                GridPos,BePos = self:getTextData(true,1)
-                msg = msg .. " BE: " .. BePos .. " (grid ".. GridPos ..")"
+            if self:hasPos() then
+                local GridPos,BePos
+                if isTTS then
+                    GridPos,BePos = self:getTtsData(true,1)
+                    msg = msg .. ", bullseye " .. BePos .. ", grid ".. GridPos
+                else
+                    GridPos,BePos = self:getTextData(true,1)
+                    msg = msg .. " BE: " .. BePos .. " (grid ".. GridPos ..")"
+                end
             end
         end
         return msg .. "."
@@ -5360,4 +5372,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.2.0 - Compiled on 2021-12-04 20:27
+-- Hound version 0.2.1-develop - Compiled on 2022-01-04 21:41
