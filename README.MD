@@ -734,3 +734,8 @@ If you are upgrading from 0.1 please note that some changes will be required.
   * __Grimes__ - For [MIST](https://github.com/mrSkortch/MissionScriptingTools) and because Without the [Hoggit Wiki](https://wiki.hoggitworld.com/) we would all be fumbling in the dark.
   * __[flywaldair](https://github.com/walder)__ - Hound was initially inspired by [Skynet IADS](https://github.com/walder/Skynet-IADS).
   * __Nikos__, __[Jester](https://github.com/hbjonsson)__, __[davidp57](https://github.com/davidp57)__, __Pene__ and all the rest - For the feeback and suggestions pushing Hound even further
+
+And a very special thanks is (and will always be) reserved to those who choose to click the button below :) 
+
+[![Toss A coin to your witcher](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/donate?business=RDGX965BT5MT4&no_recurring=1&item_name=Thank+you+for+choosing+this+way+to+show+your+appreciation%21+&currency_code=USD)  
+[Bonus track](https://www.youtube.com/watch?v=waMkFIzvDpE)
