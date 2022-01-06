@@ -196,6 +196,17 @@ do
         lu.assertIsFalse(setContainsValue(HoundDB.CALLSIGNS.NATO,HoundUtils.getHoundCallsign()))
     end
 
+    function TestHoundUtils:TestPolygon()
+        -- HoundUtils.Polygon.isDcsPoint
+        lu.assertIsFalse(HoundUtils.Polygon.isDcsPoint("somethign"))
+        lu.assertIsFalse(HoundUtils.Polygon.isDcsPoint(true))
+        lu.assertIsFalse(HoundUtils.Polygon.isDcsPoint({"assd","asdf"}))
+        lu.assertIsFalse(HoundUtils.Polygon.isDcsPoint({x="asdf",z="asdf"}))
+        lu.assertIsFalse(HoundUtils.Polygon.isDcsPoint({x="123123",z="123123"}))
+        lu.assertIsTrue(HoundUtils.Polygon.isDcsPoint({x=12345,z=67890}))
+
+    end
+
     function TestHoundUtils:TestVector()
     end
 
