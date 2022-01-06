@@ -970,7 +970,33 @@ do
     -- @return Bool True if is valid point
     function HoundUtils.Polygon.isDcsPoint(point)
         if type(point) ~= "table" then return false end
-        return (point.x and type(point.x) == "number") and  (point.z and type(point.z) == "number")
+        return (type(point.x) == "number") and (type(point.z) == "number")
+    end
+
+    --- Ensure Inpoint DCS point has Elevation
+    -- @local
+    -- @param point DCS point
+    -- @return Point but with elevation
+    function HoundUtils.Polygon.setPointElevation(point)
+        if HoundUtils.Polygon.isDcsPoint(point) and type(point.y) ~= "number" then
+            point.y = land.getHeight({x=point.x,y=point.z})
+        end
+        return point
+    end
+
+    --- Ensure input point or point table all have valid Elevation
+    -- @param point DCS point
+    -- @return same as input, but with elevation. will return original value if is not DCS point
+    function HoundUtils.Polygon.setElevation(point)
+        if type(point) == "table" then
+            if HoundUtils.Polygon.isDcsPoint(point) then
+                return HoundUtils.Polygon.setPointElevation(point)
+            end
+            for _,pt in pairs(point) do
+                pt = HoundUtils.Polygon.setPointElevation(pt)
+            end
+        end
+        return point
     end
 
     --- Check if polygon is under threat of SAM
@@ -1017,6 +1043,8 @@ do
             local z = (n1*dpz - n2*dcz) * n3
             return {x=x, z=z}
         end
+
+        if type(subjectPolygon) ~= "table" or type(clipPolygon) ~= "table" then return end
 
         local outputList = subjectPolygon
         local cp1 = clipPolygon[#clipPolygon]

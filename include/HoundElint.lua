@@ -1449,7 +1449,6 @@ do
                         callsign = callsign .. " " .. num
                     end
                 end
-                HoundLogger.trace("callsign " .. type(callsign) .. " " .. tostring(callsign) )
                 return string.upper(callsign:match( "^%s*(.-)%s*$" ))
             end
         end
@@ -1840,7 +1839,26 @@ do
 
     function HoundUtils.Polygon.isDcsPoint(point)
         if type(point) ~= "table" then return false end
-        return (point.x and type(point.x) == "number") and  (point.z and type(point.z) == "number")
+        return (type(point.x) == "number") and (type(point.z) == "number")
+    end
+
+    function HoundUtils.Polygon.setPointElevation(point)
+        if HoundUtils.Polygon.isDcsPoint(point) and type(point.y) ~= "number" then
+            point.y = land.getHeight({x=point.x,y=point.z})
+        end
+        return point
+    end
+
+    function HoundUtils.Polygon.setElevation(point)
+        if type(point) == "table" then
+            if HoundUtils.Polygon.isDcsPoint(point) then
+                return HoundUtils.Polygon.setPointElevation(point)
+            end
+            for _,pt in pairs(point) do
+                pt = HoundUtils.Polygon.setPointElevation(pt)
+            end
+        end
+        return point
     end
 
     function HoundUtils.Polygon.threatOnSector(polygon,point, radius)
@@ -1875,6 +1893,8 @@ do
             local z = (n1*dpz - n2*dcz) * n3
             return {x=x, z=z}
         end
+
+        if type(subjectPolygon) ~= "table" or type(clipPolygon) ~= "table" then return end
 
         local outputList = subjectPolygon
         local cp1 = clipPolygon[#clipPolygon]
@@ -2116,6 +2136,7 @@ do
 
     HoundDatapoint = {}
     HoundDatapoint.__index = HoundDatapoint
+    HoundDatapoint.DataPointId = 0
 
     function HoundDatapoint.New(platform0, p0, az0, el0, t0, angularResolution, isPlatformStatic)
         local elintDatapoint = {}
@@ -2131,6 +2152,9 @@ do
         elintDatapoint.estimatedPos = elintDatapoint:estimatePos()
         elintDatapoint.posPolygon = {}
         elintDatapoint.posPolygon["2D"],elintDatapoint.posPolygon["3D"] = elintDatapoint:calcPolygons()
+        if HOUND.DEBUG then
+            elintDatapoint.id = elintDatapoint.getId()
+        end
         return elintDatapoint
     end
 
@@ -2151,7 +2175,7 @@ do
     end
 
     function HoundDatapoint.estimatePos(self)
-        if self.el == nil then return end
+        if self.el == nil or l_math.abs(self.el) <= self.platformPrecision then return end
         local maxSlant = self.platformPos.y/l_math.abs(l_math.sin(self.el))
         local unitVector = HoundUtils.Vector.getUnitVector(self.az,self.el)
         local point =land.getIP(self.platformPos, unitVector , maxSlant+100 )
@@ -2197,7 +2221,13 @@ do
         self.kalman.K = self.kalman.P / (self.kalman.P+self.platformPrecision)
         self.az = ((self.az + self.kalman.K * (newAz-self.az)) + PI_2) % PI_2
         self.kalman.P = (1-self.kalman.K)
+        self.posPolygon["2D"],_ = self:calcPolygons()
         return self.az
+    end
+
+    function HoundDatapoint.getId()
+        HoundDatapoint.DataPointId = HoundDatapoint.DataPointId + 1
+        return HoundDatapoint.DataPointId
     end
 end
 do
@@ -2376,13 +2406,18 @@ do
 
     function HoundContact.getDeltaSubsetPercent(Table,referencePos,NthPercentile)
         local t = l_mist.utils.deepCopy(Table)
+        local len_t = Length(t)
+        t = HoundUtils.Polygon.setElevation(t)
         for _,pt in ipairs(t) do
             pt.dist = l_mist.utils.get2DDist(referencePos,pt)
         end
         table.sort(t,function(a,b) return a.dist < b.dist end)
 
-        local percentile = l_math.floor(Length(t)*NthPercentile)
-        local NumToUse = l_math.max(l_math.min(2,Length(t)),percentile)
+        local percentile = l_math.floor(len_t*NthPercentile)
+        local NumToUse = l_math.max(l_math.min(2,len_t),percentile)
+        if len_t <= 4 then
+            NumToUse = len_t
+        end
         local RelativeToPos = {}
         for i = 1, NumToUse  do
             table.insert(RelativeToPos,l_mist.vec.sub(t[i],referencePos))
@@ -2448,7 +2483,6 @@ do
                 self.pos.p.x = self.pos.p.x + (subsetPos.x )
                 self.pos.p.z = self.pos.p.z + (subsetPos.z )
                 subList = NewsubList
-
             end
         end
         self.pos.p.y = land.getHeight({x=self.pos.p.x,y=self.pos.p.z})
@@ -2466,13 +2500,10 @@ do
             if self.unit:isExist() then
                 local unitPos = self.unit:getPosition()
                 if l_mist.utils.get3DDist(unitPos.p,self.pos.p) < 0.1 then
-                    HoundLogger.trace("No change in position.. skipping..")
                     return
                 end
-                HoundLogger.trace("position changed.. removing PB mark..")
                 self.preBriefed = false
             else
-                HoundLogger.trace("PB Unit does not exist")
                 return
             end
         end
@@ -2482,11 +2513,13 @@ do
         local estimatePositions = {}
         local platforms = {}
         local staticPlatformsOnly = true
+        local ClipPolygon2D = nil
         for _,platformDatapoints in pairs(self._dataPoints) do
             if Length(platformDatapoints) > 0 then
                 for _,datapoint in pairs(platformDatapoints) do
                     if datapoint:isStatic() then
                         table.insert(staticDataPoints,datapoint)
+                        ClipPolygon2D = HoundUtils.Polygon.clipPolygons(ClipPolygon2D,datapoint:get2dPoly()) or datapoint:get2dPoly()
                     else
                         staticPlatformsOnly = false
                         table.insert(mobileDataPoints,datapoint)
@@ -2539,7 +2572,12 @@ do
 
         if Length(estimatePositions) > 2 or (Length(estimatePositions) > 0 and staticPlatformsOnly) then
             self:calculatePos(estimatePositions,true)
-            self:calculateEllipse(estimatePositions)
+
+            if staticPlatformsOnly and type(ClipPolygon2D) == "table" then
+                self:calculateEllipse(ClipPolygon2D)
+            else
+                self:calculateEllipse(estimatePositions)
+            end
 
             if self.state == HOUND.EVENTS.RADAR_ASLEEP then
                 self.state = HOUND.EVENTS.SITE_ALIVE
@@ -3634,14 +3672,12 @@ do
         self:removeDeadPlatforms()
 
         if Length(self._platforms) == 0 then
-            HoundLogger.trace("no active platform")
             return
         end
 
         local Radars = HoundUtils.Elint.getActiveRadars(self:getCoalition())
 
         if Length(Radars) == 0 then
-            HoundLogger.trace("No Transmitting Radars")
             return
         end
         for _,RadarName in ipairs(Radars) do
@@ -5341,7 +5377,6 @@ do
         table.sort(sectors,HoundUtils.Sort.sectorsByPriorityLowFirst)
 
         if houndEvent.id == HOUND.EVENTS.RADAR_DETECTED then
-            HoundLogger.trace("Detected HoundElintEvent")
 
             for _,sector in pairs(sectors) do
                 sector:updateSectorMembership(houndEvent.initiator)
@@ -5381,4 +5416,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.2.1-develop - Compiled on 2022-01-04 22:54
+-- Hound version 0.2.1-develop - Compiled on 2022-01-06 22:04
