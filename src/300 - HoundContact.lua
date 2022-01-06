@@ -106,6 +106,11 @@ do
         return self.pos.p
     end
 
+    --- check if contact has estimated position
+    function HoundContact:hasPos()
+        return HoundUtils.Polygon.isDcsPoint(self.pos.p)
+    end
+
     --- get max weapons range
     function HoundContact:getMaxWeaponsRange()
         return self.maxWeaponsRange
@@ -222,13 +227,18 @@ do
     -- @return List
     function HoundContact.getDeltaSubsetPercent(Table,referencePos,NthPercentile)
         local t = l_mist.utils.deepCopy(Table)
+        local len_t = Length(t)
+        t = HoundUtils.Polygon.setElevation(t)
         for _,pt in ipairs(t) do
             pt.dist = l_mist.utils.get2DDist(referencePos,pt)
         end
         table.sort(t,function(a,b) return a.dist < b.dist end)
 
-        local percentile = l_math.floor(Length(t)*NthPercentile)
-        local NumToUse = l_math.max(l_math.min(2,Length(t)),percentile)
+        local percentile = l_math.floor(len_t*NthPercentile)
+        local NumToUse = l_math.max(l_math.min(2,len_t),percentile)
+        if len_t <= 4 then
+            NumToUse = len_t
+        end
         local RelativeToPos = {}
         for i = 1, NumToUse  do
             table.insert(RelativeToPos,l_mist.vec.sub(t[i],referencePos))
@@ -246,6 +256,7 @@ do
 
         local RelativeToPos = HoundContact.getDeltaSubsetPercent(estimatedPositions,self.pos.p,HOUND.ELLIPSE_PERCENTILE)
 
+
         local min = {}
         min.x = 99999
         min.y = 99999
@@ -254,24 +265,10 @@ do
         max.x = -99999
         max.y = -99999
 
-        -- -- experimental BS
-        -- if Theta == nil then
-
-        --     local AzBiasPool = {}
-
-        --     for _,pos in ipairs(RelativeToPos) do
-        --         table.insert(AzBiasPool,l_math.atan2(pos.z,pos.x))
-        --     end
-
-        --     Theta = HoundUtils.AzimuthAverage(AzBiasPool)
-        -- end
-
-        -- even more experimental BS
         if Theta == nil then
             Theta = HoundUtils.PointClusterTilt(RelativeToPos)
         end
 
-        -- working rotation matrix BS
         local sinTheta = l_math.sin(-Theta)
         local cosTheta = l_math.cos(-Theta)
 
@@ -317,32 +314,6 @@ do
                 self.pos.p.x = self.pos.p.x + (subsetPos.x )
                 self.pos.p.z = self.pos.p.z + (subsetPos.z )
                 subList = NewsubList
-                -- if HOUND.DEBUG then
-                --     local goCrazy = mist.utils.deepCopy(subList)
-                --     for _,point in pairs(goCrazy) do
-                --         point.x = point.x + self.pos.p.x
-                --         point.z = point.z + self.pos.p.z
-                --     end
-                --     local hull = HoundUtils.Polygon.giftWrap(goCrazy)
-                --     if hull then
-                --         for _,point in pairs(hull) do
-                --             -- point.x = point.x+self.pos.p.x
-                --             -- point.z = point.z+self.pos.p.z
-                --             point.y = land.getHeight({x=point.x,y=point.z})
-                --         end
-
-                --         -- trigger.action.markupToAll(7,self._platformCoalition,self:getMarkerId(),
-                --         -- unpack(hull),{0,255,0,0.5},{0,255,0,0.2},2)
-                --         local marker = {
-                --             id = self:getMarkerId(),
-                --             pos = hull,
-                --             markType = 7,
-                --             markForCoa = self._platformCoalition,
-                --             fillColor = {0,0,128,0.2}
-                --         }
-                --         mist.marker.add(marker)
-                --     end
-                -- end
             end
         end
         self.pos.p.y = land.getHeight({x=self.pos.p.x,y=self.pos.p.z})
@@ -378,12 +349,16 @@ do
         local staticDataPoints = {}
         local estimatePositions = {}
         local platforms = {}
+        local staticPlatformsOnly = true
+        local ClipPolygon2D = nil
         for _,platformDatapoints in pairs(self._dataPoints) do
             if Length(platformDatapoints) > 0 then
                 for _,datapoint in pairs(platformDatapoints) do
-                    if datapoint.isReciverStatic then
+                    if datapoint:isStatic() then
                         table.insert(staticDataPoints,datapoint)
+                        ClipPolygon2D = HoundUtils.Polygon.clipPolygons(ClipPolygon2D,datapoint:get2dPoly()) or datapoint:get2dPoly()
                     else
+                        staticPlatformsOnly = false
                         table.insert(mobileDataPoints,datapoint)
                     end
                     if datapoint.estimatedPos ~= nil then
@@ -435,9 +410,34 @@ do
             end
         end
 
-        if Length(estimatePositions) > 2 then
+        -- local totalpoints = l_mist.utils.deepCopy(staticDataPoints)
+        -- for _,datapoint in ipairs(mobileDataPoints) do
+        --     table.insert(totalpoints,datapoint)
+        -- end
+
+        -- for _,datapoint in ipairs(staticDataPoints) do
+        --     ClipPolygon2D = HoundUtils.Polygon.clipPolygons(ClipPolygon2D,datapoint:get2dPoly()) or datapoint:get2dPoly()
+        -- end
+
+        if Length(estimatePositions) > 2 or (Length(estimatePositions) > 0 and staticPlatformsOnly) then
             self:calculatePos(estimatePositions,true)
-            self:calculateEllipse(estimatePositions)
+
+            -- if type(ClipPolygon2D) == "table" and HOUND.DEBUG then
+            --     ClipPolygon2D = HoundUtils.Polygon.setElevation(ClipPolygon2D)
+
+            --     local v = {}
+            --     v.pos = ClipPolygon2D
+            --     v.id = self:getMarkerId()
+            --     v.mType = 'freeform'
+            --     v.lineType  = 0
+            --     v.fillColor = {0,255,0,0.15}
+            --     l_mist.marker.add(v)
+            -- end
+            if staticPlatformsOnly and type(ClipPolygon2D) == "table" then
+                self:calculateEllipse(ClipPolygon2D)
+            else
+                self:calculateEllipse(estimatePositions)
+            end
 
             if self.state == HOUND.EVENTS.RADAR_ASLEEP then
                 self.state = HOUND.EVENTS.SITE_ALIVE

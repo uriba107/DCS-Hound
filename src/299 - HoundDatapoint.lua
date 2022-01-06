@@ -20,6 +20,7 @@ do
     --- @type HoundDatapoint
     HoundDatapoint = {}
     HoundDatapoint.__index = HoundDatapoint
+    HoundDatapoint.DataPointId = 0
 
     --- Create new HoundDatapoint instance
     -- @param platform0 DCS Unit of locating platform
@@ -44,8 +45,9 @@ do
         elintDatapoint.estimatedPos = elintDatapoint:estimatePos()
         elintDatapoint.posPolygon = {}
         elintDatapoint.posPolygon["2D"],elintDatapoint.posPolygon["3D"] = elintDatapoint:calcPolygons()
-        -- elintDatapoint:estimatePos()
-        -- elintDatapoint:calcPolygons()
+        if HOUND.DEBUG then
+            elintDatapoint.id = elintDatapoint.getId()
+        end
         return elintDatapoint
     end
 
@@ -76,7 +78,7 @@ do
     --- Estimate contact position from Datapoint information only
     -- @local
     function HoundDatapoint.estimatePos(self)
-        if self.el == nil then return end
+        if self.el == nil or l_math.abs(self.el) <= self.platformPrecision then return end
         local maxSlant = self.platformPos.y/l_math.abs(l_math.sin(self.el))
         local unitVector = HoundUtils.Vector.getUnitVector(self.az,self.el)
         local point =land.getIP(self.platformPos, unitVector , maxSlant+100 )
@@ -138,7 +140,16 @@ do
         self.kalman.K = self.kalman.P / (self.kalman.P+self.platformPrecision)
         self.az = ((self.az + self.kalman.K * (newAz-self.az)) + PI_2) % PI_2
         self.kalman.P = (1-self.kalman.K)
-        -- env.info(self.platformName.." Kalman: z="..math.deg(newAz).." | out="..math.deg(self.az).." | vars=".. mist.utils.tableShow(self.kalman) )
+        self.posPolygon["2D"],_ = self:calcPolygons()
+        -- HoundLogger.trace(self.platformName.."(" .. self.id .. ") Kalman: z="..math.deg(newAz).." | out="..math.deg(self.az).." | vars=".. mist.utils.tableShow(self.kalman) )
         return self.az
+    end
+
+    --- Assign id for each Datapoint for debugging
+    -- @local
+    -- @return DatapointId (number)
+    function HoundDatapoint.getId()
+        HoundDatapoint.DataPointId = HoundDatapoint.DataPointId + 1
+        return HoundDatapoint.DataPointId
     end
 end

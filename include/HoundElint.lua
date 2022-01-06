@@ -8,7 +8,7 @@ end
 
 do
     HOUND = {
-        VERSION = "0.2.0",
+        VERSION = "0.2.1",
         DEBUG = false,
         ELLIPSE_PERCENTILE = 0.6,
         NUM_DATAPOINTS = 15,
@@ -942,6 +942,7 @@ do
             ['Tu-95MS'] = {antenna = {size = 50, factor = 1}},
             ['Tu-142'] = {antenna = {size = 50, factor = 1}},
             ['IL-76MD'] = {antenna = {size = 48, factor = 0.8}},
+            ['H-6J'] = {antenna = {size = 3.5, factor = 1}},
             ['An-30M'] = {antenna = {size = 25, factor = 1}},
             ['A-50'] = {antenna = {size = 9, factor = 0.5}},
             ['An-26B'] = {antenna = {size = 26, factor = 0.9}},
@@ -949,7 +950,7 @@ do
             ['Su-25T'] = {antenna = {size = 3.5, factor = 1}},
             ['AJS37'] = {antenna = {size = 4.5, factor = 1}},
             ['F-16C_50'] = {antenna = {size = 1.45, factor = 1}},
-
+            ['JF-17'] = {antenna = {size = 3.25, factor = 1}},
         }
     }
 
@@ -1287,11 +1288,14 @@ do
     function HoundUtils.getRadarDetectionRange(DCS_Unit)
         local detectionRange = 0
         local unit_sensors = DCS_Unit:getSensors()
-        if not unit_sensors then return end
+        if not unit_sensors then return detectionRange end
+        if not setContains(unit_sensors,Unit.SensorType.RADAR) then return detectionRange end
         for _,radar in pairs(unit_sensors[Unit.SensorType.RADAR]) do
-            for _,aspects in pairs(radar["detectionDistanceAir"]) do
-                for _,range in pairs(aspects) do
-                    detectionRange = l_math.max(detectionRange,range)
+            if setContains(radar,"detectionDistanceAir") then
+                for _,aspects in pairs(radar["detectionDistanceAir"]) do
+                    for _,range in pairs(aspects) do
+                        detectionRange = l_math.max(detectionRange,range)
+                    end
                 end
             end
         end
@@ -1835,7 +1839,26 @@ do
 
     function HoundUtils.Polygon.isDcsPoint(point)
         if type(point) ~= "table" then return false end
-        return (point.x and type(point.x) == "number") and  (point.z and type(point.z) == "number")
+        return (type(point.x) == "number") and (type(point.z) == "number")
+    end
+
+    function HoundUtils.Polygon.setPointElevation(point)
+        if HoundUtils.Polygon.isDcsPoint(point) and type(point.y) ~= "number" then
+            point.y = land.getHeight({x=point.x,y=point.z})
+        end
+        return point
+    end
+
+    function HoundUtils.Polygon.setElevation(point)
+        if type(point) == "table" then
+            if HoundUtils.Polygon.isDcsPoint(point) then
+                return HoundUtils.Polygon.setPointElevation(point)
+            end
+            for _,pt in pairs(point) do
+                pt = HoundUtils.Polygon.setPointElevation(pt)
+            end
+        end
+        return point
     end
 
     function HoundUtils.Polygon.threatOnSector(polygon,point, radius)
@@ -1870,6 +1893,8 @@ do
             local z = (n1*dpz - n2*dcz) * n3
             return {x=x, z=z}
         end
+
+        if type(subjectPolygon) ~= "table" or type(clipPolygon) ~= "table" then return end
 
         local outputList = subjectPolygon
         local cp1 = clipPolygon[#clipPolygon]
@@ -2111,6 +2136,7 @@ do
 
     HoundDatapoint = {}
     HoundDatapoint.__index = HoundDatapoint
+    HoundDatapoint.DataPointId = 0
 
     function HoundDatapoint.New(platform0, p0, az0, el0, t0, angularResolution, isPlatformStatic)
         local elintDatapoint = {}
@@ -2126,6 +2152,9 @@ do
         elintDatapoint.estimatedPos = elintDatapoint:estimatePos()
         elintDatapoint.posPolygon = {}
         elintDatapoint.posPolygon["2D"],elintDatapoint.posPolygon["3D"] = elintDatapoint:calcPolygons()
+        if HOUND.DEBUG then
+            elintDatapoint.id = elintDatapoint.getId()
+        end
         return elintDatapoint
     end
 
@@ -2146,7 +2175,7 @@ do
     end
 
     function HoundDatapoint.estimatePos(self)
-        if self.el == nil then return end
+        if self.el == nil or l_math.abs(self.el) <= self.platformPrecision then return end
         local maxSlant = self.platformPos.y/l_math.abs(l_math.sin(self.el))
         local unitVector = HoundUtils.Vector.getUnitVector(self.az,self.el)
         local point =land.getIP(self.platformPos, unitVector , maxSlant+100 )
@@ -2192,7 +2221,13 @@ do
         self.kalman.K = self.kalman.P / (self.kalman.P+self.platformPrecision)
         self.az = ((self.az + self.kalman.K * (newAz-self.az)) + PI_2) % PI_2
         self.kalman.P = (1-self.kalman.K)
+        self.posPolygon["2D"],_ = self:calcPolygons()
         return self.az
+    end
+
+    function HoundDatapoint.getId()
+        HoundDatapoint.DataPointId = HoundDatapoint.DataPointId + 1
+        return HoundDatapoint.DataPointId
     end
 end
 do
@@ -2282,6 +2317,10 @@ do
         return self.pos.p
     end
 
+    function HoundContact:hasPos()
+        return HoundUtils.Polygon.isDcsPoint(self.pos.p)
+    end
+
     function HoundContact:getMaxWeaponsRange()
         return self.maxWeaponsRange
     end
@@ -2367,13 +2406,18 @@ do
 
     function HoundContact.getDeltaSubsetPercent(Table,referencePos,NthPercentile)
         local t = l_mist.utils.deepCopy(Table)
+        local len_t = Length(t)
+        t = HoundUtils.Polygon.setElevation(t)
         for _,pt in ipairs(t) do
             pt.dist = l_mist.utils.get2DDist(referencePos,pt)
         end
         table.sort(t,function(a,b) return a.dist < b.dist end)
 
-        local percentile = l_math.floor(Length(t)*NthPercentile)
-        local NumToUse = l_math.max(l_math.min(2,Length(t)),percentile)
+        local percentile = l_math.floor(len_t*NthPercentile)
+        local NumToUse = l_math.max(l_math.min(2,len_t),percentile)
+        if len_t <= 4 then
+            NumToUse = len_t
+        end
         local RelativeToPos = {}
         for i = 1, NumToUse  do
             table.insert(RelativeToPos,l_mist.vec.sub(t[i],referencePos))
@@ -2439,7 +2483,6 @@ do
                 self.pos.p.x = self.pos.p.x + (subsetPos.x )
                 self.pos.p.z = self.pos.p.z + (subsetPos.z )
                 subList = NewsubList
-
             end
         end
         self.pos.p.y = land.getHeight({x=self.pos.p.x,y=self.pos.p.z})
@@ -2469,12 +2512,16 @@ do
         local staticDataPoints = {}
         local estimatePositions = {}
         local platforms = {}
+        local staticPlatformsOnly = true
+        local ClipPolygon2D = nil
         for _,platformDatapoints in pairs(self._dataPoints) do
             if Length(platformDatapoints) > 0 then
                 for _,datapoint in pairs(platformDatapoints) do
-                    if datapoint.isReciverStatic then
+                    if datapoint:isStatic() then
                         table.insert(staticDataPoints,datapoint)
+                        ClipPolygon2D = HoundUtils.Polygon.clipPolygons(ClipPolygon2D,datapoint:get2dPoly()) or datapoint:get2dPoly()
                     else
+                        staticPlatformsOnly = false
                         table.insert(mobileDataPoints,datapoint)
                     end
                     if datapoint.estimatedPos ~= nil then
@@ -2523,9 +2570,14 @@ do
             end
         end
 
-        if Length(estimatePositions) > 2 then
+        if Length(estimatePositions) > 2 or (Length(estimatePositions) > 0 and staticPlatformsOnly) then
             self:calculatePos(estimatePositions,true)
-            self:calculateEllipse(estimatePositions)
+
+            if staticPlatformsOnly and type(ClipPolygon2D) == "table" then
+                self:calculateEllipse(ClipPolygon2D)
+            else
+                self:calculateEllipse(estimatePositions)
+            end
 
             if self.state == HOUND.EVENTS.RADAR_ASLEEP then
                 self.state = HOUND.EVENTS.SITE_ALIVE
@@ -2881,7 +2933,7 @@ do
     end
 
     function HoundContact:generateRadioItemText()
-        if self.pos.p == nil then return end
+        if not self:hasPos() then return end
         local GridPos,BePos = self:getTextData(true,1)
         BePos = BePos:gsub(" for ","/")
         return self:getName() .. " - BE: " .. BePos .. " (".. GridPos ..")"
@@ -2893,13 +2945,15 @@ do
         if sectorName then
             msg = msg .. " in " .. sectorName
         else
-            local GridPos,BePos
-            if isTTS then
-                GridPos,BePos = self:getTtsData(true,1)
-                msg = msg .. ", bullseye " .. BePos .. ", grid ".. GridPos
-            else
-                GridPos,BePos = self:getTextData(true,1)
-                msg = msg .. " BE: " .. BePos .. " (grid ".. GridPos ..")"
+            if self:hasPos() then
+                local GridPos,BePos
+                if isTTS then
+                    GridPos,BePos = self:getTtsData(true,1)
+                    msg = msg .. ", bullseye " .. BePos .. ", grid ".. GridPos
+                else
+                    GridPos,BePos = self:getTextData(true,1)
+                    msg = msg .. " BE: " .. BePos .. " (grid ".. GridPos ..")"
+                end
             end
         end
         return msg .. "."
@@ -2910,13 +2964,15 @@ do
         if sectorName then
             msg = msg .. " in " .. sectorName
         else
-            local GridPos,BePos
-            if isTTS then
-                GridPos,BePos = self:getTtsData(true,1)
-                msg = msg .. ", bullseye " .. BePos .. ", grid ".. GridPos
-            else
-                GridPos,BePos = self:getTextData(true,1)
-                msg = msg .. " BE: " .. BePos .. " (grid ".. GridPos ..")"
+            if self:hasPos() then
+                local GridPos,BePos
+                if isTTS then
+                    GridPos,BePos = self:getTtsData(true,1)
+                    msg = msg .. ", bullseye " .. BePos .. ", grid ".. GridPos
+                else
+                    GridPos,BePos = self:getTextData(true,1)
+                    msg = msg .. " BE: " .. BePos .. " (grid ".. GridPos ..")"
+                end
             end
         end
         return msg .. "."
@@ -5360,4 +5416,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.2.0 - Compiled on 2021-12-04 20:27
+-- Hound version 0.2.1 - Compiled on 2022-01-06 22:27
