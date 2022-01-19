@@ -2,6 +2,7 @@ do
     if STTS ~= nil then
         STTS.DIRECTORY = "C:\\Program Files\\DCS-SimpleRadio-Standalone"
     end
+    HOUND.USE_KALMAN = true
 
 end
 
@@ -11,10 +12,10 @@ do
     Elint_blue:systemOn()
 
     Elint_blue:addPlatform("ELINT_C17")
-    Elint_blue:addPlatform("ELINT_C130")
+    -- Elint_blue:addPlatform("ELINT_C130")
     -- Elint_blue:addPlatform("Kokotse_Elint")
     -- Elint_blue:addPlatform("Khvamli_Elint")
-    -- Elint_blue:addPlatform("Migariya_Elint")
+    Elint_blue:addPlatform("Migariya_Elint")
 
     tts_args = {
         freq = "251.000,35.000",

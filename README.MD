@@ -263,6 +263,17 @@ the available marker types are:
 
 `Note: More points causes higher CPU usage. DIAMOND is default`
 
+#### Living with other marker spawning scripts
+Hound does it best to play nice with other Marker generating scripts.
+if MOOSE is loaded Hound will default to use `UTILS.GetMarkID()` to get the next marker ID. 
+if that is not available, and MIST is in version 4.5 and above. Hound will attempt to use MIST's `mist.marker.getNextId()` method.
+if none of those options is available it will use an internal counter to track. 
+
+By default the internal counter starts with 1. You can change the initial value to avoid conflicts with other numbering things (which are not MOOSE or MIST) by using the method `HoundUtils.setInitialMarkId()` or by assigning another initial value directly into the variable `HoundUtils._MarkId`. As mentioned earlier, if MOOSE or MIST v4.5 are present their numbering engine will take priority over Hound's internal Numbering.
+It is highly recommended that you use one of them (or `HoundUtils.getMarkId()`) for all other scripted Map markers.
+
+In addition to all that Hound will only delete its own markers (by tracking every Marker ID it's placing)
+
 ---
 ### DBA reports
 By default the [Controller](#sam-controller) and [Notifier](#notifier) will push alerts when a radar is destroyed when track is dropped.

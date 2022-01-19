@@ -19,6 +19,7 @@ assert(loadfile(HoundWorkDir..'test\\StopWatch.lua'))()
     assert(loadfile(HoundWorkDir..'src\\110 - HoundConfig.lua'))()
     assert(loadfile(HoundWorkDir..'src\\200 - HoundUtils.lua'))()
     assert(loadfile(HoundWorkDir..'src\\210 - HoundEventHandler.lua'))()
+    assert(loadfile(HoundWorkDir..'src\\295 - HoundEstimator.lua'))()
     assert(loadfile(HoundWorkDir..'src\\299 - HoundDatapoint.lua'))()
     assert(loadfile(HoundWorkDir..'src\\300 - HoundContact.lua'))()
     assert(loadfile(HoundWorkDir..'src\\301 - HoundContact_comms.lua'))()
@@ -35,7 +36,7 @@ assert(loadfile(HoundWorkDir..'test\\StopWatch.lua'))()
     -- assert(loadfile(HoundWorkDir..'demo_mission\\hound_unit_test\\hound-unit-tests.lua'))()
 
 
-    -- assert(loadfile(HoundWorkDir..'demo_mission\\Caucasus_demo\\HoundElint_demo.lua'))()
+    assert(loadfile(HoundWorkDir..'demo_mission\\Caucasus_demo\\HoundElint_demo.lua'))()
     -- assert(loadfile(HoundWorkDir..'demo_mission\\Syria_POC\\Hound_Demo_SyADFGCI.lua'))()
 
 

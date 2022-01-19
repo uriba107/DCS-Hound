@@ -16,6 +16,7 @@ do
 -- @field _MarkId internal markId Counter
 -- @field _HoundId internal HoundId counter
     HoundUtils = {
+        Geo = {},
         TTS = {},
         Text = {},
         Elint = {},
@@ -25,7 +26,7 @@ do
         Cluster={},
         Sort = {},
         ReportId = nil,
-        _MarkId = 0,
+        _MarkId = 99999,
         _HoundId = 0
     }
     HoundUtils.__index = HoundUtils
@@ -55,6 +56,23 @@ do
         end
 
         return HoundUtils._MarkId
+    end
+
+    --- Set New initial marker Id
+    -- @local
+    -- @param startId Number to start counting from
+    -- @return Bool True if initial ID was updated
+    function HoundUtils.setInitialMarkId(startId)
+        if type(startId) ~= "number" then
+            HoundLogger.error("Failed to set Initial marker Id. Value provided was not a number")
+            return false
+        end
+        if HoundUtils._MarkID ~= 0 then
+            HoundLogger.error("Initial MarkId not updated because markers have already been drawn")
+            return false
+        end
+        HoundUtils._MarkId = startId
+        return true
     end
 
     --[[
@@ -103,12 +121,17 @@ do
 
     --- return the tilt of a point cluster
     -- @param points a list of DCS points
+    -- @param[opt] MagNorth (Bool) if true value will include north var correction
     -- @param[opt] refPos a DCS point that will be the reference for azimuth
     -- @return azimuth in radians (between 0 and pi)
-    function HoundUtils.PointClusterTilt(points,refPos)
+    function HoundUtils.PointClusterTilt(points,MagNorth,refPos)
         if not points or type(points) ~= "table" then return end
         if not refPos then
             refPos = l_mist.getAvgPoint(points)
+        end
+        local magVar = 0
+        if MagNorth then
+            magVar = l_mist.getNorthCorrection(refPos)
         end
         local biasVector = nil
         for _,point in pairs(points) do
@@ -123,7 +146,7 @@ do
             end
             if biasVector == nil then biasVector = V else biasVector = l_mist.vec.add(biasVector,V) end
         end
-        return l_math.atan2(biasVector.z,biasVector.x)
+        return (l_math.atan2(biasVector.z,biasVector.x) + magVar) % pi_2
     end
 
     --- returns a random angle
@@ -217,7 +240,6 @@ do
 
     --- get random controller snarky remark
     -- @return random response string from pool
-
     function HoundUtils.getControllerResponse()
         local response = {
             " ",
@@ -333,34 +355,6 @@ do
         return BR
     end
 
-    --- Return if the is LOS between two DCS points
-    -- checks both radar horizon (round earth) and DCS terrain LOS
-    -- @param pos0 (DCS pos)
-    -- @param pos1 (DCS pos)
-    -- @return (bool) true if both units have LOS between them
-
-    function HoundUtils.checkLOS(pos0,pos1)
-        if not pos0 or not pos1 then return false end
-        local dist = l_mist.utils.get2DDist(pos0,pos1)
-        local radarHorizon = HoundUtils.EarthLOS(pos0.y,pos1.y)
-        return (dist <= radarHorizon*1.025 and land.isVisible(pos0,pos1))
-    end
-
-    --- Returns maximum horizon distance given heigh above the earth of two points
-    -- if only one observer hight is provided, result would be maximum view distance to Sea Level
-    -- @param h0 height of observer 1 in meters
-    -- @param[opt] h1 height of observer 2 in meters
-    -- @return distance maximum LOS distance in meters
-
-    function HoundUtils.EarthLOS(h0,h1)
-        if not h0 then return 0 end
-        local Re = 6367444 -- Radius of earth in M (avarage radius of WGS84)
-        local d0 = l_math.sqrt(h0^2+2*Re*h0)
-        local d1 = 0
-        if h1 then d1 = l_math.sqrt(h1^2+2*Re*h1) end
-        return d0+d1
-    end
-
     --- Get group callsign from unit
     -- @param player mist.DB entry to get formation callsign for
     -- @param[opt] flightMember if True. value returned will be the full callsign (i.e "Uzi 1 1" rather then the default "Uzi 1")
@@ -422,6 +416,86 @@ do
         end
         return setContains(HoundDB.useDecMin,typeName)
     end
+
+    --- Geo Function
+    -- @section Geo
+
+    --- Return if the is LOS between two DCS points
+    -- checks both radar horizon (round earth) and DCS terrain LOS
+    -- @param pos0 (DCS pos)
+    -- @param pos1 (DCS pos)
+    -- @return (bool) true if both units have LOS between them
+
+    function HoundUtils.Geo.checkLOS(pos0,pos1)
+        if not pos0 or not pos1 then return false end
+        local dist = l_mist.utils.get2DDist(pos0,pos1)
+        local radarHorizon = HoundUtils.Geo.EarthLOS(pos0.y,pos1.y)
+        return (dist <= radarHorizon*1.025 and land.isVisible(pos0,pos1))
+    end
+
+    --- Returns maximum horizon distance given heigh above the earth of two points
+    -- if only one observer hight is provided, result would be maximum view distance to Sea Level
+    -- @param h0 height of observer 1 in meters
+    -- @param[opt] h1 height of observer 2 in meters
+    -- @return distance maximum LOS distance in meters
+
+    function HoundUtils.Geo.EarthLOS(h0,h1)
+        if not h0 then return 0 end
+        local Re = 6367444 -- Radius of earth in M (avarage radius of WGS84)
+        local d0 = l_math.sqrt(h0^2+2*Re*h0)
+        local d1 = 0
+        if h1 then d1 = l_math.sqrt(h1^2+2*Re*h1) end
+        return d0+d1
+    end
+
+    ---  check if point is DCS point
+    -- @param point DCS point candidate
+    -- @return Bool True if is valid point
+    function HoundUtils.Geo.isDcsPoint(point)
+        if type(point) ~= "table" then return false end
+        return (type(point.x) == "number") and (type(point.z) == "number")
+    end
+
+    --- Returns Projected line impact point with Terrain
+    -- @param p0 source Postion
+    -- @param az Azimuth from Position (radians)
+    -- @param el Elevation angle from position (radians)
+    -- @return DCS point of intersection with ground
+    function HoundUtils.Geo.getProjectedIP(p0,az,el)
+        if not HoundUtils.Geo.isDcsPoint(p0) or type(az) ~= "number" or type(el) ~= "number" then return end
+        local maxSlant = HoundUtils.Geo.EarthLOS(p0.y)*1.2
+        -- local maxSlant = (p0.y/l_math.abs(l_math.sin(el)))+100
+
+        local unitVector = HoundUtils.Vector.getUnitVector(az,el)
+        return land.getIP(p0, unitVector , maxSlant )
+    end
+
+    --- Ensure Inpoint DCS point has Elevation
+    -- @local
+    -- @param point DCS point
+    -- @return Point but with elevation
+    function HoundUtils.Geo.setPointHeight(point)
+        if HoundUtils.Geo.isDcsPoint(point) and type(point.y) ~= "number" then
+            point.y = land.getHeight({x=point.x,y=point.z})
+        end
+        return point
+    end
+
+    --- Ensure input point or point table all have valid Elevation
+    -- @param point DCS point
+    -- @return same as input, but with elevation. will return original value if is not DCS point
+    function HoundUtils.Geo.setHeight(point)
+        if type(point) == "table" then
+            if HoundUtils.Geo.isDcsPoint(point) then
+                return HoundUtils.Geo.setPointHeight(point)
+            end
+            for _,pt in pairs(point) do
+                pt = HoundUtils.Geo.setPointHeight(pt)
+            end
+        end
+        return point
+    end
+
     --- TTS Functions
     -- @section TTS
 
@@ -965,39 +1039,7 @@ do
     --- Polygon functions
     -- @section Polygon
 
-    ---  check if point is DCS point
-    -- @param point DCS point candidate
-    -- @return Bool True if is valid point
-    function HoundUtils.Polygon.isDcsPoint(point)
-        if type(point) ~= "table" then return false end
-        return (type(point.x) == "number") and (type(point.z) == "number")
-    end
 
-    --- Ensure Inpoint DCS point has Elevation
-    -- @local
-    -- @param point DCS point
-    -- @return Point but with elevation
-    function HoundUtils.Polygon.setPointElevation(point)
-        if HoundUtils.Polygon.isDcsPoint(point) and type(point.y) ~= "number" then
-            point.y = land.getHeight({x=point.x,y=point.z})
-        end
-        return point
-    end
-
-    --- Ensure input point or point table all have valid Elevation
-    -- @param point DCS point
-    -- @return same as input, but with elevation. will return original value if is not DCS point
-    function HoundUtils.Polygon.setElevation(point)
-        if type(point) == "table" then
-            if HoundUtils.Polygon.isDcsPoint(point) then
-                return HoundUtils.Polygon.setPointElevation(point)
-            end
-            for _,pt in pairs(point) do
-                pt = HoundUtils.Polygon.setPointElevation(pt)
-            end
-        end
-        return point
-    end
 
     --- Check if polygon is under threat of SAM
     -- @param polygon Table of point reprasenting a polygon
@@ -1006,10 +1048,10 @@ do
     -- @return Bool True if point is in polygon
     -- @return Bool True if radius around point intersects polygon
     function HoundUtils.Polygon.threatOnSector(polygon,point, radius)
-        if type(polygon) ~= "table" or Length(polygon) < 3 or not HoundUtils.Polygon.isDcsPoint(l_mist.utils.makeVec3(polygon[1])) then
+        if type(polygon) ~= "table" or Length(polygon) < 3 or not HoundUtils.Geo.isDcsPoint(l_mist.utils.makeVec3(polygon[1])) then
             return
         end
-        if not HoundUtils.Polygon.isDcsPoint(point) then
+        if not HoundUtils.Geo.isDcsPoint(point) then
             return
         end
         local inPolygon = l_mist.pointInPolygon(point,polygon)
@@ -1021,6 +1063,22 @@ do
             intersectsPolygon = l_mist.shape.insideShape(circle,polygon)
         end
         return inPolygon,intersectsPolygon
+    end
+
+    --- Filter out points not in polygon
+    -- @param points Points to filter
+    -- @param polygon - enclosing polygon to filter by
+    -- @return points from original set which are inside polygon.
+    function HoundUtils.Polygon.filterPointsByPolygon(points,polygon)
+        local filteredPoints = {}
+        if type(points) ~= "table" or type(polygon) ~= "table" then return filteredPoints end
+
+        for _,point in pairs(points) do
+            if l_mist.pointInPolygon(point,polygon) then
+                table.insert(filteredPoints,point)
+            end
+        end
+        return filteredPoints
     end
 
     --- calculate cliping of polygons
@@ -1125,11 +1183,11 @@ do
     function HoundUtils.Polygon.circumcirclePoints(points)
         local function calcCircle(p1,p2,p3)
             local cx,cz, r
-            if HoundUtils.Polygon.isDcsPoint(p1) and not p2 and not p3 then
+            if HoundUtils.Geo.isDcsPoint(p1) and not p2 and not p3 then
                 -- env.info("returning single point " .. mist.utils.tableShow(p1))
                 return {x = p1.x, z = p1.z,r = 0}
             end
-            if HoundUtils.Polygon.isDcsPoint(p1) and HoundUtils.Polygon.isDcsPoint(p2) and not p3 then
+            if HoundUtils.Geo.isDcsPoint(p1) and HoundUtils.Geo.isDcsPoint(p2) and not p3 then
                 -- env.info("returning two point circle")
                 cx = 0.5 * (p1.x + p2.x)
                 cz = 0.5 * (p1.z + p2.z)

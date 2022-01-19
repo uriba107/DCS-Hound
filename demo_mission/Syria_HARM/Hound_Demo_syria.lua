@@ -52,7 +52,7 @@ do
             SA6.activate(SA6.South)
         end
 
-        if SA6.spawnJoker and (SA6.Joker == nil or SA6.destroy(SA6.Joker:netName())) then
+        if SA6.spawnJoker and (SA6.Joker == nil or SA6.destroy(SA6.Joker:getName())) then
             SA6.Joker = Unit.getByName(mist.cloneInZone(SA6.randomTemplate(),"Joker_SAM")["units"][1]["name"]):getGroup()
             SA6.activate(SA6.Joker)
         end

@@ -16,13 +16,17 @@ do
     -- @table HOUND
     -- @field VERSION Hound Version
     -- @field DEBUG Hound will do extended debug output to log (for development)
+    -- @field USE_KALMAN Hound will use Kalman Filters for position calculations (experimental)
     -- @field ELLIPSE_PERCENTILE Defines the percentile of datapoints used to calculate uncertenty ellipse
     -- @field NUM_DATAPOINTS Number of datapoints per platform a contact keeps (FIFO)
     -- @field CONTACT_TIMEOUT Timout for emitter to be silent before being dropped from contacts
     -- @field MGRS_PRECISION Number of digits in MGRS conversion
+    -- @field EXTENDED_INFO Hound will add more in depth uncertenty info to controller messages (default is true)
+
     HOUND = {
-        VERSION = "0.2.1-TRUNK",
+        VERSION = "0.2.2-TRUNK",
         DEBUG = true,
+        USE_KALMAN = false,
         ELLIPSE_PERCENTILE = 0.6,
         NUM_DATAPOINTS = 15,
         CONTACT_TIMEOUT = 900,
@@ -80,12 +84,12 @@ do
         RADAR_DESTROYED = 12,
         RADAR_ALIVE = 13,
         RADAR_ASLEEP = 14,
-        SITE_NEW = 15,
-        SITE_CREATED = 16,
-        SITE_UPDATED = 17,
-        SITE_REMOVED = 18,
-        SITE_ALIVE = 19,
-        SITE_ASLEEP = 20
+        SITE_NEW = 15,      -- Placeholder
+        SITE_CREATED = 16,  -- Placeholder
+        SITE_UPDATED = 17,  -- Placeholder
+        SITE_REMOVED = 18,  -- Placeholder
+        SITE_ALIVE = 19,    -- Placeholder
+        SITE_ASLEEP = 20    -- Placeholder
     }
 
     --- Event structure

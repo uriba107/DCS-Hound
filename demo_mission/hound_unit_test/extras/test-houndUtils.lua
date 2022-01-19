@@ -87,8 +87,14 @@ do
         
     end
 
-    function TestHoundUtils:TestLOS()
-        
+    function TestHoundUtils:TestGeo()
+        -- HoundUtils.Geo.isDcsPoint
+        lu.assertIsFalse(HoundUtils.Geo.isDcsPoint("somethign"))
+        lu.assertIsFalse(HoundUtils.Geo.isDcsPoint(true))
+        lu.assertIsFalse(HoundUtils.Geo.isDcsPoint({"assd","asdf"}))
+        lu.assertIsFalse(HoundUtils.Geo.isDcsPoint({x="asdf",z="asdf"}))
+        lu.assertIsFalse(HoundUtils.Geo.isDcsPoint({x="123123",z="123123"}))
+        lu.assertIsTrue(HoundUtils.Geo.isDcsPoint({x=12345,z=67890}))
     end
 
     function TestHoundUtils:TestTTS()
@@ -197,13 +203,7 @@ do
     end
 
     function TestHoundUtils:TestPolygon()
-        -- HoundUtils.Polygon.isDcsPoint
-        lu.assertIsFalse(HoundUtils.Polygon.isDcsPoint("somethign"))
-        lu.assertIsFalse(HoundUtils.Polygon.isDcsPoint(true))
-        lu.assertIsFalse(HoundUtils.Polygon.isDcsPoint({"assd","asdf"}))
-        lu.assertIsFalse(HoundUtils.Polygon.isDcsPoint({x="asdf",z="asdf"}))
-        lu.assertIsFalse(HoundUtils.Polygon.isDcsPoint({x="123123",z="123123"}))
-        lu.assertIsTrue(HoundUtils.Polygon.isDcsPoint({x=12345,z=67890}))
+
 
     end
 

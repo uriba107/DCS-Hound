@@ -704,7 +704,7 @@ do
             ['C-17A'] = {antenna = {size = 50, factor = 1}},
             ['S-3B'] = {antenna = {size = 18, factor = 0.8}},
             ['E-3A'] = {antenna = {size = 9, factor = 0.5}},
-            ['E-2D'] = {antenna = {size = 7, factor = 0.5}},
+            ['E-2C'] = {antenna = {size = 7, factor = 0.5}},
             ['Tu-95MS'] = {antenna = {size = 50, factor = 1}},
             ['Tu-142'] = {antenna = {size = 50, factor = 1}},
             ['IL-76MD'] = {antenna = {size = 48, factor = 0.8}},

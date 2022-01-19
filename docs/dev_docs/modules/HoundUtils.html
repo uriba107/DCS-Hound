@@ -34,6 +34,7 @@
 <ul>
 <li><a href="#Tables">Tables</a></li>
 <li><a href="#General_functions">General functions </a></li>
+<li><a href="#Geo_Function">Geo Function </a></li>
 <li><a href="#TTS_Functions">TTS Functions </a></li>
 <li><a href="#Text_Functions">Text Functions </a></li>
 <li><a href="#Elint_functions">Elint functions </a></li>
@@ -53,6 +54,7 @@
   <li><a href="../modules/HoundConfig.html">HoundConfig</a></li>
   <li><strong>HoundUtils</strong></li>
   <li><a href="../modules/HoundEventHandler.html">HoundEventHandler</a></li>
+  <li><a href="../modules/HoundEstimator.html">HoundEstimator</a></li>
   <li><a href="../modules/HoundDatapoint.html">HoundDatapoint</a></li>
   <li><a href="../modules/HoundContact.html">HoundContact</a></li>
   <li><a href="../modules/HoundCommsManager.html">HoundCommsManager</a></li>
@@ -96,6 +98,10 @@
 	<td class="summary">Get next Markpoint Id</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#setInitialMarkId">setInitialMarkId (startId)</a></td>
+	<td class="summary">Set New initial marker Id</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#absTimeDelta">absTimeDelta (t0[, t1])</a></td>
 	<td class="summary">Get time delta between two timestemps</td>
 	</tr>
@@ -108,7 +114,7 @@
 	<td class="summary">return avarage azimuth</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#PointClusterTilt">PointClusterTilt (points[, refPos])</a></td>
+	<td class="name" nowrap><a href="#PointClusterTilt">PointClusterTilt (points[, MagNorth[, refPos]])</a></td>
 	<td class="summary">return the tilt of a point cluster</td>
 	</tr>
 	<tr>
@@ -162,18 +168,6 @@
 	<td class="summary">retrun Bearing (magnetic) and range between two points</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#checkLOS">checkLOS (pos0, pos1)</a></td>
-	<td class="summary">Return if the is LOS between two DCS points
-
- checks both radar horizon (round earth) and DCS terrain LOS</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#EarthLOS">EarthLOS (h0[, h1])</a></td>
-	<td class="summary">Returns maximum horizon distance given heigh above the earth of two points
-
- if only one observer hight is provided, result would be maximum view distance to Sea Level</td>
-	</tr>
-	<tr>
 	<td class="name" nowrap><a href="#getFormationCallsign">getFormationCallsign (player[, flightMember])</a></td>
 	<td class="summary">Get group callsign from unit</td>
 	</tr>
@@ -184,6 +178,37 @@
 	<tr>
 	<td class="name" nowrap><a href="#isDMM">isDMM (DCS_Unit)</a></td>
 	<td class="summary">Unit use DMM</td>
+	</tr>
+</table>
+<h2><a href="#Geo_Function">Geo Function </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Geo.checkLOS">HoundUtils.Geo.checkLOS (pos0, pos1)</a></td>
+	<td class="summary">Return if the is LOS between two DCS points
+
+ checks both radar horizon (round earth) and DCS terrain LOS</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Geo.EarthLOS">HoundUtils.Geo.EarthLOS (h0[, h1])</a></td>
+	<td class="summary">Returns maximum horizon distance given heigh above the earth of two points
+
+ if only one observer hight is provided, result would be maximum view distance to Sea Level</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Geo.isDcsPoint">HoundUtils.Geo.isDcsPoint (point)</a></td>
+	<td class="summary">check if point is DCS point</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Geo.getProjectedIP">HoundUtils.Geo.getProjectedIP (p0, az, el)</a></td>
+	<td class="summary">Returns Projected line impact point with Terrain</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Geo.setPointHeight">HoundUtils.Geo.setPointHeight (point)</a></td>
+	<td class="summary">Ensure Inpoint DCS point has Elevation</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Geo.setHeight">HoundUtils.Geo.setHeight (point)</a></td>
+	<td class="summary">Ensure input point or point table all have valid Elevation</td>
 	</tr>
 </table>
 <h2><a href="#TTS_Functions">TTS Functions </a></h2>
@@ -314,20 +339,12 @@
 <h2><a href="#Polygon_functions">Polygon functions </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Polygon.isDcsPoint">HoundUtils.Polygon.isDcsPoint (point)</a></td>
-	<td class="summary">check if point is DCS point</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Polygon.setPointElevation">HoundUtils.Polygon.setPointElevation (point)</a></td>
-	<td class="summary">Ensure Inpoint DCS point has Elevation</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Polygon.setElevation">HoundUtils.Polygon.setElevation (point)</a></td>
-	<td class="summary">Ensure input point or point table all have valid Elevation</td>
-	</tr>
-	<tr>
 	<td class="name" nowrap><a href="#HoundUtils.Polygon.threatOnSector">HoundUtils.Polygon.threatOnSector (polygon, point, radius)</a></td>
 	<td class="summary">Check if polygon is under threat of SAM</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Polygon.filterPointsByPolygon">HoundUtils.Polygon.filterPointsByPolygon (points, polygon)</a></td>
+	<td class="summary">Filter out points not in polygon</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HoundUtils.Polygon.clipPolygons">HoundUtils.Polygon.clipPolygons (subjectPolygon, clipPolygon)</a></td>
@@ -479,6 +496,31 @@
 
 </dd>
     <dt>
+    <a name = "setInitialMarkId"></a>
+    <strong>setInitialMarkId (startId)</strong>
+    </dt>
+    <dd>
+    Set New initial marker Id
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">startId</span>
+         Number to start counting from
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Bool True if initial ID was updated
+    </ol>
+
+
+
+
+</dd>
+    <dt>
     <a name = "absTimeDelta"></a>
     <strong>absTimeDelta (t0[, t1])</strong>
     </dt>
@@ -566,7 +608,7 @@
 </dd>
     <dt>
     <a name = "PointClusterTilt"></a>
-    <strong>PointClusterTilt (points[, refPos])</strong>
+    <strong>PointClusterTilt (points[, MagNorth[, refPos]])</strong>
     </dt>
     <dd>
     return the tilt of a point cluster
@@ -576,6 +618,10 @@
     <ul>
         <li><span class="parameter">points</span>
          a list of DCS points
+        </li>
+        <li><span class="parameter">MagNorth</span>
+         (Bool) if true value will include north var correction
+         (<em>optional</em>)
         </li>
         <li><span class="parameter">refPos</span>
          a DCS point that will be the reference for azimuth
@@ -916,67 +962,6 @@
 
 </dd>
     <dt>
-    <a name = "checkLOS"></a>
-    <strong>checkLOS (pos0, pos1)</strong>
-    </dt>
-    <dd>
-    Return if the is LOS between two DCS points
-
- checks both radar horizon (round earth) and DCS terrain LOS
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">pos0</span>
-         (DCS pos)
-        </li>
-        <li><span class="parameter">pos1</span>
-         (DCS pos)
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        (bool) true if both units have LOS between them
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "EarthLOS"></a>
-    <strong>EarthLOS (h0[, h1])</strong>
-    </dt>
-    <dd>
-    Returns maximum horizon distance given heigh above the earth of two points
-
- if only one observer hight is provided, result would be maximum view distance to Sea Level
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">h0</span>
-         height of observer 1 in meters
-        </li>
-        <li><span class="parameter">h1</span>
-         height of observer 2 in meters
-         (<em>optional</em>)
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        distance maximum LOS distance in meters
-    </ol>
-
-
-
-
-</dd>
-    <dt>
     <a name = "getFormationCallsign"></a>
     <strong>getFormationCallsign (player[, flightMember])</strong>
     </dt>
@@ -1046,6 +1031,177 @@
         </li>
     </ul>
 
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Geo_Function"></a>Geo Function </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HoundUtils.Geo.checkLOS"></a>
+    <strong>HoundUtils.Geo.checkLOS (pos0, pos1)</strong>
+    </dt>
+    <dd>
+    Return if the is LOS between two DCS points
+
+ checks both radar horizon (round earth) and DCS terrain LOS
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">pos0</span>
+         (DCS pos)
+        </li>
+        <li><span class="parameter">pos1</span>
+         (DCS pos)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        (bool) true if both units have LOS between them
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HoundUtils.Geo.EarthLOS"></a>
+    <strong>HoundUtils.Geo.EarthLOS (h0[, h1])</strong>
+    </dt>
+    <dd>
+    Returns maximum horizon distance given heigh above the earth of two points
+
+ if only one observer hight is provided, result would be maximum view distance to Sea Level
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">h0</span>
+         height of observer 1 in meters
+        </li>
+        <li><span class="parameter">h1</span>
+         height of observer 2 in meters
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        distance maximum LOS distance in meters
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HoundUtils.Geo.isDcsPoint"></a>
+    <strong>HoundUtils.Geo.isDcsPoint (point)</strong>
+    </dt>
+    <dd>
+    check if point is DCS point
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">point</span>
+         DCS point candidate
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Bool True if is valid point
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HoundUtils.Geo.getProjectedIP"></a>
+    <strong>HoundUtils.Geo.getProjectedIP (p0, az, el)</strong>
+    </dt>
+    <dd>
+    Returns Projected line impact point with Terrain
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">p0</span>
+         source Postion
+        </li>
+        <li><span class="parameter">az</span>
+         Azimuth from Position (radians)
+        </li>
+        <li><span class="parameter">el</span>
+         Elevation angle from position (radians)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        DCS point of intersection with ground
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HoundUtils.Geo.setPointHeight"></a>
+    <strong>HoundUtils.Geo.setPointHeight (point)</strong>
+    </dt>
+    <dd>
+    Ensure Inpoint DCS point has Elevation
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">point</span>
+         DCS point
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Point but with elevation
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HoundUtils.Geo.setHeight"></a>
+    <strong>HoundUtils.Geo.setHeight (point)</strong>
+    </dt>
+    <dd>
+    Ensure input point or point table all have valid Elevation
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">point</span>
+         DCS point
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        same as input, but with elevation. will return original value if is not DCS point
+    </ol>
 
 
 
@@ -1739,81 +1895,6 @@
 
     <dl class="function">
     <dt>
-    <a name = "HoundUtils.Polygon.isDcsPoint"></a>
-    <strong>HoundUtils.Polygon.isDcsPoint (point)</strong>
-    </dt>
-    <dd>
-    check if point is DCS point
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">point</span>
-         DCS point candidate
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        Bool True if is valid point
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HoundUtils.Polygon.setPointElevation"></a>
-    <strong>HoundUtils.Polygon.setPointElevation (point)</strong>
-    </dt>
-    <dd>
-    Ensure Inpoint DCS point has Elevation
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">point</span>
-         DCS point
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        Point but with elevation
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HoundUtils.Polygon.setElevation"></a>
-    <strong>HoundUtils.Polygon.setElevation (point)</strong>
-    </dt>
-    <dd>
-    Ensure input point or point table all have valid Elevation
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">point</span>
-         DCS point
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        same as input, but with elevation. will return original value if is not DCS point
-    </ol>
-
-
-
-
-</dd>
-    <dt>
     <a name = "HoundUtils.Polygon.threatOnSector"></a>
     <strong>HoundUtils.Polygon.threatOnSector (polygon, point, radius)</strong>
     </dt>
@@ -1840,6 +1921,34 @@
         Bool True if point is in polygon</li>
         <li>
         Bool True if radius around point intersects polygon</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HoundUtils.Polygon.filterPointsByPolygon"></a>
+    <strong>HoundUtils.Polygon.filterPointsByPolygon (points, polygon)</strong>
+    </dt>
+    <dd>
+    Filter out points not in polygon
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">points</span>
+         Points to filter
+        </li>
+        <li><span class="parameter">polygon</span>
+         - enclosing polygon to filter by
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        points from original set which are inside polygon.
     </ol>
 
 
@@ -2172,7 +2281,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2022-01-07 00:27:27 </i>
+<i style="float:right;">Last updated 2022-01-18 13:13:42 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

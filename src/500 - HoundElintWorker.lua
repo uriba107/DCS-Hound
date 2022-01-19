@@ -361,7 +361,7 @@ do
                     end
                 end
 
-                if HoundUtils.checkLOS(platformPos, radarPos) then
+                if HoundUtils.Geo.checkLOS(platformPos, radarPos) then
                     local contact = self:getContact(radar)
                     local sampleAngularResolution = HoundUtils.Elint.getSensorPrecision(platform,contact.band)
                     if sampleAngularResolution < l_math.rad(10.0) then

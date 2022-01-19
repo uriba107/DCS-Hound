@@ -33,8 +33,8 @@ do
         local p2 = platform2:getPosition().p
         local err = 0
 
-        lu.assertIsTrue(HoundUtils.checkLOS(p1, tgtPos))
-        lu.assertIsTrue(HoundUtils.checkLOS(p2, tgtPos))
+        lu.assertIsTrue(HoundUtils.Geo.checkLOS(p1, tgtPos))
+        lu.assertIsTrue(HoundUtils.Geo.checkLOS(p2, tgtPos))
 
         local az1,el1 = HoundUtils.Elint.getAzimuth( p1, tgtPos, err )
         local az2,el2 = HoundUtils.Elint.getAzimuth( p2, tgtPos, err )

@@ -32,8 +32,9 @@
 
 <h2>Contents</h2>
 <ul>
+<li><a href="#Functions">Functions</a></li>
 <li><a href="#Tables">Tables</a></li>
-<li><a href="#Class_HoundDatapoint">Class HoundDatapoint </a></li>
+<li><a href="#Local_Functions">Local Functions</a></li>
 </ul>
 
 
@@ -45,6 +46,7 @@
   <li><a href="../modules/HoundConfig.html">HoundConfig</a></li>
   <li><a href="../modules/HoundUtils.html">HoundUtils</a></li>
   <li><a href="../modules/HoundEventHandler.html">HoundEventHandler</a></li>
+  <li><a href="../modules/HoundEstimator.html">HoundEstimator</a></li>
   <li><strong>HoundDatapoint</strong></li>
   <li><a href="../modules/HoundContact.html">HoundContact</a></li>
   <li><a href="../modules/HoundCommsManager.html">HoundCommsManager</a></li>
@@ -68,6 +70,33 @@
 <p></p>
 
 
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#New">New (platform0, p0, az0, el0, t0[, angularResolution[, isPlatformStatic]])</a></td>
+	<td class="summary">Create new HoundDatapoint instance</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#isStatic">isStatic (self)</a></td>
+	<td class="summary">check if platform is static</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#getPos">getPos (self)</a></td>
+	<td class="summary">Get estimated position</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#get2dPoly">get2dPoly (self)</a></td>
+	<td class="summary">Get 2D polygon</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#get3dPoly">get3dPoly (self)</a></td>
+	<td class="summary">Get 3D polygon</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#getEllipseParams">getEllipseParams (self)</a></td>
+	<td class="summary">Get 3D polygon ellipse parameters</td>
+	</tr>
+</table>
 <h2><a href="#Tables">Tables</a></h2>
 <table class="function_list">
 	<tr>
@@ -75,42 +104,22 @@
 	<td class="summary"></td>
 	</tr>
 </table>
-<h2><a href="#Class_HoundDatapoint">Class HoundDatapoint </a></h2>
+<h2><a href="#Local_Functions">Local Functions</a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#HoundDatapoint:New">HoundDatapoint:New (platform0, p0, az0, el0, t0[, angularResolution[, isPlatformStatic]])</a></td>
-	<td class="summary">Create new HoundDatapoint instance</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HoundDatapoint:isStatic">HoundDatapoint:isStatic (self)</a></td>
-	<td class="summary">check if platform is static</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HoundDatapoint:getPos">HoundDatapoint:getPos (self)</a></td>
-	<td class="summary">Get estimated position</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HoundDatapoint:get2dPoly">HoundDatapoint:get2dPoly (self)</a></td>
-	<td class="summary">Get 2D polygon</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HoundDatapoint:get3dPoly">HoundDatapoint:get3dPoly (self)</a></td>
-	<td class="summary">Get 3D polygon</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HoundDatapoint.estimatePos">HoundDatapoint.estimatePos (self)</a></td>
+	<td class="name" nowrap><a href="#estimatePos">estimatePos (self)</a></td>
 	<td class="summary">Estimate contact position from Datapoint information only</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundDatapoint.calcPolygons">HoundDatapoint.calcPolygons (self)</a></td>
+	<td class="name" nowrap><a href="#calcPolygons">calcPolygons (self)</a></td>
 	<td class="summary">generate Az only Triangle and if possible Az/El polygon footprint</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundDatapoint.AzKalman">HoundDatapoint.AzKalman (self, newAz)</a></td>
+	<td class="name" nowrap><a href="#update">update (self, newAz, predictedAz)</a></td>
 	<td class="summary">Smooth azimuth using Kalman filter</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundDatapoint.getId">HoundDatapoint.getId ()</a></td>
+	<td class="name" nowrap><a href="#getId">getId ()</a></td>
 	<td class="summary">Assign id for each Datapoint for debugging</td>
 	</tr>
 </table>
@@ -119,6 +128,180 @@
 <br/>
 
 
+    <h2 class="section-header "><a name="Functions"></a>Functions</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "New"></a>
+    <strong>New (platform0, p0, az0, el0, t0[, angularResolution[, isPlatformStatic]])</strong>
+    </dt>
+    <dd>
+    Create new HoundDatapoint instance
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">platform0</span>
+         DCS Unit of locating platform
+        </li>
+        <li><span class="parameter">p0</span>
+         Position of platform on detection
+        </li>
+        <li><span class="parameter">az0</span>
+         Azimuth (rad) from platform to emitter
+        </li>
+        <li><span class="parameter">el0</span>
+         Elevation (rad) from platform to emitter
+        </li>
+        <li><span class="parameter">t0</span>
+         Abs time of datapoint
+        </li>
+        <li><span class="parameter">angularResolution</span>
+         angular resolution of datapoint
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">isPlatformStatic</span>
+         (bool)
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Datapoint instance
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "isStatic"></a>
+    <strong>isStatic (self)</strong>
+    </dt>
+    <dd>
+    check if platform is static
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Bool True if platform is static
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "getPos"></a>
+    <strong>getPos (self)</strong>
+    </dt>
+    <dd>
+    Get estimated position
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        DCS point
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "get2dPoly"></a>
+    <strong>get2dPoly (self)</strong>
+    </dt>
+    <dd>
+    Get 2D polygon
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table of DCS points
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "get3dPoly"></a>
+    <strong>get3dPoly (self)</strong>
+    </dt>
+    <dd>
+    Get 3D polygon
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table of DCS points
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "getEllipseParams"></a>
+    <strong>getEllipseParams (self)</strong>
+    </dt>
+    <dd>
+    Get 3D polygon ellipse parameters
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table of ellipse parameters
+    </ol>
+
+
+
+
+</dd>
+</dl>
     <h2 class="section-header "><a name="Tables"></a>Tables</h2>
 
     <dl class="function">
@@ -167,157 +350,12 @@
 
 </dd>
 </dl>
-    <h2 class="section-header "><a name="Class_HoundDatapoint"></a>Class HoundDatapoint </h2>
+    <h2 class="section-header "><a name="Local_Functions"></a>Local Functions</h2>
 
     <dl class="function">
     <dt>
-    <a name = "HoundDatapoint:New"></a>
-    <strong>HoundDatapoint:New (platform0, p0, az0, el0, t0[, angularResolution[, isPlatformStatic]])</strong>
-    </dt>
-    <dd>
-    Create new HoundDatapoint instance
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">platform0</span>
-         DCS Unit of locating platform
-        </li>
-        <li><span class="parameter">p0</span>
-         Position of platform on detection
-        </li>
-        <li><span class="parameter">az0</span>
-         Azimuth (rad) from platform to emitter
-        </li>
-        <li><span class="parameter">el0</span>
-         Elevation (rad) from platform to emitter
-        </li>
-        <li><span class="parameter">t0</span>
-         Abs time of datapoint
-        </li>
-        <li><span class="parameter">angularResolution</span>
-         angular resolution of datapoint
-         (<em>optional</em>)
-        </li>
-        <li><span class="parameter">isPlatformStatic</span>
-         (bool)
-         (<em>optional</em>)
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        Datapoint instance
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HoundDatapoint:isStatic"></a>
-    <strong>HoundDatapoint:isStatic (self)</strong>
-    </dt>
-    <dd>
-    check if platform is static
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">self</span>
-
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        Bool True if platform is static
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HoundDatapoint:getPos"></a>
-    <strong>HoundDatapoint:getPos (self)</strong>
-    </dt>
-    <dd>
-    Get estimated position
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">self</span>
-
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        DCS point
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HoundDatapoint:get2dPoly"></a>
-    <strong>HoundDatapoint:get2dPoly (self)</strong>
-    </dt>
-    <dd>
-    Get 2D polygon
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">self</span>
-
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        table of DCS points
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HoundDatapoint:get3dPoly"></a>
-    <strong>HoundDatapoint:get3dPoly (self)</strong>
-    </dt>
-    <dd>
-    Get 3D polygon
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">self</span>
-
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        table of DCS points
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HoundDatapoint.estimatePos"></a>
-    <strong>HoundDatapoint.estimatePos (self)</strong>
+    <a name = "estimatePos"></a>
+    <strong>estimatePos (self)</strong>
     </dt>
     <dd>
     Estimate contact position from Datapoint information only
@@ -336,8 +374,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundDatapoint.calcPolygons"></a>
-    <strong>HoundDatapoint.calcPolygons (self)</strong>
+    <a name = "calcPolygons"></a>
+    <strong>calcPolygons (self)</strong>
     </dt>
     <dd>
     generate Az only Triangle and if possible Az/El polygon footprint
@@ -350,14 +388,23 @@
         </li>
     </ul>
 
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+        2D Polygon</li>
+        <li>
+        3D Polygon</li>
+        <li>
+        Ellipse parametes for 3D Polygon (theta,major,minor)</li>
+    </ol>
 
 
 
 
 </dd>
     <dt>
-    <a name = "HoundDatapoint.AzKalman"></a>
-    <strong>HoundDatapoint.AzKalman (self, newAz)</strong>
+    <a name = "update"></a>
+    <strong>update (self, newAz, predictedAz)</strong>
     </dt>
     <dd>
     Smooth azimuth using Kalman filter
@@ -371,6 +418,9 @@
         <li><span class="parameter">newAz</span>
          new Az input
         </li>
+        <li><span class="parameter">predictedAz</span>
+         predicted azimuth
+        </li>
     </ul>
 
 
@@ -379,8 +429,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundDatapoint.getId"></a>
-    <strong>HoundDatapoint.getId ()</strong>
+    <a name = "getId"></a>
+    <strong>getId ()</strong>
     </dt>
     <dd>
     Assign id for each Datapoint for debugging
@@ -404,7 +454,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2022-01-07 00:27:27 </i>
+<i style="float:right;">Last updated 2022-01-18 13:13:42 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

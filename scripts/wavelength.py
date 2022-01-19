@@ -38,12 +38,14 @@ platforms = {
             "Tu-95MS": {"category": 2, "antenna":{"size":50, "factor":1}},
             "Tu-142": {"category": 2, "antenna":{"size":50, "factor":1}},
             "IL-76MD": {"category": 2, "antenna":{"size":48, "factor":0.8}},
+            "H-6J": {"category": 2, "antenna":{"size":3.5, "factor":1}},
             "An-30M": {"category": 2, "antenna":{"size":25, "factor":1}},
             "A-50": {"category": 2, "antenna":{"size":9, "factor":0.5}},
             "An-26B": {"category": 2, "antenna":{"size":26, "factor":0.9}},
             "Su-25T": {"category": 2, "antenna":{"size":3.5, "factor":1}},
             "AJS37": {"category": 2, "antenna":{"size":4.5, "factor":1}},
             "F-16C": {"category": 2, "antenna":{"size":1.45, "factor":1}},
+            "JF-17": {"category": 2, "antenna":{"size":3.25, "factor":1}},
             "EA-6B": {"category": 2, "antenna":{"size":9, "factor":1}}
         }
 

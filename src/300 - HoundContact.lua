@@ -72,6 +72,7 @@ do
         elintcontact.detected_by = {}
         elintcontact.state = HOUND.EVENTS.RADAR_NEW
         elintcontact.preBriefed = false
+        elintcontact._kalman = HoundEstimator.Kalman.posFilter()
         return elintcontact
     end
 
@@ -108,7 +109,7 @@ do
 
     --- check if contact has estimated position
     function HoundContact:hasPos()
-        return HoundUtils.Polygon.isDcsPoint(self.pos.p)
+        return HoundUtils.Geo.isDcsPoint(self.pos.p)
     end
 
     --- get max weapons range
@@ -164,17 +165,27 @@ do
             self._dataPoints[datapoint.platformId] = {}
         end
 
+        local predicted = {}
+        if HoundUtils.Geo.isDcsPoint( self._kalman:get()) then
+            predicted.az,predicted.el = HoundUtils.Elint.getAzimuth( datapoint.platformPos ,  self._kalman:get(), 0.0 )
+            -- HoundLogger.trace("sample vs prediction - " .. l_math.deg(datapoint.az) .. " | " .. l_math.deg(predicted.az))
+        end
+
         if datapoint.platformStatic then
             -- if Reciver is static, just keep the last Datapoint, as position never changes.
             -- if There is a datapoint, do rolling avarage on AZ to clean errors out.
-            if Length(self._dataPoints[datapoint.platformId]) > 0 then
-                -- poor man's Kalman
-                self._dataPoints[datapoint.platformId][1]:AzKalman(datapoint.az)
-                datapoint = self._dataPoints[datapoint.platformId][1]
-                -- datapoint.az =  HoundUtils.AzimuthAverage({datapoint.az,self._dataPoints[datapoint.platformId][1].az})
+            if Length(self._dataPoints[datapoint.platformId]) == 0 then
+                self._dataPoints[datapoint.platformId] = {datapoint}
             end
-            self._dataPoints[datapoint.platformId] = {datapoint}
+            self._dataPoints[datapoint.platformId][1]:update(datapoint.az,predicted.az)
+                -- datapoint = self._dataPoints[datapoint.platformId][1]
+                -- datapoint.az =  HoundUtils.AzimuthAverage({datapoint.az,self._dataPoints[datapoint.platformId][1].az})
             return
+        end
+
+        if HOUND.USE_KALMAN and HoundUtils.Geo.isDcsPoint(datapoint.estimatedPos) then
+            -- local uncertenty = selfself._kalman:(datapoint:get3dPoly(),true)
+            self._kalman:update(datapoint.estimatedPos,datapoint:getEllipseParams())
         end
 
         if Length(self._dataPoints[datapoint.platformId]) < 2 then
@@ -228,7 +239,10 @@ do
     function HoundContact.getDeltaSubsetPercent(Table,referencePos,NthPercentile)
         local t = l_mist.utils.deepCopy(Table)
         local len_t = Length(t)
-        t = HoundUtils.Polygon.setElevation(t)
+        t = HoundUtils.Geo.setHeight(t)
+        if not referencePos then
+            referencePos = l_mist.getAvgPoint(t)
+        end
         for _,pt in ipairs(t) do
             pt.dist = l_mist.utils.get2DDist(referencePos,pt)
         end
@@ -236,9 +250,9 @@ do
 
         local percentile = l_math.floor(len_t*NthPercentile)
         local NumToUse = l_math.max(l_math.min(2,len_t),percentile)
-        if len_t <= 4 then
-            NumToUse = len_t
-        end
+        -- if len_t <= 4 then
+        --     NumToUse = len_t
+        -- end
         local RelativeToPos = {}
         for i = 1, NumToUse  do
             table.insert(RelativeToPos,l_mist.vec.sub(t[i],referencePos))
@@ -250,12 +264,13 @@ do
     --- Calculate Cotact's Ellipse of uncertenty
     -- @local
     -- @param estimatedPositions List of estimated positions
-    -- @param[opt] Theta Azimuth bias of the dataset - in none given angle will be derrived from datapoints
+    -- @param[opt] giftWrapped pass true if estimatedPosition is just a giftWrap polygon point set (closed polygon, not a point cluster)
+    -- @param[opt] refPos reference position to use for computing the uncertenty ellipse. (will use cluster avarage if none provided)
     -- @return None (updates self.uncertenty_data)
-    function HoundContact:calculateEllipse(estimatedPositions,Theta)
-
-        local RelativeToPos = HoundContact.getDeltaSubsetPercent(estimatedPositions,self.pos.p,HOUND.ELLIPSE_PERCENTILE)
-
+    function HoundContact.calculateEllipse(estimatedPositions,giftWrapped,refPos)
+        local percentile = HOUND.ELLIPSE_PERCENTILE
+        if giftWrapped then percentile = 1.0 end
+        local RelativeToPos = HoundContact.getDeltaSubsetPercent(estimatedPositions,refPos,percentile)
 
         local min = {}
         min.x = 99999
@@ -265,9 +280,7 @@ do
         max.x = -99999
         max.y = -99999
 
-        if Theta == nil then
-            Theta = HoundUtils.PointClusterTilt(RelativeToPos)
-        end
+        Theta = HoundUtils.PointClusterTilt(RelativeToPos,true)
 
         local sinTheta = l_math.sin(-Theta)
         local cosTheta = l_math.cos(-Theta)
@@ -289,11 +302,14 @@ do
         local a = l_mist.utils.round(l_math.abs(min.x)+l_math.abs(max.x))
         local b = l_mist.utils.round(l_math.abs(min.y)+l_math.abs(max.y))
 
-        self.uncertenty_data = {}
-        self.uncertenty_data.major = l_math.max(a,b)
-        self.uncertenty_data.minor = l_math.min(a,b)
-        self.uncertenty_data.az = l_mist.utils.round(l_math.deg((Theta + pi_2)%pi_2))
-        self.uncertenty_data.r  = (a+b)/4
+        local uncertenty_data = {}
+        uncertenty_data.major = l_math.max(a,b)
+        uncertenty_data.minor = l_math.min(a,b)
+        uncertenty_data.theta = (Theta + pi_2) % pi_2
+        uncertenty_data.az = l_mist.utils.round(l_math.deg(uncertenty_data.theta))
+        uncertenty_data.r  = (a+b)/4
+
+        return uncertenty_data
 
     end
 
@@ -301,28 +317,55 @@ do
     -- @local
     -- @param estimatedPositions List of all estimated positions derrived fomr datapoints and intersections
     -- @param[opt] converge Boolean, if True function will try and converge on best position
-    function HoundContact:calculatePos(estimatedPositions,converge)
-        if estimatedPositions == nil then return end
-        self.pos.p = l_mist.getAvgPoint(estimatedPositions)
+    function HoundContact.calculatePos(estimatedPositions,converge)
+        if type(estimatedPositions) ~= "table" or Length(estimatedPositions) == 0 then return end
+        local pos = l_mist.getAvgPoint(estimatedPositions)
         if converge then
             local subList = estimatedPositions
-            local subsetPos = self.pos.p
+            local subsetPos = pos
             while (Length(subList) * HOUND.ELLIPSE_PERCENTILE) > 5 do
                 local NewsubList = HoundContact.getDeltaSubsetPercent(subList,subsetPos,HOUND.ELLIPSE_PERCENTILE)
                 subsetPos = l_mist.getAvgPoint(NewsubList)
 
-                self.pos.p.x = self.pos.p.x + (subsetPos.x )
-                self.pos.p.z = self.pos.p.z + (subsetPos.z )
+                pos.x = pos.x + (subsetPos.x )
+                pos.z = pos.z + (subsetPos.z )
                 subList = NewsubList
             end
         end
-        self.pos.p.y = land.getHeight({x=self.pos.p.x,y=self.pos.p.z})
-        local bullsPos = coalition.getMainRefPoint(self._platformCoalition)
-        self.pos.LL.lat, self.pos.LL.lon =  coord.LOtoLL(self.pos.p)
-        self.pos.elev = self.pos.p.y
-        self.pos.grid  = coord.LLtoMGRS(self.pos.LL.lat, self.pos.LL.lon)
-        self.pos.be = HoundUtils.getBR(bullsPos,self.pos.p)
+        pos.y = land.getHeight({x=pos.x,y=pos.z})
+        return pos
+    end
 
+    --- calculate additional position data
+    function HoundContact:calculatePosExtras(pos)
+        if type(pos.p) == "table" and HoundUtils.Geo.isDcsPoint(pos.p) then
+            local bullsPos = coalition.getMainRefPoint(self._platformCoalition)
+            pos.LL = {}
+            pos.LL.lat, pos.LL.lon = coord.LOtoLL(pos.p)
+            pos.elev = pos.p.y
+            pos.grid  = coord.LLtoMGRS(pos.LL.lat, pos.LL.lon)
+            pos.be = HoundUtils.getBR(bullsPos,pos.p)
+        end
+        return pos
+    end
+
+    --- process the intersection
+    -- @param targetTable where should the result be stored
+    -- @param point1 HoundDatapoint Instance no.1
+    -- @param point2 HoundDatapoint Instance no.2
+    function HoundContact:processIntersection(targetTable,point1,point2)
+        local err = (point1.platformPrecision + point2.platformPrecision)/2
+        if HoundUtils.angleDeltaRad(point1.az,point2.az) < err then return end
+        local intersection = self.triangulatePoints(point1,point2)
+        if not HoundUtils.Geo.isDcsPoint(intersection) then return end
+        table.insert(targetTable,intersection)
+        if HOUND.USE_KALMAN and not point1.processed then
+            local polygon = HoundUtils.Polygon.clipPolygons(point1:get2dPoly(),point2:get2dPoly())
+            if Length(polygon) > 2 then
+                local ellipse = self.calculateEllipse(polygon,true)
+                self._kalman:update(intersection,ellipse)
+            end
+        end
     end
 
     --- process data in contact
@@ -356,13 +399,15 @@ do
                 for _,datapoint in pairs(platformDatapoints) do
                     if datapoint:isStatic() then
                         table.insert(staticDataPoints,datapoint)
-                        ClipPolygon2D = HoundUtils.Polygon.clipPolygons(ClipPolygon2D,datapoint:get2dPoly()) or datapoint:get2dPoly()
                     else
                         staticPlatformsOnly = false
                         table.insert(mobileDataPoints,datapoint)
                     end
                     if datapoint.estimatedPos ~= nil then
                         table.insert(estimatePositions,datapoint.estimatedPos)
+                    end
+                    if type(datapoint:get2dPoly()) == "table" then
+                        ClipPolygon2D = HoundUtils.Polygon.clipPolygons(ClipPolygon2D,datapoint:get2dPoly()) or datapoint:get2dPoly()
                     end
                     platforms[datapoint.platformName] = 1
                 end
@@ -376,10 +421,7 @@ do
         if numStaticPoints > 1 then
             for i=1,numStaticPoints-1 do
                 for j=i+1,numStaticPoints do
-                    local err = (staticDataPoints[i].platformPrecision + staticDataPoints[j].platformPrecision)/2
-                    if HoundUtils.angleDeltaRad(staticDataPoints[i].az,staticDataPoints[j].az) > err then
-                        table.insert(estimatePositions,self.triangulatePoints(staticDataPoints[i],staticDataPoints[j]))
-                    end
+                    self:processIntersection(estimatePositions,staticDataPoints[i],staticDataPoints[j])
                 end
             end
         end
@@ -388,10 +430,7 @@ do
         if numStaticPoints > 0  and numMobilepoints > 0 then
             for _,staticDataPoint in ipairs(staticDataPoints) do
                 for _,mobileDataPoint in ipairs(mobileDataPoints) do
-                    local err = (staticDataPoint.platformPrecision + mobileDataPoint.platformPrecision)/2
-                    if HoundUtils.angleDeltaRad(staticDataPoint.az,mobileDataPoint.az) > err then
-                        table.insert(estimatePositions,self.triangulatePoints(staticDataPoint,mobileDataPoint))
-                    end
+                    self:processIntersection(estimatePositions,staticDataPoint,mobileDataPoint)
                 end
             end
          end
@@ -399,45 +438,51 @@ do
         -- mobiles agains mobiles
         if numMobilepoints > 1 then
             for i=1,numMobilepoints-1 do
+                -- only process each datapoint once as anchor (it will be processed against every new datapoint anyway)
+                -- local processKalman = (HOUND.USE_KALMAN and not mobileDataPoints[i].processed)
                 for j=i+1,numMobilepoints do
-                    if mobileDataPoints[i].platformPos  ~= mobileDataPoints[j].platformPos then
-                        local err = (mobileDataPoints[i].platformPrecision + mobileDataPoints[j].platformPrecision)/2
-                        if HoundUtils.angleDeltaRad(mobileDataPoints[i].az,mobileDataPoints[j].az) > err then
-                            table.insert(estimatePositions,self.triangulatePoints(mobileDataPoints[i],mobileDataPoints[j]))
-                        end
+                    if mobileDataPoints[i].platformPos ~= mobileDataPoints[j].platformPos then
+                        self:processIntersection(estimatePositions,mobileDataPoints[i],mobileDataPoints[j])
                     end
                 end
+                mobileDataPoints[i].processed = true
             end
         end
 
-        -- local totalpoints = l_mist.utils.deepCopy(staticDataPoints)
-        -- for _,datapoint in ipairs(mobileDataPoints) do
-        --     table.insert(totalpoints,datapoint)
-        -- end
-
-        -- for _,datapoint in ipairs(staticDataPoints) do
-        --     ClipPolygon2D = HoundUtils.Polygon.clipPolygons(ClipPolygon2D,datapoint:get2dPoly()) or datapoint:get2dPoly()
+        -- if type(ClipPolygon2D) == "table" then
+        --     estimatePositions = HoundUtils.Polygon.filterPointsByPolygon(estimatePositions,ClipPolygon2D)
         -- end
 
         if Length(estimatePositions) > 2 or (Length(estimatePositions) > 0 and staticPlatformsOnly) then
-            self:calculatePos(estimatePositions,true)
+            local refPos = nil
+            if HOUND.USE_KALMAN then
+                self.pos.p = self._kalman:get()
+                refPos = self._kalman:get()
+            else
+                self.pos.p = self.calculatePos(estimatePositions,true)
+            end
+            if type(ClipPolygon2D) == "table" and staticPlatformsOnly then
+                self.uncertenty_data = self.calculateEllipse(ClipPolygon2D,true,refPos)
+            else
+                self.uncertenty_data = self.calculateEllipse(estimatePositions,false,refPos)
+            end
+            self:calculatePosExtras(self.pos)
 
             -- if type(ClipPolygon2D) == "table" and HOUND.DEBUG then
-            --     ClipPolygon2D = HoundUtils.Polygon.setElevation(ClipPolygon2D)
+            --     ClipPolygon2D = HoundUtils.Geo.setHeight(ClipPolygon2D)
 
             --     local v = {}
             --     v.pos = ClipPolygon2D
             --     v.id = self:getMarkerId()
             --     v.mType = 'freeform'
-            --     v.lineType  = 0
+            --     v.lineType  = 1
             --     v.fillColor = {0,255,0,0.15}
             --     l_mist.marker.add(v)
             -- end
-            if staticPlatformsOnly and type(ClipPolygon2D) == "table" then
-                self:calculateEllipse(ClipPolygon2D)
-            else
-                self:calculateEllipse(estimatePositions)
-            end
+
+            -- if HOUND.USE_KALMAN and type(self._kalman:get()) == "table" then
+            --     trigger.action.markToCoalition(self:getMarkerId(), self.typeName .. " " .. (self.uid%100) .." (Kalman - on update)",self._kalman:get(),self._platformCoalition,true)
+            -- end
 
             if self.state == HOUND.EVENTS.RADAR_ASLEEP then
                 self.state = HOUND.EVENTS.SITE_ALIVE
@@ -455,6 +500,7 @@ do
 
         if newContact and self.pos.p ~= nil and self.isEWR == false then
             self.state = HOUND.EVENTS.RADAR_DETECTED
+            self:calculatePosExtras(self.pos)
         end
 
         return self.state
@@ -577,7 +623,10 @@ do
         trigger.action.markToCoalition(self:getMarkerId(), self.typeName .. " " .. (self.uid%100) ..
                                 " (" .. self.uncertenty_data.major .. "/" .. self.uncertenty_data.minor .. "@" .. self.uncertenty_data.az .. "|" ..
                                 l_math.floor(HoundUtils.absTimeDelta(self.last_seen)) .. "s)",self.pos.p,self._platformCoalition,true)
-
+        if HOUND.USE_KALMAN and type(self._kalman:get()) == "table" then
+            trigger.action.markToCoalition(self:getMarkerId(), self.typeName .. " " .. (self.uid%100) ..
+                " (Kalman)",self._kalman:get(),self._platformCoalition,true)
+        end
         if MarkerType == HOUND.MARKER.CIRCLE then
             self:drawAreaMarker()
         end
@@ -686,15 +735,11 @@ do
         if type(self.pos.p) == "table" then
             state = HOUND.EVENTS.RADAR_UPDATED
         end
-        local bullsPos = coalition.getMainRefPoint(self._platformCoalition)
         local unitPos = self.unit:getPosition()
         self.preBriefed = true
 
         self.pos.p = unitPos.p
-        self.pos.LL.lat, self.pos.LL.lon =  coord.LOtoLL(self.pos.p)
-        self.pos.elev = self.pos.p.y
-        self.pos.grid  = coord.LLtoMGRS(self.pos.LL.lat, self.pos.LL.lon)
-        self.pos.be = HoundUtils.getBR(bullsPos,self.pos.p)
+        self:calculatePosExtras(self.pos)
 
         self.uncertenty_data = {}
         self.uncertenty_data.major = 0.1

@@ -76,7 +76,7 @@ function lint_compiled {
 function compile {
     highlight "Compile script"
     echo "-- Hound ELINT system for DCS" > ${TARGET_FILE}
-    echo 'env.info("Starting to load Hound ELINT...")' >> ${TARGET_FILE}
+    # echo 'env.info("[Hound] - start loading (".. HOUND.VERSION..")")' >> ${TARGET_FILE}
 
     mkdir -p $TARGET_PATH
     for FILE in src/*; do
