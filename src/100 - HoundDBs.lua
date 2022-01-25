@@ -695,6 +695,7 @@ do
             ['MIL-26'] = {antenna = {size = 20, factor = 1}},
             ['SH-60B'] = {antenna = {size = 8, factor = 1}},
             ['UH-60A'] = {antenna = {size = 8, factor = 1}},
+            ['UH-60L'] = {antenna = {size = 8, factor = 1}}, -- community UH-69L
             ['Mi-8MT'] = {antenna = {size = 8, factor = 1}},
             ['UH-1H'] = {antenna = {size = 4, factor = 1}},
             ['KA-27'] = {antenna = {size = 4, factor = 1}},
@@ -712,6 +713,7 @@ do
             ['An-30M'] = {antenna = {size = 25, factor = 1}},
             ['A-50'] = {antenna = {size = 9, factor = 0.5}},
             ['An-26B'] = {antenna = {size = 26, factor = 0.9}},
+            ['C-47'] = {antenna = {size = 12, factor = 1}},
             ['EA_6B'] = {antenna = {size = 9, factor = 1}}, -- VSN EA-6B
             ['Su-25T'] = {antenna = {size = 3.5, factor = 1}},
             ['AJS37'] = {antenna = {size = 4.5, factor = 1}},

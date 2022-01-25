@@ -26,13 +26,14 @@ do
     HOUND = {
         VERSION = "0.2.2-TRUNK",
         DEBUG = true,
-        USE_KALMAN = false,
+        USE_KALMAN = true,
         ELLIPSE_PERCENTILE = 0.6,
         NUM_DATAPOINTS = 15,
         CONTACT_TIMEOUT = 900,
         MGRS_PRECISION = 3,
         EXTENDED_INFO = true,
-        MIST_VERSION = tonumber(table.concat({mist.majorVersion,mist.minorVersion},"."))
+        MIST_VERSION = tonumber(table.concat({mist.majorVersion,mist.minorVersion},".")),
+        FORCE_MANAGE_MARKERS = false
     }
 
     --- Map Markers ENUM

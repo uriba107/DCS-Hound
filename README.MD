@@ -49,6 +49,7 @@ Hound Currently has a 10 degrees angular resolution cutoff point to avoid introd
 | Tu-142    | 0.46 / 0.05 | A ||
 | IL-76MD   | 0.60 / 0.06 | A ||
 | H-6J      | 6.54 / 0.70 | C ||
+| C-47      | 1.91 / 0.20 | A ||
 | S-3B      | 1.59 / 0.17 | A ||
 | E-2D      | 6.54 / 0.70 | C ||
 | E-3A      | 5.09 / 0.55 | C ||
@@ -71,7 +72,7 @@ Hound Currently has a 10 degrees angular resolution cutoff point to avoid introd
 | UH-60A    | 2.86 / 0.31 | B |
 | SH-60B    | 2.86 / 0.31 | B |
 | Mi-8MT    | 2.86 / 0.31 | B |
-| UH-1H     | 5.73 / 0.61 | B |
+| UH-1H     | 5.73 / 0.61 | C |
 | Ka-27     | 5.73 / 0.61 | C | 
 
 ### Ground Units
@@ -92,6 +93,7 @@ Hound Currently has a 10 degrees angular resolution cutoff point to avoid introd
 | --------  | -------- |
 | Anubis C-130J | 0.65 / 0.07 |
 | VSN EA-6B Prowler   |  2.54 / 0.27  |
+| UH-60L    | 2.86 / 0.31 | B |
 
 ## Can I haz syntax pls?
 Yes you can.

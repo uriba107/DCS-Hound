@@ -47,9 +47,9 @@ do
     -- return the next available MarkId
     -- @return Next MarkId
     function HoundUtils.getMarkId()
-        if UTILS and UTILS.GetMarkID then
+        if not HOUND.FORCE_MANAGE_MARKERS and UTILS and UTILS.GetMarkID then
             HoundUtils._MarkId = UTILS.GetMarkID()
-        elseif HOUND.MIST_VERSION >= 4.5 then
+        elseif not HOUND.FORCE_MANAGE_MARKERS and HOUND.MIST_VERSION >= 4.5 then
             HoundUtils._MarkId = l_mist.marker.getNextId()
         else
             HoundUtils._MarkId = HoundUtils._MarkId + 1
