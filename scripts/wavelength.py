@@ -46,7 +46,8 @@ platforms = {
             "AJS37": {"category": 2, "antenna":{"size":4.5, "factor":1}},
             "F-16C": {"category": 2, "antenna":{"size":1.45, "factor":1}},
             "JF-17": {"category": 2, "antenna":{"size":3.25, "factor":1}},
-            "EA-6B": {"category": 2, "antenna":{"size":9, "factor":1}}
+            "EA-6B": {"category": 2, "antenna":{"size":9, "factor":1}},
+            "C-47": {"category": 2, "antenna":{"size":12, "factor":1}},
         }
 
 def genBandTable():
