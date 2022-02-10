@@ -23,7 +23,7 @@ do
         end
 
         local instance = {}
-        instance.mainInterval = 15
+        instance.mainInterval = 5
         instance.processInterval = 60
         instance.barkInterval = 120
         instance.preferences = {

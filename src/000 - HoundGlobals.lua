@@ -16,19 +16,19 @@ do
     -- @table HOUND
     -- @field VERSION Hound Version
     -- @field DEBUG Hound will do extended debug output to log (for development)
-    -- @field USE_KALMAN Hound will use Kalman Filters for position calculations (experimental)
     -- @field ELLIPSE_PERCENTILE Defines the percentile of datapoints used to calculate uncertenty ellipse
-    -- @field NUM_DATAPOINTS Number of datapoints per platform a contact keeps (FIFO)
+    -- @field DATAPOINTS_NUM Number of datapoints per platform a contact keeps (FIFO)
+    -- @field DATAPOINTS_INTERVAL Time between stored data points
     -- @field CONTACT_TIMEOUT Timout for emitter to be silent before being dropped from contacts
     -- @field MGRS_PRECISION Number of digits in MGRS conversion
     -- @field EXTENDED_INFO Hound will add more in depth uncertenty info to controller messages (default is true)
-
+    -- @field FORCE_MANAGE_MARKERS Force Hound to use internal counter for markIds (default is false).
     HOUND = {
         VERSION = "0.2.2-TRUNK",
         DEBUG = true,
-        USE_KALMAN = true,
         ELLIPSE_PERCENTILE = 0.6,
-        NUM_DATAPOINTS = 15,
+        DATAPOINTS_NUM = 30,
+        DATAPOINTS_INTERVAL = 30,
         CONTACT_TIMEOUT = 900,
         MGRS_PRECISION = 3,
         EXTENDED_INFO = true,
@@ -221,21 +221,7 @@ do
         return false
     end
 
-    --- map input to range (Arduino implementation)
-    -- @local
-    -- @param input value
-    -- @param in_min Minimum allowble input value
-    -- @param in_max Maximum allowable input value
-    -- @param out_min Minimum allowable output value
-    -- @param out_max Maximum allowable output value
-    -- @return calculated mapped value
-    -- @usage map(10,0,10,0,100) = 100
-    --  map(0.5,0,1,0,100) = 50
-    function Map(input, in_min, in_max, out_min, out_max)
-        return (input - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
-    end
-
-    --- return gausion random number
+    --- return Gaussian random number
     -- @local
     -- @param mean Mean value (i.e center of the gausssian curve)
     -- @param sigma amount of variance in the random value

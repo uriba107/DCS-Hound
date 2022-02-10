@@ -2,7 +2,7 @@
 -- @module HoundEstimator
 do
     local l_math = math
-    local l_mist = mist
+    -- local l_mist = mist
     local PI_2 = 2*l_math.pi
 
     -- @type HoundDatapoint
@@ -10,75 +10,63 @@ do
     HoundEstimator.__index = HoundEstimator
     HoundEstimator.Kalman = {}
 
+
+    --- Fuzzy logic score
+    function HoundEstimator.accuracyScore(err)
+        local score = 0
+        if type(err) == "number" then
+            score = HoundUtils.Mapping.linear(err,0,100000,1,0,true)
+            score = HoundUtils.Cluster.gaussianKernel(score,0.2)
+        end
+        -- HoundLogger.trace("err in KM: ".. err/1000 .. " | score: " .. score)
+        if type(score) == "number" then
+            return score
+        else
+            return 0
+        end
+    end
+
+
     --- Kalman Filter implementation for position
     -- @local
     -- @return Kalman filter instance
     function HoundEstimator.Kalman.posFilter()
         local Kalman = {}
-        Kalman.K = {
-            x = 0,
-            z = 0,
-            -- minor = 0,
-            -- major = 0,
-            -- theta = 0
-        }
+
         Kalman.P = {
-            x = 1,
-            z = 1,
-            -- major = 1,
-            -- minor = 1,
-            -- theta = 1
+            x = 0.5,
+            z = 0.5
         }
 
         Kalman.estimated = {}
 
-        Kalman.update = function(self,pos,errorData)
-            if type(self.estimated.p) ~= "table" and HoundUtils.Geo.isDcsPoint(pos) then
-                self.estimated.p = l_mist.utils.deepCopy(pos)
+        Kalman.update = function(self,datapoint)
+            if type(self.estimated.p) ~= "table" and HoundUtils.Geo.isDcsPoint(datapoint) then
+                self.estimated.p = {
+                    x = datapoint.x,
+                    z = datapoint.z,
+                    y = datapoint.y
+                }
             end
 
-            -- start with 50km error
-            local errX = 500000
-            local errZ = 500000
-
-            if type(errorData) == "table" and errorData.theta then
-                local sinTheta = l_math.sin(errorData.theta)
-                local cosTheta = l_math.cos(errorData.theta)
-
-                errX = l_math.max(l_math.abs(errorData.minor/2*cosTheta), l_math.abs(-errorData.major/2*sinTheta))
-                errZ = l_math.max(l_math.abs(errorData.minor/2*sinTheta), l_math.abs(errorData.major/2*cosTheta))
-
-            -- if not self.estimated.major then self.estimated.major = errorData.major end
-            -- if not self.estimated.minor then self.estimated.minor = errorData.minor end
-            -- if not self.estimated.theta then self.estimated.theta = errorData.theta end
-
-            -- self.K.major = self.P.major / (self.P.major+(errorData.major/self.estimated.major))
-            -- self.K.minor = self.P.minor / (self.P.minor+(errorData.minor/self.estimated.minor))
-            -- self.K.theta = l_math.abs(HoundUtils.angleDeltaRad(self.estimated.theta,errorData.theta))/PI_2
-            elseif type(errorData) == "number" then
-                errX = errorData
-                errZ = errorData
+            if type(datapoint.err.score) ~= "table" then
+                HoundLogger.trace("Datapoint did not contain score")
+                return self.estimated.p
             end
+            self.P.x = self.P.x + math.sqrt(datapoint.err.score.x)
+            self.P.z = self.P.z + math.sqrt(datapoint.err.score.z)
 
+            local Kx = self.P.x / (self.P.x+(datapoint.err.score.x))
+            local Kz = self.P.z / (self.P.z+(datapoint.err.score.z))
+            -- HoundLogger.trace("score(K): " .. datapoint.err.score.x .. "/" .. datapoint.err.score.z .. " (" .. self.K.x .. "/".. self.K.z  .. ")")
 
-            self.K.x = self.P.x / (self.P.x+(errX/100))
-            self.K.z = self.P.z / (self.P.z+(errZ/100))
-            -- HoundLogger.trace("Pos Kalman: errors " .. (errX/1000) .. "|" .. (errZ/1000) .. " gains: " .. self.K.x.."|".. self.K.z)
-            -- HoundLogger.trace("deltas: " .. (pos.x-self.estimated.p.x) .. " (" .. (self.K.x * (pos.x-self.estimated.p.x)) .. ")|".. (pos.z-self.estimated.p.z).. " ("..(self.K.z * (pos.z-self.estimated.p.z)) .. ")")
+            self.estimated.p.x = self.estimated.p.x + (Kx * (datapoint.x-self.estimated.p.x))
+            self.estimated.p.z = self.estimated.p.z + (Kz * (datapoint.z-self.estimated.p.z))
 
-            self.estimated.p.x = self.estimated.p.x + (self.K.x * (pos.x-self.estimated.p.x))
-            self.estimated.p.z = self.estimated.p.z + (self.K.z * (pos.z-self.estimated.p.z))
-            -- if type(errorData.minor) == "number" and type(errorData.major) == "number" then
-            --     self.estimated.major = self.estimated.major + (self.K.major * (errorData.major-self.estimated.major))
-            --     self.estimated.minor = self.estimated.minor + (self.K.minor * (errorData.minor-self.estimated.minor))
-            --     self.estimated.theta = ( self.estimated.theta + (self.K.theta * HoundUtils.angleDeltaRad(self.estimated.theta,errorData.theta)) + PI_2) % PI_2
-            --     self.P.major = (1-self.K.major)
-            --     self.P.minor = (1-self.K.minor)
-            -- end
+            self.P.x = (1-Kx) * self.P.x
+            self.P.z = (1-Kz) * self.P.z
 
-            self.P.x = (1-self.K.x)
-            self.P.z = (1-self.K.z)
-
+            -- HoundLogger.trace("P: " .. self.P.x .. "|" .. self.P.z .. " || old logic: ".. (1-self.K.x) .. "|" .. (1-self.K.z))
             self.estimated.p = HoundUtils.Geo.setHeight(self.estimated.p)
             return self.estimated.p
         end
@@ -87,15 +75,6 @@ do
             return self.estimated.p
         end
 
-        -- Kalman.getEllipse = function(self)
-        --     return {
-        --         theta = self.estimated.theta,
-        --         minor = l_mist.utils.round(self.estimated.minor),
-        --         major = l_mist.utils.round(self.estimated.major),
-        --         az = l_mist.utils.round(l_math.deg(self.estimated.theta)),
-        --         r  = l_mist.utils.round((self.estimated.major+self.estimated.minor)/4)
-        --     }
-        -- end
         return Kalman
     end
 
@@ -105,8 +84,7 @@ do
     -- @return Kalman filter instance
     function HoundEstimator.Kalman.AzFilter(noise)
         local Kalman = {}
-        Kalman.P = 1
-        Kalman.K = 0
+        Kalman.P = 0.5
         Kalman.noise = noise
 
         Kalman.estimated = nil
@@ -119,11 +97,12 @@ do
             if type(predictedAz) == "number" then
                 predAz = predictedAz
             end
-            self.K = self.P / (self.P+self.noise)
+            self.P = self.P + l_math.sqrt(self.noise) -- add "process noise" in the form of standard diviation
+            local K = self.P / (self.P+self.noise)
             local deltaAz = newAz-predAz
             -- HoundLogger.trace("In values: " .. l_math.deg(newAz) .. " p: " .. l_math.deg(predAz) .. " delta " .. l_math.deg(deltaAz) .. " with Gain: " .. l_math.deg(self.K * deltaAz))
-            self.estimated = ((self.estimated + self.K * (deltaAz)) + PI_2) % PI_2
-            self.P = (1-self.K)
+            self.estimated = ((self.estimated + K * (deltaAz)) + PI_2) % PI_2
+            self.P = (1-K) * self.P
             -- HoundLogger.trace("Out values: " .. l_math.deg(self.estimated) )
         end
 
@@ -153,6 +132,12 @@ do
             El = nil
         }
 
+        Kalman.reset = function(self)
+            self.P = {
+                Az = 1,
+                El = 1
+            }
+        end
 
         Kalman.update = function(self,datapoint)
             if not self.estimated.pos and datapoint:getPos() then

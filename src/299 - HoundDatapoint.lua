@@ -47,6 +47,7 @@ do
         elintDatapoint.posPolygon = {}
         elintDatapoint.posPolygon["2D"],elintDatapoint.posPolygon["3D"],elintDatapoint.posPolygon["EllipseParams"] = elintDatapoint:calcPolygons()
         elintDatapoint.kalman = nil
+        elintDatapoint.processed = false
         if elintDatapoint.platformStatic then
             elintDatapoint.kalman = HoundEstimator.Kalman.AzFilter(elintDatapoint.platformPrecision)
             elintDatapoint:update(elintDatapoint.az)
@@ -69,6 +70,12 @@ do
         return self.estimatedPos
     end
 
+    --- Get datapoint age in seconds
+    -- @return time in seconds
+    function HoundDatapoint.getAge(self)
+        return HoundUtils.absTimeDelta(self.t)
+    end
+
     --- Get 2D polygon
     -- @return table of DCS points
     function HoundDatapoint.get2dPoly(self)
@@ -85,6 +92,15 @@ do
     -- @return table of ellipse parameters
     function HoundDatapoint.getEllipseParams(self)
         return self.posPolygon['EllipseParams']
+    end
+
+    --- Get computed error table
+    -- @return error table
+    function HoundDatapoint.getErrors(self)
+        if type(self.err) ~= "table" then
+            self:calcError()
+        end
+        return self.err
     end
 
     --- Estimate contact position from Datapoint information only
@@ -117,6 +133,11 @@ do
             -- point.y = land.getHeight({x=point.x,y=point.z})+0.5
             table.insert(poly2D,point)
         end
+        HoundUtils.Geo.setHeight(poly2D)
+        -- if self.platformStatic then
+        --     mist.marker.add({pos={poly2D[1],poly2D[3]},markType="line"})
+        -- end
+
         if self.el == nil then return poly2D end
         -- calc 3d Az/El polygon
         local poly3D = {}
@@ -141,6 +162,7 @@ do
                     ellipse.minor = point
                 elseif i == numSteps/2 then
                     ellipse.major = point
+                    ellipse.majorCG = l_mist.utils.get2DDist(self:getPos(),point)
                 elseif i == 3*(numSteps/4) then
                     if HoundUtils.Geo.isDcsPoint(ellipse.minor) then
                         ellipse.minor = l_mist.utils.get2DDist(ellipse.minor,point)
@@ -148,6 +170,7 @@ do
                 elseif i == numSteps then
                     if HoundUtils.Geo.isDcsPoint(ellipse.major) then
                         ellipse.major = l_mist.utils.get2DDist(ellipse.major,point)
+                        ellipse.majorCG = ellipse.majorCG / (ellipse.majorCG + l_mist.utils.get2DDist(self:getPos(),point))
                     end
                 end
             end
@@ -155,12 +178,31 @@ do
         if type(ellipse.minor) ~= "number" or type(ellipse.major) ~= "number" then
             ellipse = {}
         end
-
         -- mist.marker.add({pos=poly3D,markType="freeform"})
         -- self.posPolygon["3D"] = poly3D
         return poly2D,poly3D,ellipse
     end
 
+    --- calculate errors on 3dPoly
+    function HoundDatapoint.calcError(self)
+        if type(self.posPolygon["EllipseParams"]) == "table" and self.posPolygon["EllipseParams"].theta then
+        local ellipse = self.posPolygon['EllipseParams']
+        if ellipse.theta then
+            local sinTheta = l_math.sin(ellipse.theta)
+            local cosTheta = l_math.cos(ellipse.theta)
+            self.err = {
+                x = l_math.max(l_math.abs(ellipse.minor/2*cosTheta), l_math.abs(-ellipse.major/2*sinTheta)),
+                z = l_math.max(l_math.abs(ellipse.minor/2*sinTheta), l_math.abs(ellipse.major/2*cosTheta))
+            }
+            self.err.score = {
+                x = HoundEstimator.accuracyScore(self.err.x),
+                z = HoundEstimator.accuracyScore(self.err.z)
+            }
+        end
+
+
+        end
+    end
     --- Smooth azimuth using Kalman filter
     -- @local
     -- @param self Datapoint instance
@@ -168,7 +210,7 @@ do
     -- @param predictedAz predicted azimuth
     function HoundDatapoint.update(self,newAz,predictedAz)
         if not self.platformPrecision and not self.platformStatic then return end
-        self.kalman:update(newAz,predictedAz)
+        self.kalman:update(newAz)
         self.az = self.kalman:get()
         self.posPolygon["2D"],self.posPolygon["3D"] = self:calcPolygons()
         return self.az

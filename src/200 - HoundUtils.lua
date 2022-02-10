@@ -8,6 +8,8 @@ do
 
 --- HoundUtils decleration
 -- @table HoundUtils
+-- @field Mapping Extrapulation functions
+-- @field Geo Geographic functions
 -- @field TTS TTS Functions
 -- @field Text Text functions
 -- @field Elint Elint functions
@@ -16,6 +18,7 @@ do
 -- @field _MarkId internal markId Counter
 -- @field _HoundId internal HoundId counter
     HoundUtils = {
+        Mapping = {},
         Geo = {},
         TTS = {},
         Text = {},
@@ -415,6 +418,91 @@ do
             typeName = DCS_Unit:getTypeName()
         end
         return setContains(HoundDB.useDecMin,typeName)
+    end
+
+    HoundUtils.Mapping.CURVES = {
+        RETAIL = 0,
+        WINDOWS = 1,
+        HERRA9 = 2,
+        HERRA45 = 3,
+        EXPONENTIAL = 4,
+        MIXED = 5,
+        POWER = 6
+    }
+
+    --- map input to range (Arduino implementation)
+    -- @local
+    -- @param input value
+    -- @param in_min Minimum allowble input value
+    -- @param in_max Maximum allowable input value
+    -- @param out_min Minimum allowable output value
+    -- @param out_max Maximum allowable output value
+    -- @param[opt] constrain Bool if true values will be clipped at range specified
+    -- @return calculated mapped value
+    -- @usage HoundUtils.Mapping.linear(10,0,10,0,100) = 100
+    --  HoundUtils.Mapping.linear(0.5,0,1,0,100) = 50
+    function HoundUtils.Mapping.linear(input, in_min, in_max, out_min, out_max,constrain)
+        local mapValue = (input - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
+        if constrain then
+            if out_min < out_max then
+                return l_math.max(out_min,l_math.min(out_max,mapValue))
+            else
+                return l_math.max(out_max,l_math.min(out_min,mapValue))
+            end
+        end
+        return mapValue
+    end
+
+    --- Map values on a curve
+    -- @param value original input
+    -- @param in_min Minimum input value
+    -- @param in_max Maximum input value
+    -- @param[opt] out_min Minimum output value (0 if not specified)
+    -- @param[opt] out_max Maximum output value (1 if not specified)
+    -- @param[opt] sensitivity requested sensitivity (0-9, default 9 is leased curved)
+    -- @param[opt] curve_type requested curve profile (0-6, 0 is default)
+    function HoundUtils.Mapping.nonLinear(value,in_min,in_max,out_min,out_max,sensitivity,curve_type)
+        -- https://github.com/achilleas-k/fs2open.github.com/blob/joystick_curves/joy_curve_notes/new_curves.md
+
+        if type(sensitivity) ~= "number" then
+            sensitivity = 9
+        end
+        sensitivity=l_math.min(0,l_math.max(9,sensitivity))
+        local relativePos = HoundUtils.Mapping.linear(value,in_min,in_max,0,1)
+        -- retail curve (default)
+        -- f(I) = I*(s/9)+(I^5)*(9-s)/9
+        local mappedIn = relativePos*(sensitivity/9)+(relativePos^5)*(9-sensitivity)/9
+        if type(curve_type) == "number" then
+            if curve_type == 1 then
+                -- windows curve
+                -- f(I) = I^(3-(s/4.5))
+                mappedIn = relativePos^(3-(sensitivity/4.5))
+            elseif curve_type == 2 then
+                -- Herra 9
+                -- f(I) = I^(s/9)*((1-cos(I*π))/2)^((9-s)/9)
+                mappedIn = relativePos^(sensitivity/9)*((1-l_math.cos(relativePos*l_math.pi))/2)^((9-sensitivity)/9)
+            elseif curve_type == 3 then
+                -- Herra 4.5
+                -- f(I) = I^(s/9)*((1-cos(I*π))/2)^((9-s)/4.5)
+                mappedIn = relativePos^(sensitivity/9)*((1-l_math.cos(relativePos*l_math.pi))/2)^((9-sensitivity)/4.5)
+            elseif curve_type == 4 then
+                -- Exponential curve
+                mappedIn = (l_math.exp((10-sensitivity)*relativePos)-1)/(l_math.exp(10-sensitivity)-1)
+            elseif curve_type == 5 then
+                -- Mixed curve
+                -- f(x) = I^(1+((5-s)/9))
+                mappedIn = relativePos^(1+((5-sensitivity)/9))
+            elseif curve_type == 6 then
+                -- Power curve
+                -- f(I) = I*I^((9-s)/9)
+                mappedIn = relativePos*relativePos^((9-sensitivity)/9)
+            end
+        end
+
+        if type(out_min) == "number" and type(out_max) == "number" then
+            return HoundUtils.Mapping.linear(mappedIn,0,1,out_min,out_max)
+        end
+        return mappedIn
     end
 
     --- Geo Function
@@ -1126,7 +1214,7 @@ do
         if Length(outputList) > 0 then
             return outputList
         end
-        return
+        return nil
     end
 
     --- Gift wrapping algorithem
@@ -1283,6 +1371,234 @@ do
 
     --- Clustering algorithems (for future use)
     -- @section Clusters
+
+    --- Get gaussian weight
+    -- @param value input to evaluate
+    -- @param bandwidth Standard diviation for weight calculation
+    function HoundUtils.Cluster.gaussianKernel(value,bandwidth)
+        return (1/(bandwidth*l_math.sqrt(2*l_math.pi))) * l_math.exp(-0.5*((value / bandwidth))^2)
+    end
+
+    --- Calculate running std dev
+    -- @return std calc instance
+    -- https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford's_online_algorithm
+    function HoundUtils.Cluster.stdDev()
+        local instance = {}
+        instance.count = 0
+        instance.mean = 0
+        instance.M2 = 0
+        instance.update = function(self,value)
+            self.count = self.count + 1
+            local delta = value - self.mean
+            self.mean = self.mean + (delta / self.count)
+            local delta2 = value - self.mean
+            self.M2 = self.M2 + (delta * delta2)
+        end
+        instance.get = function (self)
+            if self.count < 2 then return nil end
+            return {
+                mean = self.mean,
+                variance = (self.M2/self.count),
+                sampleVariance = (self.M2/(self.count-1))
+            }
+        end
+        return instance
+    end
+
+    --- find the weighted mean of a points cluster (meanShift)
+    -- @param origPoints DCS points cluster
+    -- @param[opt] initPos externally provided initial mean (DCS Point)
+    -- @param[opt] threashold distance in meters below with solution is considered converged (default 0m)
+    -- @return DCS point of the cluster weighted mean
+
+    function HoundUtils.Cluster.weightedMean(origPoints,initPos,threashold)
+        if type(origPoints) ~= "table" or not HoundUtils.Geo.isDcsPoint(origPoints[1]) then return end
+        local current_mean = initPos
+        if not HoundUtils.Geo.isDcsPoint(current_mean) then
+            current_mean = l_mist.getAvgPoint(origPoints)
+        end
+        if not HoundUtils.Geo.isDcsPoint(current_mean) then return end
+        local points = HoundUtils.Geo.setHeight(l_mist.utils.deepCopy(origPoints))
+        threashold = threashold or 1
+        local last_mean = nil
+        local ittr = 0
+        -- HoundLogger.trace(Length(points))
+        -- local deltaDist = nil
+        repeat
+            last_mean = l_mist.utils.deepCopy(current_mean)
+            local totalDist = 0
+            local totalInvWeight = 0
+            -- local maxDist = 0
+            -- local minDist = 99999
+            -- calculate dists
+            for _,point in pairs(points) do
+                point.dist = l_mist.utils.get2DDist(last_mean,point)
+                totalDist = totalDist + point.dist
+                -- maxDist = l_math.max(maxDist,point.dist)
+                -- minDist = l_math.min(minDist,point.dist)
+                -- CalcVariance:update(point.dist/1000)
+            end
+            -- table.sort(points,function (a,b) return a.dist < b.dist end )
+            for _,point in pairs(points) do
+                point.w = 1/(point.dist/totalDist)
+                totalInvWeight = totalInvWeight + point.w
+            end
+            -- assign weights and move mean
+            -- local shiftVector = {x=0,y=0,z=0}
+            for ptr,point in pairs(points) do
+                -- local weight = HoundUtils.Cluster.gaussianKernel(point.dist/totalDist,0.5)
+                -- local weight = HoundUtils.Mapping.nonLinear(point.dist,minDist,maxDist,1,0,0,HoundUtils.Mapping.CURVES.POWER)
+                local weight = point.w/totalInvWeight
+                -- HoundLogger.trace("d/w: " .. point.dist/1000 .. "/" .. weight .. " MAG " .. l_mist.vec.mag(l_mist.vec.sub(point,last_mean))/1000)
+                current_mean = l_mist.vec.add(current_mean,l_mist.vec.scalar_mult(l_mist.vec.sub(point,current_mean),weight))
+                -- if HOUND.DEBUG and (ptr % 5) == 0 then
+                --     local sub = l_mist.vec.sub(point,current_mean)
+                --     local mul = l_mist.vec.scalar_mult(sub,weight)
+                --     HoundLogger.trace("sub " .. l_mist.utils.tableShow(sub))
+                --     HoundLogger.trace("mul (" .. weight .. ") ".. l_mist.utils.tableShow(mul))
+                -- end
+
+                -- shiftVector = l_mist.vec.add(shiftVector,l_mist.vec.scalar_mult(point,weight))
+
+            end
+            -- current_mean = l_mist.vec.add(last_mean,shiftVector)
+            -- current_mean = shiftVector
+            -- if (ittr % 25) == 0 then
+            --     HoundLogger.trace("=============== " )
+            --     HoundLogger.trace(ittr .. " | Dist: " .. l_mist.utils.get2DDist(last_mean,current_mean))
+            -- end
+            ittr = ittr + 1
+        until l_mist.utils.get2DDist(last_mean,current_mean) < threashold or ittr == 500
+        HoundUtils.Geo.setHeight(current_mean)
+        return l_mist.utils.deepCopy(current_mean)
+    end
+
+    --- K-means++ algorithm
+    -- <a href=https://rosettacode.org/wiki/K-means%2B%2B_clustering#Lua>Source of implementation</a>
+    -- @param data Datapoints
+    -- @param nclusters Number of clusters to create
+    -- @param init Initilization method. Valid values are ["kmeans++","random"]
+    -- @return centers (table)
+    -- @return cluster (table)
+    -- @return J loss value
+    function HoundUtils.Cluster.kmeans(data, nclusters, init)
+        -- K-means Clustering
+        --
+        assert(nclusters > 0)
+        assert(#data > nclusters)
+        assert(init == "kmeans++" or init == "random")
+
+        local diss = function(p, q)
+          -- Computes the dissimilarity between points 'p' and 'q'
+          return math.pow(p.x - q.x, 2) + math.pow(p.z - q.z, 2)
+        end
+
+        -- Initialization
+        --  
+        local centers = {} -- clusters centroids
+        if init == "kmeans++" then
+          local K = 1
+
+          -- take one center c1, chosen uniformly at random from 'data'
+          local i = math.random(1, #data)
+          centers[K] = {x = data[i].x, z = data[i].z}
+          local D = {}
+
+          -- repeat until we have taken 'nclusters' centers
+          while K < nclusters do
+            -- take a new center ck, choosing a point 'i' of 'data' with probability
+            -- D(i)^2 / sum_{i=1}^n D(i)^2
+
+            local sum_D = 0.0
+            for i = 1,#data do
+              local min_d = D[i]
+              local d = diss(data[i], centers[K])
+              if min_d == nil or d < min_d then
+                  min_d = d
+              end
+              D[i] = min_d
+              sum_D = sum_D + min_d
+            end
+
+            sum_D = math.random() * sum_D
+            for i = 1,#data do
+              sum_D = sum_D - D[i]
+
+              if sum_D <= 0 then
+                K = K + 1
+                centers[K] = {x = data[i].x, z = data[i].z}
+                break
+              end
+            end
+          end
+        elseif init == "random" then
+          for k = 1,nclusters do
+            local i = math.random(1, #data)
+            centers[k] = {x = data[i].x, z = data[i].z}
+          end
+        end
+
+        -- Lloyd K-means Clustering
+        --
+        local cluster = {} -- k-partition
+        for i = 1,#data do cluster[i] = 0 end
+
+        local J = function()
+          -- Computes the loss value
+          --
+          local loss = 0.0
+          for i = 1,#data do
+            loss = loss + diss(data[i], centers[cluster[i]])
+          end
+          return loss
+        end
+
+        local updated = false
+        repeat
+          -- update k-partition
+          --
+          local card = {}
+          for k = 1,nclusters do
+            card[k] = 0.0
+          end
+
+          updated = false
+          for i = 1,#data do
+            local min_d, min_k = nil, nil
+
+            for k = 1,nclusters do
+              local d = diss(data[i], centers[k])
+
+              if min_d == nil or d < min_d then
+                min_d, min_k = d, k
+              end
+            end
+
+            if min_k ~= cluster[i] then updated = true end
+
+            cluster[i]  = min_k
+            card[min_k] = card[min_k] + 1.0
+          end
+          -- print("update k-partition: ", J())
+
+          -- update centers
+          --
+          for k = 1,nclusters do
+            centers[k].x = 0.0
+            centers[k].z = 0.0
+          end
+
+          for i = 1,#data do
+            local k = cluster[i]
+
+            centers[k].x = centers[k].x + (data[i].x / card[k])
+            centers[k].z = centers[k].z + (data[i].z / card[k])
+          end
+          -- print("    update centers: ", J())
+        until updated == false
+        HoundUtils.Geo.setHeight(centers)
+        return centers, cluster, J()
+      end
 
     --- convert contacts to centroieds for meanShift
     -- @param contacts list of HoundContact instances to evaluate

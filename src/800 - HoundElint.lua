@@ -877,7 +877,7 @@ do
     -- @return time of next run
     function HoundElint.runCycle(self)
         local timeCycle = StopWatch:Start("Cycle time " .. timer.getAbsTime())
-        local nextRun = timer.getTime() + Gaussian(self.settings.mainInterval,3)
+        local nextRun = timer.getTime() + Gaussian(self.settings.mainInterval,self.settings.mainInterval/10)
         if self.settings:getCoalition() == nil then return nextRun end
         if not self.contacts then return nextRun end
 
@@ -899,7 +899,7 @@ do
             -- end
             -- if timer.getAbsTime() % math.floor(gaussian(self.settings.processInterval,7)) < self.settings.processInterval+5 then
             -- if math.abs(self.settings.processInterval - (timer.getAbsTime() % self.settings.processInterval)) < self.settings.mainInterval*0.75 then
-            if self.timingCounters.long == 2 then
+            if self.timingCounters.long == 5 then
                 local slowLoop = StopWatch:Start("slow_loop " .. timer.getAbsTime())
                 self:populateRadioMenu()
                 self.contacts:UpdateMarkers()
