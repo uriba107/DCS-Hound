@@ -26,7 +26,7 @@ using a Comms Tower placed on a high mountain will provide very accurate baselin
 However, tall mountains are not very common, and clear line-of-site is a thing. 
 
 Helicopters may be of some use, but they can, using existing mission scripts, transport ground units to tall mountains deep inside enemy terirory.
-Same goes to Fast movers like the Viggen or the Su-25T. they can dash into enemy teritory and help you find the radars trying to hide. 
+Same goes to Fast movers like the Viggen, F-16, JF-17 or the Su-25T. they can dash into enemy teritory and help you find the radars trying to hide. 
 
 Remember that the system is using a simulated DF to determin the bearing of the radar from the platform. Low precision systems will cause the calculated position to be with a higher ellipse of uncertenty for radar position. below you can find the list of working units and their sensor precision.
 
@@ -60,7 +60,7 @@ Hound Currently has a 10 degrees angular resolution cutoff point to avoid introd
 | JF-17     | 7.05 / 0.76 | C | KG-600 SPJ |
 | F-16C     | 15.79 / 1.69| D | Block 50 w/HTS |
 
-<sup>*</sup> Data with angular resolution below 10 deg is rejected. That is de
+<sup>*</sup> Data with angular resolution below 10 deg is rejected. That is a roudementry way to drop very bad data.
   
 #### Helicopters
 ---
@@ -269,9 +269,14 @@ the available marker types are:
 Hound does it best to play nice with other Marker generating scripts.
 if MOOSE is loaded Hound will default to use `UTILS.GetMarkID()` to get the next marker ID. 
 if that is not available, and MIST is in version 4.5 and above. Hound will attempt to use MIST's `mist.marker.getNextId()` method.
-if none of those options is available it will use an internal counter to track. 
+if none of those options is available it will use an internal counter to track mark IDs. 
 
-By default the internal counter starts with 1. You can change the initial value to avoid conflicts with other numbering things (which are not MOOSE or MIST) by using the method `HoundUtils.setInitialMarkId()` or by assigning another initial value directly into the variable `HoundUtils._MarkId`. As mentioned earlier, if MOOSE or MIST v4.5 are present their numbering engine will take priority over Hound's internal Numbering.
+if from any reason you still encounter issues you can force Hound to use the internal counter by setting
+```lua
+HOUND.FORCE_MANAGE_MARKERS = true
+```
+
+By default the internal counter starts from 100,000. You can change the initial value to avoid conflicts with other numbering things (which are not MOOSE or MIST) by using the method `HoundUtils.setInitialMarkId()` or by assigning another initial value directly into the variable `HoundUtils._MarkId`. As mentioned earlier, if MOOSE or MIST v4.5 are present their numbering engine will take priority over Hound's internal Numbering.
 It is highly recommended that you use one of them (or `HoundUtils.getMarkId()`) for all other scripted Map markers.
 
 In addition to all that Hound will only delete its own markers (by tracking every Marker ID it's placing)
@@ -604,7 +609,7 @@ If a more extensive change is desired, The recommended way to achieve it is to `
 
  ### Notifier
  ---
- This, as the name suggests is notification only agent. it functions independently of controller or ATIS and will only report pop-up and if enable radar destruction alerts. this is intended to be operated on a di`fferent freqency then the controller (which has the same alerting capacity). This may be used for improving SA on Air-To-Air frequency or on general strike channels.
+ This, as the name suggests is notification only agent. it functions independently of controller or ATIS and will only report pop-up and if enable radar destruction alerts. this is intended to be operated on a different freqency then the controller (which has the same alerting capacity). This may be used for improving SA on Air-To-Air frequency or on general strike channels.
  
  Notifier has a special case when used under "default" sector when radar is inside a geofenced sector. In this scenario it will report using sector name rather then with location. for example:
   * Normal: `Attention All Aircraft! This is HOUND. New threat detected! Straight flush 11 is now Alive, bullseye XXX YY, Grid ZZ 1 4.`<br>
