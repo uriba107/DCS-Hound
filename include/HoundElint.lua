@@ -2640,7 +2640,7 @@ do
                 point = HoundUtils.Geo.setHeight(point)
             end
 
-            if point then
+            if HoundUtils.Geo.isDcsPoint(point) and HoundUtils.Geo.isDcsPoint(self:getPos()) then
                 table.insert(poly3D,point)
                 if i == numSteps/4 then
                     ellipse.minor = point
@@ -5927,4 +5927,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.2.2-develop - Compiled on 2022-02-10 21:03
+-- Hound version 0.2.2-develop - Compiled on 2022-02-10 21:25

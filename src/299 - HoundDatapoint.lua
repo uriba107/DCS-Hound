@@ -107,10 +107,11 @@ do
     -- @local
     function HoundDatapoint.estimatePos(self)
         if self.el == nil or l_math.abs(self.el) <= self.platformPrecision then return end
-        -- local maxSlant = self.platformPos.y/l_math.abs(l_math.sin(self.el))
-        -- local unitVector = HoundUtils.Vector.getUnitVector(self.az,self.el)
-        -- local point =land.getIP(self.platformPos, unitVector , maxSlant+100 )
-        -- self.estimatedPos = point
+        -- local maxSlant = HoundUtils.Geo.EarthLOS(self.platformPos.y)*0.8
+        -- local point = HoundUtils.Geo.getProjectedIP(self.platformPos,self.az,self.el)
+        -- if not HoundUtils.Geo.isDcsPoint(point) then
+        --     point = {x=maxSlant*l_math.cos(self.az) + self.platformPos.x,z=maxSlant*l_math.sin(self.az) + self.platformPos.z}
+        -- end
         return HoundUtils.Geo.getProjectedIP(self.platformPos,self.az,self.el)
     end
 
@@ -156,7 +157,7 @@ do
                 point = HoundUtils.Geo.setHeight(point)
             end
 
-            if point then
+            if HoundUtils.Geo.isDcsPoint(point) and HoundUtils.Geo.isDcsPoint(self:getPos()) then
                 table.insert(poly3D,point)
                 if i == numSteps/4 then
                     ellipse.minor = point
