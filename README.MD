@@ -276,7 +276,7 @@ if from any reason you still encounter issues you can force Hound to use the int
 HOUND.FORCE_MANAGE_MARKERS = true
 ```
 
-By default the internal counter starts from 100,000. You can change the initial value to avoid conflicts with other numbering things (which are not MOOSE or MIST) by using the method `HoundUtils.setInitialMarkId()` or by assigning another initial value directly into the variable `HoundUtils._MarkId`. As mentioned earlier, if MOOSE or MIST v4.5 are present their numbering engine will take priority over Hound's internal Numbering.
+By default the internal counter starts from 100,000. You can change the initial value to avoid conflicts with other numbering things (which are not MOOSE or MIST) by using the method `HoundUtils.setInitialMarkId()`. As mentioned earlier, if MOOSE or MIST v4.5 are present their numbering engine will take priority over Hound's internal Numbering.
 It is highly recommended that you use one of them (or `HoundUtils.getMarkId()`) for all other scripted Map markers.
 
 In addition to all that Hound will only delete its own markers (by tracking every Marker ID it's placing)

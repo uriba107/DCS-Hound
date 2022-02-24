@@ -128,6 +128,8 @@ do
                 -- Remove the C-130s
                 HoundBlue:removePlatform("ELINT North") -- C-130
                 HoundBlue:removePlatform("ELINT South") -- C-130
+                HoundBlue:removePlatform("ELINT Galil") -- C-130
+
             end
         end
         if DcsEvent.id == world.event.S_EVENT_PLAYER_LEAVE_UNIT then
