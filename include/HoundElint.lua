@@ -5996,4 +5996,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.2.2-develop - Compiled on 2022-02-24 21:13
+-- Hound version 0.2.2-develop - Compiled on 2022-02-24 21:19
