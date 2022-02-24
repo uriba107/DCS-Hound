@@ -918,7 +918,10 @@ end
 do
 
     HoundDB.Platform =  {
-        [Object.Category.STATIC] = {['Comms tower M'] = {antenna = {size = 80, factor = 1}}},
+        [Object.Category.STATIC] = {
+            ['Comms tower M'] = {antenna = {size = 80, factor = 1}},
+            ['Cow'] = {antenna = {size = 1000, factor = 1}}
+        },
         [Object.Category.UNIT] = {
             ['MLRS FDDM'] = {antenna = {size = 15, factor = 1}},
             ['SPK-11'] = {antenna = {size = 15, factor = 1}},
@@ -2134,6 +2137,22 @@ do
         return polygon
     end
 
+    function HoundUtils.Polygon.azMinMax(poly,refPos)
+        if not HoundUtils.Geo.isDcsPoint(refPos) or type(poly) ~= "table" or Length(poly) < 2 or l_mist.pointInPolygon(refPos,poly) then
+            return
+        end
+
+        local points = l_mist.utils.deepCopy(poly)
+        for _,pt in pairs(points) do
+            pt.refAz = l_mist.utils.getDir(l_mist.vec.sub(pt,refPos))
+        end
+
+        table.sort(points,function (a,b) return (a.refAz+pi_2) < (b.refAz+pi_2) end)
+        local leftMost = table.remove(points,1)
+        local rightMost = table.remove(points)
+        return HoundUtils.angleDeltaRad(leftMost.refAz,rightMost.refAz),(leftMost),(rightMost)
+    end
+
     function HoundUtils.Cluster.gaussianKernel(value,bandwidth)
         return (1/(bandwidth*l_math.sqrt(2*l_math.pi))) * l_math.exp(-0.5*((value / bandwidth))^2)
     end
@@ -2161,18 +2180,25 @@ do
         return instance
     end
 
-    function HoundUtils.Cluster.weightedMean(origPoints,initPos,threashold)
+    function HoundUtils.Cluster.weightedMean(origPoints,initPos,threashold,maxIttr)
         if type(origPoints) ~= "table" or not HoundUtils.Geo.isDcsPoint(origPoints[1]) then return end
+        local points = HoundUtils.Geo.setHeight(l_mist.utils.deepCopy(origPoints))
+
         local current_mean = initPos
+        if type(current_mean) == "boolean" and current_mean then
+            current_mean = points[l_math.random(Length(points))]
+        end
         if not HoundUtils.Geo.isDcsPoint(current_mean) then
             current_mean = l_mist.getAvgPoint(origPoints)
         end
         if not HoundUtils.Geo.isDcsPoint(current_mean) then return end
-        local points = HoundUtils.Geo.setHeight(l_mist.utils.deepCopy(origPoints))
         threashold = threashold or 1
-        local last_mean = nil
+        maxIttr = maxIttr or 100
+        local last_mean
         local ittr = 0
-        repeat
+        local converged = false
+
+        while not converged do
             last_mean = l_mist.utils.deepCopy(current_mean)
             local totalDist = 0
             local totalInvWeight = 0
@@ -2184,13 +2210,14 @@ do
                 point.w = 1/(point.dist/totalDist)
                 totalInvWeight = totalInvWeight + point.w
             end
-            for ptr,point in pairs(points) do
+
+            for _,point in pairs(points) do
                 local weight = point.w/totalInvWeight
                 current_mean = l_mist.vec.add(current_mean,l_mist.vec.scalar_mult(l_mist.vec.sub(point,current_mean),weight))
-
             end
             ittr = ittr + 1
-        until l_mist.utils.get2DDist(last_mean,current_mean) < threashold or ittr == 500
+            converged = l_mist.utils.get2DDist(last_mean,current_mean) < threashold or ittr == maxIttr
+        end
         HoundUtils.Geo.setHeight(current_mean)
         return l_mist.utils.deepCopy(current_mean)
     end
@@ -2454,15 +2481,20 @@ do
 
         Kalman.estimated = nil
 
-        Kalman.update = function (self,newAz,predictedAz)
+        Kalman.update = function (self,newAz,predictedAz,processNoise)
             if not self.estimated then
                 self.estimated = newAz
             end
             local predAz = self.estimated
+            local noiseP = self.noise
             if type(predictedAz) == "number" then
                 predAz = predictedAz
             end
-            self.P = self.P + l_math.sqrt(self.noise) -- add "process noise" in the form of standard diviation
+            if type(processNoise) == "number" then
+                noiseP = processNoise
+            end
+
+            self.P = self.P + l_math.sqrt(noiseP) -- add "process noise" in the form of standard diviation
             local K = self.P / (self.P+self.noise)
             local deltaAz = newAz-predAz
             self.estimated = ((self.estimated + K * (deltaAz)) + PI_2) % PI_2
@@ -2683,9 +2715,9 @@ do
 
         end
     end
-    function HoundDatapoint.update(self,newAz,predictedAz)
+    function HoundDatapoint.update(self,newAz,predictedAz,processNoise)
         if not self.platformPrecision and not self.platformStatic then return end
-        self.kalman:update(newAz)
+        self.kalman:update(newAz,nil,processNoise)
         self.az = self.kalman:get()
         self.posPolygon["2D"],self.posPolygon["3D"] = self:calcPolygons()
         return self.az
@@ -2811,11 +2843,21 @@ do
             self.state = HOUND.EVENTS.RADAR_ASLEEP
         end
     end
+    function HoundContact:countPlatforms(skipStatic)
+        local count = 0
+        if Length(self._dataPoints) == 0 then return count end
+        for _,platformDataPoints in pairs(self._dataPoints) do
+            if not platformDataPoints[1].staticPlatform or (not skipStatic and platformDataPoints[1].staticPlatform) then
+                count = count + 1
+            end
+        end
+        return count
+    end
 
     function HoundContact:countDatapoints()
         local count = 0
-        if Length(self.dataPoints) == 0 then return count end
-        for _,platformDataPoints in pairs(self.dataPoints) do
+        if Length(self._dataPoints) == 0 then return count end
+        for _,platformDataPoints in pairs(self._dataPoints) do
             count = count + Length(platformDataPoints)
         end
         return count
@@ -2827,32 +2869,44 @@ do
             self._dataPoints[datapoint.platformId] = {}
         end
 
-        local predicted = {}
-        if HoundUtils.Geo.isDcsPoint(self.pos.p) then
-            predicted.az,predicted.el = HoundUtils.Elint.getAzimuth( datapoint.platformPos , self.pos.p, 0.0 )
-        end
-
         if datapoint.platformStatic then
             if Length(self._dataPoints[datapoint.platformId]) == 0 then
                 self._dataPoints[datapoint.platformId] = {datapoint}
+                return
             end
-            self._dataPoints[datapoint.platformId][1]:update(datapoint.az,predicted.az)
+            local predicted = {}
+            if HoundUtils.Geo.isDcsPoint(self.pos.p) then
+                predicted.az,predicted.el = HoundUtils.Elint.getAzimuth( datapoint.platformPos , self.pos.p, 0.0 )
+                if type(self.uncertenty_data) == "table" and self.uncertenty_data.minor and self.uncertenty_data.major and self.uncertenty_data.az then
+                    predicted.err = HoundUtils.Polygon.azMinMax(HoundContact.calculatePoly(self.uncertenty_data,8,self.pos.p),datapoint.platformPos)
+                end
+            end
+            self._dataPoints[datapoint.platformId][1]:update(datapoint.az,predicted.az,predicted.err)
             return
         end
 
         if Length(self._dataPoints[datapoint.platformId]) < 2 then
-            table.insert(self._dataPoints[datapoint.platformId], datapoint)
+            table.insert(self._dataPoints[datapoint.platformId], 1, datapoint)
+            return
         else
-            local LastElementIndex = Length(self._dataPoints[datapoint.platformId])
-            local DeltaT = HoundUtils.absTimeDelta(self._dataPoints[datapoint.platformId][LastElementIndex - 1].t, datapoint.t)
+            local DeltaT = self._dataPoints[datapoint.platformId][2]:getAge() - datapoint:getAge()
             if  DeltaT >= HOUND.DATAPOINTS_INTERVAL then
-                table.insert(self._dataPoints[datapoint.platformId], datapoint)
+                table.insert(self._dataPoints[datapoint.platformId], 1, datapoint)
             else
-                self._dataPoints[datapoint.platformId][LastElementIndex] = datapoint
+                self._dataPoints[datapoint.platformId][1] = datapoint
             end
-            if Length(self._dataPoints[datapoint.platformId]) > HOUND.DATAPOINTS_NUM then
-                table.remove(self._dataPoints[datapoint.platformId], 1)
+        end
+
+        for i=Length(self._dataPoints[datapoint.platformId]),1,-1 do
+            if self._dataPoints[datapoint.platformId][i]:getAge() > HOUND.CONTACT_TIMEOUT then
+                table.remove(self._dataPoints[datapoint.platformId])
+            else
+                i=1
             end
+        end
+        local pointsPerPlatform = l_math.ceil(HOUND.DATAPOINTS_NUM/self:countPlatforms(true))
+        while Length(self._dataPoints[datapoint.platformId]) > pointsPerPlatform do
+            table.remove(self._dataPoints[datapoint.platformId])
         end
     end
 
@@ -3122,6 +3176,39 @@ do
         return idx
     end
 
+    function HoundContact.calculatePoly(uncertenty_data,numPoints,refPos)
+        local polygonPoints = {}
+        if type(uncertenty_data) ~= "table" or not uncertenty_data.major or not uncertenty_data.minor or not uncertenty_data.az then
+            return polygonPoints
+        end
+        if type(numPoints) ~= "number" then
+            numPoints = 8
+        end
+        if not HoundUtils.Geo.isDcsPoint(refPos) then
+            refPos = {x=0,y=0,z=0}
+        end
+        local angleStep = pi_2/numPoints
+        local theta = l_math.rad(uncertenty_data.az)
+
+        for i = 1, numPoints do
+            local pointAngle = i * angleStep
+
+            local point = {}
+            point.x = uncertenty_data.major/2 * l_math.cos(pointAngle)
+            point.z = uncertenty_data.minor/2 * l_math.sin(pointAngle)
+            local x = point.x * l_math.cos(theta) - point.z * l_math.sin(theta)
+            local z = point.x * l_math.sin(theta) + point.z * l_math.cos(theta)
+            point.x = x + refPos.x
+            point.z = z + refPos.z
+
+            table.insert(polygonPoints, point)
+        end
+        HoundUtils.Geo.setHeight(polygonPoints)
+
+        return polygonPoints
+
+    end
+
     function HoundContact:drawAreaMarker(numPoints,debug)
         if numPoints == nil then numPoints = 1 end
         if numPoints ~= 1 and numPoints ~= 4 and numPoints ~=8 and numPoints ~= 16 then
@@ -3148,39 +3235,21 @@ do
             return
         end
 
-        local angleStep = pi_2/numPoints
-        local theta = l_math.rad(self.uncertenty_data.az)
+        local polygonPoints =  HoundContact.calculatePoly(self.uncertenty_data,numPoints,self.pos.p)
 
-        local polygonPoints = {}
-
-        for i = 1, numPoints do
-            local pointAngle = i * angleStep
-
-            local point = {}
-            point.x = self.uncertenty_data.major/2 * l_math.cos(pointAngle)
-            point.z = self.uncertenty_data.minor/2 * l_math.sin(pointAngle)
-            local x = point.x * l_math.cos(theta) - point.z * l_math.sin(theta)
-            local z = point.x * l_math.sin(theta) + point.z * l_math.cos(theta)
-            point.x = x + self.pos.p.x
-            point.z = z + self.pos.p.z
-            point.y = land.getHeight({x=point.x,y=point.z})+0.5
-
-            table.insert(polygonPoints, point)
-        end
-
-        if numPoints == 4 then
+        if Length(polygonPoints) == 4 then
             trigger.action.markupToAll(6,self._platformCoalition,self:getMarkerId(),
                 polygonPoints[1], polygonPoints[2], polygonPoints[3], polygonPoints[4],
                 linecolor,fillcolor,2,true)
 
         end
-        if numPoints == 8 then
+        if Length(polygonPoints) == 8 then
             trigger.action.markupToAll(7,self._platformCoalition,self:getMarkerId(),
                 polygonPoints[1], polygonPoints[2], polygonPoints[3], polygonPoints[4],
                 polygonPoints[5], polygonPoints[6], polygonPoints[7], polygonPoints[8],
                 linecolor,fillcolor,2,true)
         end
-        if numPoints == 16 then
+        if Length(polygonPoints) == 16 then
             trigger.action.markupToAll(7,self._platformCoalition,self:getMarkerId(),
                 polygonPoints[1], polygonPoints[2], polygonPoints[3], polygonPoints[4],
                 polygonPoints[5], polygonPoints[6], polygonPoints[7], polygonPoints[8],
@@ -5927,4 +5996,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.2.2-develop - Compiled on 2022-02-10 21:25
+-- Hound version 0.2.2-develop - Compiled on 2022-02-24 21:13

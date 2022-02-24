@@ -684,7 +684,10 @@ do
     -- @usage ['C-130'] = {antenna = {size = 35, factor = 1}}
 
     HoundDB.Platform =  {
-        [Object.Category.STATIC] = {['Comms tower M'] = {antenna = {size = 80, factor = 1}}},
+        [Object.Category.STATIC] = {
+            ['Comms tower M'] = {antenna = {size = 80, factor = 1}},
+            ['Cow'] = {antenna = {size = 1000, factor = 1}}
+        },
         [Object.Category.UNIT] = {
             -- Ground Units
             ['MLRS FDDM'] = {antenna = {size = 15, factor = 1}},

@@ -89,15 +89,20 @@ do
 
         Kalman.estimated = nil
 
-        Kalman.update = function (self,newAz,predictedAz)
+        Kalman.update = function (self,newAz,predictedAz,processNoise)
             if not self.estimated then
                 self.estimated = newAz
             end
             local predAz = self.estimated
+            local noiseP = self.noise
             if type(predictedAz) == "number" then
                 predAz = predictedAz
             end
-            self.P = self.P + l_math.sqrt(self.noise) -- add "process noise" in the form of standard diviation
+            if type(processNoise) == "number" then
+                noiseP = processNoise
+            end
+
+            self.P = self.P + l_math.sqrt(noiseP) -- add "process noise" in the form of standard diviation
             local K = self.P / (self.P+self.noise)
             local deltaAz = newAz-predAz
             -- HoundLogger.trace("In values: " .. l_math.deg(newAz) .. " p: " .. l_math.deg(predAz) .. " delta " .. l_math.deg(deltaAz) .. " with Gain: " .. l_math.deg(self.K * deltaAz))

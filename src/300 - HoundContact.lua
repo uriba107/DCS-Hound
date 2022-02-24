@@ -147,13 +147,26 @@ do
             self.state = HOUND.EVENTS.RADAR_ASLEEP
         end
     end
+    --- return number of platforms
+    -- @param[opt] skipStatic if true, will ignore static platforms in count
+    -- @return Number of platfoms
+    function HoundContact:countPlatforms(skipStatic)
+        local count = 0
+        if Length(self._dataPoints) == 0 then return count end
+        for _,platformDataPoints in pairs(self._dataPoints) do
+            if not platformDataPoints[1].staticPlatform or (not skipStatic and platformDataPoints[1].staticPlatform) then
+                count = count + 1
+            end
+        end
+        return count
+    end
 
     --- returns number of datapoints in contact
     -- @return Number of datapoint
     function HoundContact:countDatapoints()
         local count = 0
-        if Length(self.dataPoints) == 0 then return count end
-        for _,platformDataPoints in pairs(self.dataPoints) do
+        if Length(self._dataPoints) == 0 then return count end
+        for _,platformDataPoints in pairs(self._dataPoints) do
             count = count + Length(platformDataPoints)
         end
         return count
@@ -167,19 +180,22 @@ do
             self._dataPoints[datapoint.platformId] = {}
         end
 
-        local predicted = {}
-        if HoundUtils.Geo.isDcsPoint(self.pos.p) then
-            predicted.az,predicted.el = HoundUtils.Elint.getAzimuth( datapoint.platformPos , self.pos.p, 0.0 )
-            -- HoundLogger.trace("sample vs prediction - " .. l_math.deg(datapoint.az) .. " | " .. l_math.deg(predicted.az))
-        end
-
         if datapoint.platformStatic then
             -- if Reciver is static, just keep the last Datapoint, as position never changes.
             -- if There is a datapoint, do rolling avarage on AZ to clean errors out.
             if Length(self._dataPoints[datapoint.platformId]) == 0 then
                 self._dataPoints[datapoint.platformId] = {datapoint}
+                return
             end
-            self._dataPoints[datapoint.platformId][1]:update(datapoint.az,predicted.az)
+            local predicted = {}
+            if HoundUtils.Geo.isDcsPoint(self.pos.p) then
+                predicted.az,predicted.el = HoundUtils.Elint.getAzimuth( datapoint.platformPos , self.pos.p, 0.0 )
+                -- HoundLogger.trace("sample vs prediction - " .. l_math.deg(datapoint.az) .. " | " .. l_math.deg(predicted.az))
+                if type(self.uncertenty_data) == "table" and self.uncertenty_data.minor and self.uncertenty_data.major and self.uncertenty_data.az then
+                    predicted.err = HoundUtils.Polygon.azMinMax(HoundContact.calculatePoly(self.uncertenty_data,8,self.pos.p),datapoint.platformPos)
+                end
+            end
+            self._dataPoints[datapoint.platformId][1]:update(datapoint.az,predicted.az,predicted.err)
                 -- datapoint = self._dataPoints[datapoint.platformId][1]
                 -- datapoint.az =  HoundUtils.AzimuthAverage({datapoint.az,self._dataPoints[datapoint.platformId][1].az})
             return
@@ -188,20 +204,30 @@ do
         -- if HoundUtils.Geo.isDcsPoint(datapoint:getPos()) then
         --     datapoint:calcError()
         -- end
-
         if Length(self._dataPoints[datapoint.platformId]) < 2 then
-            table.insert(self._dataPoints[datapoint.platformId], datapoint)
+            table.insert(self._dataPoints[datapoint.platformId], 1, datapoint)
+            return
         else
-            local LastElementIndex = Length(self._dataPoints[datapoint.platformId])
-            local DeltaT = HoundUtils.absTimeDelta(self._dataPoints[datapoint.platformId][LastElementIndex - 1].t, datapoint.t)
+            local DeltaT = self._dataPoints[datapoint.platformId][2]:getAge() - datapoint:getAge()
             if  DeltaT >= HOUND.DATAPOINTS_INTERVAL then
-                table.insert(self._dataPoints[datapoint.platformId], datapoint)
+                table.insert(self._dataPoints[datapoint.platformId], 1, datapoint)
             else
-                self._dataPoints[datapoint.platformId][LastElementIndex] = datapoint
+                self._dataPoints[datapoint.platformId][1] = datapoint
             end
-            if Length(self._dataPoints[datapoint.platformId]) > HOUND.DATAPOINTS_NUM then
-                table.remove(self._dataPoints[datapoint.platformId], 1)
+        end
+
+        -- cleanup
+        for i=Length(self._dataPoints[datapoint.platformId]),1,-1 do
+            if self._dataPoints[datapoint.platformId][i]:getAge() > HOUND.CONTACT_TIMEOUT then
+                table.remove(self._dataPoints[datapoint.platformId])
+            else
+                -- as list is always ordered, if you no longer need to pop the last one out, break out
+                i=1
             end
+        end
+        local pointsPerPlatform = l_math.ceil(HOUND.DATAPOINTS_NUM/self:countPlatforms(true))
+        while Length(self._dataPoints[datapoint.platformId]) > pointsPerPlatform do
+            table.remove(self._dataPoints[datapoint.platformId])
         end
     end
 
@@ -515,50 +541,10 @@ do
             end
         end
 
-        -- if type(ClipPolygon2D) == "table" then
-        --     estimatePositions = HoundUtils.Polygon.filterPointsByPolygon(estimatePositions,ClipPolygon2D)
-        -- end
 
         if Length(estimatePositions) > 2 or (Length(estimatePositions) > 0 and staticPlatformsOnly) then
-            -- local filteredPoints = estimatePositions
-            -- if type(ClipPolygon2D) == "table" and Length(ClipPolygon2D) > 2 then
-            --     -- mist.marker.add({pos=ClipPolygon2D,markType="freeform"})
 
-            --     filteredPoints = HoundUtils.Polygon.filterPointsByPolygon(estimatePositions,ClipPolygon2D)
-            -- end
-
-            -- if HOUND.USE_KALMAN then
-            --     -- local newEstimate = self.calculatePos(estimatePositions,true)
-            --     -- newEstimate.err = self.calculateEllipseErrors(self.calculateEllipse(estimatePositions,true))
-            --     -- self._kalman:update(newEstimate)
-            --     local stdDev = {
-            --         x = HoundUtils.Cluster.stdDev(),
-            --         z = HoundUtils.Cluster.stdDev(),
-            --     }
-            --     for _,pt in ipairs(estimatePositions) do
-            --         if pt.err and pt.err.x and pt.err.z then
-            --             stdDev.x:update(pt.err.x)
-            --             stdDev.z:update(pt.err.z)
-            --         end
-            --     end
-
-            --     local errX = stdDev.x:get()
-            --     local errZ = stdDev.z:get()
-
-            --     if type(errX.variance) == "number" and type(errZ.variance) == "number" then
-            --         HoundLogger.trace("mean: " .. errX.mean .. "/" .. errZ.mean .. " | errVariance: " .. errX.variance .. "/" .. errZ.variance)
-            --         HoundLogger.trace("Dx: " .. l_math.sqrt(errX.variance)/errX.mean .. "Dz: " .. l_math.sqrt(errZ.variance)/errZ.mean)
-            --     end
-
-            -- end
             self.pos.p = HoundUtils.Cluster.weightedMean(estimatePositions)
-
-            -- self.debug = {
-            --     -- mean = HoundUtils.Cluster.weightedMean(estimatePositions),
-            --     -- kmean = HoundUtils.Cluster.kmeans(estimatePositions,1,"kmeans++")[1] or nil,
-            --     normal = self.calculatePos(estimatePositions,true),
-            --     kalman = self._kalman:get()
-            -- }
 
             self.uncertenty_data = self.calculateEllipse(estimatePositions,false,self.pos.p)
 
@@ -607,12 +593,55 @@ do
 
     --- get MarkId from factory
     -- @local
-    -- return mark idx
+    -- @return mark idx
     function HoundContact:getMarkerId()
         if self.markpointID == nil then self.markpointID = {} end
         local idx = HoundUtils.getMarkId()
         table.insert(self.markpointID, idx)
         return idx
+    end
+
+    --- calculate uncertenty Polygon from data
+    -- @local
+    -- @param uncertenty_data uncertenty data table
+    -- @param[opt] numPoints number of datapoints in the polygon
+    -- @param[opt] refPos center of the polygon (DCS point)
+    -- @return Polygon created by inputs
+    function HoundContact.calculatePoly(uncertenty_data,numPoints,refPos)
+        local polygonPoints = {}
+        if type(uncertenty_data) ~= "table" or not uncertenty_data.major or not uncertenty_data.minor or not uncertenty_data.az then
+            return polygonPoints
+        end
+        if type(numPoints) ~= "number" then
+            numPoints = 8
+        end
+        if not HoundUtils.Geo.isDcsPoint(refPos) then
+            refPos = {x=0,y=0,z=0}
+        end
+        local angleStep = pi_2/numPoints
+        local theta = l_math.rad(uncertenty_data.az)
+
+        -- generate ellips points
+        -- for pointAngle = angleStep, pi_2+angleStep/8, angleStep do
+        for i = 1, numPoints do
+            local pointAngle = i * angleStep
+            -- env.info("polygon angle " .. l_math.deg(pointAngle))
+
+            local point = {}
+            point.x = uncertenty_data.major/2 * l_math.cos(pointAngle)
+            point.z = uncertenty_data.minor/2 * l_math.sin(pointAngle)
+            -- rotate and translate into correct position
+            local x = point.x * l_math.cos(theta) - point.z * l_math.sin(theta)
+            local z = point.x * l_math.sin(theta) + point.z * l_math.cos(theta)
+            point.x = x + refPos.x
+            point.z = z + refPos.z
+
+            table.insert(polygonPoints, point)
+        end
+        HoundUtils.Geo.setHeight(polygonPoints)
+
+        return polygonPoints
+
     end
 
     --- Draw marker Polygon
@@ -646,45 +675,21 @@ do
             return
         end
 
-        -- x = minorAxis*cos(theta)
-        -- y = majorAxis*sin(theta)
-        local angleStep = pi_2/numPoints
-        local theta = l_math.rad(self.uncertenty_data.az)
+        local polygonPoints =  HoundContact.calculatePoly(self.uncertenty_data,numPoints,self.pos.p)
 
-        local polygonPoints = {}
-
-        -- generate ellips points
-        -- for pointAngle = angleStep, pi_2+angleStep/8, angleStep do
-        for i = 1, numPoints do
-            local pointAngle = i * angleStep
-            -- env.info("polygon angle " .. l_math.deg(pointAngle))
-
-            local point = {}
-            point.x = self.uncertenty_data.major/2 * l_math.cos(pointAngle)
-            point.z = self.uncertenty_data.minor/2 * l_math.sin(pointAngle)
-            -- rotate and translate into correct position
-            local x = point.x * l_math.cos(theta) - point.z * l_math.sin(theta)
-            local z = point.x * l_math.sin(theta) + point.z * l_math.cos(theta)
-            point.x = x + self.pos.p.x
-            point.z = z + self.pos.p.z
-            point.y = land.getHeight({x=point.x,y=point.z})+0.5
-
-            table.insert(polygonPoints, point)
-        end
-
-        if numPoints == 4 then
+        if Length(polygonPoints) == 4 then
             trigger.action.markupToAll(6,self._platformCoalition,self:getMarkerId(),
                 polygonPoints[1], polygonPoints[2], polygonPoints[3], polygonPoints[4],
                 linecolor,fillcolor,2,true)
 
         end
-        if numPoints == 8 then
+        if Length(polygonPoints) == 8 then
             trigger.action.markupToAll(7,self._platformCoalition,self:getMarkerId(),
                 polygonPoints[1], polygonPoints[2], polygonPoints[3], polygonPoints[4],
                 polygonPoints[5], polygonPoints[6], polygonPoints[7], polygonPoints[8],
                 linecolor,fillcolor,2,true)
         end
-        if numPoints == 16 then
+        if Length(polygonPoints) == 16 then
             -- working
             trigger.action.markupToAll(7,self._platformCoalition,self:getMarkerId(),
                 polygonPoints[1], polygonPoints[2], polygonPoints[3], polygonPoints[4],

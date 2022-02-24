@@ -1,16 +1,19 @@
 #!/bin/bash
 TARGET_PATH="./include"
 TARGET_FILE="${TARGET_PATH}/HoundElint.lua"
-LDOC=$(which ldoc)
-LUACHECK=$(which luacheck)
 
 SED_ARGS="-i"
+LUAROCKS="luarocks"
 $(echo $OSTYPE | grep -q darwin)
 isMacOs=$?
 if [ $isMacOs -eq 0 ]; then
+    export PATH="$PATH:$HOME/.luarocks/bin"
     SED_ARGS="-i .orig -e"
+    LUAROCKS="luarocks --lua-dir=$(brew --prefix)/opt/lua@5.1 --lua-version=5.1"
 fi
 
+LDOC=$(which ldoc) 
+LUACHECK=$(which luacheck)
 # initial function setup
 LINT_SRC=0
 BUILD_DOCS=0
@@ -37,7 +40,7 @@ function check_dependecies {
 
     if [ -z ${LUACHECK} ]; then
         APT="lua-check ${APT}"
-        ROCKS="luachek ${ROCKS}"
+        ROCKS="luacheck ${ROCKS}"
     fi
 
     if [ ! -z "${APT}" ]; then
@@ -47,7 +50,7 @@ function check_dependecies {
       echo ""
       echo "using rocks"
       for rock in ${ROCKS[@]}; do
-        echo "lucarocks install ${rock}"
+        echo "${LUAROCKS} install ${rock}"
       done 
       exit 1
     fi

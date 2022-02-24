@@ -208,10 +208,11 @@ do
     -- @local
     -- @param self Datapoint instance
     -- @param newAz new Az input
-    -- @param predictedAz predicted azimuth
-    function HoundDatapoint.update(self,newAz,predictedAz)
+    -- @param[opt] predictedAz predicted azimuth
+    -- @param[opt] processNoise Process noise
+    function HoundDatapoint.update(self,newAz,predictedAz,processNoise)
         if not self.platformPrecision and not self.platformStatic then return end
-        self.kalman:update(newAz)
+        self.kalman:update(newAz,nil,processNoise)
         self.az = self.kalman:get()
         self.posPolygon["2D"],self.posPolygon["3D"] = self:calcPolygons()
         return self.az

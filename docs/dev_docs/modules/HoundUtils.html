@@ -179,6 +179,14 @@
 	<td class="name" nowrap><a href="#isDMM">isDMM (DCS_Unit)</a></td>
 	<td class="summary">Unit use DMM</td>
 	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Mapping.linear">HoundUtils.Mapping.linear (input, in_min, in_max, out_min, out_max[, constrain])</a></td>
+	<td class="summary">map input to range (Arduino implementation)</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Mapping.nonLinear">HoundUtils.Mapping.nonLinear (value, in_min, in_max[, out_min[, out_max[, sensitivity[, curve_type]]]])</a></td>
+	<td class="summary">Map values on a curve</td>
+	</tr>
 </table>
 <h2><a href="#Geo_Function">Geo Function </a></h2>
 <table class="function_list">
@@ -374,9 +382,31 @@
 	<td class="name" nowrap><a href="#HoundUtils.Polygon.clipOrHull">HoundUtils.Polygon.clipOrHull (polyA, polyB)</a></td>
 	<td class="summary">clip or hull two polygons</td>
 	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Polygon.azMinMax">HoundUtils.Polygon.azMinMax (poly, refPos)</a></td>
+	<td class="summary">find min/max azimuth</td>
+	</tr>
 </table>
 <h2><a href="#Clustering_algorithems__for_future_use_">Clustering algorithems (for future use) </a></h2>
 <table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Cluster.gaussianKernel">HoundUtils.Cluster.gaussianKernel (value, bandwidth)</a></td>
+	<td class="summary">Get gaussian weight</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Cluster.stdDev">HoundUtils.Cluster.stdDev ()</a></td>
+	<td class="summary">Calculate running std dev</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Cluster.weightedMean">HoundUtils.Cluster.weightedMean (origPoints[, initPos[, threashold[, maxIttr]]])</a></td>
+	<td class="summary">find the weighted mean of a points cluster (meanShift)</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Cluster.kmeans">HoundUtils.Cluster.kmeans (data, nclusters, init)</a></td>
+	<td class="summary">K-means++ algorithm
+
+ <a href=https://rosettacode.org/wiki/K-means%2B%2B_clustering#Lua>Source of implementation</a></td>
+	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#contacts">contacts</a></td>
 	<td class="summary">convert contacts to centroieds for meanShift</td>
@@ -425,6 +455,12 @@
 
     <h3>Fields:</h3>
     <ul>
+        <li><span class="parameter">Mapping</span>
+         Extrapulation functions
+        </li>
+        <li><span class="parameter">Geo</span>
+         Geographic functions
+        </li>
         <li><span class="parameter">TTS</span>
          TTS Functions
         </li>
@@ -1028,6 +1064,95 @@
     <ul>
         <li><span class="parameter">DCS_Unit</span>
          DCS Unit or typeName string
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HoundUtils.Mapping.linear"></a>
+    <strong>HoundUtils.Mapping.linear (input, in_min, in_max, out_min, out_max[, constrain])</strong>
+    </dt>
+    <dd>
+    map input to range (Arduino implementation)
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">input</span>
+         value
+        </li>
+        <li><span class="parameter">in_min</span>
+         Minimum allowble input value
+        </li>
+        <li><span class="parameter">in_max</span>
+         Maximum allowable input value
+        </li>
+        <li><span class="parameter">out_min</span>
+         Minimum allowable output value
+        </li>
+        <li><span class="parameter">out_max</span>
+         Maximum allowable output value
+        </li>
+        <li><span class="parameter">constrain</span>
+         Bool if true values will be clipped at range specified
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        calculated mapped value
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">HoundUtils.Mapping.linear(<span class="number">10</span>,<span class="number">0</span>,<span class="number">10</span>,<span class="number">0</span>,<span class="number">100</span>) = <span class="number">100</span>
+
+  HoundUtils.Mapping.linear(<span class="number">0.5</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">100</span>) = <span class="number">50</span></pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "HoundUtils.Mapping.nonLinear"></a>
+    <strong>HoundUtils.Mapping.nonLinear (value, in_min, in_max[, out_min[, out_max[, sensitivity[, curve_type]]]])</strong>
+    </dt>
+    <dd>
+    Map values on a curve
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">value</span>
+         original input
+        </li>
+        <li><span class="parameter">in_min</span>
+         Minimum input value
+        </li>
+        <li><span class="parameter">in_max</span>
+         Maximum input value
+        </li>
+        <li><span class="parameter">out_min</span>
+         Minimum output value (0 if not specified)
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">out_max</span>
+         Maximum output value (1 if not specified)
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">sensitivity</span>
+         requested sensitivity (0-9, default 9 is leased curved)
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">curve_type</span>
+         requested curve profile (0-6, 0 is default)
+         (<em>optional</em>)
         </li>
     </ul>
 
@@ -2094,10 +2219,160 @@
 
 
 </dd>
+    <dt>
+    <a name = "HoundUtils.Polygon.azMinMax"></a>
+    <strong>HoundUtils.Polygon.azMinMax (poly, refPos)</strong>
+    </dt>
+    <dd>
+    find min/max azimuth
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">poly</span>
+         Polygon
+        </li>
+        <li><span class="parameter">refPos</span>
+         DCS point to calculate from
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+        deltaMinMax delta angle between the two extream points</li>
+        <li>
+        minAz (rad)</li>
+        <li>
+        maxAz (rad)</li>
+    </ol>
+
+
+
+
+</dd>
 </dl>
     <h2 class="section-header "><a name="Clustering_algorithems__for_future_use_"></a>Clustering algorithems (for future use) </h2>
 
     <dl class="function">
+    <dt>
+    <a name = "HoundUtils.Cluster.gaussianKernel"></a>
+    <strong>HoundUtils.Cluster.gaussianKernel (value, bandwidth)</strong>
+    </dt>
+    <dd>
+    Get gaussian weight
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">value</span>
+         input to evaluate
+        </li>
+        <li><span class="parameter">bandwidth</span>
+         Standard diviation for weight calculation
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HoundUtils.Cluster.stdDev"></a>
+    <strong>HoundUtils.Cluster.stdDev ()</strong>
+    </dt>
+    <dd>
+    Calculate running std dev
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        std calc instance
+
+ https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford's_online_algorithm
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HoundUtils.Cluster.weightedMean"></a>
+    <strong>HoundUtils.Cluster.weightedMean (origPoints[, initPos[, threashold[, maxIttr]]])</strong>
+    </dt>
+    <dd>
+    find the weighted mean of a points cluster (meanShift)
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">origPoints</span>
+         DCS points cluster
+        </li>
+        <li><span class="parameter">initPos</span>
+         externally provided initial mean (DCS Point)
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">threashold</span>
+         distance in meters below with solution is considered converged (default 1m)
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">maxIttr</span>
+         Max itterations from converging solution (default 100)
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        DCS point of the cluster weighted mean
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HoundUtils.Cluster.kmeans"></a>
+    <strong>HoundUtils.Cluster.kmeans (data, nclusters, init)</strong>
+    </dt>
+    <dd>
+    K-means++ algorithm
+
+ <a href=https://rosettacode.org/wiki/K-means%2B%2B_clustering#Lua>Source of implementation</a>
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">data</span>
+         Datapoints
+        </li>
+        <li><span class="parameter">nclusters</span>
+         Number of clusters to create
+        </li>
+        <li><span class="parameter">init</span>
+         Initilization method. Valid values are ["kmeans++","random"]
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+        centers (table)</li>
+        <li>
+        cluster (table)</li>
+        <li>
+        J loss value</li>
+    </ol>
+
+
+
+
+</dd>
     <dt>
     <a name = "contacts"></a>
     <strong>contacts</strong>
@@ -2281,7 +2556,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2022-01-18 13:13:42 </i>
+<i style="float:right;">Last updated 2022-02-24 23:17:04 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

@@ -391,7 +391,6 @@ do
                         callsign = callsign .. " " .. num
                     end
                 end
-                HoundLogger.trace("callsign " .. type(callsign) .. " " .. tostring(callsign) )
                 return string.upper(callsign:match( "^%s*(.-)%s*$" ))
             end
         end
@@ -1369,6 +1368,27 @@ do
         return polygon
     end
 
+    --- find min/max azimuth
+    -- @param poly Polygon
+    -- @param refPos DCS point to calculate from
+    -- @return deltaMinMax delta angle between the two extream points
+    -- @return minAz (rad)
+    -- @return maxAz (rad)
+    function HoundUtils.Polygon.azMinMax(poly,refPos)
+        if not HoundUtils.Geo.isDcsPoint(refPos) or type(poly) ~= "table" or Length(poly) < 2 or l_mist.pointInPolygon(refPos,poly) then
+            return
+        end
+
+        local points = l_mist.utils.deepCopy(poly)
+        for _,pt in pairs(points) do
+            pt.refAz = l_mist.utils.getDir(l_mist.vec.sub(pt,refPos))
+        end
+
+        table.sort(points,function (a,b) return (a.refAz+pi_2) < (b.refAz+pi_2) end)
+        local leftMost = table.remove(points,1)
+        local rightMost = table.remove(points)
+        return HoundUtils.angleDeltaRad(leftMost.refAz,rightMost.refAz),(leftMost),(rightMost)
+    end
     --- Clustering algorithems (for future use)
     -- @section Clusters
 
@@ -1408,67 +1428,50 @@ do
     --- find the weighted mean of a points cluster (meanShift)
     -- @param origPoints DCS points cluster
     -- @param[opt] initPos externally provided initial mean (DCS Point)
-    -- @param[opt] threashold distance in meters below with solution is considered converged (default 0m)
+    -- @param[opt] threashold distance in meters below with solution is considered converged (default 1m)
+    -- @param[opt] maxIttr Max itterations from converging solution (default 100)
     -- @return DCS point of the cluster weighted mean
 
-    function HoundUtils.Cluster.weightedMean(origPoints,initPos,threashold)
+    function HoundUtils.Cluster.weightedMean(origPoints,initPos,threashold,maxIttr)
         if type(origPoints) ~= "table" or not HoundUtils.Geo.isDcsPoint(origPoints[1]) then return end
+        local points = HoundUtils.Geo.setHeight(l_mist.utils.deepCopy(origPoints))
+
         local current_mean = initPos
+        if type(current_mean) == "boolean" and current_mean then
+            current_mean = points[l_math.random(Length(points))]
+        end
         if not HoundUtils.Geo.isDcsPoint(current_mean) then
             current_mean = l_mist.getAvgPoint(origPoints)
         end
         if not HoundUtils.Geo.isDcsPoint(current_mean) then return end
-        local points = HoundUtils.Geo.setHeight(l_mist.utils.deepCopy(origPoints))
         threashold = threashold or 1
-        local last_mean = nil
+        maxIttr = maxIttr or 100
+        local last_mean
         local ittr = 0
-        -- HoundLogger.trace(Length(points))
-        -- local deltaDist = nil
-        repeat
+        local converged = false
+
+        while not converged do
             last_mean = l_mist.utils.deepCopy(current_mean)
             local totalDist = 0
             local totalInvWeight = 0
-            -- local maxDist = 0
-            -- local minDist = 99999
             -- calculate dists
             for _,point in pairs(points) do
                 point.dist = l_mist.utils.get2DDist(last_mean,point)
                 totalDist = totalDist + point.dist
-                -- maxDist = l_math.max(maxDist,point.dist)
-                -- minDist = l_math.min(minDist,point.dist)
-                -- CalcVariance:update(point.dist/1000)
             end
             -- table.sort(points,function (a,b) return a.dist < b.dist end )
             for _,point in pairs(points) do
                 point.w = 1/(point.dist/totalDist)
                 totalInvWeight = totalInvWeight + point.w
             end
-            -- assign weights and move mean
-            -- local shiftVector = {x=0,y=0,z=0}
-            for ptr,point in pairs(points) do
-                -- local weight = HoundUtils.Cluster.gaussianKernel(point.dist/totalDist,0.5)
-                -- local weight = HoundUtils.Mapping.nonLinear(point.dist,minDist,maxDist,1,0,0,HoundUtils.Mapping.CURVES.POWER)
+
+            for _,point in pairs(points) do
                 local weight = point.w/totalInvWeight
-                -- HoundLogger.trace("d/w: " .. point.dist/1000 .. "/" .. weight .. " MAG " .. l_mist.vec.mag(l_mist.vec.sub(point,last_mean))/1000)
                 current_mean = l_mist.vec.add(current_mean,l_mist.vec.scalar_mult(l_mist.vec.sub(point,current_mean),weight))
-                -- if HOUND.DEBUG and (ptr % 5) == 0 then
-                --     local sub = l_mist.vec.sub(point,current_mean)
-                --     local mul = l_mist.vec.scalar_mult(sub,weight)
-                --     HoundLogger.trace("sub " .. l_mist.utils.tableShow(sub))
-                --     HoundLogger.trace("mul (" .. weight .. ") ".. l_mist.utils.tableShow(mul))
-                -- end
-
-                -- shiftVector = l_mist.vec.add(shiftVector,l_mist.vec.scalar_mult(point,weight))
-
             end
-            -- current_mean = l_mist.vec.add(last_mean,shiftVector)
-            -- current_mean = shiftVector
-            -- if (ittr % 25) == 0 then
-            --     HoundLogger.trace("=============== " )
-            --     HoundLogger.trace(ittr .. " | Dist: " .. l_mist.utils.get2DDist(last_mean,current_mean))
-            -- end
             ittr = ittr + 1
-        until l_mist.utils.get2DDist(last_mean,current_mean) < threashold or ittr == 500
+            converged = l_mist.utils.get2DDist(last_mean,current_mean) < threashold or ittr == maxIttr
+        end
         HoundUtils.Geo.setHeight(current_mean)
         return l_mist.utils.deepCopy(current_mean)
     end
@@ -1494,7 +1497,7 @@ do
         end
 
         -- Initialization
-        --  
+
         local centers = {} -- clusters centroids
         if init == "kmeans++" then
           local K = 1
