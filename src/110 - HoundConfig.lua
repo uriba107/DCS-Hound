@@ -23,9 +23,11 @@ do
         end
 
         local instance = {}
-        instance.mainInterval = 5
-        instance.processInterval = 60
-        instance.barkInterval = 120
+        instance.intervals = {
+            scan = 5,
+            process = 30,
+            display = 120
+        }
         instance.preferences = {
             useMarkers = true,
             markerType = HOUND.MARKER.DIAMOND,
@@ -70,6 +72,19 @@ do
             end
             if setContainsValue(coalition.side,coalitionId) then
                 self.coalitionId = coalitionId
+                return true
+            end
+            return false
+        end
+
+        --- set intervals
+        -- @within HoundConfig.instance
+        -- @param self config instance
+        -- @param intervalName interval to update
+        -- @param setVal set value (in seconds)
+        instance.setInterval = function (self,intervalName,setVal)
+            if setContains(self.intervals,intervalName) and type(setVal) == "number" then
+                self.intervals[intervalName] = setVal
                 return true
             end
             return false

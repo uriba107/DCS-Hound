@@ -30,8 +30,8 @@ do
         elint.coalitionId = nil
 
         elint.timingCounters = {
-            short = false,
-            long = 0
+            -- short = false,
+            -- long = 0
         }
 
         if platformName ~= nil then
@@ -804,6 +804,16 @@ do
         return false
     end
 
+    --- set intervals
+    -- @param setIntervalName interval name to change (scan,process,display)
+    -- @param setValue interval in seconds to set.
+    -- @return Bool True if changed
+    function HoundElint:setTimerInterval(setIntervalName,setValue)
+        if self.settings and setContains(self.settings.intervals,string.lower(setIntervalName)) then
+            return self.settings:setInterval(setIntervalName,setValue)
+        end
+        return false
+    end
     --- get current BDA setting state
     -- @return Bool current state
     function HoundElint:getBDA()
@@ -876,8 +886,9 @@ do
     -- @local
     -- @return time of next run
     function HoundElint.runCycle(self)
+        local runTime = timer.getAbsTime()
         local timeCycle = StopWatch:Start("Cycle time " .. timer.getAbsTime())
-        local nextRun = timer.getTime() + Gaussian(self.settings.mainInterval,self.settings.mainInterval/10)
+        local nextRun = timer.getTime() + Gaussian(self.settings.intervals.scan,self.settings.intervals.scan/10)
         if self.settings:getCoalition() == nil then return nextRun end
         if not self.contacts then return nextRun end
 
@@ -885,26 +896,40 @@ do
         self.contacts:Sniff()
 
         if self.contacts:countContacts() > 0 then
-            self.timingCounters.short = not self.timingCounters.short
-            -- if timer.getAbsTime() % math.floor(gaussian(self.settings.processInterval,3)) < self.settings.mainInterval+5 then
-            if self.timingCounters.short then
-                local fastloop = StopWatch:Start("fastloop " .. timer.getAbsTime())
+            -- self.timingCounters.short = not self.timingCounters.short
+            -- if timer.getAbsTime() % math.floor(gaussian(self.settings.intervals.process,3)) < self.settings.intervals.scan+5 then
+            local doProcess = true
+            local doMarkers = false
+            if self.timingCounters.lastProcess then
+                doProcess = (((runTime-self.timingCounters.lastProcess)/self.settings.intervals.process) > 0.90)
+            end
+            if self.timingCounters.lastMarkers then
+                doMarkers = (((runTime-self.timingCounters.lastMarkers)/self.settings.intervals.display) > 0.96)
+            end
+
+            if doProcess then
+                local fastloop = StopWatch:Start("contact processing " .. timer.getAbsTime())
                 self.contacts:Process()
-                self.timingCounters.long = self.timingCounters.long + 1
+                -- self.timingCounters.long = self.timingCounters.long + 1
+                self:updateSectorMembership()
                 fastloop:Stop()
-                for sectorName,_ in pairs(self.sectors) do
-                    HoundLogger.trace(sectorName .. " has " .. self.contacts:countContacts(sectorName).. " Contacts")
+                -- for sectorName,_ in pairs(self.sectors) do
+                --     HoundLogger.trace(sectorName .. " has " .. self.contacts:countContacts(sectorName).. " Contacts")
+                -- end
+                self.timingCounters.lastProcess = runTime
+                if not self.timingCounters.lastMarkers then
+                    self.timingCounters.lastMarkers = runTime
                 end
             end
             -- end
-            -- if timer.getAbsTime() % math.floor(gaussian(self.settings.processInterval,7)) < self.settings.processInterval+5 then
-            -- if math.abs(self.settings.processInterval - (timer.getAbsTime() % self.settings.processInterval)) < self.settings.mainInterval*0.75 then
-            if self.timingCounters.long == 5 then
-                local slowLoop = StopWatch:Start("slow_loop " .. timer.getAbsTime())
+            -- if timer.getAbsTime() % math.floor(gaussian(self.settings.intervals.process,7)) < self.settings.intervals.process+5 then
+            -- if math.abs(self.settings.intervals.process - (timer.getAbsTime() % self.settings.intervals.process)) < self.settings.intervals.scan*0.75 then
+            if doMarkers then
+                local slowLoop = StopWatch:Start("marker update " .. timer.getAbsTime())
                 self:populateRadioMenu()
                 self.contacts:UpdateMarkers()
-                self:updateSectorMembership()
-                self.timingCounters.long = 0
+                self.timingCounters.lastMarkers = runTime
+                -- self.timingCounters.long = 0
                 slowLoop:Stop()
             end
         end
@@ -957,7 +982,7 @@ do
         end
         self:systemOff(false)
 
-        self.elintTaskID = timer.scheduleFunction(self.runCycle, self, timer.getTime() + self.settings.mainInterval)
+        self.elintTaskID = timer.scheduleFunction(self.runCycle, self, timer.getTime() + self.settings.intervals.scan)
         if notify == nil or notify then
             trigger.action.outTextForCoalition(self.settings:getCoalition(),
                                            "Hound ELINT system is now Operating", 10)

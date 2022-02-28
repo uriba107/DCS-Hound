@@ -20,6 +20,7 @@ do
     HoundUtils = {
         Mapping = {},
         Geo = {},
+        Marker = {},
         TTS = {},
         Text = {},
         Elint = {},
@@ -29,7 +30,6 @@ do
         Cluster={},
         Sort = {},
         ReportId = nil,
-        _MarkId = 99999,
         _HoundId = 0
     }
     HoundUtils.__index = HoundUtils
@@ -45,37 +45,22 @@ do
         return HoundUtils._HoundId
     end
 
-    --- Get next Markpoint Id
+    --- Get next Markpoint Id (Depricated)
+    -- @see HoundUtils.Marker.getId
     -- @local
     -- return the next available MarkId
     -- @return Next MarkId
     function HoundUtils.getMarkId()
-        if not HOUND.FORCE_MANAGE_MARKERS and UTILS and UTILS.GetMarkID then
-            HoundUtils._MarkId = UTILS.GetMarkID()
-        elseif not HOUND.FORCE_MANAGE_MARKERS and HOUND.MIST_VERSION >= 4.5 then
-            HoundUtils._MarkId = l_mist.marker.getNextId()
-        else
-            HoundUtils._MarkId = HoundUtils._MarkId + 1
-        end
-
-        return HoundUtils._MarkId
+        return HoundUtils.Marker.getId()
     end
 
-    --- Set New initial marker Id
+    --- Set New initial marker Id (DEPRICATED)
+    -- @see HoundUtils.Marker.setInitialId
     -- @local
     -- @param startId Number to start counting from
     -- @return Bool True if initial ID was updated
     function HoundUtils.setInitialMarkId(startId)
-        if type(startId) ~= "number" then
-            HoundLogger.error("Failed to set Initial marker Id. Value provided was not a number")
-            return false
-        end
-        if HoundUtils._MarkID ~= 0 then
-            HoundLogger.error("Initial MarkId not updated because markers have already been drawn")
-            return false
-        end
-        HoundUtils._MarkId = startId
-        return true
+        return HoundUtils.Marker.setInitialId(startId)
     end
 
     --[[
@@ -436,13 +421,13 @@ do
     -- @param in_max Maximum allowable input value
     -- @param out_min Minimum allowable output value
     -- @param out_max Maximum allowable output value
-    -- @param[opt] constrain Bool if true values will be clipped at range specified
+    -- @param[opt] clamp Bool if true values will be clipped at range specified
     -- @return calculated mapped value
     -- @usage HoundUtils.Mapping.linear(10,0,10,0,100) = 100
     --  HoundUtils.Mapping.linear(0.5,0,1,0,100) = 50
-    function HoundUtils.Mapping.linear(input, in_min, in_max, out_min, out_max,constrain)
+    function HoundUtils.Mapping.linear(input, in_min, in_max, out_min, out_max,clamp)
         local mapValue = (input - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
-        if constrain then
+        if clamp then
             if out_min < out_max then
                 return l_math.max(out_min,l_math.min(out_max,mapValue))
             else
@@ -581,6 +566,230 @@ do
             end
         end
         return point
+    end
+
+    --- Marker Functions
+    -- @section Markers
+    HoundUtils.Marker._MarkId = 99999
+    HoundUtils.Marker.Type = {
+        NONE = 0,
+        POINT = 1,
+        CIRCLE = 2,
+        FREEFORM = 3
+    }
+
+    --- Get next Markpoint Id
+    -- @local
+    -- return the next available MarkId
+    -- @return Next MarkId
+    function HoundUtils.Marker.getId()
+        if not HOUND.FORCE_MANAGE_MARKERS and UTILS and UTILS.GetMarkID then
+            HoundUtils.Marker._MarkId = UTILS.GetMarkID()
+        elseif not HOUND.FORCE_MANAGE_MARKERS and HOUND.MIST_VERSION >= 4.5 then
+            HoundUtils.Marker._MarkId = l_mist.marker.getNextId()
+        else
+            HoundUtils.Marker._MarkId = HoundUtils.Marker._MarkId + 1
+        end
+
+        return HoundUtils.Marker._MarkId
+    end
+
+    --- Set New initial marker Id
+    -- @local
+    -- @param startId Number to start counting from
+    -- @return Bool True if initial ID was updated
+    function HoundUtils.Marker.setInitialId(startId)
+        if type(startId) ~= "number" then
+            HoundLogger.error("Failed to set Initial marker Id. Value provided was not a number")
+            return false
+        end
+        if HoundUtils.Marker._MarkID ~= 0 then
+            HoundLogger.error("Initial MarkId not updated because markers have already been drawn")
+            return false
+        end
+        HoundUtils.Marker._MarkId = startId
+        return true
+    end
+
+    --- create Marker entity
+    -- @local
+    -- @function HoundUtils.Marker.create
+    -- @param[opt] args parameters of markpoint
+    -- @return Hound Marker Instance
+
+    function HoundUtils.Marker.create(args)
+        local instance = {}
+        instance.id = -1
+        instance.type = HoundUtils.Marker.Type.NONE
+
+        --- update markpoint position
+        -- @within HoundUtils.Marker.instance
+        -- @param self Hound Marker instance
+        -- @param pos position of marker (only single point is supported)
+        instance.setPos = function(self,pos)
+            if self.type == HoundUtils.Marker.Type.FREEFORM then return end
+            if HoundUtils.Geo.isDcsPoint(pos) then
+                trigger.action.setMarkupPositionStart(self.id,pos)
+            end
+        end
+
+        --- update markpoint text
+        -- @within HoundUtils.Marker.instance
+        -- @param self Hound Marker instance
+        -- @param text new text for marker
+        instance.setText = function(self,text)
+            if type(text) == "string" and self.id > 0 then
+                trigger.action.setMarkupText(self.id,text)
+            end
+        end
+
+        --- update markpoint radius
+        -- @within HoundUtils.Marker.instance
+        -- @param self Hound Marker instance
+        -- @param radius new radius of markpoint (only circle type marks are supported)
+        instance.setRadius = function(self,radius)
+            if type(radius) == "number" and self.type == HoundUtils.Marker.Type.CIRCLE and self.id > 0 then
+                trigger.action.setMarkupRadius(self.id,radius)
+            end
+        end
+
+        --- update markpoint fill color
+        -- @within HoundUtils.Marker.instance
+        -- @param self Hound Marker instance
+        -- @param color new fill color of marker
+        instance.setFillColor = function(self,color)
+            if self.id > 0 and self.type ~= HoundUtils.Marker.Type.FREEFORM and type(color) == "table" then
+                trigger.action.setMarkupColorFill(self.id,color)
+            end
+        end
+
+        --- update markpoint line color
+        -- @within HoundUtils.Marker.instance
+        -- @param self Hound Marker instance
+        -- @param color new fill color of marker
+        instance.setLineColor = function(self,color)
+            if self.id > 0 and self.type ~= HoundUtils.Marker.Type.FREEFORM and type(color) == "table" then
+                trigger.action.setMarkupColor(self.id,color)
+            end
+        end
+
+        --- remove markpoint
+        -- @within HoundUtils.Marker.instance
+        -- @param self Hound Marker instance
+        instance.remove = function(self)
+            if type(self.id) == "number" then
+                trigger.action.removeMark(self.id)
+                self.id = -1
+                self.type = HoundUtils.Marker.Type.NONE
+            end
+        end
+
+        --- create new point (internal)
+        -- @within HoundUtils.Marker.instance
+        -- @local
+        -- @param self Hound Marker instance
+        -- @param args full args array
+        instance._new = function(self,args)
+            if type(args) ~= "table" then return false end
+            local coalition = args.coalition
+            local pos = args.pos
+            local text = args.text
+            local lineColor = args.lineColor
+            local fillColor = args.fillColor
+            -- if type(fillColor) ~= "table" or type(lineColor) ~= "table" or type(text) ~= "string" then return false end
+            self.id = HoundUtils.Marker.getId()
+
+            if HoundUtils.Geo.isDcsPoint(pos) then
+                self.type = HoundUtils.Marker.Type.POINT
+                trigger.action.markToCoalition(self.id, text, pos, coalition,true)
+                return true
+            end
+
+            if Length(pos) == 2 and HoundUtils.Geo.isDcsPoint(pos.p) and type(pos.r) == "number" then
+                self.type = HoundUtils.Marker.Type.CIRCLE
+                trigger.action.circleToAll(coalition,self.id, pos.p,pos.r,lineColor,fillColor,2,true)
+                return true
+            end
+
+            if Length(pos) == 4 then
+                self.type = HoundUtils.Marker.Type.FREEFORM
+                trigger.action.markupToAll(6,coalition,self.id,
+                    pos[1], pos[2], pos[3], pos[4],
+                    lineColor,fillColor,2,true)
+
+            end
+            if Length(pos) == 8 then
+                self.type = HoundUtils.Marker.Type.FREEFORM
+                trigger.action.markupToAll(7,coalition,self.id,
+                    pos[1], pos[2], pos[3], pos[4],
+                    pos[5], pos[6], pos[7], pos[8],
+                    lineColor,fillColor,2,true)
+            end
+            if Length(pos) == 16 then
+                self.type = HoundUtils.Marker.Type.FREEFORM
+                trigger.action.markupToAll(7,coalition,self.id,
+                    pos[1], pos[2], pos[3], pos[4],
+                    pos[5], pos[6], pos[7], pos[8],
+                    pos[9], pos[10], pos[11], pos[12],
+                    pos[13], pos[14], pos[15], pos[16],
+                    lineColor,fillColor,2,true)
+            end
+        end
+
+        --- replace markpoint (internal)
+        -- @within HoundUtils.Marker.instance
+        -- @local
+        -- @param self Hound Marker instance
+        -- @param args full args array
+        instance._replace = function(self,args)
+            self:remove()
+            return self:_new(args)
+        end
+
+        --- update markpoint
+        -- @within HoundUtils.Marker.instance
+        -- @param self Hound Marker instance
+        -- @param args full args array
+        instance.update = function(self,args)
+            if type(args.coalition) ~= "number" then return false end
+            if self.id < 0 then
+                return self:_new(args)
+            end
+            -- if self.id > 0 and self.type == HoundUtils.Marker.Type.FREEFORM then
+            if self.id > 0 and self.type ~= HoundUtils.Marker.Type.NONE then
+                    return self:_replace(args)
+            end
+            -- Update still does not work in MP for DC 2.7 leaving this for the future :(
+            -- if self.id > 0 then
+            --     if args.pos then
+            --         local pos = args.pos
+            --         if HoundUtils.Geo.isDcsPoint(pos) then
+            --             self:setPos(pos)
+            --         end
+            --         if Length(pos) == 2 and type(pos.r) == "number" and HoundUtils.Geo.isDcsPoint(pos.p) then
+            --             self:setPos(pos.p)
+            --             self:setRadius(pos.r)
+            --         end
+            --         if type(pos) == "table" and Length(pos) > 2 and HoundUtils.Geo.isDcsPoint(pos[1]) then
+            --             return self:_replace(args)
+            --         end
+            --     end
+            --     if args.text and type(args.text) == "string" then
+            --         self:setText(args.text)
+            --     end
+            --     if type(args.fillColor) == "table" then
+            --         self:setFillColor(args.fillColor)
+            --     end
+            --     if type(args.lineColor) == "table" then
+            --         self:setLineColor(args.lineColor)
+            --     end
+            -- end
+        end
+        -- actual logic for the class
+        if type(args) == "table" then
+            instance.update(instance,args)
+        end
+        return instance
     end
 
     --- TTS Functions

@@ -63,7 +63,11 @@ do
         elintcontact.maxWeaponsRange = HoundUtils.getSamMaxRange(DCS_Unit)
         elintcontact.detectionRange = HoundUtils.getRadarDetectionRange(DCS_Unit)
         elintcontact._dataPoints = {}
-        elintcontact._markpointID = nil
+        -- elintcontact._markpointID = nil
+        elintcontact._markpoints = {
+            p = HoundUtils.Marker.create(),
+            u = HoundUtils.Marker.create()
+        }
         elintcontact._platformCoalition = HoundCoalition
         elintcontact.primarySector = "default"
         elintcontact.threatSectors = {
@@ -380,45 +384,6 @@ do
         return pos
     end
 
-    -- function HoundContact:updateKalman(estimatedPositions)
-    --     if type(estimatedPositions) ~= "table" or Length(estimatedPositions) == 0 then return end
-    --     local weightCalcTimer = StopWatch:Start("calculate weights")
-
-    --     local totalErr = {
-    --         x = 0,
-    --         z = 0,
-    --         xInv = 0,
-    --         zInv = 0}
-
-    --     -- First run error calc
-    --     for _,datapoint in pairs(estimatedPositions) do
-    --         totalErr.x = totalErr.x + datapoint.err.x
-    --         totalErr.z = totalErr.z + datapoint.err.z
-    --     end
-    --     if totalErr.x == 0 or totalErr.z == 0 then return end
-
-    --     -- second run calculate wieght
-    --     for _,datapoint in pairs(estimatedPositions) do
-    --         datapoint.err.weight = {
-    --             FwdX = (datapoint.err.x/totalErr.x),
-    --             FwdZ = (datapoint.err.z/totalErr.z),
-    --         }
-
-    --         totalErr.xInv = totalErr.xInv + (1/datapoint.err.weight.FwdX)
-    --         totalErr.zInv = totalErr.zInv + (1/datapoint.err.weight.FwdZ)
-    --     end
-    --     -- 3rd run - calc inverted weight
-    --     for _,datapoint in pairs(estimatedPositions) do
-    --         datapoint.err.weight.x = ((1/datapoint.err.weight.FwdX)/totalErr.xInv)
-    --         datapoint.err.weight.z = ((1/datapoint.err.weight.FwdZ)/totalErr.zInv)
-    --     end
-    --     weightCalcTimer:Stop()
-    --     --seperate update run so everything else can be commented out.
-    --     for _,datapoint in pairs(estimatedPositions) do
-    --         self._kalman:update(datapoint)
-    --     end
-    -- end
-
     --- calculate additional position data
     -- @param pos basic position table to be filled with extended data
     -- @return pos input object, but with more data
@@ -474,6 +439,11 @@ do
                 return
             end
         end
+
+        if self:isTimedout() then
+            return self.state
+        end
+
         local newContact = (self.state == HOUND.EVENTS.RADAR_NEW)
         local mobileDataPoints = {}
         local staticDataPoints = {}
@@ -481,6 +451,7 @@ do
         local platforms = {}
         local staticPlatformsOnly = true
         local ClipPolygon2D = nil
+
         for _,platformDatapoints in pairs(self._dataPoints) do
             if Length(platformDatapoints) > 0 then
                 for _,datapoint in pairs(platformDatapoints) do
@@ -584,22 +555,42 @@ do
     --- Remove all contact's F10 map markers
     -- @local
     function HoundContact:removeMarkers()
-        if self.markpointID ~= nil then
-            for _ = 1, Length(self.markpointID) do
-                trigger.action.removeMark(table.remove(self.markpointID))
-            end
+        for _,mark in pairs(self._markpoints) do
+            mark:remove()
         end
+        -- if self.markpointID ~= nil then
+        --     while #self.markpointID > 0 do
+        --         local idx = table.remove(self.markpointID)
+        --         if type(idx) == "number" then
+        --             trigger.action.removeMark(idx)
+        --         end
+        --     end
+        -- end
     end
 
-    --- get MarkId from factory
-    -- @local
-    -- @return mark idx
-    function HoundContact:getMarkerId()
-        if self.markpointID == nil then self.markpointID = {} end
-        local idx = HoundUtils.getMarkId()
-        table.insert(self.markpointID, idx)
-        return idx
-    end
+    -- --- get MarkId from factory
+    -- -- @local
+    -- -- @return mark idx
+    -- function HoundContact:getMarkerId()
+    --     if self._markpointID == nil then
+    --         self._markpointID = {}
+    --     end
+    --     local idx = HoundUtils.getMarkId()
+    --     table.insert(self.markpointID,idx)
+
+    --     -- if type(fixedId) == "number" then
+    --     --     if type(self.markpointID.fixed[fixedId]) == "number" then
+    --     --         return self.markpointID.fixed[fixedId]
+    --     --     else
+    --     --         idx = HoundUtils.getMarkId()
+    --     --         table.insert(self.markpointID.fixed, fixedId, idx)
+    --     --     end
+    --     -- else
+    --     --     idx = HoundUtils.getMarkId()
+    --     --     table.insert(self.markpointID.dynamic, idx)
+    --     -- end
+    --     return idx
+    -- end
 
     --- calculate uncertenty Polygon from data
     -- @local
@@ -647,8 +638,7 @@ do
     --- Draw marker Polygon
     -- @local
     -- @int numPoints number of points to draw (only 1,4,8 and 16 are valid)
-    -- @bool[opt] debug if true will return the polygon points
-    function HoundContact:drawAreaMarker(numPoints,debug)
+    function HoundContact:drawAreaMarker(numPoints)
         if numPoints == nil then numPoints = 1 end
         if numPoints ~= 1 and numPoints ~= 4 and numPoints ~=8 and numPoints ~= 16 then
             HoundLogger.error("DCS limitation, only 1,4,8 or 16 points are allowed")
@@ -656,7 +646,7 @@ do
             end
 
         -- setup the marker
-        local alpha = HoundUtils.Mapping.linear(l_math.floor(HoundUtils.absTimeDelta(self.last_seen)),0,HOUND.CONTACT_TIMEOUT,0.2,0.1)
+        local alpha = HoundUtils.Mapping.linear(l_math.floor(HoundUtils.absTimeDelta(self.last_seen)),0,HOUND.CONTACT_TIMEOUT,0.2,0.1,true)
         local fillcolor = {0,0,0,alpha}
         local linecolor = {0,0,0,alpha+0.15}
         if self._platformCoalition == coalition.side.BLUE then
@@ -669,59 +659,39 @@ do
             linecolor[3] = 1
         end
 
+        local markArgs = {
+            fillColor = fillcolor,
+            lineColor = linecolor,
+            coalition = self._platformCoalition
+        }
         if numPoints == 1 then
-            trigger.action.circleToAll(self._platformCoalition,self:getMarkerId(),
-            self.pos.p,self.uncertenty_data.r,linecolor,fillcolor,2,true)
-            return
+            markArgs.pos = {
+                p = self.pos.p,
+                r = self.uncertenty_data.r
+            }
+            -- trigger.action.circleToAll(self._platformCoalition,self:getMarkerId(),
+            -- self.pos.p,self.uncertenty_data.r,linecolor,fillcolor,2,true)
+        else
+            markArgs.pos = HoundContact.calculatePoly(self.uncertenty_data,numPoints,self.pos.p)
         end
-
-        local polygonPoints =  HoundContact.calculatePoly(self.uncertenty_data,numPoints,self.pos.p)
-
-        if Length(polygonPoints) == 4 then
-            trigger.action.markupToAll(6,self._platformCoalition,self:getMarkerId(),
-                polygonPoints[1], polygonPoints[2], polygonPoints[3], polygonPoints[4],
-                linecolor,fillcolor,2,true)
-
-        end
-        if Length(polygonPoints) == 8 then
-            trigger.action.markupToAll(7,self._platformCoalition,self:getMarkerId(),
-                polygonPoints[1], polygonPoints[2], polygonPoints[3], polygonPoints[4],
-                polygonPoints[5], polygonPoints[6], polygonPoints[7], polygonPoints[8],
-                linecolor,fillcolor,2,true)
-        end
-        if Length(polygonPoints) == 16 then
-            -- working
-            trigger.action.markupToAll(7,self._platformCoalition,self:getMarkerId(),
-                polygonPoints[1], polygonPoints[2], polygonPoints[3], polygonPoints[4],
-                polygonPoints[5], polygonPoints[6], polygonPoints[7], polygonPoints[8],
-                polygonPoints[9], polygonPoints[10], polygonPoints[11], polygonPoints[12],
-                polygonPoints[13], polygonPoints[14], polygonPoints[15], polygonPoints[16],
-                linecolor,fillcolor,2,true)
-        end
-        if debug then
-            return polygonPoints
-        end
+        return self._markpoints.u:update(markArgs)
     end
 
     --- Update marker positions
     -- @param MarkerType type of marker to use
     function HoundContact:updateMarker(MarkerType)
-        if self.pos.p == nil or self.uncertenty_data == nil then return end
-
+        if self.pos.p == nil or self.uncertenty_data == nil or self:isTimedout() then return end
         -- local idx0 = self:getMarkerId()
-        self:removeMarkers()
+        -- self:removeMarkers()
+        local markerArgs = {
+            text = self.typeName .. " " .. (self.uid%100) ..
+                    " (" .. self.uncertenty_data.major .. "/" .. self.uncertenty_data.minor .. "@" .. self.uncertenty_data.az .. ")",
+            pos = self.pos.p,
+            coalition = self._platformCoalition
+        }
+        self._markpoints.p:update(markerArgs)
 
-        trigger.action.markToCoalition(self:getMarkerId(), self.typeName .. " " .. (self.uid%100) ..
-                                " (" .. self.uncertenty_data.major .. "/" .. self.uncertenty_data.minor .. "@" .. self.uncertenty_data.az .. "|" ..
-                                l_math.floor(HoundUtils.absTimeDelta(self.last_seen)) .. "s)",self.pos.p,self._platformCoalition,true)
-        if HOUND.DEBUG and type(self.debug) == "table" then
-            for SourceName,pos in pairs(self.debug) do
-                if HoundUtils.Geo.isDcsPoint(pos) then
-                    trigger.action.markToCoalition(self:getMarkerId(), self.typeName .. " " .. (self.uid%100) ..
-                    " ( " .. SourceName .. " )",pos,self._platformCoalition,true)
-                end
-            end
-        end
+        if MarkerType == HOUND.MARKER.NONE then return end
 
         if MarkerType == HOUND.MARKER.CIRCLE then
             self:drawAreaMarker()
