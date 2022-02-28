@@ -134,11 +134,25 @@ do
         return true
     end
 
+    --- check if contact is recent
+    -- @return Bool True if seen in the 2 minutes
+    function HoundContact:isRecent()
+        return HoundUtils.absTimeDelta(self.last_seen)/120 <= 1.0
+    end
+
     --- check if contact is timed out
     -- @return Bool True if timed out
     function HoundContact:isTimedout()
-        return HoundUtils.absTimeDelta(timer.getAbsTime(), self.last_seen) > HOUND.CONTACT_TIMEOUT
+        return HoundUtils.absTimeDelta(self.last_seen) > HOUND.CONTACT_TIMEOUT
     end
+
+    --- Get current state
+    -- @return Contact state
+    -- @see HOUND.EVENTS
+    function HoundContact:getState()
+        return self.state
+    end
+
     --- Data Processing
     -- @section data_process
 
@@ -151,6 +165,7 @@ do
             self.state = HOUND.EVENTS.RADAR_ASLEEP
         end
     end
+
     --- return number of platforms
     -- @param[opt] skipStatic if true, will ignore static platforms in count
     -- @return Number of platfoms
@@ -440,7 +455,7 @@ do
             end
         end
 
-        if self:isTimedout() then
+        if not self:isRecent() then
             return self.state
         end
 
@@ -680,7 +695,8 @@ do
     --- Update marker positions
     -- @param MarkerType type of marker to use
     function HoundContact:updateMarker(MarkerType)
-        if self.pos.p == nil or self.uncertenty_data == nil or self:isTimedout() then return end
+        if self.pos.p == nil or self.uncertenty_data == nil or not self:isRecent() then return end
+
         -- local idx0 = self:getMarkerId()
         -- self:removeMarkers()
         local markerArgs = {
