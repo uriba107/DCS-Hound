@@ -137,7 +137,7 @@ do
     --- check if contact is recent
     -- @return Bool True if seen in the 2 minutes
     function HoundContact:isRecent()
-        return HoundUtils.absTimeDelta(self.last_seen)/120 <= 1.0
+        return HoundUtils.absTimeDelta(self.last_seen)/120 < 1.0
     end
 
     --- check if contact is timed out
@@ -583,30 +583,6 @@ do
         -- end
     end
 
-    -- --- get MarkId from factory
-    -- -- @local
-    -- -- @return mark idx
-    -- function HoundContact:getMarkerId()
-    --     if self._markpointID == nil then
-    --         self._markpointID = {}
-    --     end
-    --     local idx = HoundUtils.getMarkId()
-    --     table.insert(self.markpointID,idx)
-
-    --     -- if type(fixedId) == "number" then
-    --     --     if type(self.markpointID.fixed[fixedId]) == "number" then
-    --     --         return self.markpointID.fixed[fixedId]
-    --     --     else
-    --     --         idx = HoundUtils.getMarkId()
-    --     --         table.insert(self.markpointID.fixed, fixedId, idx)
-    --     --     end
-    --     -- else
-    --     --     idx = HoundUtils.getMarkId()
-    --     --     table.insert(self.markpointID.dynamic, idx)
-    --     -- end
-    --     return idx
-    -- end
-
     --- calculate uncertenty Polygon from data
     -- @local
     -- @param uncertenty_data uncertenty data table
@@ -661,22 +637,22 @@ do
             end
 
         -- setup the marker
-        local alpha = HoundUtils.Mapping.linear(l_math.floor(HoundUtils.absTimeDelta(self.last_seen)),0,HOUND.CONTACT_TIMEOUT,0.2,0.1,true)
-        local fillcolor = {0,0,0,alpha}
-        local linecolor = {0,0,0,alpha+0.15}
+        local alpha = HoundUtils.Mapping.linear(l_math.floor(HoundUtils.absTimeDelta(self.last_seen)),0,HOUND.CONTACT_TIMEOUT,0.2,0.05,true)
+        local fillColor = {0,0,0,alpha}
+        local lineColor = {0,0,0,alpha+0.15}
         if self._platformCoalition == coalition.side.BLUE then
-            fillcolor[1] = 1
-            linecolor[1] = 1
+            fillColor[1] = 1
+            lineColor[1] = 1
         end
 
         if self._platformCoalition == coalition.side.RED then
-            fillcolor[3] = 1
-            linecolor[3] = 1
+            fillColor[3] = 1
+            lineColor[3] = 1
         end
 
         local markArgs = {
-            fillColor = fillcolor,
-            lineColor = linecolor,
+            fillColor = fillColor,
+            lineColor = lineColor,
             coalition = self._platformCoalition
         }
         if numPoints == 1 then
@@ -685,7 +661,7 @@ do
                 r = self.uncertenty_data.r
             }
             -- trigger.action.circleToAll(self._platformCoalition,self:getMarkerId(),
-            -- self.pos.p,self.uncertenty_data.r,linecolor,fillcolor,2,true)
+            -- self.pos.p,self.uncertenty_data.r,lineColor,fillColor,2,true)
         else
             markArgs.pos = HoundContact.calculatePoly(self.uncertenty_data,numPoints,self.pos.p)
         end
@@ -695,7 +671,7 @@ do
     --- Update marker positions
     -- @param MarkerType type of marker to use
     function HoundContact:updateMarker(MarkerType)
-        if self.pos.p == nil or self.uncertenty_data == nil or not self:isRecent() then return end
+        if self.pos.p == nil or self.uncertenty_data == nil and not self:isRecent() then return end
 
         -- local idx0 = self:getMarkerId()
         -- self:removeMarkers()
