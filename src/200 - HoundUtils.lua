@@ -359,25 +359,32 @@ do
         if not DCS_Unit then return string.upper(callsign:match( "^%s*(.-)%s*$" )) end
 
         local playerName = DCS_Unit:getPlayerName()
+        playerName = playerName:match("%a+%s%d+[?%p%s*]%d*")
         if playerName then
-            if string.find(playerName,"|") then
-                callsign = string.sub(playerName, 1, string.find(playerName,"|")-1)
-                local base = string.match(callsign,"%a+")
-                local num = string.match(callsign,"%d+")
-                if string.find(callsign,"-") then
-                    if flightMember then
-                        callsign = string.gsub(callsign,"-"," ")
-                    else
-                        callsign = string.sub(callsign, 1,string.find(callsign,"-")-1)
-                    end
-                else
-                    callsign = base
-                    if flightMember and num ~= nil then
-                        callsign = callsign .. " " .. num
-                    end
-                end
-                return string.upper(callsign:match( "^%s*(.-)%s*$" ))
+            callsign = playerName
+            local base = string.match(callsign,"%a+")
+            local num = tonumber(string.match(callsign,"%d+"))
+            local memberNum = string.gsub(callsign,"%a+%s%d+[%p%s*]","")
+            if memberNum:len() > 0 then
+                memberNum = tonumber(memberNum:match("%d+"))
+            else
+                memberNum = nil
             end
+
+            callsign = base
+            if type(num) == "number" and type(memberNum) == "number" then
+                callsign = callsign .. " " .. num
+            end
+
+            if flightMember then
+                if type(memberNum) == "number" then
+                    callsign = callsign .. " " .. memberNum
+                end
+                if type(num) == "number" and type(memberNum) == "nil" then
+                    callsign = callsign .. " " .. num
+                end
+            end
+            return string.upper(callsign:match( "^%s*(.-)%s*$" ))
         end
         return string.upper(callsign:match( "^%s*(.-)%s*$" ))
     end

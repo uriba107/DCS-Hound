@@ -8,14 +8,15 @@ end
 
 do
     Elint_blue = HoundElint:create(coalition.side.BLUE)
-    
+
     Elint_blue:systemOn()
 
     Elint_blue:addPlatform("ELINT_C17")
-    -- Elint_blue:addPlatform("ELINT_C130")
+    Elint_blue:addPlatform("ELINT_C130")
     -- Elint_blue:addPlatform("Kokotse_Elint")
     -- Elint_blue:addPlatform("Khvamli_Elint")
-    Elint_blue:addPlatform("Migariya_Elint")
+    -- Elint_blue:addPlatform("Migariya_Elint")
+    -- Elint_blue:addPlatform("Cow")
 
     tts_args = {
         freq = "251.000,35.000",
@@ -33,8 +34,9 @@ do
     Elint_blue:enableController()
     Elint_blue:enableText()
     Elint_blue:enableAtis()
+    -- Elint_blue:setMarkerType(HOUND.MARKER.NONE)
 
-    Elint_blue:addSector("Fake")    
+    Elint_blue:addSector("Fake")
     Elint_blue:setZone("Fake")
 
 

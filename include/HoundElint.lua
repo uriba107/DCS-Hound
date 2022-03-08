@@ -1012,9 +1012,11 @@ do
         end
 
         local instance = {}
-        instance.mainInterval = 5
-        instance.processInterval = 60
-        instance.barkInterval = 120
+        instance.intervals = {
+            scan = 5,
+            process = 30,
+            display = 120
+        }
         instance.preferences = {
             useMarkers = true,
             markerType = HOUND.MARKER.DIAMOND,
@@ -1048,6 +1050,14 @@ do
             end
             if setContainsValue(coalition.side,coalitionId) then
                 self.coalitionId = coalitionId
+                return true
+            end
+            return false
+        end
+
+        instance.setInterval = function (self,intervalName,setVal)
+            if setContains(self.intervals,intervalName) and type(setVal) == "number" then
+                self.intervals[intervalName] = setVal
                 return true
             end
             return false
@@ -1192,6 +1202,7 @@ do
     HoundUtils = {
         Mapping = {},
         Geo = {},
+        Marker = {},
         TTS = {},
         Text = {},
         Elint = {},
@@ -1201,7 +1212,6 @@ do
         Cluster={},
         Sort = {},
         ReportId = nil,
-        _MarkId = 99999,
         _HoundId = 0
     }
     HoundUtils.__index = HoundUtils
@@ -1212,28 +1222,11 @@ do
     end
 
     function HoundUtils.getMarkId()
-        if not HOUND.FORCE_MANAGE_MARKERS and UTILS and UTILS.GetMarkID then
-            HoundUtils._MarkId = UTILS.GetMarkID()
-        elseif not HOUND.FORCE_MANAGE_MARKERS and HOUND.MIST_VERSION >= 4.5 then
-            HoundUtils._MarkId = l_mist.marker.getNextId()
-        else
-            HoundUtils._MarkId = HoundUtils._MarkId + 1
-        end
-
-        return HoundUtils._MarkId
+        return HoundUtils.Marker.getId()
     end
 
     function HoundUtils.setInitialMarkId(startId)
-        if type(startId) ~= "number" then
-            HoundLogger.error("Failed to set Initial marker Id. Value provided was not a number")
-            return false
-        end
-        if HoundUtils._MarkID ~= 0 then
-            HoundLogger.error("Initial MarkId not updated because markers have already been drawn")
-            return false
-        end
-        HoundUtils._MarkId = startId
-        return true
+        return HoundUtils.Marker.setInitialId(startId)
     end
 
     function HoundUtils.absTimeDelta(t0, t1)
@@ -1437,25 +1430,32 @@ do
         if not DCS_Unit then return string.upper(callsign:match( "^%s*(.-)%s*$" )) end
 
         local playerName = DCS_Unit:getPlayerName()
+        playerName = playerName:match("%a+%s%d+[?%p%s*]%d*")
         if playerName then
-            if string.find(playerName,"|") then
-                callsign = string.sub(playerName, 1, string.find(playerName,"|")-1)
-                local base = string.match(callsign,"%a+")
-                local num = string.match(callsign,"%d+")
-                if string.find(callsign,"-") then
-                    if flightMember then
-                        callsign = string.gsub(callsign,"-"," ")
-                    else
-                        callsign = string.sub(callsign, 1,string.find(callsign,"-")-1)
-                    end
-                else
-                    callsign = base
-                    if flightMember and num ~= nil then
-                        callsign = callsign .. " " .. num
-                    end
-                end
-                return string.upper(callsign:match( "^%s*(.-)%s*$" ))
+            callsign = playerName
+            local base = string.match(callsign,"%a+")
+            local num = tonumber(string.match(callsign,"%d+"))
+            local memberNum = string.gsub(callsign,"%a+%s%d+[%p%s*]","")
+            if memberNum:len() > 0 then
+                memberNum = tonumber(memberNum:match("%d+"))
+            else
+                memberNum = nil
             end
+
+            callsign = base
+            if type(num) == "number" and type(memberNum) == "number" then
+                callsign = callsign .. " " .. num
+            end
+
+            if flightMember then
+                if type(memberNum) == "number" then
+                    callsign = callsign .. " " .. memberNum
+                end
+                if type(num) == "number" and type(memberNum) == "nil" then
+                    callsign = callsign .. " " .. num
+                end
+            end
+            return string.upper(callsign:match( "^%s*(.-)%s*$" ))
         end
         return string.upper(callsign:match( "^%s*(.-)%s*$" ))
     end
@@ -1487,9 +1487,9 @@ do
         POWER = 6
     }
 
-    function HoundUtils.Mapping.linear(input, in_min, in_max, out_min, out_max,constrain)
+    function HoundUtils.Mapping.linear(input, in_min, in_max, out_min, out_max,clamp)
         local mapValue = (input - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
-        if constrain then
+        if clamp then
             if out_min < out_max then
                 return l_math.max(out_min,l_math.min(out_max,mapValue))
             else
@@ -1575,6 +1575,149 @@ do
             end
         end
         return point
+    end
+
+    HoundUtils.Marker._MarkId = 99999
+    HoundUtils.Marker.Type = {
+        NONE = 0,
+        POINT = 1,
+        CIRCLE = 2,
+        FREEFORM = 3
+    }
+
+    function HoundUtils.Marker.getId()
+        if not HOUND.FORCE_MANAGE_MARKERS and UTILS and UTILS.GetMarkID then
+            HoundUtils.Marker._MarkId = UTILS.GetMarkID()
+        elseif not HOUND.FORCE_MANAGE_MARKERS and HOUND.MIST_VERSION >= 4.5 then
+            HoundUtils.Marker._MarkId = l_mist.marker.getNextId()
+        else
+            HoundUtils.Marker._MarkId = HoundUtils.Marker._MarkId + 1
+        end
+
+        return HoundUtils.Marker._MarkId
+    end
+
+    function HoundUtils.Marker.setInitialId(startId)
+        if type(startId) ~= "number" then
+            HoundLogger.error("Failed to set Initial marker Id. Value provided was not a number")
+            return false
+        end
+        if HoundUtils.Marker._MarkID ~= 0 then
+            HoundLogger.error("Initial MarkId not updated because markers have already been drawn")
+            return false
+        end
+        HoundUtils.Marker._MarkId = startId
+        return true
+    end
+
+    function HoundUtils.Marker.create(args)
+        local instance = {}
+        instance.id = -1
+        instance.type = HoundUtils.Marker.Type.NONE
+
+        instance.setPos = function(self,pos)
+            if self.type == HoundUtils.Marker.Type.FREEFORM then return end
+            if HoundUtils.Geo.isDcsPoint(pos) then
+                trigger.action.setMarkupPositionStart(self.id,pos)
+            end
+        end
+
+        instance.setText = function(self,text)
+            if type(text) == "string" and self.id > 0 then
+                trigger.action.setMarkupText(self.id,text)
+            end
+        end
+
+        instance.setRadius = function(self,radius)
+            if type(radius) == "number" and self.type == HoundUtils.Marker.Type.CIRCLE and self.id > 0 then
+                trigger.action.setMarkupRadius(self.id,radius)
+            end
+        end
+
+        instance.setFillColor = function(self,color)
+            if self.id > 0 and self.type ~= HoundUtils.Marker.Type.FREEFORM and type(color) == "table" then
+                trigger.action.setMarkupColorFill(self.id,color)
+            end
+        end
+
+        instance.setLineColor = function(self,color)
+            if self.id > 0 and self.type ~= HoundUtils.Marker.Type.FREEFORM and type(color) == "table" then
+                trigger.action.setMarkupColor(self.id,color)
+            end
+        end
+
+        instance.remove = function(self)
+            if type(self.id) == "number" then
+                trigger.action.removeMark(self.id)
+                self.id = -1
+                self.type = HoundUtils.Marker.Type.NONE
+            end
+        end
+
+        instance._new = function(self,args)
+            if type(args) ~= "table" then return false end
+            local coalition = args.coalition
+            local pos = args.pos
+            local text = args.text
+            local lineColor = args.lineColor
+            local fillColor = args.fillColor
+            self.id = HoundUtils.Marker.getId()
+
+            if HoundUtils.Geo.isDcsPoint(pos) then
+                self.type = HoundUtils.Marker.Type.POINT
+                trigger.action.markToCoalition(self.id, text, pos, coalition,true)
+                return true
+            end
+
+            if Length(pos) == 2 and HoundUtils.Geo.isDcsPoint(pos.p) and type(pos.r) == "number" then
+                self.type = HoundUtils.Marker.Type.CIRCLE
+                trigger.action.circleToAll(coalition,self.id, pos.p,pos.r,lineColor,fillColor,2,true)
+                return true
+            end
+
+            if Length(pos) == 4 then
+                self.type = HoundUtils.Marker.Type.FREEFORM
+                trigger.action.markupToAll(6,coalition,self.id,
+                    pos[1], pos[2], pos[3], pos[4],
+                    lineColor,fillColor,2,true)
+
+            end
+            if Length(pos) == 8 then
+                self.type = HoundUtils.Marker.Type.FREEFORM
+                trigger.action.markupToAll(7,coalition,self.id,
+                    pos[1], pos[2], pos[3], pos[4],
+                    pos[5], pos[6], pos[7], pos[8],
+                    lineColor,fillColor,2,true)
+            end
+            if Length(pos) == 16 then
+                self.type = HoundUtils.Marker.Type.FREEFORM
+                trigger.action.markupToAll(7,coalition,self.id,
+                    pos[1], pos[2], pos[3], pos[4],
+                    pos[5], pos[6], pos[7], pos[8],
+                    pos[9], pos[10], pos[11], pos[12],
+                    pos[13], pos[14], pos[15], pos[16],
+                    lineColor,fillColor,2,true)
+            end
+        end
+
+        instance._replace = function(self,args)
+            self:remove()
+            return self:_new(args)
+        end
+
+        instance.update = function(self,args)
+            if type(args.coalition) ~= "number" then return false end
+            if self.id < 0 then
+                return self:_new(args)
+            end
+            if self.id > 0 and self.type ~= HoundUtils.Marker.Type.NONE then
+                    return self:_replace(args)
+            end
+        end
+        if type(args) == "table" then
+            instance.update(instance,args)
+        end
+        return instance
     end
 
     function HoundUtils.TTS.Transmit(msg,coalitionID,args,transmitterPos)
@@ -2783,7 +2926,10 @@ do
         elintcontact.maxWeaponsRange = HoundUtils.getSamMaxRange(DCS_Unit)
         elintcontact.detectionRange = HoundUtils.getRadarDetectionRange(DCS_Unit)
         elintcontact._dataPoints = {}
-        elintcontact._markpointID = nil
+        elintcontact._markpoints = {
+            p = HoundUtils.Marker.create(),
+            u = HoundUtils.Marker.create()
+        }
         elintcontact._platformCoalition = HoundCoalition
         elintcontact.primarySector = "default"
         elintcontact.threatSectors = {
@@ -2833,8 +2979,16 @@ do
         return true
     end
 
+    function HoundContact:isRecent()
+        return HoundUtils.absTimeDelta(self.last_seen)/120 < 1.0
+    end
+
     function HoundContact:isTimedout()
-        return HoundUtils.absTimeDelta(timer.getAbsTime(), self.last_seen) > HOUND.CONTACT_TIMEOUT
+        return HoundUtils.absTimeDelta(self.last_seen) > HOUND.CONTACT_TIMEOUT
+    end
+
+    function HoundContact:getState()
+        return self.state
     end
 
     function HoundContact:CleanTimedout()
@@ -2843,6 +2997,7 @@ do
             self.state = HOUND.EVENTS.RADAR_ASLEEP
         end
     end
+
     function HoundContact:countPlatforms(skipStatic)
         local count = 0
         if Length(self._dataPoints) == 0 then return count end
@@ -3067,6 +3222,11 @@ do
                 return
             end
         end
+
+        if not self:isRecent() then
+            return self.state
+        end
+
         local newContact = (self.state == HOUND.EVENTS.RADAR_NEW)
         local mobileDataPoints = {}
         local staticDataPoints = {}
@@ -3074,6 +3234,7 @@ do
         local platforms = {}
         local staticPlatformsOnly = true
         local ClipPolygon2D = nil
+
         for _,platformDatapoints in pairs(self._dataPoints) do
             if Length(platformDatapoints) > 0 then
                 for _,datapoint in pairs(platformDatapoints) do
@@ -3162,18 +3323,9 @@ do
     end
 
     function HoundContact:removeMarkers()
-        if self.markpointID ~= nil then
-            for _ = 1, Length(self.markpointID) do
-                trigger.action.removeMark(table.remove(self.markpointID))
-            end
+        for _,mark in pairs(self._markpoints) do
+            mark:remove()
         end
-    end
-
-    function HoundContact:getMarkerId()
-        if self.markpointID == nil then self.markpointID = {} end
-        local idx = HoundUtils.getMarkId()
-        table.insert(self.markpointID, idx)
-        return idx
     end
 
     function HoundContact.calculatePoly(uncertenty_data,numPoints,refPos)
@@ -3209,75 +3361,54 @@ do
 
     end
 
-    function HoundContact:drawAreaMarker(numPoints,debug)
+    function HoundContact:drawAreaMarker(numPoints)
         if numPoints == nil then numPoints = 1 end
         if numPoints ~= 1 and numPoints ~= 4 and numPoints ~=8 and numPoints ~= 16 then
             HoundLogger.error("DCS limitation, only 1,4,8 or 16 points are allowed")
             numPoints = 1
             end
 
-        local alpha = HoundUtils.Mapping.linear(l_math.floor(HoundUtils.absTimeDelta(self.last_seen)),0,HOUND.CONTACT_TIMEOUT,0.2,0.1)
-        local fillcolor = {0,0,0,alpha}
-        local linecolor = {0,0,0,alpha+0.15}
+        local alpha = HoundUtils.Mapping.linear(l_math.floor(HoundUtils.absTimeDelta(self.last_seen)),0,HOUND.CONTACT_TIMEOUT,0.2,0.05,true)
+        local fillColor = {0,0,0,alpha}
+        local lineColor = {0,0,0,alpha+0.15}
         if self._platformCoalition == coalition.side.BLUE then
-            fillcolor[1] = 1
-            linecolor[1] = 1
+            fillColor[1] = 1
+            lineColor[1] = 1
         end
 
         if self._platformCoalition == coalition.side.RED then
-            fillcolor[3] = 1
-            linecolor[3] = 1
+            fillColor[3] = 1
+            lineColor[3] = 1
         end
 
+        local markArgs = {
+            fillColor = fillColor,
+            lineColor = lineColor,
+            coalition = self._platformCoalition
+        }
         if numPoints == 1 then
-            trigger.action.circleToAll(self._platformCoalition,self:getMarkerId(),
-            self.pos.p,self.uncertenty_data.r,linecolor,fillcolor,2,true)
-            return
+            markArgs.pos = {
+                p = self.pos.p,
+                r = self.uncertenty_data.r
+            }
+        else
+            markArgs.pos = HoundContact.calculatePoly(self.uncertenty_data,numPoints,self.pos.p)
         end
-
-        local polygonPoints =  HoundContact.calculatePoly(self.uncertenty_data,numPoints,self.pos.p)
-
-        if Length(polygonPoints) == 4 then
-            trigger.action.markupToAll(6,self._platformCoalition,self:getMarkerId(),
-                polygonPoints[1], polygonPoints[2], polygonPoints[3], polygonPoints[4],
-                linecolor,fillcolor,2,true)
-
-        end
-        if Length(polygonPoints) == 8 then
-            trigger.action.markupToAll(7,self._platformCoalition,self:getMarkerId(),
-                polygonPoints[1], polygonPoints[2], polygonPoints[3], polygonPoints[4],
-                polygonPoints[5], polygonPoints[6], polygonPoints[7], polygonPoints[8],
-                linecolor,fillcolor,2,true)
-        end
-        if Length(polygonPoints) == 16 then
-            trigger.action.markupToAll(7,self._platformCoalition,self:getMarkerId(),
-                polygonPoints[1], polygonPoints[2], polygonPoints[3], polygonPoints[4],
-                polygonPoints[5], polygonPoints[6], polygonPoints[7], polygonPoints[8],
-                polygonPoints[9], polygonPoints[10], polygonPoints[11], polygonPoints[12],
-                polygonPoints[13], polygonPoints[14], polygonPoints[15], polygonPoints[16],
-                linecolor,fillcolor,2,true)
-        end
-        if debug then
-            return polygonPoints
-        end
+        return self._markpoints.u:update(markArgs)
     end
 
     function HoundContact:updateMarker(MarkerType)
-        if self.pos.p == nil or self.uncertenty_data == nil then return end
+        if self.pos.p == nil or self.uncertenty_data == nil and not self:isRecent() then return end
 
-        self:removeMarkers()
+        local markerArgs = {
+            text = self.typeName .. " " .. (self.uid%100) ..
+                    " (" .. self.uncertenty_data.major .. "/" .. self.uncertenty_data.minor .. "@" .. self.uncertenty_data.az .. ")",
+            pos = self.pos.p,
+            coalition = self._platformCoalition
+        }
+        self._markpoints.p:update(markerArgs)
 
-        trigger.action.markToCoalition(self:getMarkerId(), self.typeName .. " " .. (self.uid%100) ..
-                                " (" .. self.uncertenty_data.major .. "/" .. self.uncertenty_data.minor .. "@" .. self.uncertenty_data.az .. "|" ..
-                                l_math.floor(HoundUtils.absTimeDelta(self.last_seen)) .. "s)",self.pos.p,self._platformCoalition,true)
-        if HOUND.DEBUG and type(self.debug) == "table" then
-            for SourceName,pos in pairs(self.debug) do
-                if HoundUtils.Geo.isDcsPoint(pos) then
-                    trigger.action.markToCoalition(self:getMarkerId(), self.typeName .. " " .. (self.uid%100) ..
-                    " ( " .. SourceName .. " )",pos,self._platformCoalition,true)
-                end
-            end
-        end
+        if MarkerType == HOUND.MARKER.NONE then return end
 
         if MarkerType == HOUND.MARKER.CIRCLE then
             self:drawAreaMarker()
@@ -5172,8 +5303,6 @@ do
         elint.coalitionId = nil
 
         elint.timingCounters = {
-            short = false,
-            long = 0
         }
 
         if platformName ~= nil then
@@ -5779,6 +5908,12 @@ do
         return false
     end
 
+    function HoundElint:setTimerInterval(setIntervalName,setValue)
+        if self.settings and setContains(self.settings.intervals,string.lower(setIntervalName)) then
+            return self.settings:setInterval(setIntervalName,setValue)
+        end
+        return false
+    end
     function HoundElint:getBDA()
         return self.settings:getBDA()
     end
@@ -5821,7 +5956,8 @@ do
     end
 
     function HoundElint.runCycle(self)
-        local nextRun = timer.getTime() + Gaussian(self.settings.mainInterval,self.settings.mainInterval/10)
+        local runTime = timer.getAbsTime()
+        local nextRun = timer.getTime() + Gaussian(self.settings.intervals.scan,self.settings.intervals.scan/10)
         if self.settings:getCoalition() == nil then return nextRun end
         if not self.contacts then return nextRun end
 
@@ -5829,19 +5965,27 @@ do
         self.contacts:Sniff()
 
         if self.contacts:countContacts() > 0 then
-            self.timingCounters.short = not self.timingCounters.short
-            if self.timingCounters.short then
+            local doProcess = true
+            local doMarkers = false
+            if self.timingCounters.lastProcess then
+                doProcess = (((runTime-self.timingCounters.lastProcess)/self.settings.intervals.process) > 0.90)
+            end
+            if self.timingCounters.lastMarkers then
+                doMarkers = (((runTime-self.timingCounters.lastMarkers)/self.settings.intervals.display) > 0.96)
+            end
+
+            if doProcess then
                 self.contacts:Process()
-                self.timingCounters.long = self.timingCounters.long + 1
-                for sectorName,_ in pairs(self.sectors) do
-                    HoundLogger.trace(sectorName .. " has " .. self.contacts:countContacts(sectorName).. " Contacts")
+                self:updateSectorMembership()
+                self.timingCounters.lastProcess = runTime
+                if not self.timingCounters.lastMarkers then
+                    self.timingCounters.lastMarkers = runTime
                 end
             end
-            if self.timingCounters.long == 5 then
+            if doMarkers then
                 self:populateRadioMenu()
                 self.contacts:UpdateMarkers()
-                self:updateSectorMembership()
-                self.timingCounters.long = 0
+                self.timingCounters.lastMarkers = runTime
             end
         end
         return nextRun
@@ -5882,7 +6026,7 @@ do
         end
         self:systemOff(false)
 
-        self.elintTaskID = timer.scheduleFunction(self.runCycle, self, timer.getTime() + self.settings.mainInterval)
+        self.elintTaskID = timer.scheduleFunction(self.runCycle, self, timer.getTime() + self.settings.intervals.scan)
         if notify == nil or notify then
             trigger.action.outTextForCoalition(self.settings:getCoalition(),
                                            "Hound ELINT system is now Operating", 10)
@@ -5996,4 +6140,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.2.2-develop - Compiled on 2022-02-24 21:19
+-- Hound version 0.2.2-develop - Compiled on 2022-03-08 14:03
