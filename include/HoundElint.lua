@@ -1015,7 +1015,9 @@ do
         instance.intervals = {
             scan = 5,
             process = 30,
-            display = 120
+            menus = 60,
+            markers = 120,
+
         }
         instance.preferences = {
             useMarkers = true,
@@ -1577,7 +1579,7 @@ do
         return point
     end
 
-    HoundUtils.Marker._MarkId = 99999
+    HoundUtils.Marker._MarkId = 9999
     HoundUtils.Marker.Type = {
         NONE = 0,
         POINT = 1,
@@ -1586,14 +1588,15 @@ do
     }
 
     function HoundUtils.Marker.getId()
-        if not HOUND.FORCE_MANAGE_MARKERS and UTILS and UTILS.GetMarkID then
+        if HOUND.FORCE_MANAGE_MARKERS then
+            HoundUtils.Marker._MarkId = HoundUtils.Marker._MarkId + 1
+        elseif UTILS and UTILS.GetMarkID then
             HoundUtils.Marker._MarkId = UTILS.GetMarkID()
-        elseif not HOUND.FORCE_MANAGE_MARKERS and HOUND.MIST_VERSION >= 4.5 then
+        elseif HOUND.MIST_VERSION >= 4.5 then
             HoundUtils.Marker._MarkId = l_mist.marker.getNextId()
         else
             HoundUtils.Marker._MarkId = HoundUtils.Marker._MarkId + 1
         end
-
         return HoundUtils.Marker._MarkId
     end
 
@@ -1649,6 +1652,9 @@ do
         instance.remove = function(self)
             if type(self.id) == "number" then
                 trigger.action.removeMark(self.id)
+                if self.id % 500 == 0 then
+                    collectgarbage("collect")
+                end
                 self.id = -1
                 self.type = HoundUtils.Marker.Type.NONE
             end
@@ -3233,13 +3239,16 @@ do
         local estimatePositions = {}
         local platforms = {}
         local staticPlatformsOnly = true
-        local ClipPolygon2D = nil
+        local staticClipPolygon2D = nil
 
         for _,platformDatapoints in pairs(self._dataPoints) do
             if Length(platformDatapoints) > 0 then
                 for _,datapoint in pairs(platformDatapoints) do
                     if datapoint:isStatic() then
                         table.insert(staticDataPoints,datapoint)
+                        if type(datapoint:get2dPoly()) == "table" then
+                            staticClipPolygon2D = HoundUtils.Polygon.clipPolygons(staticClipPolygon2D,datapoint:get2dPoly()) or datapoint:get2dPoly()
+                        end
                     else
                         staticPlatformsOnly = false
                         table.insert(mobileDataPoints,datapoint)
@@ -3247,9 +3256,6 @@ do
                     if HoundUtils.Geo.isDcsPoint(datapoint:getPos()) then
                         local point = l_mist.utils.deepCopy(datapoint:getPos())
                         table.insert(estimatePositions,point)
-                    end
-                    if type(datapoint:get2dPoly()) == "table" then
-                        ClipPolygon2D = HoundUtils.Polygon.clipPolygons(ClipPolygon2D,datapoint:get2dPoly()) or datapoint:get2dPoly()
                     end
                     platforms[datapoint.platformName] = 1
                 end
@@ -3292,8 +3298,8 @@ do
 
             self.uncertenty_data = self.calculateEllipse(estimatePositions,false,self.pos.p)
 
-            if type(ClipPolygon2D) == "table" and ( staticPlatformsOnly) then
-                self.uncertenty_data = self.calculateEllipse(ClipPolygon2D,true,self.pos.p)
+            if type(staticClipPolygon2D) == "table" and ( staticPlatformsOnly) then
+                self.uncertenty_data = self.calculateEllipse(staticClipPolygon2D,true,self.pos.p)
             end
 
             self.uncertenty_data.az = l_mist.utils.round(l_math.deg((self.uncertenty_data.theta+l_mist.getNorthCorrection(self.pos.p)+pi_2)%pi_2))
@@ -3370,7 +3376,7 @@ do
 
         local alpha = HoundUtils.Mapping.linear(l_math.floor(HoundUtils.absTimeDelta(self.last_seen)),0,HOUND.CONTACT_TIMEOUT,0.2,0.05,true)
         local fillColor = {0,0,0,alpha}
-        local lineColor = {0,0,0,alpha+0.15}
+        local lineColor = {0,0,0,0.30}
         if self._platformCoalition == coalition.side.BLUE then
             fillColor[1] = 1
             lineColor[1] = 1
@@ -5966,24 +5972,37 @@ do
 
         if self.contacts:countContacts() > 0 then
             local doProcess = true
+            local doMenus = false
             local doMarkers = false
             if self.timingCounters.lastProcess then
-                doProcess = (((runTime-self.timingCounters.lastProcess)/self.settings.intervals.process) > 0.90)
+                doProcess = ((HoundUtils.absTimeDelta(self.timingCounters.lastProcess,runTime)/self.settings.intervals.process) > 0.99)
+            end
+            if self.timingCounters.lastMenus then
+                doMenus = ((HoundUtils.absTimeDelta(self.timingCounters.lastMenus,runTime)/self.settings.intervals.menus) > 0.99)
             end
             if self.timingCounters.lastMarkers then
-                doMarkers = (((runTime-self.timingCounters.lastMarkers)/self.settings.intervals.display) > 0.96)
+                doMarkers = ((HoundUtils.absTimeDelta(self.timingCounters.lastMarkers,runTime)/self.settings.intervals.markers) > 0.99)
             end
 
             if doProcess then
                 self.contacts:Process()
                 self:updateSectorMembership()
+
                 self.timingCounters.lastProcess = runTime
                 if not self.timingCounters.lastMarkers then
                     self.timingCounters.lastMarkers = runTime
                 end
+                if not self.timingCounters.lastMenus then
+                    self.timingCounters.lastMenus = runTime
+                end
             end
-            if doMarkers then
+
+            if doMenus then
                 self:populateRadioMenu()
+                self.timingCounters.lastMenus = runTime
+            end
+
+            if doMarkers then
                 self.contacts:UpdateMarkers()
                 self.timingCounters.lastMarkers = runTime
             end
@@ -6140,4 +6159,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.2.2-develop - Compiled on 2022-03-08 14:03
+-- Hound version 0.2.2-develop - Compiled on 2022-03-15 21:38

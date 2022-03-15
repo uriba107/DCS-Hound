@@ -465,13 +465,16 @@ do
         local estimatePositions = {}
         local platforms = {}
         local staticPlatformsOnly = true
-        local ClipPolygon2D = nil
+        local staticClipPolygon2D = nil
 
         for _,platformDatapoints in pairs(self._dataPoints) do
             if Length(platformDatapoints) > 0 then
                 for _,datapoint in pairs(platformDatapoints) do
                     if datapoint:isStatic() then
                         table.insert(staticDataPoints,datapoint)
+                        if type(datapoint:get2dPoly()) == "table" then
+                            staticClipPolygon2D = HoundUtils.Polygon.clipPolygons(staticClipPolygon2D,datapoint:get2dPoly()) or datapoint:get2dPoly()
+                        end
                     else
                         staticPlatformsOnly = false
                         table.insert(mobileDataPoints,datapoint)
@@ -483,9 +486,6 @@ do
                         --     point.err = datapoint:getErrors()
                         --     self._kalman:update(point)
                         -- end
-                    end
-                    if type(datapoint:get2dPoly()) == "table" then
-                        ClipPolygon2D = HoundUtils.Polygon.clipPolygons(ClipPolygon2D,datapoint:get2dPoly()) or datapoint:get2dPoly()
                     end
                     platforms[datapoint.platformName] = 1
                 end
@@ -534,8 +534,8 @@ do
 
             self.uncertenty_data = self.calculateEllipse(estimatePositions,false,self.pos.p)
 
-            if type(ClipPolygon2D) == "table" and ( staticPlatformsOnly) then
-                self.uncertenty_data = self.calculateEllipse(ClipPolygon2D,true,self.pos.p)
+            if type(staticClipPolygon2D) == "table" and ( staticPlatformsOnly) then
+                self.uncertenty_data = self.calculateEllipse(staticClipPolygon2D,true,self.pos.p)
             end
 
             self.uncertenty_data.az = l_mist.utils.round(l_math.deg((self.uncertenty_data.theta+l_mist.getNorthCorrection(self.pos.p)+pi_2)%pi_2))
@@ -639,7 +639,7 @@ do
         -- setup the marker
         local alpha = HoundUtils.Mapping.linear(l_math.floor(HoundUtils.absTimeDelta(self.last_seen)),0,HOUND.CONTACT_TIMEOUT,0.2,0.05,true)
         local fillColor = {0,0,0,alpha}
-        local lineColor = {0,0,0,alpha+0.15}
+        local lineColor = {0,0,0,0.30}
         if self._platformCoalition == coalition.side.BLUE then
             fillColor[1] = 1
             lineColor[1] = 1
@@ -660,8 +660,6 @@ do
                 p = self.pos.p,
                 r = self.uncertenty_data.r
             }
-            -- trigger.action.circleToAll(self._platformCoalition,self:getMarkerId(),
-            -- self.pos.p,self.uncertenty_data.r,lineColor,fillColor,2,true)
         else
             markArgs.pos = HoundContact.calculatePoly(self.uncertenty_data,numPoints,self.pos.p)
         end
@@ -673,8 +671,6 @@ do
     function HoundContact:updateMarker(MarkerType)
         if self.pos.p == nil or self.uncertenty_data == nil and not self:isRecent() then return end
 
-        -- local idx0 = self:getMarkerId()
-        -- self:removeMarkers()
         local markerArgs = {
             text = self.typeName .. " " .. (self.uid%100) ..
                     " (" .. self.uncertenty_data.major .. "/" .. self.uncertenty_data.minor .. "@" .. self.uncertenty_data.az .. ")",

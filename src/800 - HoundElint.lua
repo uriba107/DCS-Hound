@@ -805,7 +805,7 @@ do
     end
 
     --- set intervals
-    -- @param setIntervalName interval name to change (scan,process,display)
+    -- @param setIntervalName interval name to change (scan,process,menu,markers)
     -- @param setValue interval in seconds to set.
     -- @return Bool True if changed
     function HoundElint:setTimerInterval(setIntervalName,setValue)
@@ -896,40 +896,43 @@ do
         self.contacts:Sniff()
 
         if self.contacts:countContacts() > 0 then
-            -- self.timingCounters.short = not self.timingCounters.short
-            -- if timer.getAbsTime() % math.floor(gaussian(self.settings.intervals.process,3)) < self.settings.intervals.scan+5 then
             local doProcess = true
+            local doMenus = false
             local doMarkers = false
             if self.timingCounters.lastProcess then
-                doProcess = (((runTime-self.timingCounters.lastProcess)/self.settings.intervals.process) > 0.90)
+                doProcess = ((HoundUtils.absTimeDelta(self.timingCounters.lastProcess,runTime)/self.settings.intervals.process) > 0.99)
+            end
+            if self.timingCounters.lastMenus then
+                doMenus = ((HoundUtils.absTimeDelta(self.timingCounters.lastMenus,runTime)/self.settings.intervals.menus) > 0.99)
             end
             if self.timingCounters.lastMarkers then
-                doMarkers = (((runTime-self.timingCounters.lastMarkers)/self.settings.intervals.display) > 0.96)
+                doMarkers = ((HoundUtils.absTimeDelta(self.timingCounters.lastMarkers,runTime)/self.settings.intervals.markers) > 0.99)
             end
 
             if doProcess then
                 local fastloop = StopWatch:Start("contact processing " .. timer.getAbsTime())
                 self.contacts:Process()
-                -- self.timingCounters.long = self.timingCounters.long + 1
                 self:updateSectorMembership()
                 fastloop:Stop()
-                -- for sectorName,_ in pairs(self.sectors) do
-                --     HoundLogger.trace(sectorName .. " has " .. self.contacts:countContacts(sectorName).. " Contacts")
-                -- end
+
                 self.timingCounters.lastProcess = runTime
                 if not self.timingCounters.lastMarkers then
                     self.timingCounters.lastMarkers = runTime
                 end
+                if not self.timingCounters.lastMenus then
+                    self.timingCounters.lastMenus = runTime
+                end
             end
-            -- end
-            -- if timer.getAbsTime() % math.floor(gaussian(self.settings.intervals.process,7)) < self.settings.intervals.process+5 then
-            -- if math.abs(self.settings.intervals.process - (timer.getAbsTime() % self.settings.intervals.process)) < self.settings.intervals.scan*0.75 then
+
+            if doMenus then
+                self:populateRadioMenu()
+                self.timingCounters.lastMenus = runTime
+            end
+
             if doMarkers then
                 local slowLoop = StopWatch:Start("marker update " .. timer.getAbsTime())
-                self:populateRadioMenu()
                 self.contacts:UpdateMarkers()
                 self.timingCounters.lastMarkers = runTime
-                -- self.timingCounters.long = 0
                 slowLoop:Stop()
             end
         end

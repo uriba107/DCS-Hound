@@ -276,7 +276,7 @@ if from any reason you still encounter issues you can force Hound to use the int
 HOUND.FORCE_MANAGE_MARKERS = true
 ```
 
-By default the internal counter starts from 100,000. You can change the initial value to avoid conflicts with other numbering things (which are not MOOSE or MIST) by using the method `HoundUtils.setInitialMarkId()`. As mentioned earlier, if MOOSE or MIST v4.5 are present their numbering engine will take priority over Hound's internal Numbering.
+By default the internal counter starts from 10,000. You can change the initial value to avoid conflicts with other numbering things (which are not MOOSE or MIST) by using the method `HoundUtils.setInitialMarkId()`. As mentioned earlier, if MOOSE or MIST v4.5 are present their numbering engine will take priority over Hound's internal Numbering.
 It is highly recommended that you use one of them (or `HoundUtils.getMarkId()`) for all other scripted Map markers.
 
 In addition to all that Hound will only delete its own markers (by tracking every Marker ID it's placing)
@@ -728,6 +728,25 @@ to remove use
     HOUND.removeEventHandler(CustomHoundScript)
 ```
 `NOTE: Event handlers are global so make sure you validate coalition or houndId as the event might be from a different Instance from a different coalition`
+
+---
+## Performace Tuning
+when running a large mission with a huge Air defence network it is not uncommon to encounter some peformance issues.  
+These issues are caused by the huge number of markers needed to be created and DCS' ability to manage them.
+Here are some tips to help you mitigate this.
+
+1. Disable Markers! if you don't need them, just disable them altogeather. 
+```lua
+ HoundInstance:disableMarkers()
+```
+2. if you want some markers, then disable just the uncertenty markers, this will cut down the number of markers needed by half. the information will still be included in the description on the point marker.
+```lua
+HoundInstance:setMarkerType(HOUND.MARKER.NONE)
+```
+3. in addition, you can lower the update rate of the markers. Default refresh is 120 seconds, you can set it to 180 or 240 to further cut down on the amount of markers needed.
+```lua
+HoundInstance:setTimerInterval("display",180)
+```
 
 ---
 ## Known Issues

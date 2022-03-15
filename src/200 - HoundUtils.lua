@@ -577,7 +577,7 @@ do
 
     --- Marker Functions
     -- @section Markers
-    HoundUtils.Marker._MarkId = 99999
+    HoundUtils.Marker._MarkId = 9999
     HoundUtils.Marker.Type = {
         NONE = 0,
         POINT = 1,
@@ -590,14 +590,15 @@ do
     -- return the next available MarkId
     -- @return Next MarkId
     function HoundUtils.Marker.getId()
-        if not HOUND.FORCE_MANAGE_MARKERS and UTILS and UTILS.GetMarkID then
+        if HOUND.FORCE_MANAGE_MARKERS then
+            HoundUtils.Marker._MarkId = HoundUtils.Marker._MarkId + 1
+        elseif UTILS and UTILS.GetMarkID then
             HoundUtils.Marker._MarkId = UTILS.GetMarkID()
-        elseif not HOUND.FORCE_MANAGE_MARKERS and HOUND.MIST_VERSION >= 4.5 then
+        elseif HOUND.MIST_VERSION >= 4.5 then
             HoundUtils.Marker._MarkId = l_mist.marker.getNextId()
         else
             HoundUtils.Marker._MarkId = HoundUtils.Marker._MarkId + 1
         end
-
         return HoundUtils.Marker._MarkId
     end
 
@@ -686,6 +687,9 @@ do
         instance.remove = function(self)
             if type(self.id) == "number" then
                 trigger.action.removeMark(self.id)
+                if self.id % 500 == 0 then
+                    collectgarbage("collect")
+                end
                 self.id = -1
                 self.type = HoundUtils.Marker.Type.NONE
             end

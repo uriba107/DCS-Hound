@@ -26,7 +26,9 @@ do
         instance.intervals = {
             scan = 5,
             process = 30,
-            display = 120
+            menus = 60,
+            markers = 120,
+
         }
         instance.preferences = {
             useMarkers = true,
