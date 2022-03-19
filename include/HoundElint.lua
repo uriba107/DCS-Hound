@@ -911,7 +911,8 @@ do
         ['F-16C_50'] = true,
         ['M-2000C'] = true,
         ['A-10C'] = true,
-        ['A-10C_2'] = true
+        ['A-10C_2'] = true,
+        ['AH-64D_BLK_II'] = true,
     }
 end
 
@@ -6159,4 +6160,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.2.2-develop - Compiled on 2022-03-15 21:38
+-- Hound version 0.2.2-develop - Compiled on 2022-03-19 20:05

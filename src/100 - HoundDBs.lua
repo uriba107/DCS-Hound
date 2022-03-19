@@ -673,7 +673,8 @@ do
         ['F-16C_50'] = true,
         ['M-2000C'] = true,
         ['A-10C'] = true,
-        ['A-10C_2'] = true
+        ['A-10C_2'] = true,
+        ['AH-64D_BLK_II'] = true,
     }
 end
 
