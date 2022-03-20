@@ -890,7 +890,8 @@ do
         if isSimple then
             if NATO then
                 if ageSeconds < 16 then return "Active" end
-                return "Awake"
+                if ageSeconds < HOUND.CONTACT_TIMEOUT then return "Down" end
+                return "Asleep"
             end
             if ageSeconds < 16 then return "Active" end
             if ageSeconds <= 90 then return "very recent" end

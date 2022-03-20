@@ -747,7 +747,64 @@ HoundInstance:setMarkerType(HOUND.MARKER.NONE)
 ```lua
 HoundInstance:setTimerInterval("display",180)
 ```
-
+---
+## Exports
+Current implementation suports two types of export. LUA and CSV.
+### LUA Export
+```lua
+HoudnInstace:getContacts()
+```
+Calling this function will return a LUA table
+```lua
+ {
+    ewr = { 
+            count = 0,
+            contacts = {}
+          },
+    sam = {
+            count = 0,
+            contacts = {}
+          }
+}
+```
+Each contact will be added to the apropriate category and count will be updated to match number of contacts in each categoty.
+data structure of each record will follow this pattern.
+```lua
+{
+    typeName = <String ("straight flush","P-19")> 
+    uid = <int (2 digits)> 
+    DCSunitName = <String (Name of actual DCS Unit)>
+    maxWeaponsRange = <Int (Max range of group weapons in Meters)>
+    last_seen = <float (time last spotted by platform in seconds, timer.getAbsTime)>
+    detected_by = <table (list of platform names that detected contact)>
+    if contact has position then
+        pos = <table (DCS point of estimated position)>
+        LL = {
+            lat = <Float>,
+            lon = <Float>
+        }
+        accuracy = <String>
+        uncertenty = {
+            major = <Int (meters)>,
+            minor = <Int (meters)>,
+            heading = <Float (deg)>
+        }
+    end
+}
+```
+### CSV export
+```lua
+HoundInstance:dumpIntelBrief()
+```
+this will crate a file in the DCS saved games folder. default filename is "hound_contacts_XX.csv" (where 'XX' is the Hound instance UID)
+you can specify a filename if desired:
+```lua
+HoundInstance:dumpIntelBrief("custom_name.csv")
+```
+CSV structure:
+```
+TrackId,NatoDesignation,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accuracy,lastSeen,ReportGenerated
+```
 ---
 ## Known Issues
   * On initial detection accuracy will usually be very high with solution nowhere near the radar actual position. This is sorted by the system as more datapoints are gathered. allow at least 2 minutes for contact to stablize.

@@ -1042,6 +1042,31 @@ do
         return contacts
     end
 
+    --- dump Intel Brief to csv
+    -- will dump intel summery to CSV
+    -- @param[opt] filename filename to write to. will write to saved games
+    function HoundElint:dumpIntelBrief(filename)
+        if lfs == nil or io == nil then return end
+        if not filename then
+            filename = string.format("hound_contacts_%d.csv",self.settings:getId())
+            -- if type(DCS.getMissionName()) == "string" then
+            --     filename = string.format("%s_%s",DCS.getMissionName(),filename)
+            -- end
+        end
+        local currentGameTime = HoundUtils.Text.getTime()
+        local csvFile = io.open(lfs.writedir() .. filename, "w+")
+        csvFile:write("TrackId,NatoDesignation,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accuracy,lastSeen,ReportGenerated\n")
+        csvFile:flush()
+        for _,emitter in pairs(self.contacts:listAllbyRange()) do
+            local entry = emitter:generateIntelBrief()
+            if entry ~= "" then
+                csvFile:write(entry .. "," .. currentGameTime .."\n")
+                csvFile:flush()
+            end
+        end
+        csvFile:close()
+    end
+
     --- set/create a pre Briefed contacts
     -- @param DCS_Object_Name name of DCS Unit or Group to add
     function HoundElint:preBriefedContact(DCS_Object_Name)

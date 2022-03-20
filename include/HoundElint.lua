@@ -1787,7 +1787,8 @@ do
         if isSimple then
             if NATO then
                 if ageSeconds < 16 then return "Active" end
-                return "Awake"
+                if ageSeconds < HOUND.CONTACT_TIMEOUT then return "Down" end
+                return "Asleep"
             end
             if ageSeconds < 16 then return "Active" end
             if ageSeconds <= 90 then return "very recent" end
@@ -2954,7 +2955,7 @@ do
     end
 
     function HoundContact:getName()
-        return self.typeName .. " " .. (self.uid%100)
+        return self:getType() .. " " .. self:getId()
     end
 
     function HoundContact:getType()
@@ -2963,6 +2964,21 @@ do
 
     function HoundContact:getId()
         return self.uid%100
+    end
+
+    function HoundContact:getTrackId()
+        local trackType = 'E'
+        if self.preBriefed then
+            trackType = 'I'
+        end
+        return string.format("%s-%d",trackType,self.uid)
+    end
+    function HoundContact:getNatoDesignation()
+        local natoDesignation = string.gsub(self:getTypeAssigned(),"(SA)-",'')
+            if natoDesignation == "Naval" then
+                natoDesignation = self:getType()
+            end
+        return natoDesignation
     end
 
     function HoundContact:getPos()
@@ -3580,10 +3596,7 @@ do
         local phoneticGridPos,phoneticBulls = self:getTtsData(false,1)
         local reportedName = self:getName()
         if NATO then
-            reportedName = string.gsub(self:getTypeAssigned(),"(SA)-",'')
-            if reportedName == "Naval" then
-                reportedName = self:getType()
-            end
+            reportedName = self:getNatoDesignation()
         end
         local str = reportedName .. ", " .. HoundUtils.TTS.getVerbalContactAge(self.last_seen,true,NATO)
         if NATO then
@@ -3694,6 +3707,22 @@ do
             end
         end
         return msg .. "."
+    end
+
+    function HoundContact:generateIntelBrief()
+        local msg = ""
+        if self:hasPos() then
+            local GridPos,BePos = self:getTextData(true,HOUND.MGRS_PRECISION)
+            msg = {
+                self:getTrackId(),self:getNatoDesignation(),self:getType(),
+                HoundUtils.TTS.getVerbalContactAge(self.last_seen,true,true),
+                BePos,self.pos.LL.lat,self.pos.LL.lon, GridPos,
+                HoundUtils.TTS.getVerbalConfidenceLevel( self.uncertenty_data.r ),
+                HoundUtils.Text.getTime(self.last_seen)
+            }
+            msg = table.concat(msg,",")
+        end
+        return msg
     end
 end
 do
@@ -6097,6 +6126,25 @@ do
         return contacts
     end
 
+    function HoundElint:dumpIntelBrief(filename)
+        if lfs == nil or io == nil then return end
+        if not filename then
+            filename = string.format("hound_contacts_%d.csv",self.settings:getId())
+        end
+        local currentGameTime = HoundUtils.Text.getTime()
+        local csvFile = io.open(lfs.writedir() .. filename, "w+")
+        csvFile:write("TrackId,NatoDesignation,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accuracy,lastSeen,ReportGenerated\n")
+        csvFile:flush()
+        for _,emitter in pairs(self.contacts:listAllbyRange()) do
+            local entry = emitter:generateIntelBrief()
+            if entry ~= "" then
+                csvFile:write(entry .. "," .. currentGameTime .."\n")
+                csvFile:flush()
+            end
+        end
+        csvFile:close()
+    end
+
     function HoundElint:preBriefedContact(DCS_Object_Name)
         local units = {}
         local obj = Group.getByName(DCS_Object_Name) or Unit.getByName(DCS_Object_Name)
@@ -6160,4 +6208,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.2.2-develop - Compiled on 2022-03-19 20:05
+-- Hound version 0.2.2-develop - Compiled on 2022-03-20 21:18

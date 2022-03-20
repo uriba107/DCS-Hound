@@ -60,10 +60,7 @@ do
         local phoneticGridPos,phoneticBulls = self:getTtsData(false,1)
         local reportedName = self:getName()
         if NATO then
-            reportedName = string.gsub(self:getTypeAssigned(),"(SA)-",'')
-            if reportedName == "Naval" then
-                reportedName = self:getType()
-            end
+            reportedName = self:getNatoDesignation()
         end
         local str = reportedName .. ", " .. HoundUtils.TTS.getVerbalContactAge(self.last_seen,true,NATO)
         if NATO then
@@ -193,5 +190,25 @@ do
             end
         end
         return msg .. "."
+    end
+
+    --- Generate Intel brief Message (for export)
+    -- @return string - compiled message
+    function HoundContact:generateIntelBrief()
+        -- track ECHO 1017, straigh flush, ACTIVE, BULLSEYE 012 13, lat/lon, accuracy very high.
+        -- TrackId,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accuracy
+        local msg = ""
+        if self:hasPos() then
+            local GridPos,BePos = self:getTextData(true,HOUND.MGRS_PRECISION)
+            msg = {
+                self:getTrackId(),self:getNatoDesignation(),self:getType(),
+                HoundUtils.TTS.getVerbalContactAge(self.last_seen,true,true),
+                BePos,self.pos.LL.lat,self.pos.LL.lon, GridPos,
+                HoundUtils.TTS.getVerbalConfidenceLevel( self.uncertenty_data.r ),
+                HoundUtils.Text.getTime(self.last_seen)
+            }
+            msg = table.concat(msg,",")
+        end
+        return msg
     end
 end

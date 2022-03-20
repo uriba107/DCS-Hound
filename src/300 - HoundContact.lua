@@ -91,7 +91,7 @@ do
     --- Get contact name
     -- @return String
     function HoundContact:getName()
-        return self.typeName .. " " .. (self.uid%100)
+        return self:getType() .. " " .. self:getId()
     end
 
     --- Get contact type name
@@ -104,6 +104,25 @@ do
     -- @return Number
     function HoundContact:getId()
         return self.uid%100
+    end
+
+    --- get Contact Track ID
+    -- @return string
+    function HoundContact:getTrackId()
+        local trackType = 'E'
+        if self.preBriefed then
+            trackType = 'I'
+        end
+        return string.format("%s-%d",trackType,self.uid)
+    end
+    --- get NATO designation
+    -- @return string
+    function HoundContact:getNatoDesignation()
+        local natoDesignation = string.gsub(self:getTypeAssigned(),"(SA)-",'')
+            if natoDesignation == "Naval" then
+                natoDesignation = self:getType()
+            end
+        return natoDesignation
     end
 
     --- get current extimted position
