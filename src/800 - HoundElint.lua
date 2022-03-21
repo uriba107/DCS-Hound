@@ -29,10 +29,7 @@ do
         elint.radioAdminMenu = nil
         elint.coalitionId = nil
 
-        elint.timingCounters = {
-            -- short = false,
-            -- long = 0
-        }
+        elint.timingCounters = {}
 
         if platformName ~= nil then
             if type(platformName) == "string" then
@@ -1049,9 +1046,6 @@ do
         if lfs == nil or io == nil then return end
         if not filename then
             filename = string.format("hound_contacts_%d.csv",self.settings:getId())
-            -- if type(DCS.getMissionName()) == "string" then
-            --     filename = string.format("%s_%s",DCS.getMissionName(),filename)
-            -- end
         end
         local currentGameTime = HoundUtils.Text.getTime()
         local csvFile = io.open(lfs.writedir() .. filename, "w+")
