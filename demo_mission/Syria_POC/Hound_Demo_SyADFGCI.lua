@@ -5,7 +5,8 @@ do
 end
 
 do
-    env.info("configuring Hound")    
+    env.info("configuring Hound")
+    HOUND.FORCE_MANAGE_MARKERS = true
     Elint_blue = HoundElint:create(coalition.side.BLUE)
     Elint_blue:addPlatform("Mt_Hermon_ELINT")
     Elint_blue:addPlatform("Mt_Meron_ELINT")
@@ -40,7 +41,7 @@ do
     Elint_blue:setZone("South Syria","South Syria")
 
     Elint_blue:enableController("Homs",{freq="307.000", modulation = "AM"})
-    Elint_blue:enableAtis("Homs",{freq="307.250", modulation = "AM"})
+    -- Elint_blue:enableAtis("Homs",{freq="307.250", modulation = "AM"})
     Elint_blue:setCallsign("Homs","BUMBLEBEE")
     Elint_blue:setZone("Homs","Homs")
 
@@ -55,12 +56,12 @@ do
     Elint_blue:setZone("Lebanon","Lebanon")
 
     Elint_blue:enableController("Palmyra",{freq="308.500", modulation = "AM"})
-    Elint_blue:enableAtis("Palmyra",{freq="308.750", modulation = "AM"})
+    -- Elint_blue:enableAtis("Palmyra",{freq="308.750", modulation = "AM"})
     Elint_blue:setCallsign("Palmyra","SWOOP")
     Elint_blue:setZone("Palmyra","Palmyra")
 
     Elint_blue:enableController("Saykal",{freq="309.000", modulation = "AM"})
-    Elint_blue:enableAtis("Saykal",{freq="309.250", modulation = "AM"})
+    -- Elint_blue:enableAtis("Saykal",{freq="309.250", modulation = "AM"})
     Elint_blue:setCallsign("Saykal","RATCHET")
     Elint_blue:setZone("Saykal","Saykal")
 
@@ -70,7 +71,7 @@ do
     Elint_blue:setZone("Haleb","Haleb")
 
     Elint_blue:enableController("Tabqa",{freq="310.000", modulation = "AM"})
-    Elint_blue:enableAtis("Tabqa",{freq="310.250", modulation = "AM"})
+    -- Elint_blue:enableAtis("Tabqa",{freq="310.250", modulation = "AM"})
     Elint_blue:setCallsign("Tabqa","IRONHIDE")
     Elint_blue:setZone("Tabqa","Tabqa")
 

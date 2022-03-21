@@ -350,6 +350,27 @@ The [ATIS system](#atis-system) by default will generate a new message every 5 m
     HoundInstance:setAtisUpdateInterval(5*60)
 ```
 ---
+### System timers Intervals
+Hound works with multiple timers that will control the frequency of internal tasks.
+the four timers and their default values are:
+  * scan: 5s
+  * process: 30s
+  * menus: 60s
+  * markers: 120s
+
+`scan` controls the interval in which platforms are tested agains radars and datapoints are added.  
+`process` is the position calculation interval.  
+`menus` is the interval in which the comms menues will be computed.  
+`markers` is the interval in which all map markers will be updated.  
+you can change the default value if you wish by passing interval name and new value.
+this is normally done to tune performance impact. 
+
+for example: increasing the scan interval to 20 seconds and the process interval to 60 seconds might help when a very large number of radars are present in the missions and there is suspicion Hound is the cause.
+
+```lua
+HoundInstance:setTimerInterval("display",180)
+```
+---
 ## Sectors
 The next big building block of Hound are the sectors. 
 Introduced in 0.2 this aims to solve a problem in large servers. in the past there was only one "default" sector that everyone contacted for information. In practice in large missions it was just un-manageable. 

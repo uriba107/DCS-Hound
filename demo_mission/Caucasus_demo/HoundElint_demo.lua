@@ -44,6 +44,7 @@ end
 
 do
     testing = {}
+    testing.idx = 10
     function testing.addTransmitter(args)
         args["houndCommsInstance"]:setTransmitter(args["unit_name"])
     end
@@ -58,7 +59,7 @@ do
 
     function testing.getContacts(hound)
         env.info(mist.utils.tableShow(hound:getContacts()))
-        env.info(net.lua2json(hound:getContacts()))
+        hound:dumpIntelBrief()
     end
 
     function testing.spawnPlatform(hound)
@@ -70,14 +71,26 @@ do
         env.info("No. platforms after: " .. Length(hound.platform))
     end
 
+    function testing.AddMarker()
+        local pos = Unit.getByName("ELINT_C17"):getPosition()
+        trigger.action.circleToAll(coalition.side.BLUE,testing.idx, pos.p,(pos.p.y/10),{0,255,0,100},{0,255,0,20},2,true)
+        testing.idx = testing.idx + 1
+    end
+
+    function testing.toggleMarkers()
+        HOUND.FORCE_MANAGE_MARKERS = not HOUND.FORCE_MANAGE_MARKERS
+    end
+
     testing.Menu = missionCommands.addSubMenu("Hound Testing")
     missionCommands.addCommand("Destroy Radar",testing.Menu,Unit.destroy,Unit.getByName("SA-3 P-19"))
-    missionCommands.addCommand("Destroy Radar 2",testing.Menu,Unit.destroy,Unit.getByName("Sentinal SR"))
-    missionCommands.addCommand("Destroy C17",testing.Menu,Unit.destroy,Unit.getByName("ELINT_C17"))
-    missionCommands.addCommand("Remove C17",testing.Menu,testing.removePlatform,{houndInstance=Elint_blue,unit_name="ELINT_C17"})
+    -- missionCommands.addCommand("Destroy Radar 2",testing.Menu,Unit.destroy,Unit.getByName("Sentinal SR"))
+    -- missionCommands.addCommand("Destroy C17",testing.Menu,Unit.destroy,Unit.getByName("ELINT_C17"))
+    -- missionCommands.addCommand("Remove C17",testing.Menu,testing.removePlatform,{houndInstance=Elint_blue,unit_name="ELINT_C17"})
     missionCommands.addCommand("Spawn platform",testing.Menu,testing.spawnPlatform,Elint_blue)
-    missionCommands.addCommand("Add transmitter",testing.Menu,testing.addTransmitter,{houndCommsInstance=Elint_blue.controller,unit_name="Migariya_Elint"})
-    missionCommands.addCommand("Destroy transmitter",testing.Menu,Unit.destroy,	Unit.getByName("Migariya_Elint"))
-    missionCommands.addCommand("Remove transmitter",testing.Menu,testing.removeTransmitter,Elint_blue.controller)
+    -- missionCommands.addCommand("Add transmitter",testing.Menu,testing.addTransmitter,{houndCommsInstance=Elint_blue.controller,unit_name="Migariya_Elint"})
+    -- missionCommands.addCommand("Destroy transmitter",testing.Menu,Unit.destroy,	Unit.getByName("Migariya_Elint"))
+    -- missionCommands.addCommand("Remove transmitter",testing.Menu,testing.removeTransmitter,Elint_blue.controller)
     missionCommands.addCommand("Get Contacts",testing.Menu,testing.getContacts,Elint_blue)
+    missionCommands.addCommand("Add test Marker",testing.Menu,testing.AddMarker)
+    missionCommands.addCommand("Toggle marker Counter",testing.Menu,testing.toggleMarkers)
 end
