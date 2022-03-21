@@ -35,6 +35,8 @@
 <li><a href="#Tables">Tables</a></li>
 <li><a href="#General_functions">General functions </a></li>
 <li><a href="#Geo_Function">Geo Function </a></li>
+<li><a href="#Marker_Functions">Marker Functions </a></li>
+<li><a href="#HoundUtils_Marker_instance">HoundUtils.Marker.instance</a></li>
 <li><a href="#TTS_Functions">TTS Functions </a></li>
 <li><a href="#Text_Functions">Text Functions </a></li>
 <li><a href="#Elint_functions">Elint functions </a></li>
@@ -75,7 +77,6 @@
 
 <h1>Module <code>HoundUtils</code></h1>
 <p>HoundUtils
-
  This class holds generic function used by all of Hound Components</p>
 <p></p>
 
@@ -95,11 +96,11 @@
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#getMarkId">getMarkId ()</a></td>
-	<td class="summary">Get next Markpoint Id</td>
+	<td class="summary">Get next Markpoint Id (Depricated)</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#setInitialMarkId">setInitialMarkId (startId)</a></td>
-	<td class="summary">Set New initial marker Id</td>
+	<td class="summary">Set New initial marker Id (DEPRICATED)</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#absTimeDelta">absTimeDelta (t0[, t1])</a></td>
@@ -156,7 +157,6 @@
 	<tr>
 	<td class="name" nowrap><a href="#getReportId">getReportId ([ReportId])</a></td>
 	<td class="summary">get "ATIS" report ID
-
  returns next Phonetic report ID.</td>
 	</tr>
 	<tr>
@@ -180,7 +180,7 @@
 	<td class="summary">Unit use DMM</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Mapping.linear">HoundUtils.Mapping.linear (input, in_min, in_max, out_min, out_max[, constrain])</a></td>
+	<td class="name" nowrap><a href="#HoundUtils.Mapping.linear">HoundUtils.Mapping.linear (input, in_min, in_max, out_min, out_max[, clamp])</a></td>
 	<td class="summary">map input to range (Arduino implementation)</td>
 	</tr>
 	<tr>
@@ -193,13 +193,11 @@
 	<tr>
 	<td class="name" nowrap><a href="#HoundUtils.Geo.checkLOS">HoundUtils.Geo.checkLOS (pos0, pos1)</a></td>
 	<td class="summary">Return if the is LOS between two DCS points
-
  checks both radar horizon (round earth) and DCS terrain LOS</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HoundUtils.Geo.EarthLOS">HoundUtils.Geo.EarthLOS (h0[, h1])</a></td>
 	<td class="summary">Returns maximum horizon distance given heigh above the earth of two points
-
  if only one observer hight is provided, result would be maximum view distance to Sea Level</td>
 	</tr>
 	<tr>
@@ -219,6 +217,60 @@
 	<td class="summary">Ensure input point or point table all have valid Elevation</td>
 	</tr>
 </table>
+<h2><a href="#Marker_Functions">Marker Functions </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Marker.getId">HoundUtils.Marker.getId ()</a></td>
+	<td class="summary">Get next Markpoint Id</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Marker.setInitialId">HoundUtils.Marker.setInitialId (startId)</a></td>
+	<td class="summary">Set New initial marker Id</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HoundUtils.Marker.create">HoundUtils.Marker.create ([args])</a></td>
+	<td class="summary">create Marker entity</td>
+	</tr>
+</table>
+<h2><a href="#HoundUtils_Marker_instance">HoundUtils.Marker.instance</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#instance.setPos">instance.setPos (self, pos)</a></td>
+	<td class="summary">update markpoint position</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#instance.setText">instance.setText (self, text)</a></td>
+	<td class="summary">update markpoint text</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#instance.setRadius">instance.setRadius (self, radius)</a></td>
+	<td class="summary">update markpoint radius</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#instance.setFillColor">instance.setFillColor (self, color)</a></td>
+	<td class="summary">update markpoint fill color</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#instance.setLineColor">instance.setLineColor (self, color)</a></td>
+	<td class="summary">update markpoint line color</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#instance.remove">instance.remove (self)</a></td>
+	<td class="summary">remove markpoint</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#instance._new">instance._new (self, args)</a></td>
+	<td class="summary">create new point (internal)</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#instance._replace">instance._replace (self, args)</a></td>
+	<td class="summary">replace markpoint (internal)</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#instance.update">instance.update (self, args)</a></td>
+	<td class="summary">update markpoint</td>
+	</tr>
+</table>
 <h2><a href="#TTS_Functions">TTS Functions </a></h2>
 <table class="function_list">
 	<tr>
@@ -232,13 +284,11 @@
 	<tr>
 	<td class="name" nowrap><a href="#HoundUtils.TTS.getVerbalConfidenceLevel">HoundUtils.TTS.getVerbalConfidenceLevel (confidenceRadius)</a></td>
 	<td class="summary">return verbal accuracy description
-
  in 500 meters interval</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HoundUtils.TTS.getVerbalContactAge">HoundUtils.TTS.getVerbalContactAge (timestamp[, isSimple[, NATO]])</a></td>
 	<td class="summary">Get Verbal description of contact age
-
  has multiple "modes of operation"</td>
 	</tr>
 	<tr>
@@ -252,7 +302,6 @@
 	<tr>
 	<td class="name" nowrap><a href="#HoundUtils.TTS.getReadTime">HoundUtils.TTS.getReadTime (length[, speed[, isGoogle]])</a></td>
 	<td class="summary">get estimated message read time
-
  returns estimated time in seconds STTS will need to read a message</td>
 	</tr>
 	<tr>
@@ -276,7 +325,6 @@
 	<tr>
 	<td class="name" nowrap><a href="#HoundUtils.Elint.getDefraction">HoundUtils.Elint.getDefraction (band, antenna_size)</a></td>
 	<td class="summary">Get defraction
-
  for band and effective antenna size return angular resolution</td>
 	</tr>
 	<tr>
@@ -317,17 +365,13 @@
 	<tr>
 	<td class="name" nowrap><a href="#HoundUtils.Vector.getRandomVec2">HoundUtils.Vector.getRandomVec2 (variance)</a></td>
 	<td class="summary">Get random 2D vector
-
  use Box–Muller transform to randomize errors on 2D vector
-
  https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform}</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HoundUtils.Vector.getRandomVec3">HoundUtils.Vector.getRandomVec3 (variance)</a></td>
 	<td class="summary">Get random 3d vector
-
  use Box–Muller transform to randomize errors on 3D vector
-
  https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform}</td>
 	</tr>
 </table>
@@ -340,7 +384,6 @@
 	<tr>
 	<td class="name" nowrap><a href="#HoundUtils.Zone.getDrawnZone">HoundUtils.Zone.getDrawnZone (zoneName)</a></td>
 	<td class="summary">Get zone from drawing\
-
  (supported types are freeForm Polygon, rectangle and Oval)</td>
 	</tr>
 </table>
@@ -357,21 +400,17 @@
 	<tr>
 	<td class="name" nowrap><a href="#HoundUtils.Polygon.clipPolygons">HoundUtils.Polygon.clipPolygons (subjectPolygon, clipPolygon)</a></td>
 	<td class="summary">calculate cliping of polygons
-
  <a href="https://rosettacode.org/wiki/Sutherland-Hodgman_polygon_clipping#Lua">Sutherland-Hodgman polygon clipping</a></td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HoundUtils.Polygon.giftWrap">HoundUtils.Polygon.giftWrap (points)</a></td>
 	<td class="summary">Gift wrapping algorithem
-
  Returns the convex hull (using <a href="http://en.wikipedia.org/wiki/Gift_wrapping_algorithm">Jarvis' Gift wrapping algorithm</a>).</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HoundUtils.Polygon.circumcirclePoints">HoundUtils.Polygon.circumcirclePoints (points)</a></td>
 	<td class="summary">calculate Smallest circle around point cloud
-
  Welzel algorithm for <a href="https://en.wikipedia.org/wiki/Smallest-circle_problem">Smallest-circle problem</a>
-
  Implementation taken from <a href="https://github.com/rowanwins/smallest-enclosing-circle/blob/master/src/main.js">github/rowins</a></td>
 	</tr>
 	<tr>
@@ -404,7 +443,6 @@
 	<tr>
 	<td class="name" nowrap><a href="#HoundUtils.Cluster.kmeans">HoundUtils.Cluster.kmeans (data, nclusters, init)</a></td>
 	<td class="summary">K-means++ algorithm
-
  <a href=https://rosettacode.org/wiki/K-means%2B%2B_clustering#Lua>Source of implementation</a></td>
 	</tr>
 	<tr>
@@ -414,7 +452,6 @@
 	<tr>
 	<td class="name" nowrap><a href="#contacts">contacts</a></td>
 	<td class="summary">Mean-shift algorithem to group radars to sites
-
  http://www.chioka.in/meanshift-algorithm-for-the-rest-of-us-python/</td>
 	</tr>
 </table>
@@ -517,7 +554,7 @@
     <strong>getMarkId ()</strong>
     </dt>
     <dd>
-    Get next Markpoint Id
+    Get next Markpoint Id (Depricated)
 
 
 
@@ -528,6 +565,10 @@
     </ol>
 
 
+    <h3>See also:</h3>
+    <ul>
+         <a href="../modules/HoundUtils.html#HoundUtils.Marker.getId">HoundUtils.Marker.getId</a>
+    </ul>
 
 
 </dd>
@@ -536,7 +577,7 @@
     <strong>setInitialMarkId (startId)</strong>
     </dt>
     <dd>
-    Set New initial marker Id
+    Set New initial marker Id (DEPRICATED)
 
 
     <h3>Parameters:</h3>
@@ -553,6 +594,10 @@
     </ol>
 
 
+    <h3>See also:</h3>
+    <ul>
+         <a href="../modules/HoundUtils.html#HoundUtils.Marker.setInitialId">HoundUtils.Marker.setInitialId</a>
+    </ul>
 
 
 </dd>
@@ -803,9 +848,7 @@
     </dt>
     <dd>
     get normal distribution angular error.
-
  will generate gaussian magnitude based on variance and random angle
-
 
 
     <h3>Parameters:</h3>
@@ -906,11 +949,8 @@
     </dt>
     <dd>
     get "ATIS" report ID
-
  returns next Phonetic report ID.
-
  Report ID loops around, i.e "Alpha" --> "Bravo" -> .. -> "Zulu" -> "Alpha"
-
 
 
     <h3>Parameters:</h3>
@@ -952,17 +992,11 @@
     <ol>
 
          DMS (table)
-
  { d=deg,
-
    m=minutes,
-
    s=sec,
-
    mDec = Decimal minutes
-
  }
-
     </ol>
 
 
@@ -1074,7 +1108,7 @@
 </dd>
     <dt>
     <a name = "HoundUtils.Mapping.linear"></a>
-    <strong>HoundUtils.Mapping.linear (input, in_min, in_max, out_min, out_max[, constrain])</strong>
+    <strong>HoundUtils.Mapping.linear (input, in_min, in_max, out_min, out_max[, clamp])</strong>
     </dt>
     <dd>
     map input to range (Arduino implementation)
@@ -1097,7 +1131,7 @@
         <li><span class="parameter">out_max</span>
          Maximum allowable output value
         </li>
-        <li><span class="parameter">constrain</span>
+        <li><span class="parameter">clamp</span>
          Bool if true values will be clipped at range specified
          (<em>optional</em>)
         </li>
@@ -1114,7 +1148,6 @@
     <h3>Usage:</h3>
     <ul>
         <pre class="example">HoundUtils.Mapping.linear(<span class="number">10</span>,<span class="number">0</span>,<span class="number">10</span>,<span class="number">0</span>,<span class="number">100</span>) = <span class="number">100</span>
-
   HoundUtils.Mapping.linear(<span class="number">0.5</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">100</span>) = <span class="number">50</span></pre>
     </ul>
 
@@ -1171,7 +1204,6 @@
     </dt>
     <dd>
     Return if the is LOS between two DCS points
-
  checks both radar horizon (round earth) and DCS terrain LOS
 
 
@@ -1201,7 +1233,6 @@
     </dt>
     <dd>
     Returns maximum horizon distance given heigh above the earth of two points
-
  if only one observer hight is provided, result would be maximum view distance to Sea Level
 
 
@@ -1333,6 +1364,288 @@
 
 </dd>
 </dl>
+    <h2 class="section-header "><a name="Marker_Functions"></a>Marker Functions </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HoundUtils.Marker.getId"></a>
+    <strong>HoundUtils.Marker.getId ()</strong>
+    </dt>
+    <dd>
+    Get next Markpoint Id
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Next MarkId
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HoundUtils.Marker.setInitialId"></a>
+    <strong>HoundUtils.Marker.setInitialId (startId)</strong>
+    </dt>
+    <dd>
+    Set New initial marker Id
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">startId</span>
+         Number to start counting from
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Bool True if initial ID was updated
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HoundUtils.Marker.create"></a>
+    <strong>HoundUtils.Marker.create ([args])</strong>
+    </dt>
+    <dd>
+    create Marker entity
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">args</span>
+         parameters of markpoint
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Hound Marker Instance
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="HoundUtils_Marker_instance"></a>HoundUtils.Marker.instance</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "instance.setPos"></a>
+    <strong>instance.setPos (self, pos)</strong>
+    </dt>
+    <dd>
+    update markpoint position
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+         Hound Marker instance
+        </li>
+        <li><span class="parameter">pos</span>
+         position of marker (only single point is supported)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "instance.setText"></a>
+    <strong>instance.setText (self, text)</strong>
+    </dt>
+    <dd>
+    update markpoint text
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+         Hound Marker instance
+        </li>
+        <li><span class="parameter">text</span>
+         new text for marker
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "instance.setRadius"></a>
+    <strong>instance.setRadius (self, radius)</strong>
+    </dt>
+    <dd>
+    update markpoint radius
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+         Hound Marker instance
+        </li>
+        <li><span class="parameter">radius</span>
+         new radius of markpoint (only circle type marks are supported)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "instance.setFillColor"></a>
+    <strong>instance.setFillColor (self, color)</strong>
+    </dt>
+    <dd>
+    update markpoint fill color
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+         Hound Marker instance
+        </li>
+        <li><span class="parameter">color</span>
+         new fill color of marker
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "instance.setLineColor"></a>
+    <strong>instance.setLineColor (self, color)</strong>
+    </dt>
+    <dd>
+    update markpoint line color
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+         Hound Marker instance
+        </li>
+        <li><span class="parameter">color</span>
+         new fill color of marker
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "instance.remove"></a>
+    <strong>instance.remove (self)</strong>
+    </dt>
+    <dd>
+    remove markpoint
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+         Hound Marker instance
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "instance._new"></a>
+    <strong>instance._new (self, args)</strong>
+    </dt>
+    <dd>
+    create new point (internal)
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+         Hound Marker instance
+        </li>
+        <li><span class="parameter">args</span>
+         full args array
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "instance._replace"></a>
+    <strong>instance._replace (self, args)</strong>
+    </dt>
+    <dd>
+    replace markpoint (internal)
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+         Hound Marker instance
+        </li>
+        <li><span class="parameter">args</span>
+         full args array
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "instance.update"></a>
+    <strong>instance.update (self, args)</strong>
+    </dt>
+    <dd>
+    update markpoint
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+         Hound Marker instance
+        </li>
+        <li><span class="parameter">args</span>
+         full args array
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
     <h2 class="section-header "><a name="TTS_Functions"></a>TTS Functions </h2>
 
     <dl class="function">
@@ -1403,7 +1716,6 @@
     </dt>
     <dd>
     return verbal accuracy description
-
  in 500 meters interval
 
 
@@ -1430,7 +1742,6 @@
     </dt>
     <dd>
     Get Verbal description of contact age
-
  has multiple "modes of operation"
 
 
@@ -1485,7 +1796,6 @@
     <ol>
 
         LL string.
-
  eg. "North, 33 degrees, 15 minutes, 12 seconds, East, 42 degrees, 10 minutes, 45 seconds "
     </ol>
 
@@ -1528,7 +1838,6 @@
     </dt>
     <dd>
     get estimated message read time
-
  returns estimated time in seconds STTS will need to read a message
 
 
@@ -1576,11 +1885,8 @@
     <ol>
 
          Simplified distance
-
  below 1km function will return number in meters
-
  eg. 140m => 150m, 520m => 500m, 4539m => 4.5km
-
     </ol>
 
 
@@ -1617,7 +1923,6 @@
     <ol>
 
         LL string.
-
  eg. "N33°15'12" E42°10'45"" or  "N33°15.200' E42°10.750'"
     </ol>
 
@@ -1661,7 +1966,6 @@
     </dt>
     <dd>
     Get defraction
-
  for band and effective antenna size return angular resolution
 
 
@@ -1910,9 +2214,7 @@
     </dt>
     <dd>
     Get random 2D vector
-
  use Box–Muller transform to randomize errors on 2D vector
-
  https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform}
 
 
@@ -1939,9 +2241,7 @@
     </dt>
     <dd>
     Get random 3d vector
-
  use Box–Muller transform to randomize errors on 3D vector
-
  https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform}
 
 
@@ -1972,9 +2272,7 @@
     </dt>
     <dd>
     List all Useable zones from drawings.
-
  (supported types are freeForm Polygon, rectangle and Oval)
-
 
 
 
@@ -1994,7 +2292,6 @@
     </dt>
     <dd>
     Get zone from drawing\
-
  (supported types are freeForm Polygon, rectangle and Oval)
 
 
@@ -2086,7 +2383,6 @@
     </dt>
     <dd>
     calculate cliping of polygons
-
  <a href="https://rosettacode.org/wiki/Sutherland-Hodgman_polygon_clipping#Lua">Sutherland-Hodgman polygon clipping</a>
 
 
@@ -2116,7 +2412,6 @@
     </dt>
     <dd>
     Gift wrapping algorithem
-
  Returns the convex hull (using <a href="http://en.wikipedia.org/wiki/Gift_wrapping_algorithm">Jarvis' Gift wrapping algorithm</a>).
 
 
@@ -2143,9 +2438,7 @@
     </dt>
     <dd>
     calculate Smallest circle around point cloud
-
  Welzel algorithm for <a href="https://en.wikipedia.org/wiki/Smallest-circle_problem">Smallest-circle problem</a>
-
  Implementation taken from <a href="https://github.com/rowanwins/smallest-enclosing-circle/blob/master/src/main.js">github/rowins</a>
 
 
@@ -2291,7 +2584,6 @@
     <ol>
 
         std calc instance
-
  https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford's_online_algorithm
     </ol>
 
@@ -2342,7 +2634,6 @@
     </dt>
     <dd>
     K-means++ algorithm
-
  <a href=https://rosettacode.org/wiki/K-means%2B%2B_clustering#Lua>Source of implementation</a>
 
 
@@ -2398,7 +2689,6 @@
     </dt>
     <dd>
     Mean-shift algorithem to group radars to sites
-
  http://www.chioka.in/meanshift-algorithm-for-the-rest-of-us-python/
 
 
@@ -2556,7 +2846,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2022-02-24 23:17:04 </i>
+<i style="float:right;">Last updated 2022-03-20 23:18:39 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

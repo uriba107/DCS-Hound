@@ -71,7 +71,6 @@
 
 <h1>Module <code>HoundContact</code></h1>
 <p>HoundContact
-
  Contact class.</p>
 <p> containing related functions
 </p>
@@ -111,6 +110,10 @@
 	<td class="name" nowrap><a href="#generateDeathReport">generateDeathReport (isTTS, sectorName)</a></td>
 	<td class="summary">generate Radar dead report</td>
 	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#generateIntelBrief">generateIntelBrief ()</a></td>
+	<td class="summary">Generate Intel brief Message (for export)</td>
+	</tr>
 </table>
 <h2><a href="#Class_HoundContact">Class HoundContact </a></h2>
 <table class="function_list">
@@ -138,6 +141,14 @@
 	<td class="summary">Get contact UID</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#getTrackId">getTrackId ()</a></td>
+	<td class="summary">get Contact Track ID</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#getNatoDesignation">getNatoDesignation ()</a></td>
+	<td class="summary">get NATO designation</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#getPos">getPos ()</a></td>
 	<td class="summary">get current extimted position</td>
 	</tr>
@@ -158,8 +169,16 @@
 	<td class="summary">check if contact DCS Unit is still alive</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#isRecent">isRecent ()</a></td>
+	<td class="summary">check if contact is recent</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#isTimedout">isTimedout ()</a></td>
 	<td class="summary">check if contact is timed out</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#getState">getState ()</a></td>
+	<td class="summary">Get current state</td>
 	</tr>
 </table>
 <h2><a href="#Data_Processing">Data Processing </a></h2>
@@ -220,15 +239,11 @@
 	<td class="summary">Remove all contact's F10 map markers</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#getMarkerId">getMarkerId ()</a></td>
-	<td class="summary">get MarkId from factory</td>
-	</tr>
-	<tr>
 	<td class="name" nowrap><a href="#calculatePoly">calculatePoly (uncertenty_data[, numPoints[, refPos]])</a></td>
 	<td class="summary">calculate uncertenty Polygon from data</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#drawAreaMarker">drawAreaMarker (numPoints[, debug])</a></td>
+	<td class="name" nowrap><a href="#drawAreaMarker">drawAreaMarker (numPoints)</a></td>
 	<td class="summary">Draw marker Polygon</td>
 	</tr>
 	<tr>
@@ -312,7 +327,6 @@
     <ol>
 
         GridPos (string) MGRS grid position (eg. "CY 564 123", "DN 2 4")
-
  Return BE (string) Bullseye position string (eg. "035/15", "187/120")
     </ol>
 
@@ -342,7 +356,6 @@
     <ol>
 
         GridPos (string) MGRS grid position (eg. "Charlie Yankee one two   Three  four")
-
  Return BE (string) Bullseye position string (eg. "Zero Three Five 15")
     </ol>
 
@@ -510,14 +523,31 @@
 
 
 </dd>
+    <dt>
+    <a name = "generateIntelBrief"></a>
+    <strong>generateIntelBrief ()</strong>
+    </dt>
+    <dd>
+    Generate Intel brief Message (for export)
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        string - compiled message
+    </ol>
+
+
+
+
+</dd>
 </dl>
     <h2 class="section-header has-description"><a name="Class_HoundContact"></a>Class HoundContact </h2>
 
           <div class="section-description">
           HoundContact decleration
-
  Contact class.  containing related functions
-
           </div>
     <dl class="function">
     <dt>
@@ -624,6 +654,44 @@
 
 </dd>
     <dt>
+    <a name = "getTrackId"></a>
+    <strong>getTrackId ()</strong>
+    </dt>
+    <dd>
+    get Contact Track ID
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        string
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "getNatoDesignation"></a>
+    <strong>getNatoDesignation ()</strong>
+    </dt>
+    <dd>
+    get NATO designation
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        string
+    </ol>
+
+
+
+
+</dd>
+    <dt>
     <a name = "getPos"></a>
     <strong>getPos ()</strong>
     </dt>
@@ -701,6 +769,25 @@
 
 </dd>
     <dt>
+    <a name = "isRecent"></a>
+    <strong>isRecent ()</strong>
+    </dt>
+    <dd>
+    check if contact is recent
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Bool True if seen in the 2 minutes
+    </ol>
+
+
+
+
+</dd>
+    <dt>
     <a name = "isTimedout"></a>
     <strong>isTimedout ()</strong>
     </dt>
@@ -716,6 +803,29 @@
     </ol>
 
 
+
+
+</dd>
+    <dt>
+    <a name = "getState"></a>
+    <strong>getState ()</strong>
+    </dt>
+    <dd>
+    Get current state
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Contact state
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="../modules/HOUND.html#EVENTS">HOUND.EVENTS</a>
+    </ul>
 
 
 </dd>
@@ -1036,25 +1146,6 @@
 
 </dd>
     <dt>
-    <a name = "getMarkerId"></a>
-    <strong>getMarkerId ()</strong>
-    </dt>
-    <dd>
-    get MarkId from factory
-
-
-
-    <h3>Returns:</h3>
-    <ol>
-
-        mark idx
-    </ol>
-
-
-
-
-</dd>
-    <dt>
     <a name = "calculatePoly"></a>
     <strong>calculatePoly (uncertenty_data[, numPoints[, refPos]])</strong>
     </dt>
@@ -1089,7 +1180,7 @@
 </dd>
     <dt>
     <a name = "drawAreaMarker"></a>
-    <strong>drawAreaMarker (numPoints[, debug])</strong>
+    <strong>drawAreaMarker (numPoints)</strong>
     </dt>
     <dd>
     Draw marker Polygon
@@ -1100,11 +1191,6 @@
         <li><span class="parameter">numPoints</span>
             <span class="types"><span class="type">int</span></span>
          number of points to draw (only 1,4,8 and 16 are valid)
-        </li>
-        <li><span class="parameter">debug</span>
-            <span class="types"><span class="type">bool</span></span>
-         if true will return the polygon points
-         (<em>optional</em>)
         </li>
     </ul>
 
@@ -1355,7 +1441,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2022-02-24 23:17:04 </i>
+<i style="float:right;">Last updated 2022-03-20 23:18:39 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>
