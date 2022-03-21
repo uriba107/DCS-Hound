@@ -7,7 +7,7 @@ end
 
 do
     HOUND = {
-        VERSION = "0.2.2-develop",
+        VERSION = "0.2.2",
         DEBUG = false,
         ELLIPSE_PERCENTILE = 0.6,
         DATAPOINTS_NUM = 30,
@@ -5338,8 +5338,7 @@ do
         elint.radioAdminMenu = nil
         elint.coalitionId = nil
 
-        elint.timingCounters = {
-        }
+        elint.timingCounters = {}
 
         if platformName ~= nil then
             if type(platformName) == "string" then
@@ -6208,4 +6207,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.2.2-develop - Compiled on 2022-03-20 21:18
+-- Hound version 0.2.2 - Compiled on 2022-03-21 12:49
