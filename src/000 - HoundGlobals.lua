@@ -24,7 +24,7 @@ do
     -- @field EXTENDED_INFO Hound will add more in depth uncertenty info to controller messages (default is true)
     -- @field FORCE_MANAGE_MARKERS Force Hound to use internal counter for markIds (default is false).
     HOUND = {
-        VERSION = "0.2.2-TRUNK",
+        VERSION = "0.2.3-TRUNK",
         DEBUG = true,
         ELLIPSE_PERCENTILE = 0.6,
         DATAPOINTS_NUM = 30,

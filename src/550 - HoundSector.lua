@@ -753,6 +753,22 @@ do
     --- Event handeling
     -- @section events
 
+    --- create randome annouce
+    -- @param[opt] int Index of requested announce
+    -- @return string Announcement
+    function HoundSector:getTransmissionAnnounce(index)
+        local messages = {
+            "Attention All Aircraft! This is " .. self.callsign .. ". ",
+            "All Aircraft, " .. self.callsign .. ". ",
+            "This is " .. self.callsign .. ". "
+        }
+        local retIndex = l_math.random(1,#messages)
+        if type(index) == "number" then
+            retIndex = l_math.max(1,l_math.min(#messages,index))
+        end
+        return messages[retIndex]
+    end
+
     --- Send dead emitter notification
     -- @param contact HounContact instace
     function HoundSector:notifyDeadEmitter(contact)
@@ -769,7 +785,7 @@ do
             contactPrimarySector = nil
         end
 
-        local announce = "All Aircraft, " .. self.callsign .. ". "
+        local announce = self:getTransmissionAnnounce()
         local enrolledGid = self:getSubscribedGroups()
 
         local msg = {coalition =  self._hSettings:getCoalition(), priority = 3, gid=enrolledGid}
@@ -804,12 +820,12 @@ do
             contactPrimarySector = nil
         end
 
-        local announce = "Attention All Aircraft! This is " .. self.callsign .. ". New threat detected! "
+        local announce = self:getTransmissionAnnounce()
         local enrolledGid = self:getSubscribedGroups()
 
         local msg = {coalition = self._hSettings:getCoalition(), priority = 2 , gid=enrolledGid}
         if (controller and controller:getSettings("enableText")) or (notifier and notifier:getSettings("enableText"))  then
-            msg.txt = "New threat detected! " .. contact:generatePopUpReport(false,contactPrimarySector)
+            msg.txt = self.callsign .. "Reports " .. contact:generatePopUpReport(false,contactPrimarySector)
         end
         if (controller and controller:getSettings("enableTTS")) or (notifier and notifier:getSettings("enableTTS")) then
             msg.tts = announce .. contact:generatePopUpReport(true,contactPrimarySector)
@@ -867,15 +883,19 @@ do
         local reportId
         reportId, loopData.reportIdx =
             HoundUtils.getReportId(loopData.reportIdx)
+
         local header = self.callsign
+        local footer = reportId .. "."
+
         if self._hSettings:getNATO() then
             header = header .. " Lowdown "
+            footer = "Lowdown " .. footer
         else
             header = header .. " SAM information "
+            footer = "you have " .. footer
         end
         header = header .. reportId .. " " ..
                                     HoundUtils.TTS.getTtsTime() .. ". "
-        local footer = "you have " .. reportId .. "."
 
         local msgObj = {
             coalition = self._hSettings:getCoalition(),
