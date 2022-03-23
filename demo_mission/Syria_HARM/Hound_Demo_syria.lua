@@ -3,14 +3,19 @@ do
         STTS.DIRECTORY = "C:\\Program Files\\DCS-SimpleRadio-Standalone"
     end
 
-    -- SA-6 activation logic
+    HOUND_MISSION = {}
+    function HOUND_MISSION.randomTemplate(templates)
+        if type(templates) ~= "table" then return nil end
+        return templates[math.random(1,#templates)]
+    end
 
-    SA6 = {}
-    SA6.North = nil
-    SA6.South = nil
-    SA6.template = "SYR_SA6"
-    SA6.spawnJoker = function() return (math.random() < 0.4) end
-    function SA6.destroy(GroupName)
+    -- SA-6 activation logic
+    HOUND_MISSION.SA6 = {}
+    HOUND_MISSION.SA6.North = nil
+    HOUND_MISSION.SA6.South = nil
+    HOUND_MISSION.SA6.template = "SYR_SA6"
+    HOUND_MISSION.SA6.spawnJoker = function() return (math.random() < 0.4) end
+    function HOUND_MISSION.SA6.destroy(GroupName)
         env.info("check " .. GroupName)
 
         local SAM = Group.getByName(GroupName)
@@ -28,7 +33,7 @@ do
         return destroy
     end
 
-    function SA6.activate(SAM)
+    function HOUND_MISSION.SA6.activate(SAM)
         SAM:enableEmission(false)
         local control = SAM:getController()
         control:setOnOff(true)
@@ -39,43 +44,94 @@ do
         SAM:enableEmission(true)
     end
 
-    function SA6.GoLive()
+    function HOUND_MISSION.SA6.GoLive()
         env.info("GoLive")
-        if SA6.North == nil or SA6.destroy(SA6.North:getName()) then
-            SA6.North = Unit.getByName(mist.cloneInZone(SA6.template,"SA6_North")["units"][1]["name"]):getGroup()
-            SA6.activate(SA6.North)
+        if HOUND_MISSION.SA6.North == nil or HOUND_MISSION.SA6.destroy(HOUND_MISSION.SA6.North:getName()) then
+            HOUND_MISSION.SA6.North = Unit.getByName(mist.cloneInZone(HOUND_MISSION.SA6.template,"SA6_North")["units"][1]["name"]):getGroup()
+            HOUND_MISSION.SA6.activate(HOUND_MISSION.SA6.North)
         end
 
-        if SA6.South == nil or SA6.destroy(SA6.South:getName()) then
-            -- SA6.South = mist.cloneInZone(SA6.template,"SA6_South")
-            SA6.South = Unit.getByName(mist.cloneInZone(SA6.template,"SA6_South")["units"][1]["name"]):getGroup()
-            SA6.activate(SA6.South)
+        if HOUND_MISSION.SA6.South == nil or HOUND_MISSION.SA6.destroy(HOUND_MISSION.SA6.South:getName()) then
+            -- HOUND_MISSION.SA6.South = mist.cloneInZone(HOUND_MISSION.SA6.template,"SA6_South")
+            HOUND_MISSION.SA6.South = Unit.getByName(mist.cloneInZone(HOUND_MISSION.SA6.template,"SA6_South")["units"][1]["name"]):getGroup()
+            HOUND_MISSION.SA6.activate(HOUND_MISSION.SA6.South)
         end
 
-        if SA6.spawnJoker and (SA6.Joker == nil or SA6.destroy(SA6.Joker:getName())) then
-            SA6.Joker = Unit.getByName(mist.cloneInZone(SA6.randomTemplate(),"Joker_SAM")["units"][1]["name"]):getGroup()
-            SA6.activate(SA6.Joker)
+        if HOUND_MISSION.SA6.spawnJoker and (HOUND_MISSION.SA6.Joker == nil or HOUND_MISSION.SA6.destroy(HOUND_MISSION.SA6.Joker:getName())) then
+            HOUND_MISSION.SA6.Joker = Unit.getByName(mist.cloneInZone(HOUND_MISSION.SA6.randomTemplate(),"Joker_SAM")["units"][1]["name"]):getGroup()
+            HOUND_MISSION.SA6.activate(HOUND_MISSION.SA6.Joker)
         end
     end
 
-    function SA6.randomTemplate()
-        local templates = {"SYR_SA6","SYR_SA11","SYR_SA8"}
-        return templates[math.random(1,#templates)]
+    function HOUND_MISSION.SA6.randomTemplate()
+        return HOUND_MISSION.randomTemplate({"SYR_SA6","SYR_SA11","SYR_SA8"})
     end
 
-    -- RestartMission = function()
-    --     local filename = DCS.getMissionFilename()
-    --     net.load_mission(filename)
-    -- end
+    HOUND_MISSION.PLAYGROUND = {
+        unitCounter = 0,
+        zoneNames = {'PlayGround_Hula','PlayGround_Golan'},
+        vehicleTypes = {
+                        'T-72B3','T-55',
+                        'BMP-2','BMP-2','BTR-80','BTR-80',
+                        'Ural-375','Ural-375','Ural-375',
+                        'ZIL-135','ZIL-135'
+                    }
+    }
+
+    function HOUND_MISSION.PLAYGROUND.getId()
+        HOUND_MISSION.PLAYGROUND.unitCounter = HOUND_MISSION.PLAYGROUND.unitCounter + 1
+        return HOUND_MISSION.PLAYGROUND.unitCounter
+    end
+
+    function HOUND_MISSION.PLAYGROUND.createUnitList(pos,radius,innerradius)
+        local unitList = {}
+        if type(radius) == "number" and type(pos) == "table" then
+            for i=1,math.random(4,8) do
+                local unitPos = mist.getRandPointInCircle(pos,radius,innerradius)
+                local unitType = HOUND_MISSION.randomTemplate(HOUND_MISSION.PLAYGROUND.vehicleTypes)
+                local unitData = {
+                    ["type"] = unitType,
+                    ["transportable"] =
+                    {
+                        ["randomTransportable"] = false,
+                    }, -- end of ["transportable"]
+                    ["unitId"] = i,
+                    ["skill"] = "Random",
+                    ["y"] = unitPos.y,
+                    ["x"] = unitPos.x,
+                    ["name"] = unitType .. HOUND_MISSION.PLAYGROUND.getId(),
+                    ["playerCanDrive"] = true,
+                    ["heading"] = math.random() * math.pi * 2,
+                }
+                table.insert(unitList,unitData)
+            end
+        end
+        return unitList
+    end
+
+    function HOUND_MISSION.PLAYGROUND.spawnGroup()
+        local zone = HOUND_MISSION.randomTemplate(HOUND_MISSION.PLAYGROUND.zoneNames)
+        local pos = mist.getRandomPointInZone(zone, 750)
+        local grpData = {
+            units = HOUND_MISSION.PLAYGROUND.createUnitList(pos,200,25),
+            country = 'syria',
+            category = 'VEHICLE'
+        }
+        local grp = mist.dynAdd(grpData)
+        if type(grp) == "table" and type(grp['name']) == "string" then
+            trigger.action.outText("Apache Targets group has spawned in " .. zone , 15)
+        end
+    end
 
     MAIN_MENU = {
         root = missionCommands.addSubMenuForCoalition(coalition.side.BLUE,"Mission Actions")
     }
-    MAIN_MENU.activateSa6 = missionCommands.addCommandForCoalition(coalition.side.BLUE,"Activate SA-6",MAIN_MENU.root,SA6.GoLive)
+    MAIN_MENU.activateSa6 = missionCommands.addCommandForCoalition(coalition.side.BLUE,"Activate SA-6",MAIN_MENU.root,HOUND_MISSION.SA6.GoLive)
+    MAIN_MENU.spawnTankGroup = missionCommands.addCommandForCoalition(coalition.side.BLUE,"Spawn Apache Targets",MAIN_MENU.root,HOUND_MISSION.PLAYGROUND.spawnGroup)
     -- MAIN_MENU.activateSa6 = missionCommands.addCommandForCoalition(coalition.side.BLUE,"Restart Mission",MAIN_MENU.root,RestartMission)
 
     -- activate SA6 and keep trigerring it
-    mist.scheduleFunction(SA6.GoLive,nil,timer.getTime()+120,600)
+    mist.scheduleFunction(HOUND_MISSION.SA6.GoLive,nil,timer.getTime()+120,600)
 
 
 

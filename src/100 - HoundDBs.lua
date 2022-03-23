@@ -723,6 +723,8 @@ do
             ['AJS37'] = {antenna = {size = 4.5, factor = 1}},
             ['F-16C_50'] = {antenna = {size = 1.45, factor = 1}},
             ['JF-17'] = {antenna = {size = 3.25, factor = 1}},
+            ['RC135RJ'] = {antenna = {size = 40, factor = 1}}, -- Secret Squirl RC-135
+
         }
     }
 

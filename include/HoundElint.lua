@@ -7,7 +7,7 @@ end
 
 do
     HOUND = {
-        VERSION = "0.2.2",
+        VERSION = "0.2.3-develop",
         DEBUG = false,
         ELLIPSE_PERCENTILE = 0.6,
         DATAPOINTS_NUM = 30,
@@ -954,6 +954,8 @@ do
             ['AJS37'] = {antenna = {size = 4.5, factor = 1}},
             ['F-16C_50'] = {antenna = {size = 1.45, factor = 1}},
             ['JF-17'] = {antenna = {size = 3.25, factor = 1}},
+            ['RC135RJ'] = {antenna = {size = 40, factor = 1}}, -- Secret Squirl RC-135
+
         }
     }
 
@@ -5141,6 +5143,19 @@ do
         end
     end
 
+    function HoundSector:getTransmissionAnnounce(index)
+        local messages = {
+            "Attention All Aircraft! This is " .. self.callsign .. ". ",
+            "All Aircraft, " .. self.callsign .. ". ",
+            "This is " .. self.callsign .. ". "
+        }
+        local retIndex = l_math.random(1,#messages)
+        if type(index) == "number" then
+            retIndex = l_math.max(1,l_math.min(#messages,index))
+        end
+        return messages[retIndex]
+    end
+
     function HoundSector:notifyDeadEmitter(contact)
         local controller = self.comms.controller
         local notifier = self.comms.notifier
@@ -5155,7 +5170,7 @@ do
             contactPrimarySector = nil
         end
 
-        local announce = "All Aircraft, " .. self.callsign .. ". "
+        local announce = self:getTransmissionAnnounce()
         local enrolledGid = self:getSubscribedGroups()
 
         local msg = {coalition =  self._hSettings:getCoalition(), priority = 3, gid=enrolledGid}
@@ -5188,12 +5203,12 @@ do
             contactPrimarySector = nil
         end
 
-        local announce = "Attention All Aircraft! This is " .. self.callsign .. ". New threat detected! "
+        local announce = self:getTransmissionAnnounce()
         local enrolledGid = self:getSubscribedGroups()
 
         local msg = {coalition = self._hSettings:getCoalition(), priority = 2 , gid=enrolledGid}
         if (controller and controller:getSettings("enableText")) or (notifier and notifier:getSettings("enableText"))  then
-            msg.txt = "New threat detected! " .. contact:generatePopUpReport(false,contactPrimarySector)
+            msg.txt = self.callsign .. "Reports " .. contact:generatePopUpReport(false,contactPrimarySector)
         end
         if (controller and controller:getSettings("enableTTS")) or (notifier and notifier:getSettings("enableTTS")) then
             msg.tts = announce .. contact:generatePopUpReport(true,contactPrimarySector)
@@ -5247,15 +5262,19 @@ do
         local reportId
         reportId, loopData.reportIdx =
             HoundUtils.getReportId(loopData.reportIdx)
+
         local header = self.callsign
+        local footer = reportId .. "."
+
         if self._hSettings:getNATO() then
             header = header .. " Lowdown "
+            footer = "Lowdown " .. footer
         else
             header = header .. " SAM information "
+            footer = "you have " .. footer
         end
         header = header .. reportId .. " " ..
                                     HoundUtils.TTS.getTtsTime() .. ". "
-        local footer = "you have " .. reportId .. "."
 
         local msgObj = {
             coalition = self._hSettings:getCoalition(),
@@ -6207,4 +6226,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.2.2 - Compiled on 2022-03-21 12:49
+-- Hound version 0.2.3-develop - Compiled on 2022-03-23 22:55
