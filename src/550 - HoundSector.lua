@@ -544,16 +544,20 @@ do
         end
     end
 
-    --- check out player from controller
+    --- check out player's group from controller
     -- @local
     -- @param args table {self=&ltHoundSector&gt,player=&ltplayer&gt}
     -- @param[opt] skipAck Bool if true do not reply with ack to player
-    function HoundSector.checkOut(args,skipAck)
+    -- @param[opt] onlyPlayer Bool. if true, only the player and not his flight (eg. slot change for player)
+    function HoundSector.checkOut(args,skipAck,onlyPlayer)
         local gSelf = args["self"]
         local player = args["player"]
         gSelf.comms.menu.enrolled[player] = nil
-        for _,otherPlayer in pairs(gSelf:findGrpInPlayerList(player.groupId)) do
-            gSelf.comms.menu.enrolled[otherPlayer] = nil
+
+        if not onlyPlayer then
+            for _,otherPlayer in pairs(gSelf:findGrpInPlayerList(player.groupId)) do
+                gSelf.comms.menu.enrolled[otherPlayer] = nil
+            end
         end
         gSelf:populateRadioMenu()
         if not skipAck then
@@ -754,7 +758,7 @@ do
     -- @section events
 
     --- create randome annouce
-    -- @param[opt] int Index of requested announce
+    -- @param[opt] index of requested announce
     -- @return string Announcement
     function HoundSector:getTransmissionAnnounce(index)
         local messages = {

@@ -24,7 +24,7 @@ do
 
         local instance = {}
         instance.intervals = {
-            scan = 5,
+            scan = 10,
             process = 30,
             menus = 60,
             markers = 120,

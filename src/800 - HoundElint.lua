@@ -1120,6 +1120,25 @@ do
             and setContains(mist.DBs.humansByName,DcsEvent.initiator:getName())
             then
                 self:populateRadioMenu()
+                return
+        end
+        if DcsEvent.id == world.event.S_EVENT_PLAYER_LEAVE_UNIT
+            and DcsEvent.initiator:getCoalition() == self.settings:getCoalition()
+            and setContains(mist.DBs.humansByName,DcsEvent.initiator:getName())
+            then
+                local player = mist.DBs.humansByName[DcsEvent.initiator:getName()]
+                for _,sector in pairs(self:getSectors()) do
+                    sector.checkOut({self=sector,player=player},true,true)
+                end
+                return
+        end
+        if DcsEvent.id == world.event.S_EVENT_DEAD
+            and DcsEvent.initiator:getCoalition() ~= self.settings:getCoalition()
+            and DcsEvent.initiator:hasSensors(Unit.SensorType.RADAR)
+            and self.contacts:isContact(DcsEvent.initiator)
+            then
+                self.contacts:setDead(DcsEvent.initiator)
+                return
         end
     end
 

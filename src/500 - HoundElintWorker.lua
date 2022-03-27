@@ -11,6 +11,7 @@ do
         instance._platforms = {}
         instance._settings =  HoundConfig.get(HoundInstanceId)
         instance.coalitionId = nil
+        instance.TrackIdCounter = 0
         setmetatable(instance, HoundElintWorker)
         return instance
     end
@@ -145,62 +146,86 @@ do
         return platforms
     end
 
+    --- get the next track number
+    -- @return UID for the contact
+    function HoundElintWorker:getNewTrackId()
+        self.TrackIdCounter = self.TrackIdCounter + 1
+        return self.TrackIdCounter
+    end
+
+    --- return if contact exists in the system
+    -- @return Bool return True if unit is in the system
+    function HoundElintWorker:isContact(emitter)
+        if emitter == nil then return false end
+        local emitterName = nil
+        if type(emitter) == "string" then
+            emitterName = emitter
+        end
+        if type(emitter) == "table" and emitter.getName ~= nil then
+            emitterName = emitter:getName()
+        end
+        return setContains(self._contacts,emitterName)
+    end
+
     --- add contact to worker
     -- @param emitter DCS Unit to add
-    -- @return UID of added unit
+    -- @return Name of added unit
     function HoundElintWorker:addContact(emitter)
-        if emitter == nil or emitter.getID == nil then return end
-        local uid = emitter:getID()
-        if self._contacts[uid] ~= nil then return uid end
-        self._contacts[uid] = HoundContact.New(emitter, self:getCoalition())
+        if emitter == nil or emitter.getName == nil then return end
+        local emitterName = emitter:getName()
+        if self._contacts[emitterName] ~= nil then return emitterName end
+        self._contacts[emitterName] = HoundContact.New(emitter, self:getCoalition(), self:getNewTrackId())
         HoundEventHandler.publishEvent({
             id = HOUND.EVENTS.RADAR_NEW,
             initiator = emitter,
             houndId = self._settings:getId(),
             coalition = self._settings:getCoalition()
         })
-        return uid
+        return emitterName
     end
 
     --- get HoundContact from DCS Unit/UID
-    -- @param emitter DCS Unit/UID of radar
+    -- @param emitter DCS Unit/name of radar unit
+    -- @param[opt] getOnly if true function will not create new unit if not exist
     -- @return HoundContact instance of that Unit
-    function HoundElintWorker:getContact(emitter)
+    function HoundElintWorker:getContact(emitter,getOnly)
         if emitter == nil then return nil end
-        local uid = nil
-        if type(emitter) =="number" then
-            uid = emitter
+        local emitterName = nil
+        if type(emitter) == "string" then
+            emitterName = emitter
         end
-        if type(emitter) == "table" and emitter.getID ~= nil then
-            uid = emitter:getID()
+        if type(emitter) == "table" and emitter.getName ~= nil then
+            emitterName = emitter:getName()
         end
 
-        if uid ~= nil and self._contacts[uid] ~= nil then return self._contacts[uid] end
-        if not self._contacts[uid] and type(emitter) == "table" then
+        if emitterName ~= nil and self._contacts[emitterName] ~= nil then return self._contacts[emitterName] end
+        if not self._contacts[emitterName] and type(emitter) == "table" and not getOnly then
             self:addContact(emitter)
-            return self._contacts[uid]
+            return self._contacts[emitterName]
         end
         return nil
     end
 
     --- remove Contact from tracking
-    -- @int uid DCS unit ID (UID) to remove
+    -- @string emitterName DCS unit Name to remove
     -- @return Bool. true if removed.
-    function HoundElintWorker:removeContact(uid)
-        if not uid then return false end
-        HoundEventHandler.publishEvent({
-            id = HOUND.EVENTS.RADAR_DESTROYED,
-            initiator = self._contacts[uid],
-            houndId = self._settings:getId(),
-            coalition = self._settings:getCoalition()
-        })
+    function HoundElintWorker:removeContact(emitterName)
+        if not type(emitterName) == "string" then return false end
+        if self._contacts[emitterName] then
+            HoundEventHandler.publishEvent({
+                id = HOUND.EVENTS.RADAR_DESTROYED,
+                initiator = self._contacts[emitterName],
+                houndId = self._settings:getId(),
+                coalition = self._settings:getCoalition()
+            })
+        end
 
-        self._contacts[uid] = nil
+        self._contacts[emitterName] = nil
         return true
     end
 
     --- set contact as Prebriefed
-    -- @param emitter DCS Unit/UID of radar
+    -- @param emitter DCS Unit/Unit name of radar
     function HoundElintWorker:setPreBriefedContact(emitter)
         if not emitter:isExist() then return end
         local contact = self:getContact(emitter)
@@ -215,13 +240,19 @@ do
         end
     end
 
+    --- set contact as Dead
+    -- @param emitter DCS Unit/Unit name of radar
+    function HoundElintWorker:setDead(emitter)
+        local contact = self:getContact(emitter,true)
+        if contact then contact:setDead() end
+    end
     --- is contact is tracked
     -- @param emitter DCS Unit/UID of requested emitter
     -- @return Bool. is Unit is being tracked by current HoundWorker instance.
     function HoundElintWorker:isTracked(emitter)
         if emitter == nil then return false end
-        if type(emitter) =="number" and self._contacts[emitter] ~= nil then return true end
-        if type(emitter) == "table" and emitter.getID ~= nil and self._contacts[emitter:getID()] ~= nil then return true end
+        if type(emitter) =="string" and self._contacts[emitter] ~= nil then return true end
+        if type(emitter) == "table" and emitter.getName ~= nil and self._contacts[emitter:getName()] ~= nil then return true end
         return false
     end
 
@@ -253,9 +284,6 @@ do
         if self._settings:getUseMarkers() then
             for _, contact in pairs(self._contacts) do
                 contact:updateMarker(self._settings:getMarkerType())
-                -- if HOUND.DEBUG then
-                --     contact:processDataWIP()
-                -- end
             end
         end
     end
@@ -333,7 +361,7 @@ do
         -- env.info("Recivers: " .. table.getn(self.platform) .. " | Radars: " .. table.getn(Radars))
         for _,RadarName in ipairs(Radars) do
             local radar = Unit.getByName(RadarName)
-            -- local RadarUid = radar:getID()
+            -- local RadarUid = radar:getName()
             -- local RadarType = radar:getTypeName()
             -- local RadarName = radar:getName()
             local radarPos = radar:getPosition().p
@@ -341,7 +369,7 @@ do
 
             for _,platform in ipairs(self._platforms) do
                 local platformPos = platform:getPosition().p
-                -- local platformId = platform:getID()
+                -- local platformId = platform:getName()
                 local platformIsStatic = false
                 local isAerialUnit = false
                 local posErr = {x = 0, z = 0, y = 0 }
@@ -385,47 +413,34 @@ do
     --- Process function
     -- process all the information stored in the system to update all radar positions
     function HoundElintWorker:Process()
-        -- local currentTime = timer.getTime() + 0.2
-        -- if self.controller.msgTimer < currentTime then
-        --     self.controller.msgTimer = currentTime
-        -- end
         if Length(self._contacts) < 1 then return end
-        for uid, contact in pairs(self._contacts) do
+        for contactName, contact in pairs(self._contacts) do
             if contact ~= nil then
-                -- env.info("emitter " .. emitter:getName() .. " has " .. emitter:countDatapoints() .. " dataPoints")
+                -- env.info("emitter " .. contact:getName() .. " has " .. contact:countDatapoints() .. " dataPoints")
                 local contactState = contact:processData()
-                -- if HOUND.DEBUG then
-                --     contact:processDataWIP()
-                -- end
+
                 if contactState == HOUND.EVENTS.RADAR_DETECTED then
                     if self._settings:getUseMarkers() then contact:updateMarker(self._settings:getMarkerType()) end
                 end
-                if contact:isTimedout() then
-                    contact:CleanTimedout()
-                    contactState = HOUND.EVENTS.RADAR_ASLEEP
-                end
-                if self._settings:getBDA() and contact:isAlive() == false and HoundUtils.absTimeDelta(contact.last_seen, timer.getAbsTime()) > 60 then
-                    contact:destroy()
-                    self:removeContact(uid)
 
-                -- this can be deleted or at leased wrapped in config option. remove timed out contacts
-                -- else
-                --     if HoundUtils.absTimeDelta(contact.last_seen,
-                --                             timer.getAbsTime()) > 1800 then
-                --         self:removeRadarRadioItem(contact)
-                --         contact:removeMarker()
-                --         self._contacts[uid] = nil
-                --     end
-                else
-                    -- publish event (in case of destroyed radar, event is handled by the notify function)
-                    if contactState then
-                        HoundEventHandler.publishEvent({
-                            id = contactState,
-                            initiator = contact,
-                            houndId = self._settings:getId(),
-                            coalition = self._settings:getCoalition()
-                        })
-                    end
+                if contact:isTimedout() then
+                    contactState = contact:CleanTimedout()
+                end
+
+                if self._settings:getBDA() and contact:getLastSeen() > 60 and contact:isAlive() == false then
+                    contact:destroy()
+                    self:removeContact(contactName)
+                    return
+                end
+
+                -- publish event (in case of destroyed radar, event is handled by the notify function)
+                if contactState then
+                    HoundEventHandler.publishEvent({
+                        id = contactState,
+                        initiator = contact,
+                        houndId = self._settings:getId(),
+                        coalition = self._settings:getCoalition()
+                    })
                 end
             end
         end

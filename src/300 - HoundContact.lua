@@ -15,8 +15,9 @@ do
     --- create new HoundContact instance
     -- @param DCS_Unit emitter DCS Unit
     -- @param HoundCoalition coalition Id of Hound Instace
+    -- @param[opt] ContactId specify uid for the contact. if not present Unit ID will be used
     -- @return HoundContact
-    function HoundContact.New(DCS_Unit,HoundCoalition)
+    function HoundContact.New(DCS_Unit,HoundCoalition,ContactId)
         if not DCS_Unit or type(DCS_Unit) ~= "table" or not DCS_Unit.getName or not HoundCoalition then
             HoundLogger.warn("failed to create HoundContact instance")
             return
@@ -24,7 +25,7 @@ do
         local elintcontact = {}
         setmetatable(elintcontact, HoundContact)
         elintcontact.unit = DCS_Unit
-        elintcontact.uid = DCS_Unit:getID()
+        elintcontact.uid = ContactId or DCS_Unit:getID()
         elintcontact.DCStypeName = DCS_Unit:getTypeName()
         elintcontact.typeName = DCS_Unit:getTypeName()
         elintcontact.isEWR = false
@@ -76,6 +77,7 @@ do
         elintcontact.detected_by = {}
         elintcontact.state = HOUND.EVENTS.RADAR_NEW
         elintcontact.preBriefed = false
+        elintcontact.unitAlive = true
         elintcontact._kalman = HoundEstimator.Kalman.posFilter()
         return elintcontact
     end
@@ -106,6 +108,11 @@ do
         return self.uid%100
     end
 
+    --- Get last seen in seconds
+    -- @return number in seconds since contact was last seen
+    function HoundContact:getLastSeen()
+        return HoundUtils.absTimeDelta(self.last_seen)
+    end
     --- get Contact Track ID
     -- @return string
     function HoundContact:getTrackId()
@@ -149,8 +156,13 @@ do
     -- @return State (bool)
     -- @return Boolean
     function HoundContact:isAlive()
-        if self.unit:isExist() == false or self.unit:getLife() <= 1 then return false end
-        return true
+        return self.unitAlive
+    end
+
+    --- set internal alive flag to false
+    -- This is internal function ment to be called on "S_EVENT_DEAD"
+    function HoundContact:setDead()
+        self.unitAlive = false
     end
 
     --- check if contact is recent
@@ -183,6 +195,7 @@ do
             self._dataPoints = {}
             self.state = HOUND.EVENTS.RADAR_ASLEEP
         end
+        return self.state
     end
 
     --- return number of platforms
@@ -589,17 +602,9 @@ do
     --- Remove all contact's F10 map markers
     -- @local
     function HoundContact:removeMarkers()
-        for _,mark in pairs(self._markpoints) do
-            mark:remove()
+        for _,marker in pairs(self._markpoints) do
+            marker:remove()
         end
-        -- if self.markpointID ~= nil then
-        --     while #self.markpointID > 0 do
-        --         local idx = table.remove(self.markpointID)
-        --         if type(idx) == "number" then
-        --             trigger.action.removeMark(idx)
-        --         end
-        --     end
-        -- end
     end
 
     --- calculate uncertenty Polygon from data
