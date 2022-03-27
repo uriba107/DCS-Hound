@@ -1016,7 +1016,7 @@ do
 
         local instance = {}
         instance.intervals = {
-            scan = 5,
+            scan = 10,
             process = 30,
             menus = 60,
             markers = 120,
@@ -2889,7 +2889,7 @@ do
     local l_mist = mist
     local pi_2 = l_math.pi*2
 
-    function HoundContact.New(DCS_Unit,HoundCoalition)
+    function HoundContact.New(DCS_Unit,HoundCoalition,ContactId)
         if not DCS_Unit or type(DCS_Unit) ~= "table" or not DCS_Unit.getName or not HoundCoalition then
             HoundLogger.warn("failed to create HoundContact instance")
             return
@@ -2897,7 +2897,7 @@ do
         local elintcontact = {}
         setmetatable(elintcontact, HoundContact)
         elintcontact.unit = DCS_Unit
-        elintcontact.uid = DCS_Unit:getID()
+        elintcontact.uid = ContactId or DCS_Unit:getID()
         elintcontact.DCStypeName = DCS_Unit:getTypeName()
         elintcontact.typeName = DCS_Unit:getTypeName()
         elintcontact.isEWR = false
@@ -2948,6 +2948,7 @@ do
         elintcontact.detected_by = {}
         elintcontact.state = HOUND.EVENTS.RADAR_NEW
         elintcontact.preBriefed = false
+        elintcontact.unitAlive = true
         elintcontact._kalman = HoundEstimator.Kalman.posFilter()
         return elintcontact
     end
@@ -2968,6 +2969,9 @@ do
         return self.uid%100
     end
 
+    function HoundContact:getLastSeen()
+        return HoundUtils.absTimeDelta(self.last_seen)
+    end
     function HoundContact:getTrackId()
         local trackType = 'E'
         if self.preBriefed then
@@ -3000,8 +3004,11 @@ do
     end
 
     function HoundContact:isAlive()
-        if self.unit:isExist() == false or self.unit:getLife() <= 1 then return false end
-        return true
+        return self.unitAlive
+    end
+
+    function HoundContact:setDead()
+        self.unitAlive = false
     end
 
     function HoundContact:isRecent()
@@ -3021,6 +3028,7 @@ do
             self._dataPoints = {}
             self.state = HOUND.EVENTS.RADAR_ASLEEP
         end
+        return self.state
     end
 
     function HoundContact:countPlatforms(skipStatic)
@@ -3348,8 +3356,8 @@ do
     end
 
     function HoundContact:removeMarkers()
-        for _,mark in pairs(self._markpoints) do
-            mark:remove()
+        for _,marker in pairs(self._markpoints) do
+            marker:remove()
         end
     end
 
@@ -4160,6 +4168,7 @@ do
         instance._platforms = {}
         instance._settings =  HoundConfig.get(HoundInstanceId)
         instance.coalitionId = nil
+        instance.TrackIdCounter = 0
         setmetatable(instance, HoundElintWorker)
         return instance
     end
@@ -4278,48 +4287,67 @@ do
         return platforms
     end
 
+    function HoundElintWorker:getNewTrackId()
+        self.TrackIdCounter = self.TrackIdCounter + 1
+        return self.TrackIdCounter
+    end
+
+    function HoundElintWorker:isContact(emitter)
+        if emitter == nil then return false end
+        local emitterName = nil
+        if type(emitter) == "string" then
+            emitterName = emitter
+        end
+        if type(emitter) == "table" and emitter.getName ~= nil then
+            emitterName = emitter:getName()
+        end
+        return setContains(self._contacts,emitterName)
+    end
+
     function HoundElintWorker:addContact(emitter)
-        if emitter == nil or emitter.getID == nil then return end
-        local uid = emitter:getID()
-        if self._contacts[uid] ~= nil then return uid end
-        self._contacts[uid] = HoundContact.New(emitter, self:getCoalition())
+        if emitter == nil or emitter.getName == nil then return end
+        local emitterName = emitter:getName()
+        if self._contacts[emitterName] ~= nil then return emitterName end
+        self._contacts[emitterName] = HoundContact.New(emitter, self:getCoalition(), self:getNewTrackId())
         HoundEventHandler.publishEvent({
             id = HOUND.EVENTS.RADAR_NEW,
             initiator = emitter,
             houndId = self._settings:getId(),
             coalition = self._settings:getCoalition()
         })
-        return uid
+        return emitterName
     end
 
-    function HoundElintWorker:getContact(emitter)
+    function HoundElintWorker:getContact(emitter,getOnly)
         if emitter == nil then return nil end
-        local uid = nil
-        if type(emitter) =="number" then
-            uid = emitter
+        local emitterName = nil
+        if type(emitter) == "string" then
+            emitterName = emitter
         end
-        if type(emitter) == "table" and emitter.getID ~= nil then
-            uid = emitter:getID()
+        if type(emitter) == "table" and emitter.getName ~= nil then
+            emitterName = emitter:getName()
         end
 
-        if uid ~= nil and self._contacts[uid] ~= nil then return self._contacts[uid] end
-        if not self._contacts[uid] and type(emitter) == "table" then
+        if emitterName ~= nil and self._contacts[emitterName] ~= nil then return self._contacts[emitterName] end
+        if not self._contacts[emitterName] and type(emitter) == "table" and not getOnly then
             self:addContact(emitter)
-            return self._contacts[uid]
+            return self._contacts[emitterName]
         end
         return nil
     end
 
-    function HoundElintWorker:removeContact(uid)
-        if not uid then return false end
-        HoundEventHandler.publishEvent({
-            id = HOUND.EVENTS.RADAR_DESTROYED,
-            initiator = self._contacts[uid],
-            houndId = self._settings:getId(),
-            coalition = self._settings:getCoalition()
-        })
+    function HoundElintWorker:removeContact(emitterName)
+        if not type(emitterName) == "string" then return false end
+        if self._contacts[emitterName] then
+            HoundEventHandler.publishEvent({
+                id = HOUND.EVENTS.RADAR_DESTROYED,
+                initiator = self._contacts[emitterName],
+                houndId = self._settings:getId(),
+                coalition = self._settings:getCoalition()
+            })
+        end
 
-        self._contacts[uid] = nil
+        self._contacts[emitterName] = nil
         return true
     end
 
@@ -4337,10 +4365,14 @@ do
         end
     end
 
+    function HoundElintWorker:setDead(emitter)
+        local contact = self:getContact(emitter,true)
+        if contact then contact:setDead() end
+    end
     function HoundElintWorker:isTracked(emitter)
         if emitter == nil then return false end
-        if type(emitter) =="number" and self._contacts[emitter] ~= nil then return true end
-        if type(emitter) == "table" and emitter.getID ~= nil and self._contacts[emitter:getID()] ~= nil then return true end
+        if type(emitter) =="string" and self._contacts[emitter] ~= nil then return true end
+        if type(emitter) == "table" and emitter.getName ~= nil and self._contacts[emitter:getName()] ~= nil then return true end
         return false
     end
 
@@ -4478,29 +4510,31 @@ do
 
     function HoundElintWorker:Process()
         if Length(self._contacts) < 1 then return end
-        for uid, contact in pairs(self._contacts) do
+        for contactName, contact in pairs(self._contacts) do
             if contact ~= nil then
                 local contactState = contact:processData()
+
                 if contactState == HOUND.EVENTS.RADAR_DETECTED then
                     if self._settings:getUseMarkers() then contact:updateMarker(self._settings:getMarkerType()) end
                 end
-                if contact:isTimedout() then
-                    contact:CleanTimedout()
-                    contactState = HOUND.EVENTS.RADAR_ASLEEP
-                end
-                if self._settings:getBDA() and contact:isAlive() == false and HoundUtils.absTimeDelta(contact.last_seen, timer.getAbsTime()) > 60 then
-                    contact:destroy()
-                    self:removeContact(uid)
 
-                else
-                    if contactState then
-                        HoundEventHandler.publishEvent({
-                            id = contactState,
-                            initiator = contact,
-                            houndId = self._settings:getId(),
-                            coalition = self._settings:getCoalition()
-                        })
-                    end
+                if contact:isTimedout() then
+                    contactState = contact:CleanTimedout()
+                end
+
+                if self._settings:getBDA() and contact:getLastSeen() > 60 and contact:isAlive() == false then
+                    contact:destroy()
+                    self:removeContact(contactName)
+                    return
+                end
+
+                if contactState then
+                    HoundEventHandler.publishEvent({
+                        id = contactState,
+                        initiator = contact,
+                        houndId = self._settings:getId(),
+                        coalition = self._settings:getCoalition()
+                    })
                 end
             end
         end
@@ -4954,12 +4988,15 @@ do
         end
     end
 
-    function HoundSector.checkOut(args,skipAck)
+    function HoundSector.checkOut(args,skipAck,onlyPlayer)
         local gSelf = args["self"]
         local player = args["player"]
         gSelf.comms.menu.enrolled[player] = nil
-        for _,otherPlayer in pairs(gSelf:findGrpInPlayerList(player.groupId)) do
-            gSelf.comms.menu.enrolled[otherPlayer] = nil
+
+        if not onlyPlayer then
+            for _,otherPlayer in pairs(gSelf:findGrpInPlayerList(player.groupId)) do
+                gSelf.comms.menu.enrolled[otherPlayer] = nil
+            end
         end
         gSelf:populateRadioMenu()
         if not skipAck then
@@ -6209,6 +6246,25 @@ do
             and setContains(mist.DBs.humansByName,DcsEvent.initiator:getName())
             then
                 self:populateRadioMenu()
+                return
+        end
+        if DcsEvent.id == world.event.S_EVENT_PLAYER_LEAVE_UNIT
+            and DcsEvent.initiator:getCoalition() == self.settings:getCoalition()
+            and setContains(mist.DBs.humansByName,DcsEvent.initiator:getName())
+            then
+                local player = mist.DBs.humansByName[DcsEvent.initiator:getName()]
+                for _,sector in pairs(self:getSectors()) do
+                    sector.checkOut({self=sector,player=player},true,true)
+                end
+                return
+        end
+        if DcsEvent.id == world.event.S_EVENT_DEAD
+            and DcsEvent.initiator:getCoalition() ~= self.settings:getCoalition()
+            and DcsEvent.initiator:hasSensors(Unit.SensorType.RADAR)
+            and self.contacts:isContact(DcsEvent.initiator)
+            then
+                self.contacts:setDead(DcsEvent.initiator)
+                return
         end
     end
 
@@ -6226,4 +6282,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.2.3-develop - Compiled on 2022-03-23 22:55
+-- Hound version 0.2.3-develop - Compiled on 2022-03-27 15:39

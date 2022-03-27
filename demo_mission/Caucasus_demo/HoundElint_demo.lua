@@ -81,9 +81,30 @@ do
         HOUND.FORCE_MANAGE_MARKERS = not HOUND.FORCE_MANAGE_MARKERS
     end
 
+    function testing.explode(pos)
+        trigger.action.explosion(pos,1000)
+    end
+
+    function testing.toggleGroup(groupName)
+        local grp = Group.getByName(groupName)
+        if grp and grp:isExist() then
+            trigger.action.deactivateGroup(grp)
+            env.info("after destroy")
+            for _,unit in pairs(grp:getUnits()) do
+                env.info(string.format("%s (%d) - %d",unit:getName(),unit:getID(),unit:getLife()))
+            end
+        else
+            mist.respawnGroup(groupName)
+            env.info("after respawn")
+            for _,unit in pairs(grp:getUnits()) do
+                env.info(string.format("%s (%d) - %d",unit:getName(),unit:getID(),unit:getLife()))
+            end
+        end
+    end
+
     testing.Menu = missionCommands.addSubMenu("Hound Testing")
-    missionCommands.addCommand("Destroy Radar",testing.Menu,Unit.destroy,Unit.getByName("SA-3 P-19"))
-    -- missionCommands.addCommand("Destroy Radar 2",testing.Menu,Unit.destroy,Unit.getByName("Sentinal SR"))
+    missionCommands.addCommand("Destroy Radar",testing.Menu,testing.explode,Unit.getByName("SA-3 P-19"):getPoint())
+    missionCommands.addCommand("Toggle SA-3 Activation",testing.Menu,testing.toggleGroup,"SA-3_late")
     -- missionCommands.addCommand("Destroy C17",testing.Menu,Unit.destroy,Unit.getByName("ELINT_C17"))
     -- missionCommands.addCommand("Remove C17",testing.Menu,testing.removePlatform,{houndInstance=Elint_blue,unit_name="ELINT_C17"})
     missionCommands.addCommand("Spawn platform",testing.Menu,testing.spawnPlatform,Elint_blue)
