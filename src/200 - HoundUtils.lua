@@ -1183,6 +1183,47 @@ do
         return radars
     end
 
+    --- check if canidate Object is a valid platform
+    -- @param candidate DCS Object (Unit or Static Object)
+    -- @return Bool. True if object is valid platform
+    function HoundUtils.Elint.isValidPlatform(candidate)
+        if type(candidate) ~= "table" or type(candidate.isExist) ~= "function" or not candidate:isExist()
+             then return false
+        end
+
+        local isValid = false
+        local mainCategory = candidate:getCategory()
+        local type = candidate:getTypeName()
+
+        if setContains(HoundDB.Platform,mainCategory) then
+            if setContains(HoundDB.Platform[mainCategory],type) then
+                if HoundDB.Platform[mainCategory][type]['require'] then
+                    local groupData = mist.getCurrentGroupData(candidate:getGroup():getName())
+                    -- TODO: actually make logic here
+                    if setContains(HoundDB.Platform[mainCategory][type]['require'],'CLSID') then
+                        -- local required = HoundDB.Platform[mainCategory][type]['require']['CLSID']
+                        -- local hardpoints = groupData["units"][candidate:getNumber()]["payload"]["pylons"]
+                        -- for _,hardpoint in pairs(hardpoints) do
+                        --     if hardpoint["CLSID"] == required then
+                        --         isValid = true
+                        --     end
+                        -- end
+                        isValid = true
+                    end
+                    if setContains(HoundDB.Platform[mainCategory][type]['require'],'TASK') then
+                        -- local TASK = HoundDB.Platform[mainCategory][type]['require']['TASK']
+                        -- local grpTasks = groupData["tasks"]
+                        -- check for tasking requirements
+                        isValid = false
+                    end
+                else
+                    isValid = true
+                end
+            end
+        end
+        return isValid
+    end
+
     --- Vector functions
     -- @section Vectors
 

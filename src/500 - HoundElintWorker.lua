@@ -46,29 +46,18 @@ do
             self:setCoalition(candidate:getCoalition())
         end
 
-        if candidate ~= nil and candidate:getCoalition() == self:getCoalition() then
-            local mainCategory = candidate:getCategory()
-            local type = candidate:getTypeName()
-
-            if setContains(HoundDB.Platform,mainCategory) then
-                if setContains(HoundDB.Platform[mainCategory],type) then
-                    for _,v in pairs(self._platforms) do
-                        if v == candidate then
-                            return
-                        end
-                    end
-                    table.insert(self._platforms, candidate)
-                    HoundEventHandler.publishEvent({
-                        id = HOUND.EVENTS.PLATFORM_ADDED,
-                        initiator = candidate,
-                        houndId = self._settings:getId(),
-                        coalition = self._settings:getCoalition()
-                    })
-                    return true
-                end
-            end
+        if candidate ~= nil and candidate:getCoalition() == self:getCoalition()
+            and not setContainsValue(self._platforms,candidate) and HoundUtils.Elint.isValidPlatform(candidate) then
+                table.insert(self._platforms, candidate)
+                HoundEventHandler.publishEvent({
+                    id = HOUND.EVENTS.PLATFORM_ADDED,
+                    initiator = candidate,
+                    houndId = self._settings:getId(),
+                    coalition = self._settings:getCoalition()
+                })
+                return true
         end
-        HoundLogger.warn("[Hound] - Failed to add platform "..platformName..". Make sure you use unit name.")
+        HoundLogger.warn("[Hound] - Failed to add platform "..platformName..". Make sure you use unit name and that all requirments are met.")
         return false
     end
 

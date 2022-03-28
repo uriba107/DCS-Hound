@@ -719,12 +719,13 @@ do
             ['An-26B'] = {antenna = {size = 26, factor = 0.9}},
             ['C-47'] = {antenna = {size = 12, factor = 1}},
             ['EA_6B'] = {antenna = {size = 9, factor = 1}}, -- VSN EA-6B
-            ['Su-25T'] = {antenna = {size = 3.5, factor = 1}},
-            ['AJS37'] = {antenna = {size = 4.5, factor = 1}},
-            ['F-16C_50'] = {antenna = {size = 1.45, factor = 1}},
-            ['JF-17'] = {antenna = {size = 3.25, factor = 1}},
+            ['Su-25T'] = {antenna = {size = 3.5, factor = 1}, require = {CLSID='{Fantasmagoria}'} },
+            ['AJS37'] = {antenna = {size = 4.5, factor = 1}, require = {CLSID='{U22A}'} },
+            ['F-16C_50'] = {antenna = {size = 1.45, factor = 1},require = {CLSID='{AN_ASQ_213}'} },
+            ['JF-17'] = {antenna = {size = 3.25, factor = 1}, require = {CLSID='{DIS_SPJ_POD}'} },
             ['RC135RJ'] = {antenna = {size = 40, factor = 1}}, -- Secret Squirl RC-135
-
+            -- ['KC135MPRS'] = {antenna = {size = 40, factor = 1}, require = { TASK={'-Refueling'}}},
+            -- ['KC-135'] = {antenna = {size = 40, factor = 1}, require = { TASK={'-Refueling'}}}
         }
     }
 
