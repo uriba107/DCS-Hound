@@ -15,7 +15,9 @@ do
     --- register new event handler
     -- @param handler handler to register
     function HoundEventHandler.addEventHandler(handler)
-        HoundEventHandler.subscribers[handler] = handler
+        if type(handler) == "table" then
+            HoundEventHandler.subscribers[handler] = handler
+        end
     end
 
     --- deregister event handler
@@ -28,7 +30,9 @@ do
     -- @local
     -- @param handler handler to register
     function HoundEventHandler.addInternalEventHandler(handler)
+        if type(handler) == "table" then
             HoundEventHandler._internalSubscribers[handler] = handler
+        end
     end
 
     --- deregister internal event handler
