@@ -706,7 +706,7 @@ do
             -- Airplanes
             ['C-130'] = {antenna = {size = 35, factor = 1}},
             ['Hercules'] = {antenna = {size = 35, factor = 1}}, -- Anubis' C-130J
-            ['C-17A'] = {antenna = {size = 50, factor = 1}},
+            ['C-17A'] = {antenna = {size = 40, factor = 1}}, -- stand-in for RC-135, tuned antenna size to match
             ['S-3B'] = {antenna = {size = 18, factor = 0.8}},
             ['E-3A'] = {antenna = {size = 9, factor = 0.5}},
             ['E-2C'] = {antenna = {size = 7, factor = 0.5}},

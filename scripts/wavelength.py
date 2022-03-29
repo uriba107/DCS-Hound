@@ -48,10 +48,11 @@ platforms = {
             "JF-17": {"category": 2, "antenna":{"size":3.25, "factor":1}},
             "EA-6B": {"category": 2, "antenna":{"size":9, "factor":1}},
             "C-47": {"category": 2, "antenna":{"size":12, "factor":1}},
+            "RC135RJ": {"category": 2, "antenna":{"size":40, "factor": 1}},
         }
 
 def genBandTable():
-    print("HoundDB.Bands = {")
+    print("HOUND.DBs.Bands = {")
     for band in sorted(bands):
         bands[band]["wavelength"] = (299792458.0/bands[band]["Freq"])
         print("    [\"%s\"] = %f,"%(band,bands[band]["wavelength"]))

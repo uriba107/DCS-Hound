@@ -43,7 +43,7 @@ Hound Currently has a 10 degrees angular resolution cutoff point to avoid introd
 | Platform  | Accuracy Deg. (C/H Bands)| Min. Band | Remarks |
 | --------  | ----------- | - | - |
 | C-130     | 0.65 / 0.07 | A ||
-| C-17      | 0.46 / 0.05 | A ||
+| C-17      | 0.57 / 0.06 | A | Stand-it for RC-135 |
 | An-30M    | 0.92 / 0.10 | A ||
 | Tu-95     | 0.46 / 0.05 | A ||
 | Tu-142    | 0.46 / 0.05 | A ||
@@ -94,6 +94,7 @@ Hound Currently has a 10 degrees angular resolution cutoff point to avoid introd
 | Anubis C-130J | 0.65 / 0.07 |
 | VSN EA-6B Prowler   |  2.54 / 0.27  |
 | UH-60L    | 2.86 / 0.31 | B |
+| RC135RJ   |  0.57 / 0.06  | A |
 
 ## Can I haz syntax pls?
 Yes you can.

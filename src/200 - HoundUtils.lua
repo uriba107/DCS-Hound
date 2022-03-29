@@ -1216,23 +1216,24 @@ do
         if setContains(HOUND.DBs.Platform,mainCategory) then
             if setContains(HOUND.DBs.Platform[mainCategory],type) then
                 if HOUND.DBs.Platform[mainCategory][type]['require'] then
+                    local platformData = HOUND.DBs.Platform[mainCategory][type]
                     -- local groupData = mist.getCurrentGroupData(candidate:getGroup():getName())
                     -- TODO: actually make logic here
-                    if setContains(HOUND.DBs.Platform[mainCategory][type]['require'],'CLSID') then
-                        -- local required = HOUND.DBs.Platform[mainCategory][type]['require']['CLSID']
+                    if setContains(platformData['require'],'CLSID') then
+                        local required = platformData['require']['CLSID']
                         -- local hardpoints = groupData["units"][candidate:getNumber()]["payload"]["pylons"]
                         -- for _,hardpoint in pairs(hardpoints) do
                         --     if hardpoint["CLSID"] == required then
                         --         isValid = true
                         --     end
                         -- end
-                        isValid = HOUND.Utils.hasPayload(candidate,HOUND.DBs.Platform[mainCategory][type]['require']['CLSID'])
+                        -- (currently always retuns true)
+                        isValid = HOUND.Utils.hasPayload(candidate,required)
                     end
-                    if setContains(HOUND.DBs.Platform[mainCategory][type]['require'],'TASK') then
-                        local TASK = HOUND.DBs.Platform[mainCategory][type]['require']['TASK']
-                        -- local grpTasks = groupData["tasks"]
-                        -- check for tasking requirements
-                        isValid = not HOUND.Utils.hasTask(candidate,HOUND.DBs.Platform[mainCategory][type]['require']['TASK'])
+                    if setContains(platformData['require'],'TASK') then
+                        local required = platformData['require']['TASK']
+                        -- check for tasking requirements (for now will always return false)
+                        isValid = not HOUND.Utils.hasTask(candidate,required)
                     end
                 else
                     isValid = true
