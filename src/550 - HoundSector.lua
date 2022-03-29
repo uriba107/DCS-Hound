@@ -1,30 +1,30 @@
-    --- HoundSector
-    -- @module HoundSector
+    --- HOUND.Sector
+    -- @module HOUND.Sector
 do
     local l_mist = mist
     local l_math = math
-    --- HoundSector
-    -- @type HoundSector
-    -- @within HoundSector
-    HoundSector = {}
-    HoundSector.__index = HoundSector
+    --- HOUND.Sector
+    -- @type HOUND.Sector
+    -- @within HOUND.Sector
+    HOUND.Sector = {}
+    HOUND.Sector.__index = HOUND.Sector
 
     --- Create sectors
     -- @param HoundId Hound Instance ID
     -- @param name Sector name
     -- @param[opt] settings Sector settings table
     -- @param[opt] priority Priority for the sector
-    function HoundSector.create(HoundId, name, settings, priority)
+    function HOUND.Sector.create(HoundId, name, settings, priority)
         if type(HoundId) ~= "number" or type(name) ~= "string" then
-            HOUND.Logger.warn("[Hound] - HoundSector.create() missing params")
+            HOUND.Logger.warn("[Hound] - HOUND.Sector.create() missing params")
             return
         end
 
         local instance = {}
-        setmetatable(instance, HoundSector)
+        setmetatable(instance, HOUND.Sector)
         instance.name = name
         instance._hSettings = HOUND.Config.get(HoundId)
-        instance._contacts = HoundContactManager.get(HoundId)
+        instance._contacts = HOUND.ContactManager.get(HoundId)
         instance.callsign = "HOUND"
         instance.settings = {
             controller = nil,
@@ -70,7 +70,7 @@ do
     --     }
     --     sector:updateSettings(sectorSettings)
     --
-    function HoundSector:updateSettings(settings)
+    function HOUND.Sector:updateSettings(settings)
         for k, v in pairs(settings) do
             local k0 = tostring(k):lower()
             if type(v) == "table" and
@@ -92,7 +92,7 @@ do
     --- Sector "Destructor"
     -- cleans up everyting needed for sector to safly be removed
     -- @return nil is returned
-    function HoundSector:destroy()
+    function HOUND.Sector:destroy()
         self:removeRadioMenu()
         -- self:defaultEventHandler(true)
         for _,contact in pairs(self._contacts:listAll()) do
@@ -102,7 +102,7 @@ do
     end
 
     --- Update internal services with settings stored in the sector.
-    function HoundSector:updateServices()
+    function HOUND.Sector:updateServices()
         if type(self.settings.controller) == "table" then
             if not self.comms.controller then
                 self.settings.controller.name = self.callsign
@@ -144,20 +144,20 @@ do
 
     --- get name
     -- @return string name of sector
-    function HoundSector:getName()
+    function HOUND.Sector:getName()
         return self.name
     end
 
     --- get priority
     -- @return Int priority of sector
-    function HoundSector:getPriority()
+    function HOUND.Sector:getPriority()
         return self.priority
     end
 
     --- set callsign for sector
     -- @string callsign Requested Callsign
     -- @bool[opt] NATO Use NATO pool for callsignes
-    function HoundSector:setCallsign(callsign, NATO)
+    function HOUND.Sector:setCallsign(callsign, NATO)
         local namePool = "GENERIC"
         if callsign ~= nil and type(callsign) == "boolean" then
             NATO = callsign
@@ -185,19 +185,19 @@ do
 
     --- get callsign for sector
     -- @return string Callsign for current sector
-    function HoundSector:getCallsign()
+    function HOUND.Sector:getCallsign()
         return self.callsign
     end
 
     -- get zone polygon
     -- @return table of points or nil
-    function HoundSector:getZone()
+    function HOUND.Sector:getZone()
         return self.settings.zone
     end
 
     --- Set zone in sector
     -- @param zonecandidate (String) DCS group name, or a drawn map freeform Polygon. sector borders will be group waypoints or polygon points
-    function HoundSector:setZone(zonecandidate)
+    function HOUND.Sector:setZone(zonecandidate)
         if self.name == "default" then
             HOUND.Logger.warn("[Hound] - cannot set zone to default sector")
             return
@@ -219,25 +219,25 @@ do
     end
 
     --- Remove Zone settings from sector
-    function HoundSector:removeZone() self.settings.zone = nil end
+    function HOUND.Sector:removeZone() self.settings.zone = nil end
 
     --- sets transmitter to sector
     -- @param userTransmitter (String) Name of the Unit that would be transmitting
-    function HoundSector:setTransmitter(userTransmitter)
+    function HOUND.Sector:setTransmitter(userTransmitter)
         if not userTransmitter then return end
         self.settings.transmitter = userTransmitter
         self:updateTransmitter()
     end
 
     --- updates all available comms with transmitter on file
-    function HoundSector:updateTransmitter()
+    function HOUND.Sector:updateTransmitter()
         for k, v in pairs(self.comms) do
             if k ~= "menu" and v.setTransmitter then v:setTransmitter(self.settings.transmitter) end
         end
     end
 
     --- removes transmitter from sector
-    function HoundSector:removeTransmitter()
+    function HOUND.Sector:removeTransmitter()
         self.settings.transmitter = nil
         for k, v in pairs(self.comms) do
             if k ~= "menu" then v:removeTransmitter() end
@@ -245,8 +245,8 @@ do
     end
 
     --- update contact for zone memberships
-    -- @param contact HoundContact instance
-    function HoundSector:updateSectorMembership(contact)
+    -- @param contact HOUND.Contact instance
+    function HOUND.Sector:updateSectorMembership(contact)
         -- HOUND.Logger.trace("Evaluating " .. contact:getName() .. " for " .. self.name)
         local inSector, threatsSector = HOUND.Utils.Polygon.threatOnSector(self.settings.zone,contact:getPos(),contact:getMaxWeaponsRange())
         -- HOUND.Logger.trace(tostring(inSector) .. " " .. tostring(threatsSector))
@@ -255,7 +255,7 @@ do
 
     --- enable controller
     -- @param[opt] userSettings contoller settings
-    function HoundSector:enableController(userSettings)
+    function HOUND.Sector:enableController(userSettings)
         if not userSettings then userSettings = {} end
         local settings = { controller = userSettings }
         self:updateSettings(settings)
@@ -265,7 +265,7 @@ do
     end
 
     --- disable controller
-    function HoundSector:disableController()
+    function HOUND.Sector:disableController()
         if self.comms.controller then
             self:removeRadioMenu()
             self.comms.controller:disable()
@@ -273,7 +273,7 @@ do
     end
 
     --- remove controller completly from sector
-    function HoundSector:removeController()
+    function HOUND.Sector:removeController()
         self.settings.controller = nil
         if self.comms.controller then
             self:disableController()
@@ -282,7 +282,7 @@ do
     end
 
     --- get controller frequencies
-    function HoundSector:getControllerFreq()
+    function HOUND.Sector:getControllerFreq()
         if self.comms.controller then
             return self.comms.controller:getFreqs()
         end
@@ -291,7 +291,7 @@ do
 
     --- Transmit custom TTS message on controller
     -- @param msg string to broadcast
-    function HoundSector:transmitOnController(msg)
+    function HOUND.Sector:transmitOnController(msg)
         if not self.comms.controller or not self.comms.controller:isEnabled() then return end
         if type(msg) ~= "string" then return end
         local msgObj = {priority = 1,coalition = self._hSettings:getCoalition()}
@@ -302,55 +302,55 @@ do
     end
 
     --- enable controller text for sector
-    function HoundSector:enableText()
+    function HOUND.Sector:enableText()
         if self.comms.controller then self.comms.controller:enableText() end
         -- if self.comms.notifier then self.comms.notifier:enableText() end
     end
 
     --- disable controller text for sector
-    function HoundSector:disableText()
+    function HOUND.Sector:disableText()
         if self.comms.controller then self.comms.controller:disableText() end
         -- if self.comms.notifier then self.comms.notifier:disableText() end
     end
 
     --- enable controller Alerts for sector
-    function HoundSector:enableAlerts()
+    function HOUND.Sector:enableAlerts()
         if self.comms.controller then self.comms.controller:enableAlerts() end
     end
 
     --- disable controller  for sector
-    function HoundSector:disableAlerts()
+    function HOUND.Sector:disableAlerts()
         if self.comms.controller then self.comms.controller:disableAlerts() end
     end
 
     --- enable Controller tts for sector
-    function HoundSector:enableTTS()
+    function HOUND.Sector:enableTTS()
         if self.comms.controller then self.comms.controller:enableTTS() end
     end
 
     --- disable Controller tts for sector
-    function HoundSector:disableTTS()
+    function HOUND.Sector:disableTTS()
         if self.comms.controller then self.comms.controller:disableTTS() end
     end
 
     --- enable ATIS in sector
     -- @param userSettings ATIS settings array
-    function HoundSector:enableAtis(userSettings)
+    function HOUND.Sector:enableAtis(userSettings)
         if not userSettings then userSettings = {} end
         local settings = { atis = userSettings }
         self:updateSettings(settings)
         self:updateTransmitter()
-        self.comms.atis:SetMsgCallback(HoundSector.generateAtis, self)
+        self.comms.atis:SetMsgCallback(HOUND.Sector.generateAtis, self)
         self.comms.atis:enable()
     end
 
     --- disable ATIS in sector
-    function HoundSector:disableAtis()
+    function HOUND.Sector:disableAtis()
         if self.comms.atis then self.comms.atis:disable() end
     end
 
     --- remove ATIS from sector
-    function HoundSector:removeAtis()
+    function HOUND.Sector:removeAtis()
         self.settings.atis = nil
         if self.comms.atis then
             self:disableAtis()
@@ -359,7 +359,7 @@ do
     end
 
     --- get ATIS frequencies
-    function HoundSector:getAtisFreq()
+    function HOUND.Sector:getAtisFreq()
         if self.comms.atis then
             return self.comms.atis:getFreqs()
         end
@@ -368,33 +368,33 @@ do
 
     --- Set ATIS EWR report state
     -- @bool state True will report EWR
-    function HoundSector:reportEWR(state)
+    function HOUND.Sector:reportEWR(state)
         if self.comms.atis then self.comms.atis:reportEWR(state) end
     end
 
     --- checks for atis in sector
     -- @return true if Sector has atis
-    function HoundSector:hasAtis() return self.comms.atis ~= nil end
+    function HOUND.Sector:hasAtis() return self.comms.atis ~= nil end
 
     --- checks if ats is enabled for the sector
     -- @return true if Sector ats is enabled
-    function HoundSector:isAtisEnabled()
+    function HOUND.Sector:isAtisEnabled()
         return self.comms.atis ~= nil and self.comms.atis:isEnabled()
     end
 
     --- checks for controller in sector
     -- @return true if Sector has controller
-    function HoundSector:hasController() return self.comms.controller ~= nil end
+    function HOUND.Sector:hasController() return self.comms.controller ~= nil end
 
     --- checks if controller is enabled for the sector
     -- @return true if Sector controller is enabled
-    function HoundSector:isControllerEnabled()
+    function HOUND.Sector:isControllerEnabled()
         return self.comms.controller ~= nil and self.comms.controller:isEnabled()
     end
 
     --- enable Notifier in sector
     -- @param[opt] userSettings table of settings for Notifier
-    function HoundSector:enableNotifier(userSettings)
+    function HOUND.Sector:enableNotifier(userSettings)
         if not userSettings then userSettings = {} end
         local settings = { notifier = userSettings }
         self:updateSettings(settings)
@@ -403,13 +403,13 @@ do
     end
 
     --- disable notifier in sector
-    function HoundSector:disableNotifier()
+    function HOUND.Sector:disableNotifier()
         if self.comms.notifier then self.comms.notifier:disable() end
     end
 
     --- remove notifier in sector
     -- @return true if Sector has notifier
-    function HoundSector:removeNotifier()
+    function HOUND.Sector:removeNotifier()
         self.settings.notifier = nil
         if self.comms.notifier then
             self:disableNotifier()
@@ -418,7 +418,7 @@ do
     end
 
     --- get Notifier frequencies
-    function HoundSector:getNotifierFreq()
+    function HOUND.Sector:getNotifierFreq()
         if self.comms.notifier then
             return self.comms.notifier:getFreqs()
         end
@@ -426,18 +426,18 @@ do
     end
 
     --- checks sector for notifier
-    function HoundSector:hasNotifier()
+    function HOUND.Sector:hasNotifier()
         return self.comms.notifier ~= nil
     end
 
     --- checks if ats is enabled for the sector
     -- @return true if Sector ats is enabled
-    function HoundSector:isNotifierEnabled()
+    function HOUND.Sector:isNotifierEnabled()
         return self.comms.notifier ~= nil and self.comms.notifier:isEnabled()
     end
 
     --- return a sorted list of all contacts for the sector
-    function HoundSector:getContacts()
+    function HOUND.Sector:getContacts()
         local effectiveSectorName = self.name
         if not self:getZone() then
             effectiveSectorName = "default"
@@ -446,7 +446,7 @@ do
     end
 
     --- count the number of contacts for the sector
-    function HoundSector:countContacts()
+    function HOUND.Sector:countContacts()
         local effectiveSectorName = self.name
         if not self:getZone() then
             effectiveSectorName = "default"
@@ -458,9 +458,9 @@ do
     -- @section menu
 
     --- remove all radio menus for
-    -- @param self HoundSector
+    -- @param self HOUND.Sector
     -- @local
-    function HoundSector.removeRadioMenu(self)
+    function HOUND.Sector.removeRadioMenu(self)
         for _,menu in pairs(self.comms.menu.data) do
             if menu ~= nil then
                 missionCommands.removeItem(menu)
@@ -485,7 +485,7 @@ do
     -- @param[opt] playersList list of mist.DB units to find all the group members in
     -- @return list of enrolled players in grp
     -- @local
-    function HoundSector:findGrpInPlayerList(grpId,playersList)
+    function HOUND.Sector:findGrpInPlayerList(grpId,playersList)
         if not playersList or type(playersList) ~= "table" then
             playersList = self.comms.menu.enrolled
         end
@@ -501,7 +501,7 @@ do
     --- get subscribed groups
     -- @return list of groupsId
     -- @local
-    function HoundSector:getSubscribedGroups()
+    function HOUND.Sector:getSubscribedGroups()
         local subscribedGid = {}
         for _,player in pairs(self.comms.menu.enrolled) do
             local grpId = player.groupId
@@ -514,7 +514,7 @@ do
 
     --- clean non existing users from subscribers
     -- @local
-    function HoundSector:validateEnrolled()
+    function HOUND.Sector:validateEnrolled()
         if Length(self.comms.menu.enrolled) == 0 then return end
         for _, player in pairs(self.comms.menu.enrolled) do
             local playerUnit = Unit.getByName(player.unitName)
@@ -526,9 +526,9 @@ do
 
     --- check in player to controller
     -- @local
-    -- @param args table {self=&ltHoundSector&gt,player=&ltplayer&gt}
+    -- @param args table {self=&ltHOUND.Sector&gt,player=&ltplayer&gt}
     -- @param[opt] skipAck Bool if true do not reply with ack to player
-    function HoundSector.checkIn(args,skipAck)
+    function HOUND.Sector.checkIn(args,skipAck)
         local gSelf = args["self"]
         local player = args["player"]
         if not setContains(gSelf.comms.menu.enrolled, player) then
@@ -546,10 +546,10 @@ do
 
     --- check out player's group from controller
     -- @local
-    -- @param args table {self=&ltHoundSector&gt,player=&ltplayer&gt}
+    -- @param args table {self=&ltHOUND.Sector&gt,player=&ltplayer&gt}
     -- @param[opt] skipAck Bool if true do not reply with ack to player
     -- @param[opt] onlyPlayer Bool. if true, only the player and not his flight (eg. slot change for player)
-    function HoundSector.checkOut(args,skipAck,onlyPlayer)
+    function HOUND.Sector.checkOut(args,skipAck,onlyPlayer)
         local gSelf = args["self"]
         local player = args["player"]
         gSelf.comms.menu.enrolled[player] = nil
@@ -567,7 +567,7 @@ do
 
     --- create check menu items for players
     -- @local
-    function HoundSector:createCheckIn()
+    function HOUND.Sector:createCheckIn()
         grpMenuDone = {}
         for _,player in pairs(l_mist.DBs.humansByName) do
             local grpId = player.groupId
@@ -592,7 +592,7 @@ do
                         missionCommands.addCommandForGroup(grpId,
                                             self.comms.controller:getCallsign() .. " (" ..
                                             self.comms.controller:getFreq() ..") - Check out",
-                                            self.comms.menu.root,HoundSector.checkOut,
+                                            self.comms.menu.root,HOUND.Sector.checkOut,
                                             {
                                                 self = self,
                                                 player = player
@@ -605,7 +605,7 @@ do
                                                             self.comms.controller:getFreq() ..
                                                             ") - Check In",
                                                             self.comms.menu.root,
-                                                        HoundSector.checkIn, {
+                                                        HOUND.Sector.checkIn, {
                             self = self,
                             player = player
                         })
@@ -616,7 +616,7 @@ do
     end
 
     --- Populate sector radio menu
-    function HoundSector:populateRadioMenu()
+    function HOUND.Sector:populateRadioMenu()
         if self.comms.menu.root ~= nil then
             self.comms.menu.root =
                 missionCommands.removeItemForCoalition(self._hSettings:getCoalition(),self.comms.menu.root)
@@ -704,8 +704,8 @@ do
     --- Create radar menu item
     -- @local
     -- @param dataMenu table contaning a menu structure for the group
-    -- @param contact HoundContact
-    function HoundSector:addRadarRadioItem(dataMenu,contact)
+    -- @param contact HOUND.Contact
+    function HOUND.Sector:addRadarRadioItem(dataMenu,contact)
         local assigned = contact:getTypeAssigned()
         local uid = contact.uid
         local menuText = contact:generateRadioItemText()
@@ -740,8 +740,8 @@ do
     --- remove radar menu items
     -- @local
     -- @param dataMenu table contaning a menu structure for the group
-    -- @param contact HoundContact
-    function HoundSector:removeRadarRadioItem(dataMenu,contact)
+    -- @param contact HOUND.Contact
+    function HOUND.Sector:removeRadarRadioItem(dataMenu,contact)
         local assigned = contact:getTypeAssigned()
         local uid = contact.uid
         if not self.comms.controller or not self.comms.controller:isEnabled() or dataMenu.menus[assigned] == nil then
@@ -760,7 +760,7 @@ do
     --- create randome annouce
     -- @param[opt] index of requested announce
     -- @return string Announcement
-    function HoundSector:getTransmissionAnnounce(index)
+    function HOUND.Sector:getTransmissionAnnounce(index)
         local messages = {
             "Attention All Aircraft! This is " .. self.callsign .. ". ",
             "All Aircraft, " .. self.callsign .. ". ",
@@ -775,7 +775,7 @@ do
 
     --- Send dead emitter notification
     -- @param contact HounContact instace
-    function HoundSector:notifyDeadEmitter(contact)
+    function HOUND.Sector:notifyDeadEmitter(contact)
         local controller = self.comms.controller
         local notifier = self.comms.notifier
         if not controller and not notifier then return end
@@ -809,7 +809,7 @@ do
 
     --- Send new emitter notification
     -- @param contact HounContact instace
-    function HoundSector:notifyNewEmitter(contact)
+    function HOUND.Sector:notifyNewEmitter(contact)
         local controller = self.comms.controller
         local notifier = self.comms.notifier
 
@@ -848,7 +848,7 @@ do
     -- @local
     -- @param loopData HoundInfomationSystem loop table
     -- @param AtisPreferences HoundInfomationSystem settings table
-    function HoundSector:generateAtis(loopData,AtisPreferences)
+    function HOUND.Sector:generateAtis(loopData,AtisPreferences)
         local body = ""
         local numberEWR = 0
         local contactCount = self:countContacts()
@@ -912,8 +912,8 @@ do
 
     --- transmit SAM report
     -- @local
-    -- @param args table {self=&ltHoundSector&gt,contact=&ltHoundContact&gt,requester=&ltplayer&gt}
-    function HoundSector.TransmitSamReport(args)
+    -- @param args table {self=&ltHOUND.Sector&gt,contact=&ltHOUND.Contact&gt,requester=&ltplayer&gt}
+    function HOUND.Sector.TransmitSamReport(args)
         local gSelf = args["self"]
         local contact = args["contact"]
         local requester = args["requester"]
@@ -943,7 +943,7 @@ do
     --- transmit checkin message
     -- @local
     -- @param player Player entity
-    function HoundSector:TransmitCheckInAck(player)
+    function HOUND.Sector:TransmitCheckInAck(player)
         if not player then return end
         local msgObj = {priority = 1,coalition = self._hSettings:getCoalition(), gid = player.groupId}
         local msg = HOUND.Utils.getFormationCallsign(player) .. ", " .. self.callsign .. ", Roger. "
@@ -962,7 +962,7 @@ do
     --- transmit checkout message
     -- @local
     -- @param player Player entity
-    function HoundSector:TransmitCheckOutAck(player)
+    function HOUND.Sector:TransmitCheckOutAck(player)
         if not player then return end
         local msgObj = {priority = 1,coalition = self._hSettings:getCoalition(), gid = player.groupId}
         local msg = HOUND.Utils.getFormationCallsign(player) .. ", " .. self.callsign .. ", copy checking out. "

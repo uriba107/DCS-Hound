@@ -1884,8 +1884,8 @@ do
       end
 
     --- convert contacts to centroieds for meanShift
-    -- @param contacts list of HoundContact instances to evaluate
-    -- @return list of centrods where centroid = {p=&ltDCS pos&gt,r=&ltradius&gt,members={&ltHoundContact&gt}}
+    -- @param contacts list of HOUND.Contact instances to evaluate
+    -- @return list of centrods where centroid = {p=&ltDCS pos&gt,r=&ltradius&gt,members={&ltHOUND.Contact&gt}}
     -- function HOUND.Utils.Cluster.getCentroids(contacts)
     --     local centroids = {}
     --     -- populate centroids with all emitters
@@ -1903,9 +1903,9 @@ do
 
     --- Mean-shift algorithem to group radars to sites
     -- http://www.chioka.in/meanshift-algorithm-for-the-rest-of-us-python/
-    -- @param contacts list of HoundContact instances to cluster
+    -- @param contacts list of HOUND.Contact instances to cluster
     -- @param[opt] iterations maximum nuber of itteratoins to run
-    -- @return List of centroieds {p=&ltDCS position&gt,r=&ltuncertenty radius&gt,members={&ltlist of HoundContacts&gt}}
+    -- @return List of centroieds {p=&ltDCS position&gt,r=&ltuncertenty radius&gt,members={&ltlist of HOUND.Contacts&gt}}
     -- function HOUND.Utils.Cluster.meanShift(contacts,iterations)
     --     local kernel_bandwidth = 1000
 
@@ -2008,8 +2008,8 @@ do
     -- @section Sort
 
     --- Sort contacts by engament range
-    -- @param a HoundContact instance
-    -- @param b HoundContact Instance
+    -- @param a HOUND.Contact instance
+    -- @param b HOUND.Contact Instance
     -- @return Bool
     -- @usage table.sort(unSorted,HOUND.Utils.Sort.ContactsByRange)
     function HOUND.Utils.Sort.ContactsByRange(a,b)
@@ -2032,8 +2032,8 @@ do
     end
 
     --- Sort contacts by ID
-    -- @param a HoundContact instance
-    -- @param b HoundContact Instance
+    -- @param a HOUND.Contact instance
+    -- @param b HOUND.Contact Instance
     -- @return Bool
     -- @usage table.sort(unSorted,HOUND.Utils.Sort.ContactsById)
     function HOUND.Utils.Sort.ContactsById(a,b)
@@ -2044,8 +2044,8 @@ do
     end
 
     --- sort sectors by priority (low first)
-    -- @param a HoundSector instance
-    -- @param b HoundSector Instance
+    -- @param a HOUND.Sector instance
+    -- @param b HOUND.Sector Instance
     -- @return Bool
     -- @usage table.sort(unSorted,HOUND.Utils.Sort.sectorsByPriorityLowFirst)
     function HOUND.Utils.Sort.sectorsByPriorityLowFirst(a,b)
@@ -2053,8 +2053,8 @@ do
     end
 
     --- sort sectors by priority (Low last)
-    -- @param a HoundSector instance
-    -- @param b HoundSector Instance
+    -- @param a HOUND.Sector instance
+    -- @param b HOUND.Sector Instance
     -- @return Bool
     -- @usage table.sort(unSorted,HOUND.Utils.Sort.sectorsByPriorityLowLast)
     function HOUND.Utils.Sort.sectorsByPriorityLowLast(a,b)

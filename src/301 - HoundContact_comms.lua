@@ -1,5 +1,5 @@
---- HoundContact_comms
--- @module HoundContact
+--- HOUND.Contact_comms
+-- @module HOUND.Contact
 do
     local l_math = math
 
@@ -8,7 +8,7 @@ do
     -- @param MGRSdigits (Number) number of digits in the MGRS part of the response (eg. 2 = 12, 5=12345)
     -- @return GridPos (string) MGRS grid position (eg. "CY 564 123", "DN 2 4")
     -- Return BE (string) Bullseye position string (eg. "035/15", "187/120")
-    function HoundContact:getTextData(utmZone,MGRSdigits)
+    function HOUND.Contact:getTextData(utmZone,MGRSdigits)
         if self.pos.p == nil then return end
         local GridPos = ""
         if utmZone then
@@ -31,7 +31,7 @@ do
     -- @param MGRSdigits (Number) number of digits in the MGRS part of the response (eg. 2 = 12, 5=12345)
     -- @return GridPos (string) MGRS grid position (eg. "Charlie Yankee one two   Three  four")
     -- Return BE (string) Bullseye position string (eg. "Zero Three Five 15")
-    function HoundContact:getTtsData(utmZone,MGRSdigits)
+    function HOUND.Contact:getTtsData(utmZone,MGRSdigits)
         if self.pos.p == nil then return end
         local phoneticGridPos = ""
         if utmZone then
@@ -55,7 +55,7 @@ do
     -- @param NATO (bool) True will generate NATO Brevity brief
     -- @return string containing
 
-    function HoundContact:generateTtsBrief(NATO)
+    function HOUND.Contact:generateTtsBrief(NATO)
         if self.pos.p == nil or self.uncertenty_data == nil then return end
         local phoneticGridPos,phoneticBulls = self:getTtsData(false,1)
         local reportedName = self:getName()
@@ -76,7 +76,7 @@ do
     -- @param[opt] useDMM if true. output will be DM.M rather then the default DMS
     -- @param[opt] refPos position of reference point for BR (Not Currently Used)
     -- @return generated message
-    function HoundContact:generateTtsReport(useDMM,refPos)
+    function HOUND.Contact:generateTtsReport(useDMM,refPos)
         if self.pos.p == nil then return end
         useDMM = useDMM or false
 
@@ -111,7 +111,7 @@ do
     -- @param[opt] useDMM if true. output will be DM.M rather then the default DMS
     -- @param[opt] refPos position of reference point for BR
     -- @return generated message
-    function HoundContact:generateTextReport(useDMM,refPos)
+    function HOUND.Contact:generateTextReport(useDMM,refPos)
         if self.pos.p == nil then return end
         useDMM = useDMM or false
 
@@ -138,7 +138,7 @@ do
 
     --- generate Text for the Radio menu item
     -- @return string
-    function HoundContact:generateRadioItemText()
+    function HOUND.Contact:generateRadioItemText()
         if not self:hasPos() then return end
         local GridPos,BePos = self:getTextData(true,1)
         BePos = BePos:gsub(" for ","/")
@@ -149,7 +149,7 @@ do
     -- @param isTTS Bool. If true message will be for TTS. False will make a text message
     -- @param sectorName string Name of primary sector if present function will only return sector data
     -- @return string. compiled message
-    function HoundContact:generatePopUpReport(isTTS,sectorName)
+    function HOUND.Contact:generatePopUpReport(isTTS,sectorName)
         local msg = self:getName() .. " is now Alive"
 
         if sectorName then
@@ -173,7 +173,7 @@ do
     -- @param isTTS Bool. If true message will be for TTS. False will make a text message
     -- @param sectorName string Name of primary sector if present function will only return sector data
     -- @return string. compiled message
-    function HoundContact:generateDeathReport(isTTS,sectorName)
+    function HOUND.Contact:generateDeathReport(isTTS,sectorName)
         local msg = self:getName() .. " has been destroyed"
         if sectorName then
             msg = msg .. " in " .. sectorName
@@ -194,7 +194,7 @@ do
 
     --- Generate Intel brief Message (for export)
     -- @return string - compiled message
-    function HoundContact:generateIntelBrief()
+    function HOUND.Contact:generateIntelBrief()
         -- track ECHO 1017, straigh flush, ACTIVE, BULLSEYE 012 13, lat/lon, accuracy very high.
         -- TrackId,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accuracy
         local msg = ""

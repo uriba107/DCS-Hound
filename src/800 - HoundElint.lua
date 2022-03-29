@@ -24,7 +24,7 @@ do
         setmetatable(elint, HoundElint)
         elint.settings = HOUND.Config.get()
         elint.HoundId = elint.settings:getId()
-        elint.contacts = HoundContactManager.get(elint.HoundId)
+        elint.contacts = HOUND.ContactManager.get(elint.HoundId)
         elint.elintTaskID = nil
         elint.radioAdminMenu = nil
         elint.coalitionId = nil
@@ -40,7 +40,7 @@ do
         end
 
         elint.sectors = {
-            default = HoundSector.create(elint.HoundId,"default",nil,100)
+            default = HOUND.Sector.create(elint.HoundId,"default",nil,100)
         }
         return elint
     end
@@ -135,7 +135,7 @@ do
         end
         priority = priority or 50
         if not self.sectors[sectorName] then
-            self.sectors[sectorName] = HoundSector.create(self.settings:getId(),sectorName,sectorSettings,priority)
+            self.sectors[sectorName] = HOUND.Sector.create(self.settings:getId(),sectorName,sectorSettings,priority)
             return self.sectors[sectorName]
         end
 
@@ -205,7 +205,7 @@ do
 
     --- get all sectors
     -- @string[opt] element list only sectors with specified element. Valid options are "controller", "atis" and "notifier"
-    -- @return list of HoundSector instances
+    -- @return list of HOUND.Sector instances
     function HoundElint:getSectors(element)
         local sectors = {}
         for _,sector in pairs(self.sectors) do
@@ -229,7 +229,7 @@ do
         return sectors
     end
 
-    --- return HoundSector instance
+    --- return HOUND.Sector instance
     -- @string sectorName Name of wanted sector
     function HoundElint:getSector(sectorName)
         if setContains(self.sectors,sectorName) then

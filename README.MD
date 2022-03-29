@@ -626,7 +626,7 @@ If you are satisfied by only supressing the Extended uncertenty and the Extended
 ```lua
   HOUND.showExtendedInfo(false)
 ```
-If a more extensive change is desired, The recommended way to achieve it is to `COPY` the `HoundContact:generateTtsReport` and `HoundContact:generateTextReport` functions from `src/301 - HoundContact_comms.lua` file in this repo to a new file. In that new file perform the changes you want. To activate load the new file to the mission using `Do script file` **AFTER** the main Hound script is loaded. this will replace the original implementation without  editing the original file. allowing a simpler upgrades to newer Hound versions without loosing you changes.  
+If a more extensive change is desired, The recommended way to achieve it is to `COPY` the `HOUND.Contact:generateTtsReport` and `HOUND.Contact:generateTextReport` functions from `src/301 - HOUND.Contact_comms.lua` file in this repo to a new file. In that new file perform the changes you want. To activate load the new file to the mission using `Do script file` **AFTER** the main Hound script is loaded. this will replace the original implementation without  editing the original file. allowing a simpler upgrades to newer Hound versions without loosing you changes.  
 
  ### Notifier
  ---
@@ -722,7 +722,7 @@ houndEvent = {
     id = <HOUND.EVENT> enum,
     coalition = <coalition.side> enum of coalition emitting the event,
     houndId = Hound Instance ID that emitted the event,
-    initiator = DCS unit or HoundContact
+    initiator = DCS unit or HOUND.Contact
     time = time of the event (timer.getTimer())
 }
 ```

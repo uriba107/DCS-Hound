@@ -89,7 +89,7 @@ function compile {
     # remove dev stuff
     highlight "cleaning Dev comments"
     sed -E ${SED_ARGS} '/StopWatch|:Stop()/d' ${TARGET_FILE}
-    sed ${SED_ARGS} '/HoundLogger.trace("/d' ${TARGET_FILE}
+    sed ${SED_ARGS} '/HOUND.Logger.trace("/d' ${TARGET_FILE}
 
     # disable logging
     sed ${SED_ARGS} "s/DEBUG = true/DEBUG = false/" ${TARGET_FILE}

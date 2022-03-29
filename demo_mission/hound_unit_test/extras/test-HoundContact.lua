@@ -3,7 +3,7 @@ do
     TestHoundContact = {}
 
     function TestHoundContact:setUp()
-        self.contact = HoundContact.New(Unit.getByName("TOR_SAIPAN-1"),coalition.side.BLUE)
+        self.contact = HOUND.Contact.New(Unit.getByName("TOR_SAIPAN-1"),coalition.side.BLUE)
         lu.assertNotNil(self.contact)
         lu.assertIsTable(self.contact)
 

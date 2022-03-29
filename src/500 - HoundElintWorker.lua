@@ -1,24 +1,24 @@
-    --- HoundElintWorker
-    -- @module HoundElintWorker
+    --- HOUND.ElintWorker
+    -- @module HOUND.ElintWorker
 do
-    HoundElintWorker = {}
-    HoundElintWorker.__index = HoundElintWorker
+    HOUND.ElintWorker = {}
+    HOUND.ElintWorker.__index = HOUND.ElintWorker
 
     local l_math = math
-    function HoundElintWorker.create(HoundInstanceId)
+    function HOUND.ElintWorker.create(HoundInstanceId)
         local instance = {}
         instance._contacts = {}
         instance._platforms = {}
         instance._settings =  HOUND.Config.get(HoundInstanceId)
         instance.coalitionId = nil
         instance.TrackIdCounter = 0
-        setmetatable(instance, HoundElintWorker)
+        setmetatable(instance, HOUND.ElintWorker)
         return instance
     end
 
     --- set coalition
     -- retundent function will change global coalition
-    function HoundElintWorker:setCoalition(coalitionId)
+    function HOUND.ElintWorker:setCoalition(coalitionId)
         if not coalitionId then return false end
         if not self._settings:getCoalition() then
             self._settings:setCoalition(coalitionId)
@@ -29,14 +29,14 @@ do
 
     --- get worker coalition
     -- @return coalitionId
-    function HoundElintWorker:getCoalition()
+    function HOUND.ElintWorker:getCoalition()
         return self._settings:getCoalition()
     end
 
     --- add platform
     -- @string platformName DCS Unit Name of platform to be added
     -- @return Bool. True if requested platform was added. else false
-    function HoundElintWorker:addPlatform(platformName)
+    function HOUND.ElintWorker:addPlatform(platformName)
         local candidate = Unit.getByName(platformName)
         if candidate == nil then
             candidate = StaticObject.getByName(platformName)
@@ -64,7 +64,7 @@ do
     --- remove specificd platform
     -- @param platformName DCS Unit name to remove
     -- @return Bool. true if removed, else false
-    function HoundElintWorker:removePlatform(platformName)
+    function HOUND.ElintWorker:removePlatform(platformName)
         local candidate = Unit.getByName(platformName)
         if candidate == nil then
             candidate = StaticObject.getByName(platformName)
@@ -88,7 +88,7 @@ do
     end
 
     --- make sure all platforms are still alive and relevate
-    function HoundElintWorker:platformRefresh()
+    function HOUND.ElintWorker:platformRefresh()
         if Length(self._platforms) < 1 then return end
         for id,platform in ipairs(self._platforms) do
             if platform:isExist() == false or platform:getLife() <1 then
@@ -104,7 +104,7 @@ do
     end
 
     --- remove dead platforms
-    function HoundElintWorker:removeDeadPlatforms()
+    function HOUND.ElintWorker:removeDeadPlatforms()
         if Length(self._platforms) < 1 then return end
         for id,platform in ipairs(self._platforms) do
             if platform:isExist() == false or platform:getLife() <1  or (platform:getCategory() ~= Object.Category.STATIC and platform:isActive() == false) then
@@ -121,13 +121,13 @@ do
 
     --- count number of platforms
     -- @return Int number of platforms
-    function HoundElintWorker:countPlatforms()
+    function HOUND.ElintWorker:countPlatforms()
         return Length(self._platforms)
     end
 
     --- list all associated platform unit names
     -- @return Table list of active platform names
-    function HoundElintWorker:listPlatforms()
+    function HOUND.ElintWorker:listPlatforms()
         local platforms = {}
         for _,platform in ipairs(self._platforms) do
             table.insert(platforms,platform:getName())
@@ -137,14 +137,14 @@ do
 
     --- get the next track number
     -- @return UID for the contact
-    function HoundElintWorker:getNewTrackId()
+    function HOUND.ElintWorker:getNewTrackId()
         self.TrackIdCounter = self.TrackIdCounter + 1
         return self.TrackIdCounter
     end
 
     --- return if contact exists in the system
     -- @return Bool return True if unit is in the system
-    function HoundElintWorker:isContact(emitter)
+    function HOUND.ElintWorker:isContact(emitter)
         if emitter == nil then return false end
         local emitterName = nil
         if type(emitter) == "string" then
@@ -159,11 +159,11 @@ do
     --- add contact to worker
     -- @param emitter DCS Unit to add
     -- @return Name of added unit
-    function HoundElintWorker:addContact(emitter)
+    function HOUND.ElintWorker:addContact(emitter)
         if emitter == nil or emitter.getName == nil then return end
         local emitterName = emitter:getName()
         if self._contacts[emitterName] ~= nil then return emitterName end
-        self._contacts[emitterName] = HoundContact.New(emitter, self:getCoalition(), self:getNewTrackId())
+        self._contacts[emitterName] = HOUND.Contact.New(emitter, self:getCoalition(), self:getNewTrackId())
         HOUND.EventHandler.publishEvent({
             id = HOUND.EVENTS.RADAR_NEW,
             initiator = emitter,
@@ -173,11 +173,11 @@ do
         return emitterName
     end
 
-    --- get HoundContact from DCS Unit/UID
+    --- get HOUND.Contact from DCS Unit/UID
     -- @param emitter DCS Unit/name of radar unit
     -- @param[opt] getOnly if true function will not create new unit if not exist
-    -- @return HoundContact instance of that Unit
-    function HoundElintWorker:getContact(emitter,getOnly)
+    -- @return HOUND.Contact instance of that Unit
+    function HOUND.ElintWorker:getContact(emitter,getOnly)
         if emitter == nil then return nil end
         local emitterName = nil
         if type(emitter) == "string" then
@@ -198,7 +198,7 @@ do
     --- remove Contact from tracking
     -- @string emitterName DCS unit Name to remove
     -- @return Bool. true if removed.
-    function HoundElintWorker:removeContact(emitterName)
+    function HOUND.ElintWorker:removeContact(emitterName)
         if not type(emitterName) == "string" then return false end
         if self._contacts[emitterName] then
             HOUND.EventHandler.publishEvent({
@@ -215,7 +215,7 @@ do
 
     --- set contact as Prebriefed
     -- @param emitter DCS Unit/Unit name of radar
-    function HoundElintWorker:setPreBriefedContact(emitter)
+    function HOUND.ElintWorker:setPreBriefedContact(emitter)
         if not emitter:isExist() then return end
         local contact = self:getContact(emitter)
         local contactState = contact:useUnitPos()
@@ -231,14 +231,14 @@ do
 
     --- set contact as Dead
     -- @param emitter DCS Unit/Unit name of radar
-    function HoundElintWorker:setDead(emitter)
+    function HOUND.ElintWorker:setDead(emitter)
         local contact = self:getContact(emitter,true)
         if contact then contact:setDead() end
     end
     --- is contact is tracked
     -- @param emitter DCS Unit/UID of requested emitter
     -- @return Bool. is Unit is being tracked by current HoundWorker instance.
-    function HoundElintWorker:isTracked(emitter)
+    function HOUND.ElintWorker:isTracked(emitter)
         if emitter == nil then return false end
         if type(emitter) =="string" and self._contacts[emitter] ~= nil then return true end
         if type(emitter) == "table" and emitter.getName ~= nil and self._contacts[emitter:getName()] ~= nil then return true end
@@ -248,7 +248,7 @@ do
     --- add datapoint to emitter
     -- @param emitter DCS UNIT with radar
     -- @param datapoint HOUND.Datapoint instance
-    function HoundElintWorker:addDatapointToEmitter(emitter,datapoint)
+    function HOUND.ElintWorker:addDatapointToEmitter(emitter,datapoint)
         if not self:isTracked(emitter) then
             self:addContact(emitter)
         end
@@ -257,7 +257,7 @@ do
     end
 
     --- list all contact is a sector
-    function HoundElintWorker:listInSector(sectorName)
+    function HOUND.ElintWorker:listInSector(sectorName)
         local emitters = {}
         for _,emitter in ipairs(self._contacts) do
             if emitter:isInSector(sectorName) then
@@ -269,7 +269,7 @@ do
     end
 
     --- update markers to all contacts
-    function HoundElintWorker:UpdateMarkers()
+    function HOUND.ElintWorker:UpdateMarkers()
         if self._settings:getUseMarkers() then
             for _, contact in pairs(self._contacts) do
                 contact:updateMarker(self._settings:getMarkerType())
@@ -278,7 +278,7 @@ do
     end
 
     --- Return all contacts managed by this instance regardless of sector
-    function HoundElintWorker:listAll(sectorName)
+    function HOUND.ElintWorker:listAll(sectorName)
         if sectorName then
             local contacts = {}
             for _,emitter in pairs(self._contacts) do
@@ -292,13 +292,13 @@ do
     end
 
     --- return all contacts managed by this instance sorted by range
-    function HoundElintWorker:listAllbyRange(sectorName)
+    function HOUND.ElintWorker:listAllbyRange(sectorName)
         return self:sortContacts(HOUND.Utils.Sort.ContactsByRange,sectorName)
     end
 
     --- return number of contacts tracked
     -- @param[opt] sectorName String name or sector to filter by
-    function HoundElintWorker:countContacts(sectorName)
+    function HOUND.ElintWorker:countContacts(sectorName)
         if sectorName then
             local contacts = 0
             for _,contact in pairs(self._contacts) do
@@ -315,7 +315,7 @@ do
     -- @param sortFunc Function to sort by
     -- @param[opt] sectorName String. sector to filter by
     -- @return sorted list of contacts
-    function HoundElintWorker:sortContacts(sortFunc,sectorName)
+    function HOUND.ElintWorker:sortContacts(sortFunc,sectorName)
         if type(sortFunc) ~= "function" then return end
         local sorted = {}
         for _,emitter in pairs(self._contacts) do
@@ -333,7 +333,7 @@ do
 
     --- Perform a sample of all emitting radars against all platforms
     -- generates and stores datapoints as required
-    function HoundElintWorker:Sniff()
+    function HOUND.ElintWorker:Sniff()
         self:removeDeadPlatforms()
 
         if Length(self._platforms) == 0 then
@@ -401,7 +401,7 @@ do
 
     --- Process function
     -- process all the information stored in the system to update all radar positions
-    function HoundElintWorker:Process()
+    function HOUND.ElintWorker:Process()
         if Length(self._contacts) < 1 then return end
         for contactName, contact in pairs(self._contacts) do
             if contact ~= nil then
