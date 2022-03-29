@@ -136,6 +136,8 @@ do
         HOUND.EventHandler.removeEventHandler(handler)
     end
 
+    HOUND.Comms = {}
+
     --- helper code for class inheritance
     -- @local
     -- @param baseClass Base class to inherit from

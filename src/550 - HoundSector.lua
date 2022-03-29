@@ -106,7 +106,7 @@ do
         if type(self.settings.controller) == "table" then
             if not self.comms.controller then
                 self.settings.controller.name = self.callsign
-                self.comms.controller = HoundController:create(self.name,self._hSettings,self.settings.controller)
+                self.comms.controller = HOUND.Comms.Controller:create(self.name,self._hSettings,self.settings.controller)
             else
                 self.settings.controller.name = self.callsign
                 self.comms.controller:updateSettings(self.settings.controller)
@@ -117,7 +117,7 @@ do
         if type(self.settings.atis) == "table" then
             if not self.comms.atis then
                 self.settings.atis.name = self.callsign
-                self.comms.atis = HoundInformationSystem:create(self.name,self._hSettings,self.settings.atis)
+                self.comms.atis = HOUND.Comms.InformationSystem:create(self.name,self._hSettings,self.settings.atis)
             else
                 self.settings.atis.name = self.callsign
                 self.comms.atis:updateSettings(self.settings.atis)
@@ -127,7 +127,7 @@ do
         if type(self.settings.notifier) == "table" then
             if not self.comms.notifier then
                 self.settings.notifier.name = self.callsign
-                self.comms.notifier = HoundNotifier:create(self.name,self._hSettings,self.settings.notifier)
+                self.comms.notifier = HOUND.Comms.Notifier:create(self.name,self._hSettings,self.settings.notifier)
             else
                 self.settings.notifier.name = self.callsign
                 self.comms.notifier:updateSettings(self.settings.notifier)

@@ -1,20 +1,20 @@
-    --- Hound Information System (ATIS)
-    -- @module HoundInformationSystem
+    --- Hound Information System (extends HOUND.Comms.Manager)
+    -- @module HOUND.Comms.InformationSystem
 
 do
-    --- Hound inforamtion System (extends HoundCommsManager )
-    -- @see HoundCommsManager
+    --- Hound inforamtion System (extends HOUND.Comms.Manager)
+    -- @see HOUND.Comms.Manager
 
-    HoundInformationSystem = {}
-    -- HoundInformationSystem.__index = HoundInformationSystem
-    HoundInformationSystem = inheritsFrom(HoundCommsManager)
+    HOUND.Comms.InformationSystem = {}
+    -- HOUND.Comms.InformationSystem.__index = HOUND.Comms.InformationSystem
+    HOUND.Comms.InformationSystem = inheritsFrom(HOUND.Comms.Manager)
 
-    --- HoundInformationSystem create
+    --- HOUND.Comms.InformationSystem create
     -- @string sector name of parent sector
     -- @param houndConfig HoundConfig instance
     -- @tab[opt] settings table containing comms instance settings
-    -- @return HoundInformationSystem Instance
-    function HoundInformationSystem:create(sector,houndConfig,settings)
+    -- @return HOUND.Comms.InformationSystem Instance
+    function HOUND.Comms.InformationSystem:create(sector,houndConfig,settings)
         local instance = self:superClass():create(sector,houndConfig,settings)
         setmetatable(instance, self)
         self.__index = self
@@ -49,7 +49,7 @@ do
 
     --- set reportEWR state
     -- @bool state Desired state
-    function HoundInformationSystem:reportEWR(state)
+    function HOUND.Comms.InformationSystem:reportEWR(state)
         if type(state) == "boolean" then
             self:setSettings("reportEWR",state)
         end
@@ -61,7 +61,7 @@ do
     --- Start callback loop
     -- @local
     -- Implementation of abstract for ATIS
-    function HoundInformationSystem:startCallbackLoop()
+    function HOUND.Comms.InformationSystem:startCallbackLoop()
         if self.enabled and not self.callback.scheduler then
             self.callback.scheduler = timer.scheduleFunction(self.runCallback, self, timer.getTime()+0.1)
         end
@@ -70,7 +70,7 @@ do
     --- stop callback loop
     -- @local
     -- Implementation of abstract for ATIS
-    function HoundInformationSystem:stopCallbackLoop()
+    function HOUND.Comms.InformationSystem:stopCallbackLoop()
         if self.callback.scheduler then
             timer.removeFunction(self.callback.scheduler)
             self.callback.scheduler = nil
@@ -86,7 +86,7 @@ do
     -- Implementation of abstract
     -- @func callback to run in loop
     -- @tab args argument table for callback function
-    function HoundInformationSystem:SetMsgCallback(callback,args)
+    function HOUND.Comms.InformationSystem:SetMsgCallback(callback,args)
         if callback ~= nil and type(callback) == "function" then
             self.callback.func = callback
             self.callback.args = args
@@ -101,7 +101,7 @@ do
     -- @local
     -- Implementation of abstract
     -- @return time of next run
-    function HoundInformationSystem:runCallback()
+    function HOUND.Comms.InformationSystem:runCallback()
         local nextDelay = self.callback.interval or 300
         if self.callback ~= nil and type(self.callback.func) == "function"  then
             self.callback.func(self.callback.args,self.loop,self.preferences)
@@ -112,7 +112,7 @@ do
     --- Get next message from queue
     -- override implementation
     -- @local
-    function HoundInformationSystem:getNextMsg()
+    function HOUND.Comms.InformationSystem:getNextMsg()
         if self.loop and not self.loop.msg then
             self:runCallback()
         end
