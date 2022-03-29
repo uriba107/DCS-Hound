@@ -411,6 +411,24 @@ do
         return setContains(HoundDB.useDecMin,typeName)
     end
 
+    --- does unit has payload (placeholder)
+    -- @param DCS_Unit DCS unit
+    -- @param payloadName Name of payload
+    -- @return Bool always true
+    function HoundUtils.hasPayload(DCS_Unit,payloadName)
+        return true
+    end
+    
+    --- does unit has task (placeholder)
+    -- @param DCS_Unit DCS unit
+    -- @param taskName Name of task
+    -- @return Bool always true
+    function HoundUtils.hasTask(DCS_Unit,taskName)
+        return true
+    end
+
+    --- Value mapping Functions
+    -- @section Mapping
     HoundUtils.Mapping.CURVES = {
         RETAIL = 0,
         WINDOWS = 1,
@@ -1198,7 +1216,7 @@ do
         if setContains(HoundDB.Platform,mainCategory) then
             if setContains(HoundDB.Platform[mainCategory],type) then
                 if HoundDB.Platform[mainCategory][type]['require'] then
-                    local groupData = mist.getCurrentGroupData(candidate:getGroup():getName())
+                    -- local groupData = mist.getCurrentGroupData(candidate:getGroup():getName())
                     -- TODO: actually make logic here
                     if setContains(HoundDB.Platform[mainCategory][type]['require'],'CLSID') then
                         -- local required = HoundDB.Platform[mainCategory][type]['require']['CLSID']
@@ -1208,13 +1226,13 @@ do
                         --         isValid = true
                         --     end
                         -- end
-                        isValid = true
+                        isValid = HoundUtils.hasPayload(candidate,HoundDB.Platform[mainCategory][type]['require']['CLSID'])
                     end
                     if setContains(HoundDB.Platform[mainCategory][type]['require'],'TASK') then
-                        -- local TASK = HoundDB.Platform[mainCategory][type]['require']['TASK']
+                        local TASK = HoundDB.Platform[mainCategory][type]['require']['TASK']
                         -- local grpTasks = groupData["tasks"]
                         -- check for tasking requirements
-                        isValid = false
+                        isValid = not HoundUtils.hasTask(candidate,HoundDB.Platform[mainCategory][type]['require']['TASK'])
                     end
                 else
                     isValid = true
