@@ -32,27 +32,28 @@
 
 <h2>Contents</h2>
 <ul>
-<li><a href="#Class_HoundSector">Class HoundSector </a></li>
+<li><a href="#Class_HOUND_Sector">Class HOUND.Sector </a></li>
 </ul>
 
 
 <h2>Modules</h2>
 <ul class="nowrap">
   <li><a href="../modules/HOUND.html">HOUND</a></li>
-  <li><a href="../modules/HoundLogger.html">HoundLogger</a></li>
-  <li><a href="../modules/HoundDB.html">HoundDB</a></li>
-  <li><a href="../modules/HoundConfig.html">HoundConfig</a></li>
-  <li><a href="../modules/HoundUtils.html">HoundUtils</a></li>
-  <li><a href="../modules/HoundEventHandler.html">HoundEventHandler</a></li>
-  <li><a href="../modules/HoundEstimator.html">HoundEstimator</a></li>
-  <li><a href="../modules/HoundDatapoint.html">HoundDatapoint</a></li>
-  <li><a href="../modules/HoundContact.html">HoundContact</a></li>
-  <li><a href="../modules/HoundCommsManager.html">HoundCommsManager</a></li>
-  <li><a href="../modules/HoundInformationSystem.html">HoundInformationSystem</a></li>
-  <li><a href="../modules/HoundController.html">HoundController</a></li>
-  <li><a href="../modules/HoundElintWorker.html">HoundElintWorker</a></li>
-  <li><a href="../modules/HoundContactManager.html">HoundContactManager</a></li>
-  <li><strong>HoundSector</strong></li>
+  <li><a href="../modules/HOUND.Logger.html">HOUND.Logger</a></li>
+  <li><a href="../modules/HOUND.DBs.html">HOUND.DBs</a></li>
+  <li><a href="../modules/HOUND.Config.html">HOUND.Config</a></li>
+  <li><a href="../modules/HOUND.Utils.html">HOUND.Utils</a></li>
+  <li><a href="../modules/HOUND.EventHandler.html">HOUND.EventHandler</a></li>
+  <li><a href="../modules/HOUND.Estimator.html">HOUND.Estimator</a></li>
+  <li><a href="../modules/HOUND.Datapoint.html">HOUND.Datapoint</a></li>
+  <li><a href="../modules/HOUND.Contact.html">HOUND.Contact</a></li>
+  <li><a href="../modules/HOUND.Comms.Manager.html">HOUND.Comms.Manager</a></li>
+  <li><a href="../modules/HOUND.Comms.InformationSystem.html">HOUND.Comms.InformationSystem</a></li>
+  <li><a href="../modules/HOUND.Comms.Controller.html">HOUND.Comms.Controller</a></li>
+  <li><a href="../modules/HOUND.Comms.Notifier.html">HOUND.Comms.Notifier</a></li>
+  <li><a href="../modules/HOUND.ElintWorker.html">HOUND.ElintWorker</a></li>
+  <li><a href="../modules/HOUND.ContactManager.html">HOUND.ContactManager</a></li>
+  <li><strong>HOUND.Sector</strong></li>
 </ul>
 <h2>Scripts</h2>
 <ul class="nowrap">
@@ -63,244 +64,248 @@
 
 <div id="content">
 
-<h1>Module <code>HoundSector</code></h1>
-<p>HoundSector</p>
+<h1>Module <code>HOUND.Sector</code></h1>
+<p>HOUND.Sector</p>
 <p></p>
 
 
-<h2><a href="#Class_HoundSector">Class HoundSector </a></h2>
+<h2><a href="#Class_HOUND_Sector">Class HOUND.Sector </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:create">HoundSector:create (HoundId, name[, settings[, priority]])</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector.create">HOUND.Sector.create (HoundId, name[, settings[, priority]])</a></td>
 	<td class="summary">Create sectors</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:updateSettings">HoundSector:updateSettings (settings)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:updateSettings">HOUND.Sector:updateSettings (settings)</a></td>
 	<td class="summary">Update sectore settings</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:destroy">HoundSector:destroy ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:destroy">HOUND.Sector:destroy ()</a></td>
 	<td class="summary">Sector "Destructor"
  cleans up everyting needed for sector to safly be removed</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:updateServices">HoundSector:updateServices ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:updateServices">HOUND.Sector:updateServices ()</a></td>
 	<td class="summary">Update internal services with settings stored in the sector.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:getName">HoundSector:getName ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:getName">HOUND.Sector:getName ()</a></td>
 	<td class="summary">get name</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:getPriority">HoundSector:getPriority ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:getPriority">HOUND.Sector:getPriority ()</a></td>
 	<td class="summary">get priority</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:setCallsign">HoundSector:setCallsign (callsign[, NATO])</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:setCallsign">HOUND.Sector:setCallsign (callsign[, NATO])</a></td>
 	<td class="summary">set callsign for sector</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:getCallsign">HoundSector:getCallsign ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:getCallsign">HOUND.Sector:getCallsign ()</a></td>
 	<td class="summary">get callsign for sector</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:setZone">HoundSector:setZone (zonecandidate)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:setZone">HOUND.Sector:setZone (zonecandidate)</a></td>
 	<td class="summary">Set zone in sector</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:removeZone">HoundSector:removeZone ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:removeZone">HOUND.Sector:removeZone ()</a></td>
 	<td class="summary">Remove Zone settings from sector</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:setTransmitter">HoundSector:setTransmitter (userTransmitter)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:setTransmitter">HOUND.Sector:setTransmitter (userTransmitter)</a></td>
 	<td class="summary">sets transmitter to sector</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:updateTransmitter">HoundSector:updateTransmitter ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:updateTransmitter">HOUND.Sector:updateTransmitter ()</a></td>
 	<td class="summary">updates all available comms with transmitter on file</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:removeTransmitter">HoundSector:removeTransmitter ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:removeTransmitter">HOUND.Sector:removeTransmitter ()</a></td>
 	<td class="summary">removes transmitter from sector</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:updateSectorMembership">HoundSector:updateSectorMembership (contact)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:updateSectorMembership">HOUND.Sector:updateSectorMembership (contact)</a></td>
 	<td class="summary">update contact for zone memberships</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:enableController">HoundSector:enableController ([userSettings])</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:enableController">HOUND.Sector:enableController ([userSettings])</a></td>
 	<td class="summary">enable controller</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:disableController">HoundSector:disableController ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:disableController">HOUND.Sector:disableController ()</a></td>
 	<td class="summary">disable controller</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:removeController">HoundSector:removeController ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:removeController">HOUND.Sector:removeController ()</a></td>
 	<td class="summary">remove controller completly from sector</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:getControllerFreq">HoundSector:getControllerFreq ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:getControllerFreq">HOUND.Sector:getControllerFreq ()</a></td>
 	<td class="summary">get controller frequencies</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:transmitOnController">HoundSector:transmitOnController (msg)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:transmitOnController">HOUND.Sector:transmitOnController (msg)</a></td>
 	<td class="summary">Transmit custom TTS message on controller</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:enableText">HoundSector:enableText ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:enableText">HOUND.Sector:enableText ()</a></td>
 	<td class="summary">enable controller text for sector</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:disableText">HoundSector:disableText ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:disableText">HOUND.Sector:disableText ()</a></td>
 	<td class="summary">disable controller text for sector</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:enableAlerts">HoundSector:enableAlerts ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:enableAlerts">HOUND.Sector:enableAlerts ()</a></td>
 	<td class="summary">enable controller Alerts for sector</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:disableAlerts">HoundSector:disableAlerts ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:disableAlerts">HOUND.Sector:disableAlerts ()</a></td>
 	<td class="summary">disable controller  for sector</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:enableTTS">HoundSector:enableTTS ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:enableTTS">HOUND.Sector:enableTTS ()</a></td>
 	<td class="summary">enable Controller tts for sector</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:disableTTS">HoundSector:disableTTS ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:disableTTS">HOUND.Sector:disableTTS ()</a></td>
 	<td class="summary">disable Controller tts for sector</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:enableAtis">HoundSector:enableAtis (userSettings)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:enableAtis">HOUND.Sector:enableAtis (userSettings)</a></td>
 	<td class="summary">enable ATIS in sector</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:disableAtis">HoundSector:disableAtis ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:disableAtis">HOUND.Sector:disableAtis ()</a></td>
 	<td class="summary">disable ATIS in sector</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:removeAtis">HoundSector:removeAtis ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:removeAtis">HOUND.Sector:removeAtis ()</a></td>
 	<td class="summary">remove ATIS from sector</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:getAtisFreq">HoundSector:getAtisFreq ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:getAtisFreq">HOUND.Sector:getAtisFreq ()</a></td>
 	<td class="summary">get ATIS frequencies</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:reportEWR">HoundSector:reportEWR (state)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:reportEWR">HOUND.Sector:reportEWR (state)</a></td>
 	<td class="summary">Set ATIS EWR report state</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:hasAtis">HoundSector:hasAtis ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:hasAtis">HOUND.Sector:hasAtis ()</a></td>
 	<td class="summary">checks for atis in sector</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:isAtisEnabled">HoundSector:isAtisEnabled ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:isAtisEnabled">HOUND.Sector:isAtisEnabled ()</a></td>
 	<td class="summary">checks if ats is enabled for the sector</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:hasController">HoundSector:hasController ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:hasController">HOUND.Sector:hasController ()</a></td>
 	<td class="summary">checks for controller in sector</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:isControllerEnabled">HoundSector:isControllerEnabled ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:isControllerEnabled">HOUND.Sector:isControllerEnabled ()</a></td>
 	<td class="summary">checks if controller is enabled for the sector</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:enableNotifier">HoundSector:enableNotifier ([userSettings])</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:enableNotifier">HOUND.Sector:enableNotifier ([userSettings])</a></td>
 	<td class="summary">enable Notifier in sector</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:disableNotifier">HoundSector:disableNotifier ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:disableNotifier">HOUND.Sector:disableNotifier ()</a></td>
 	<td class="summary">disable notifier in sector</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:removeNotifier">HoundSector:removeNotifier ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:removeNotifier">HOUND.Sector:removeNotifier ()</a></td>
 	<td class="summary">remove notifier in sector</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:getNotifierFreq">HoundSector:getNotifierFreq ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:getNotifierFreq">HOUND.Sector:getNotifierFreq ()</a></td>
 	<td class="summary">get Notifier frequencies</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:hasNotifier">HoundSector:hasNotifier ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:hasNotifier">HOUND.Sector:hasNotifier ()</a></td>
 	<td class="summary">checks sector for notifier</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:isNotifierEnabled">HoundSector:isNotifierEnabled ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:isNotifierEnabled">HOUND.Sector:isNotifierEnabled ()</a></td>
 	<td class="summary">checks if ats is enabled for the sector</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:getContacts">HoundSector:getContacts ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:getContacts">HOUND.Sector:getContacts ()</a></td>
 	<td class="summary">return a sorted list of all contacts for the sector</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:countContacts">HoundSector:countContacts ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:countContacts">HOUND.Sector:countContacts ()</a></td>
 	<td class="summary">count the number of contacts for the sector</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector.removeRadioMenu">HoundSector.removeRadioMenu (self)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector.removeRadioMenu">HOUND.Sector.removeRadioMenu (self)</a></td>
 	<td class="summary">remove all radio menus for</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector.findGrpInPlayerList">HoundSector.findGrpInPlayerList (grpId[, playersList])</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:findGrpInPlayerList">HOUND.Sector:findGrpInPlayerList (grpId[, playersList])</a></td>
 	<td class="summary">find group in enrolled</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector.getSubscribedGroups">HoundSector.getSubscribedGroups ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:getSubscribedGroups">HOUND.Sector:getSubscribedGroups ()</a></td>
 	<td class="summary">get subscribed groups</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector.validateEnrolled">HoundSector.validateEnrolled ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:validateEnrolled">HOUND.Sector:validateEnrolled ()</a></td>
 	<td class="summary">clean non existing users from subscribers</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector.checkIn">HoundSector.checkIn (args[, skipAck])</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector.checkIn">HOUND.Sector.checkIn (args[, skipAck])</a></td>
 	<td class="summary">check in player to controller</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector.checkOut">HoundSector.checkOut (args[, skipAck])</a></td>
-	<td class="summary">check out player from controller</td>
+	<td class="name" nowrap><a href="#HOUND.Sector.checkOut">HOUND.Sector.checkOut (args[, skipAck[, onlyPlayer]])</a></td>
+	<td class="summary">check out player's group from controller</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector.createCheckIn">HoundSector.createCheckIn ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:createCheckIn">HOUND.Sector:createCheckIn ()</a></td>
 	<td class="summary">create check menu items for players</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:populateRadioMenu">HoundSector:populateRadioMenu ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:populateRadioMenu">HOUND.Sector:populateRadioMenu ()</a></td>
 	<td class="summary">Populate sector radio menu</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector.addRadarRadioItem">HoundSector.addRadarRadioItem (dataMenu, contact)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:addRadarRadioItem">HOUND.Sector:addRadarRadioItem (dataMenu, contact)</a></td>
 	<td class="summary">Create radar menu item</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector.removeRadarRadioItem">HoundSector.removeRadarRadioItem (dataMenu, contact)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:removeRadarRadioItem">HOUND.Sector:removeRadarRadioItem (dataMenu, contact)</a></td>
 	<td class="summary">remove radar menu items</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:notifyDeadEmitter">HoundSector:notifyDeadEmitter (contact)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:getTransmissionAnnounce">HOUND.Sector:getTransmissionAnnounce ([index])</a></td>
+	<td class="summary">create randome annouce</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:notifyDeadEmitter">HOUND.Sector:notifyDeadEmitter (contact)</a></td>
 	<td class="summary">Send dead emitter notification</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector:notifyNewEmitter">HoundSector:notifyNewEmitter (contact)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:notifyNewEmitter">HOUND.Sector:notifyNewEmitter (contact)</a></td>
 	<td class="summary">Send new emitter notification</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector.generateAtis">HoundSector.generateAtis (loopData, AtisPreferences)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:generateAtis">HOUND.Sector:generateAtis (loopData, AtisPreferences)</a></td>
 	<td class="summary">Generate Atis message for sector</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector.TransmitSamReport">HoundSector.TransmitSamReport (args)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector.TransmitSamReport">HOUND.Sector.TransmitSamReport (args)</a></td>
 	<td class="summary">transmit SAM report</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector.TransmitCheckInAck">HoundSector.TransmitCheckInAck (player)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:TransmitCheckInAck">HOUND.Sector:TransmitCheckInAck (player)</a></td>
 	<td class="summary">transmit checkin message</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundSector.TransmitCheckOutAck">HoundSector.TransmitCheckOutAck (player)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Sector:TransmitCheckOutAck">HOUND.Sector:TransmitCheckOutAck (player)</a></td>
 	<td class="summary">transmit checkout message</td>
 	</tr>
 </table>
@@ -309,15 +314,15 @@
 <br/>
 
 
-    <h2 class="section-header has-description"><a name="Class_HoundSector"></a>Class HoundSector </h2>
+    <h2 class="section-header has-description"><a name="Class_HOUND_Sector"></a>Class HOUND.Sector </h2>
 
           <div class="section-description">
-          HoundSector
+          HOUND.Sector
           </div>
     <dl class="function">
     <dt>
-    <a name = "HoundSector:create"></a>
-    <strong>HoundSector:create (HoundId, name[, settings[, priority]])</strong>
+    <a name = "HOUND.Sector.create"></a>
+    <strong>HOUND.Sector.create (HoundId, name[, settings[, priority]])</strong>
     </dt>
     <dd>
     Create sectors
@@ -347,8 +352,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:updateSettings"></a>
-    <strong>HoundSector:updateSettings (settings)</strong>
+    <a name = "HOUND.Sector:updateSettings"></a>
+    <strong>HOUND.Sector:updateSettings (settings)</strong>
     </dt>
     <dd>
     Update sectore settings
@@ -383,8 +388,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:destroy"></a>
-    <strong>HoundSector:destroy ()</strong>
+    <a name = "HOUND.Sector:destroy"></a>
+    <strong>HOUND.Sector:destroy ()</strong>
     </dt>
     <dd>
     Sector "Destructor"
@@ -403,8 +408,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:updateServices"></a>
-    <strong>HoundSector:updateServices ()</strong>
+    <a name = "HOUND.Sector:updateServices"></a>
+    <strong>HOUND.Sector:updateServices ()</strong>
     </dt>
     <dd>
     Update internal services with settings stored in the sector.
@@ -417,8 +422,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:getName"></a>
-    <strong>HoundSector:getName ()</strong>
+    <a name = "HOUND.Sector:getName"></a>
+    <strong>HOUND.Sector:getName ()</strong>
     </dt>
     <dd>
     get name
@@ -436,8 +441,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:getPriority"></a>
-    <strong>HoundSector:getPriority ()</strong>
+    <a name = "HOUND.Sector:getPriority"></a>
+    <strong>HOUND.Sector:getPriority ()</strong>
     </dt>
     <dd>
     get priority
@@ -455,8 +460,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:setCallsign"></a>
-    <strong>HoundSector:setCallsign (callsign[, NATO])</strong>
+    <a name = "HOUND.Sector:setCallsign"></a>
+    <strong>HOUND.Sector:setCallsign (callsign[, NATO])</strong>
     </dt>
     <dd>
     set callsign for sector
@@ -481,8 +486,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:getCallsign"></a>
-    <strong>HoundSector:getCallsign ()</strong>
+    <a name = "HOUND.Sector:getCallsign"></a>
+    <strong>HOUND.Sector:getCallsign ()</strong>
     </dt>
     <dd>
     get callsign for sector
@@ -500,8 +505,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:setZone"></a>
-    <strong>HoundSector:setZone (zonecandidate)</strong>
+    <a name = "HOUND.Sector:setZone"></a>
+    <strong>HOUND.Sector:setZone (zonecandidate)</strong>
     </dt>
     <dd>
     Set zone in sector
@@ -520,8 +525,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:removeZone"></a>
-    <strong>HoundSector:removeZone ()</strong>
+    <a name = "HOUND.Sector:removeZone"></a>
+    <strong>HOUND.Sector:removeZone ()</strong>
     </dt>
     <dd>
     Remove Zone settings from sector
@@ -534,8 +539,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:setTransmitter"></a>
-    <strong>HoundSector:setTransmitter (userTransmitter)</strong>
+    <a name = "HOUND.Sector:setTransmitter"></a>
+    <strong>HOUND.Sector:setTransmitter (userTransmitter)</strong>
     </dt>
     <dd>
     sets transmitter to sector
@@ -554,8 +559,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:updateTransmitter"></a>
-    <strong>HoundSector:updateTransmitter ()</strong>
+    <a name = "HOUND.Sector:updateTransmitter"></a>
+    <strong>HOUND.Sector:updateTransmitter ()</strong>
     </dt>
     <dd>
     updates all available comms with transmitter on file
@@ -568,8 +573,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:removeTransmitter"></a>
-    <strong>HoundSector:removeTransmitter ()</strong>
+    <a name = "HOUND.Sector:removeTransmitter"></a>
+    <strong>HOUND.Sector:removeTransmitter ()</strong>
     </dt>
     <dd>
     removes transmitter from sector
@@ -582,8 +587,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:updateSectorMembership"></a>
-    <strong>HoundSector:updateSectorMembership (contact)</strong>
+    <a name = "HOUND.Sector:updateSectorMembership"></a>
+    <strong>HOUND.Sector:updateSectorMembership (contact)</strong>
     </dt>
     <dd>
     update contact for zone memberships
@@ -592,7 +597,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">contact</span>
-         HoundContact instance
+         HOUND.Contact instance
         </li>
     </ul>
 
@@ -602,8 +607,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:enableController"></a>
-    <strong>HoundSector:enableController ([userSettings])</strong>
+    <a name = "HOUND.Sector:enableController"></a>
+    <strong>HOUND.Sector:enableController ([userSettings])</strong>
     </dt>
     <dd>
     enable controller
@@ -623,8 +628,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:disableController"></a>
-    <strong>HoundSector:disableController ()</strong>
+    <a name = "HOUND.Sector:disableController"></a>
+    <strong>HOUND.Sector:disableController ()</strong>
     </dt>
     <dd>
     disable controller
@@ -637,8 +642,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:removeController"></a>
-    <strong>HoundSector:removeController ()</strong>
+    <a name = "HOUND.Sector:removeController"></a>
+    <strong>HOUND.Sector:removeController ()</strong>
     </dt>
     <dd>
     remove controller completly from sector
@@ -651,8 +656,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:getControllerFreq"></a>
-    <strong>HoundSector:getControllerFreq ()</strong>
+    <a name = "HOUND.Sector:getControllerFreq"></a>
+    <strong>HOUND.Sector:getControllerFreq ()</strong>
     </dt>
     <dd>
     get controller frequencies
@@ -665,8 +670,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:transmitOnController"></a>
-    <strong>HoundSector:transmitOnController (msg)</strong>
+    <a name = "HOUND.Sector:transmitOnController"></a>
+    <strong>HOUND.Sector:transmitOnController (msg)</strong>
     </dt>
     <dd>
     Transmit custom TTS message on controller
@@ -685,8 +690,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:enableText"></a>
-    <strong>HoundSector:enableText ()</strong>
+    <a name = "HOUND.Sector:enableText"></a>
+    <strong>HOUND.Sector:enableText ()</strong>
     </dt>
     <dd>
     enable controller text for sector
@@ -699,8 +704,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:disableText"></a>
-    <strong>HoundSector:disableText ()</strong>
+    <a name = "HOUND.Sector:disableText"></a>
+    <strong>HOUND.Sector:disableText ()</strong>
     </dt>
     <dd>
     disable controller text for sector
@@ -713,8 +718,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:enableAlerts"></a>
-    <strong>HoundSector:enableAlerts ()</strong>
+    <a name = "HOUND.Sector:enableAlerts"></a>
+    <strong>HOUND.Sector:enableAlerts ()</strong>
     </dt>
     <dd>
     enable controller Alerts for sector
@@ -727,8 +732,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:disableAlerts"></a>
-    <strong>HoundSector:disableAlerts ()</strong>
+    <a name = "HOUND.Sector:disableAlerts"></a>
+    <strong>HOUND.Sector:disableAlerts ()</strong>
     </dt>
     <dd>
     disable controller  for sector
@@ -741,8 +746,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:enableTTS"></a>
-    <strong>HoundSector:enableTTS ()</strong>
+    <a name = "HOUND.Sector:enableTTS"></a>
+    <strong>HOUND.Sector:enableTTS ()</strong>
     </dt>
     <dd>
     enable Controller tts for sector
@@ -755,8 +760,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:disableTTS"></a>
-    <strong>HoundSector:disableTTS ()</strong>
+    <a name = "HOUND.Sector:disableTTS"></a>
+    <strong>HOUND.Sector:disableTTS ()</strong>
     </dt>
     <dd>
     disable Controller tts for sector
@@ -769,8 +774,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:enableAtis"></a>
-    <strong>HoundSector:enableAtis (userSettings)</strong>
+    <a name = "HOUND.Sector:enableAtis"></a>
+    <strong>HOUND.Sector:enableAtis (userSettings)</strong>
     </dt>
     <dd>
     enable ATIS in sector
@@ -789,8 +794,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:disableAtis"></a>
-    <strong>HoundSector:disableAtis ()</strong>
+    <a name = "HOUND.Sector:disableAtis"></a>
+    <strong>HOUND.Sector:disableAtis ()</strong>
     </dt>
     <dd>
     disable ATIS in sector
@@ -803,8 +808,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:removeAtis"></a>
-    <strong>HoundSector:removeAtis ()</strong>
+    <a name = "HOUND.Sector:removeAtis"></a>
+    <strong>HOUND.Sector:removeAtis ()</strong>
     </dt>
     <dd>
     remove ATIS from sector
@@ -817,8 +822,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:getAtisFreq"></a>
-    <strong>HoundSector:getAtisFreq ()</strong>
+    <a name = "HOUND.Sector:getAtisFreq"></a>
+    <strong>HOUND.Sector:getAtisFreq ()</strong>
     </dt>
     <dd>
     get ATIS frequencies
@@ -831,8 +836,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:reportEWR"></a>
-    <strong>HoundSector:reportEWR (state)</strong>
+    <a name = "HOUND.Sector:reportEWR"></a>
+    <strong>HOUND.Sector:reportEWR (state)</strong>
     </dt>
     <dd>
     Set ATIS EWR report state
@@ -852,8 +857,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:hasAtis"></a>
-    <strong>HoundSector:hasAtis ()</strong>
+    <a name = "HOUND.Sector:hasAtis"></a>
+    <strong>HOUND.Sector:hasAtis ()</strong>
     </dt>
     <dd>
     checks for atis in sector
@@ -871,8 +876,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:isAtisEnabled"></a>
-    <strong>HoundSector:isAtisEnabled ()</strong>
+    <a name = "HOUND.Sector:isAtisEnabled"></a>
+    <strong>HOUND.Sector:isAtisEnabled ()</strong>
     </dt>
     <dd>
     checks if ats is enabled for the sector
@@ -890,8 +895,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:hasController"></a>
-    <strong>HoundSector:hasController ()</strong>
+    <a name = "HOUND.Sector:hasController"></a>
+    <strong>HOUND.Sector:hasController ()</strong>
     </dt>
     <dd>
     checks for controller in sector
@@ -909,8 +914,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:isControllerEnabled"></a>
-    <strong>HoundSector:isControllerEnabled ()</strong>
+    <a name = "HOUND.Sector:isControllerEnabled"></a>
+    <strong>HOUND.Sector:isControllerEnabled ()</strong>
     </dt>
     <dd>
     checks if controller is enabled for the sector
@@ -928,8 +933,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:enableNotifier"></a>
-    <strong>HoundSector:enableNotifier ([userSettings])</strong>
+    <a name = "HOUND.Sector:enableNotifier"></a>
+    <strong>HOUND.Sector:enableNotifier ([userSettings])</strong>
     </dt>
     <dd>
     enable Notifier in sector
@@ -949,8 +954,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:disableNotifier"></a>
-    <strong>HoundSector:disableNotifier ()</strong>
+    <a name = "HOUND.Sector:disableNotifier"></a>
+    <strong>HOUND.Sector:disableNotifier ()</strong>
     </dt>
     <dd>
     disable notifier in sector
@@ -963,8 +968,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:removeNotifier"></a>
-    <strong>HoundSector:removeNotifier ()</strong>
+    <a name = "HOUND.Sector:removeNotifier"></a>
+    <strong>HOUND.Sector:removeNotifier ()</strong>
     </dt>
     <dd>
     remove notifier in sector
@@ -982,8 +987,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:getNotifierFreq"></a>
-    <strong>HoundSector:getNotifierFreq ()</strong>
+    <a name = "HOUND.Sector:getNotifierFreq"></a>
+    <strong>HOUND.Sector:getNotifierFreq ()</strong>
     </dt>
     <dd>
     get Notifier frequencies
@@ -996,8 +1001,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:hasNotifier"></a>
-    <strong>HoundSector:hasNotifier ()</strong>
+    <a name = "HOUND.Sector:hasNotifier"></a>
+    <strong>HOUND.Sector:hasNotifier ()</strong>
     </dt>
     <dd>
     checks sector for notifier
@@ -1010,8 +1015,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:isNotifierEnabled"></a>
-    <strong>HoundSector:isNotifierEnabled ()</strong>
+    <a name = "HOUND.Sector:isNotifierEnabled"></a>
+    <strong>HOUND.Sector:isNotifierEnabled ()</strong>
     </dt>
     <dd>
     checks if ats is enabled for the sector
@@ -1029,8 +1034,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:getContacts"></a>
-    <strong>HoundSector:getContacts ()</strong>
+    <a name = "HOUND.Sector:getContacts"></a>
+    <strong>HOUND.Sector:getContacts ()</strong>
     </dt>
     <dd>
     return a sorted list of all contacts for the sector
@@ -1043,8 +1048,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:countContacts"></a>
-    <strong>HoundSector:countContacts ()</strong>
+    <a name = "HOUND.Sector:countContacts"></a>
+    <strong>HOUND.Sector:countContacts ()</strong>
     </dt>
     <dd>
     count the number of contacts for the sector
@@ -1057,8 +1062,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector.removeRadioMenu"></a>
-    <strong>HoundSector.removeRadioMenu (self)</strong>
+    <a name = "HOUND.Sector.removeRadioMenu"></a>
+    <strong>HOUND.Sector.removeRadioMenu (self)</strong>
     </dt>
     <dd>
     remove all radio menus for
@@ -1067,7 +1072,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">self</span>
-         HoundSector
+         HOUND.Sector
         </li>
     </ul>
 
@@ -1077,8 +1082,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector.findGrpInPlayerList"></a>
-    <strong>HoundSector.findGrpInPlayerList (grpId[, playersList])</strong>
+    <a name = "HOUND.Sector:findGrpInPlayerList"></a>
+    <strong>HOUND.Sector:findGrpInPlayerList (grpId[, playersList])</strong>
     </dt>
     <dd>
     find group in enrolled
@@ -1106,8 +1111,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector.getSubscribedGroups"></a>
-    <strong>HoundSector.getSubscribedGroups ()</strong>
+    <a name = "HOUND.Sector:getSubscribedGroups"></a>
+    <strong>HOUND.Sector:getSubscribedGroups ()</strong>
     </dt>
     <dd>
     get subscribed groups
@@ -1125,8 +1130,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector.validateEnrolled"></a>
-    <strong>HoundSector.validateEnrolled ()</strong>
+    <a name = "HOUND.Sector:validateEnrolled"></a>
+    <strong>HOUND.Sector:validateEnrolled ()</strong>
     </dt>
     <dd>
     clean non existing users from subscribers
@@ -1139,8 +1144,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector.checkIn"></a>
-    <strong>HoundSector.checkIn (args[, skipAck])</strong>
+    <a name = "HOUND.Sector.checkIn"></a>
+    <strong>HOUND.Sector.checkIn (args[, skipAck])</strong>
     </dt>
     <dd>
     check in player to controller
@@ -1149,7 +1154,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">args</span>
-         table {self=&ltHoundSector&gt,player=&ltplayer&gt}
+         table {self=&ltHOUND.Sector&gt,player=&ltplayer&gt}
         </li>
         <li><span class="parameter">skipAck</span>
          Bool if true do not reply with ack to player
@@ -1163,20 +1168,24 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector.checkOut"></a>
-    <strong>HoundSector.checkOut (args[, skipAck])</strong>
+    <a name = "HOUND.Sector.checkOut"></a>
+    <strong>HOUND.Sector.checkOut (args[, skipAck[, onlyPlayer]])</strong>
     </dt>
     <dd>
-    check out player from controller
+    check out player's group from controller
 
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">args</span>
-         table {self=&ltHoundSector&gt,player=&ltplayer&gt}
+         table {self=&ltHOUND.Sector&gt,player=&ltplayer&gt}
         </li>
         <li><span class="parameter">skipAck</span>
          Bool if true do not reply with ack to player
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">onlyPlayer</span>
+         Bool. if true, only the player and not his flight (eg. slot change for player)
          (<em>optional</em>)
         </li>
     </ul>
@@ -1187,8 +1196,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector.createCheckIn"></a>
-    <strong>HoundSector.createCheckIn ()</strong>
+    <a name = "HOUND.Sector:createCheckIn"></a>
+    <strong>HOUND.Sector:createCheckIn ()</strong>
     </dt>
     <dd>
     create check menu items for players
@@ -1201,8 +1210,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:populateRadioMenu"></a>
-    <strong>HoundSector:populateRadioMenu ()</strong>
+    <a name = "HOUND.Sector:populateRadioMenu"></a>
+    <strong>HOUND.Sector:populateRadioMenu ()</strong>
     </dt>
     <dd>
     Populate sector radio menu
@@ -1215,8 +1224,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector.addRadarRadioItem"></a>
-    <strong>HoundSector.addRadarRadioItem (dataMenu, contact)</strong>
+    <a name = "HOUND.Sector:addRadarRadioItem"></a>
+    <strong>HOUND.Sector:addRadarRadioItem (dataMenu, contact)</strong>
     </dt>
     <dd>
     Create radar menu item
@@ -1228,7 +1237,7 @@
          table contaning a menu structure for the group
         </li>
         <li><span class="parameter">contact</span>
-         HoundContact
+         HOUND.Contact
         </li>
     </ul>
 
@@ -1238,8 +1247,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector.removeRadarRadioItem"></a>
-    <strong>HoundSector.removeRadarRadioItem (dataMenu, contact)</strong>
+    <a name = "HOUND.Sector:removeRadarRadioItem"></a>
+    <strong>HOUND.Sector:removeRadarRadioItem (dataMenu, contact)</strong>
     </dt>
     <dd>
     remove radar menu items
@@ -1251,7 +1260,7 @@
          table contaning a menu structure for the group
         </li>
         <li><span class="parameter">contact</span>
-         HoundContact
+         HOUND.Contact
         </li>
     </ul>
 
@@ -1261,8 +1270,34 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:notifyDeadEmitter"></a>
-    <strong>HoundSector:notifyDeadEmitter (contact)</strong>
+    <a name = "HOUND.Sector:getTransmissionAnnounce"></a>
+    <strong>HOUND.Sector:getTransmissionAnnounce ([index])</strong>
+    </dt>
+    <dd>
+    create randome annouce
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">index</span>
+         of requested announce
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        string Announcement
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:notifyDeadEmitter"></a>
+    <strong>HOUND.Sector:notifyDeadEmitter (contact)</strong>
     </dt>
     <dd>
     Send dead emitter notification
@@ -1281,8 +1316,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector:notifyNewEmitter"></a>
-    <strong>HoundSector:notifyNewEmitter (contact)</strong>
+    <a name = "HOUND.Sector:notifyNewEmitter"></a>
+    <strong>HOUND.Sector:notifyNewEmitter (contact)</strong>
     </dt>
     <dd>
     Send new emitter notification
@@ -1301,8 +1336,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector.generateAtis"></a>
-    <strong>HoundSector.generateAtis (loopData, AtisPreferences)</strong>
+    <a name = "HOUND.Sector:generateAtis"></a>
+    <strong>HOUND.Sector:generateAtis (loopData, AtisPreferences)</strong>
     </dt>
     <dd>
     Generate Atis message for sector
@@ -1324,8 +1359,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector.TransmitSamReport"></a>
-    <strong>HoundSector.TransmitSamReport (args)</strong>
+    <a name = "HOUND.Sector.TransmitSamReport"></a>
+    <strong>HOUND.Sector.TransmitSamReport (args)</strong>
     </dt>
     <dd>
     transmit SAM report
@@ -1334,7 +1369,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">args</span>
-         table {self=&ltHoundSector&gt,contact=&ltHoundContact&gt,requester=&ltplayer&gt}
+         table {self=&ltHOUND.Sector&gt,contact=&ltHOUND.Contact&gt,requester=&ltplayer&gt}
         </li>
     </ul>
 
@@ -1344,8 +1379,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector.TransmitCheckInAck"></a>
-    <strong>HoundSector.TransmitCheckInAck (player)</strong>
+    <a name = "HOUND.Sector:TransmitCheckInAck"></a>
+    <strong>HOUND.Sector:TransmitCheckInAck (player)</strong>
     </dt>
     <dd>
     transmit checkin message
@@ -1364,8 +1399,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundSector.TransmitCheckOutAck"></a>
-    <strong>HoundSector.TransmitCheckOutAck (player)</strong>
+    <a name = "HOUND.Sector:TransmitCheckOutAck"></a>
+    <strong>HOUND.Sector:TransmitCheckOutAck (player)</strong>
     </dt>
     <dd>
     transmit checkout message
@@ -1390,7 +1425,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2022-03-21 14:49:47 </i>
+<i style="float:right;">Last updated 2022-03-29 23:19:14 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

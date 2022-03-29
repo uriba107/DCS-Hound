@@ -42,20 +42,21 @@
 <h2>Modules</h2>
 <ul class="nowrap">
   <li><a href="../modules/HOUND.html">HOUND</a></li>
-  <li><a href="../modules/HoundLogger.html">HoundLogger</a></li>
-  <li><a href="../modules/HoundDB.html">HoundDB</a></li>
-  <li><a href="../modules/HoundConfig.html">HoundConfig</a></li>
-  <li><a href="../modules/HoundUtils.html">HoundUtils</a></li>
-  <li><a href="../modules/HoundEventHandler.html">HoundEventHandler</a></li>
-  <li><a href="../modules/HoundEstimator.html">HoundEstimator</a></li>
-  <li><a href="../modules/HoundDatapoint.html">HoundDatapoint</a></li>
-  <li><a href="../modules/HoundContact.html">HoundContact</a></li>
-  <li><a href="../modules/HoundCommsManager.html">HoundCommsManager</a></li>
-  <li><strong>HoundInformationSystem</strong></li>
-  <li><a href="../modules/HoundController.html">HoundController</a></li>
-  <li><a href="../modules/HoundElintWorker.html">HoundElintWorker</a></li>
-  <li><a href="../modules/HoundContactManager.html">HoundContactManager</a></li>
-  <li><a href="../modules/HoundSector.html">HoundSector</a></li>
+  <li><a href="../modules/HOUND.Logger.html">HOUND.Logger</a></li>
+  <li><a href="../modules/HOUND.DBs.html">HOUND.DBs</a></li>
+  <li><a href="../modules/HOUND.Config.html">HOUND.Config</a></li>
+  <li><a href="../modules/HOUND.Utils.html">HOUND.Utils</a></li>
+  <li><a href="../modules/HOUND.EventHandler.html">HOUND.EventHandler</a></li>
+  <li><a href="../modules/HOUND.Estimator.html">HOUND.Estimator</a></li>
+  <li><a href="../modules/HOUND.Datapoint.html">HOUND.Datapoint</a></li>
+  <li><a href="../modules/HOUND.Contact.html">HOUND.Contact</a></li>
+  <li><a href="../modules/HOUND.Comms.Manager.html">HOUND.Comms.Manager</a></li>
+  <li><strong>HOUND.Comms.InformationSystem</strong></li>
+  <li><a href="../modules/HOUND.Comms.Controller.html">HOUND.Comms.Controller</a></li>
+  <li><a href="../modules/HOUND.Comms.Notifier.html">HOUND.Comms.Notifier</a></li>
+  <li><a href="../modules/HOUND.ElintWorker.html">HOUND.ElintWorker</a></li>
+  <li><a href="../modules/HOUND.ContactManager.html">HOUND.ContactManager</a></li>
+  <li><a href="../modules/HOUND.Sector.html">HOUND.Sector</a></li>
 </ul>
 <h2>Scripts</h2>
 <ul class="nowrap">
@@ -66,53 +67,53 @@
 
 <div id="content">
 
-<h1>Module <code>HoundInformationSystem</code></h1>
-<p>Hound Information System (ATIS)</p>
+<h1>Module <code>HOUND.Comms.InformationSystem</code></h1>
+<p>Hound Information System (extends HOUND.Comms.Manager)</p>
 <p></p>
 
 
 <h2><a href="#Functions">Functions</a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#create">create (sector, houndConfig[, settings])</a></td>
-	<td class="summary">HoundInformationSystem create</td>
+	<td class="name" nowrap><a href="#HOUND.Comms.InformationSystem:create">HOUND.Comms.InformationSystem:create (sector, houndConfig[, settings])</a></td>
+	<td class="summary">HOUND.Comms.InformationSystem create</td>
 	</tr>
 </table>
 <h2><a href="#Tables">Tables</a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#HoundInformationSystem">HoundInformationSystem</a></td>
-	<td class="summary">Hound inforamtion System (extends HoundCommsManager )</td>
+	<td class="name" nowrap><a href="#HOUND.Comms.InformationSystem">HOUND.Comms.InformationSystem</a></td>
+	<td class="summary">Hound inforamtion System (extends HOUND.Comms.Manager)</td>
 	</tr>
 </table>
 <h2><a href="#Getters_and_Setters">Getters and Setters </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#reportEWR">reportEWR (state)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Comms.InformationSystem:reportEWR">HOUND.Comms.InformationSystem:reportEWR (state)</a></td>
 	<td class="summary">set reportEWR state</td>
 	</tr>
 </table>
 <h2><a href="#Function_Overrides">Function Overrides </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#startCallbackLoop">startCallbackLoop ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Comms.InformationSystem:startCallbackLoop">HOUND.Comms.InformationSystem:startCallbackLoop ()</a></td>
 	<td class="summary">Start callback loop</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#stopCallbackLoop">stopCallbackLoop ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Comms.InformationSystem:stopCallbackLoop">HOUND.Comms.InformationSystem:stopCallbackLoop ()</a></td>
 	<td class="summary">stop callback loop</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#SetMsgCallback">SetMsgCallback (callback, args)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Comms.InformationSystem:SetMsgCallback">HOUND.Comms.InformationSystem:SetMsgCallback (callback, args)</a></td>
 	<td class="summary">configure function for loop
  Implementation of abstract</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#runCallback">runCallback ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Comms.InformationSystem:runCallback">HOUND.Comms.InformationSystem:runCallback ()</a></td>
 	<td class="summary">run callback message scheduler</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#getNextMsg">getNextMsg ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Comms.InformationSystem:getNextMsg">HOUND.Comms.InformationSystem:getNextMsg ()</a></td>
 	<td class="summary">Get next message from queue
  override implementation</td>
 	</tr>
@@ -126,11 +127,11 @@
 
     <dl class="function">
     <dt>
-    <a name = "create"></a>
-    <strong>create (sector, houndConfig[, settings])</strong>
+    <a name = "HOUND.Comms.InformationSystem:create"></a>
+    <strong>HOUND.Comms.InformationSystem:create (sector, houndConfig[, settings])</strong>
     </dt>
     <dd>
-    HoundInformationSystem create
+    HOUND.Comms.InformationSystem create
 
 
     <h3>Parameters:</h3>
@@ -152,7 +153,7 @@
     <h3>Returns:</h3>
     <ol>
 
-        HoundInformationSystem Instance
+        HOUND.Comms.InformationSystem Instance
     </ol>
 
 
@@ -164,11 +165,11 @@
 
     <dl class="function">
     <dt>
-    <a name = "HoundInformationSystem"></a>
-    <strong>HoundInformationSystem</strong>
+    <a name = "HOUND.Comms.InformationSystem"></a>
+    <strong>HOUND.Comms.InformationSystem</strong>
     </dt>
     <dd>
-    Hound inforamtion System (extends HoundCommsManager )
+    Hound inforamtion System (extends HOUND.Comms.Manager)
 
 
 
@@ -176,7 +177,7 @@
 
     <h3>See also:</h3>
     <ul>
-         <a href="../modules/HoundCommsManager.html#">HoundCommsManager</a>
+         <a href="../modules/HOUND.Comms.Manager.html#">HOUND.Comms.Manager</a>
     </ul>
 
 
@@ -186,8 +187,8 @@
 
     <dl class="function">
     <dt>
-    <a name = "reportEWR"></a>
-    <strong>reportEWR (state)</strong>
+    <a name = "HOUND.Comms.InformationSystem:reportEWR"></a>
+    <strong>HOUND.Comms.InformationSystem:reportEWR (state)</strong>
     </dt>
     <dd>
     set reportEWR state
@@ -211,8 +212,8 @@
 
     <dl class="function">
     <dt>
-    <a name = "startCallbackLoop"></a>
-    <strong>startCallbackLoop ()</strong>
+    <a name = "HOUND.Comms.InformationSystem:startCallbackLoop"></a>
+    <strong>HOUND.Comms.InformationSystem:startCallbackLoop ()</strong>
     </dt>
     <dd>
     Start callback loop
@@ -225,8 +226,8 @@
 
 </dd>
     <dt>
-    <a name = "stopCallbackLoop"></a>
-    <strong>stopCallbackLoop ()</strong>
+    <a name = "HOUND.Comms.InformationSystem:stopCallbackLoop"></a>
+    <strong>HOUND.Comms.InformationSystem:stopCallbackLoop ()</strong>
     </dt>
     <dd>
     stop callback loop
@@ -239,8 +240,8 @@
 
 </dd>
     <dt>
-    <a name = "SetMsgCallback"></a>
-    <strong>SetMsgCallback (callback, args)</strong>
+    <a name = "HOUND.Comms.InformationSystem:SetMsgCallback"></a>
+    <strong>HOUND.Comms.InformationSystem:SetMsgCallback (callback, args)</strong>
     </dt>
     <dd>
     configure function for loop
@@ -265,8 +266,8 @@
 
 </dd>
     <dt>
-    <a name = "runCallback"></a>
-    <strong>runCallback ()</strong>
+    <a name = "HOUND.Comms.InformationSystem:runCallback"></a>
+    <strong>HOUND.Comms.InformationSystem:runCallback ()</strong>
     </dt>
     <dd>
     run callback message scheduler
@@ -284,8 +285,8 @@
 
 </dd>
     <dt>
-    <a name = "getNextMsg"></a>
-    <strong>getNextMsg ()</strong>
+    <a name = "HOUND.Comms.InformationSystem:getNextMsg"></a>
+    <strong>HOUND.Comms.InformationSystem:getNextMsg ()</strong>
     </dt>
     <dd>
     Get next message from queue
@@ -305,7 +306,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2022-03-21 14:49:47 </i>
+<i style="float:right;">Last updated 2022-03-29 23:19:14 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

@@ -33,7 +33,7 @@
 <h2>Contents</h2>
 <ul>
 <li><a href="#Getters_and_Setters">Getters and Setters </a></li>
-<li><a href="#Class_HoundCommsManager">Class HoundCommsManager </a></li>
+<li><a href="#Class_HOUND_Comms_Manager">Class HOUND.Comms.Manager </a></li>
 <li><a href="#Control_functions">Control functions </a></li>
 <li><a href="#Message_Handling">Message Handling </a></li>
 <li><a href="#abstract_methods">abstract methods </a></li>
@@ -43,20 +43,21 @@
 <h2>Modules</h2>
 <ul class="nowrap">
   <li><a href="../modules/HOUND.html">HOUND</a></li>
-  <li><a href="../modules/HoundLogger.html">HoundLogger</a></li>
-  <li><a href="../modules/HoundDB.html">HoundDB</a></li>
-  <li><a href="../modules/HoundConfig.html">HoundConfig</a></li>
-  <li><a href="../modules/HoundUtils.html">HoundUtils</a></li>
-  <li><a href="../modules/HoundEventHandler.html">HoundEventHandler</a></li>
-  <li><a href="../modules/HoundEstimator.html">HoundEstimator</a></li>
-  <li><a href="../modules/HoundDatapoint.html">HoundDatapoint</a></li>
-  <li><a href="../modules/HoundContact.html">HoundContact</a></li>
-  <li><strong>HoundCommsManager</strong></li>
-  <li><a href="../modules/HoundInformationSystem.html">HoundInformationSystem</a></li>
-  <li><a href="../modules/HoundController.html">HoundController</a></li>
-  <li><a href="../modules/HoundElintWorker.html">HoundElintWorker</a></li>
-  <li><a href="../modules/HoundContactManager.html">HoundContactManager</a></li>
-  <li><a href="../modules/HoundSector.html">HoundSector</a></li>
+  <li><a href="../modules/HOUND.Logger.html">HOUND.Logger</a></li>
+  <li><a href="../modules/HOUND.DBs.html">HOUND.DBs</a></li>
+  <li><a href="../modules/HOUND.Config.html">HOUND.Config</a></li>
+  <li><a href="../modules/HOUND.Utils.html">HOUND.Utils</a></li>
+  <li><a href="../modules/HOUND.EventHandler.html">HOUND.EventHandler</a></li>
+  <li><a href="../modules/HOUND.Estimator.html">HOUND.Estimator</a></li>
+  <li><a href="../modules/HOUND.Datapoint.html">HOUND.Datapoint</a></li>
+  <li><a href="../modules/HOUND.Contact.html">HOUND.Contact</a></li>
+  <li><strong>HOUND.Comms.Manager</strong></li>
+  <li><a href="../modules/HOUND.Comms.InformationSystem.html">HOUND.Comms.InformationSystem</a></li>
+  <li><a href="../modules/HOUND.Comms.Controller.html">HOUND.Comms.Controller</a></li>
+  <li><a href="../modules/HOUND.Comms.Notifier.html">HOUND.Comms.Notifier</a></li>
+  <li><a href="../modules/HOUND.ElintWorker.html">HOUND.ElintWorker</a></li>
+  <li><a href="../modules/HOUND.ContactManager.html">HOUND.ContactManager</a></li>
+  <li><a href="../modules/HOUND.Sector.html">HOUND.Sector</a></li>
 </ul>
 <h2>Scripts</h2>
 <ul class="nowrap">
@@ -67,7 +68,7 @@
 
 <div id="content">
 
-<h1>Module <code>HoundCommsManager</code></h1>
+<h1>Module <code>HOUND.Comms.Manager</code></h1>
 <p>Hound Comms Manager (Base class)</p>
 <p></p>
 
@@ -75,131 +76,131 @@
 <h2><a href="#Getters_and_Setters">Getters and Setters </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#isEnabled">isEnabled ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Comms.Manager:isEnabled">HOUND.Comms.Manager:isEnabled ()</a></td>
 	<td class="summary">is comm instance enabled</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#getSettings">getSettings (key)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Comms.Manager:getSettings">HOUND.Comms.Manager:getSettings (key)</a></td>
 	<td class="summary">get value of setting in settings</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#setSettings">setSettings (key, value)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Comms.Manager:setSettings">HOUND.Comms.Manager:setSettings (key, value)</a></td>
 	<td class="summary">set value of setting in settings</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#enableText">enableText ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Comms.Manager:enableText">HOUND.Comms.Manager:enableText ()</a></td>
 	<td class="summary">enable text messages</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#disableText">disableText ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Comms.Manager:disableText">HOUND.Comms.Manager:disableText ()</a></td>
 	<td class="summary">disable text messages</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#enableTTS">enableTTS ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Comms.Manager:enableTTS">HOUND.Comms.Manager:enableTTS ()</a></td>
 	<td class="summary">enable text messages</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#disableTTS">disableTTS ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Comms.Manager:disableTTS">HOUND.Comms.Manager:disableTTS ()</a></td>
 	<td class="summary">disable text messages</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#enableAlerts">enableAlerts ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Comms.Manager:enableAlerts">HOUND.Comms.Manager:enableAlerts ()</a></td>
 	<td class="summary">enable Alert messages</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#disableAlerts">disableAlerts ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Comms.Manager:disableAlerts">HOUND.Comms.Manager:disableAlerts ()</a></td>
 	<td class="summary">disable Alert messages</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#setTransmitter">setTransmitter (transmitterName)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Comms.Manager:setTransmitter">HOUND.Comms.Manager:setTransmitter (transmitterName)</a></td>
 	<td class="summary">set transmitter</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#removeTransmitter">removeTransmitter ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Comms.Manager:removeTransmitter">HOUND.Comms.Manager:removeTransmitter ()</a></td>
 	<td class="summary">Remove transmitter</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#getCallsign">getCallsign ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Comms.Manager:getCallsign">HOUND.Comms.Manager:getCallsign ()</a></td>
 	<td class="summary">get configured callsign</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#setCallsign">setCallsign (callsign)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Comms.Manager:setCallsign">HOUND.Comms.Manager:setCallsign (callsign)</a></td>
 	<td class="summary">set callsign</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#getFreq">getFreq ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Comms.Manager:getFreq">HOUND.Comms.Manager:getFreq ()</a></td>
 	<td class="summary">get first configured frequency</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#getFreqs">getFreqs ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Comms.Manager:getFreqs">HOUND.Comms.Manager:getFreqs ()</a></td>
 	<td class="summary">get table of all configured frequencies</td>
 	</tr>
 </table>
-<h2><a href="#Class_HoundCommsManager">Class HoundCommsManager </a></h2>
+<h2><a href="#Class_HOUND_Comms_Manager">Class HOUND.Comms.Manager </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#HoundCommsManager:create">HoundCommsManager:create (sector, houndConfig[, settings])</a></td>
-	<td class="summary">HoundCommsManager create</td>
+	<td class="name" nowrap><a href="#HOUND.Comms.Manager:create">HOUND.Comms.Manager:create (sector, houndConfig[, settings])</a></td>
+	<td class="summary">HOUND.Comms.Manager create</td>
 	</tr>
 </table>
 <h2><a href="#Control_functions">Control functions </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#updateSettings">updateSettings (settings)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Comms.Manager:updateSettings">HOUND.Comms.Manager:updateSettings (settings)</a></td>
 	<td class="summary">Update settings</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#enable">enable ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Comms.Manager:enable">HOUND.Comms.Manager:enable ()</a></td>
 	<td class="summary">enable comm instance</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#disable">disable ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Comms.Manager:disable">HOUND.Comms.Manager:disable ()</a></td>
 	<td class="summary">disable comm instance</td>
 	</tr>
 </table>
 <h2><a href="#Message_Handling">Message Handling </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#addMessageObj">addMessageObj (obj)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Comms.Manager:addMessageObj">HOUND.Comms.Manager:addMessageObj (obj)</a></td>
 	<td class="summary">Add message object to queue</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#addMessage">addMessage (coalition, msg[, prio])</a></td>
+	<td class="name" nowrap><a href="#HOUND.Comms.Manager:addMessage">HOUND.Comms.Manager:addMessage (coalition, msg[, prio])</a></td>
 	<td class="summary">add message to queue</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#addTxtMsg">addTxtMsg (coalition, msg, prio)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Comms.Manager:addTxtMsg">HOUND.Comms.Manager:addTxtMsg (coalition, msg, prio)</a></td>
 	<td class="summary">add text message to queue</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#getNextMsg">getNextMsg ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Comms.Manager:getNextMsg">HOUND.Comms.Manager:getNextMsg ()</a></td>
 	<td class="summary">Get next message from queue</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#getTransmitterPos">getTransmitterPos ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Comms.Manager:getTransmitterPos">HOUND.Comms.Manager:getTransmitterPos ()</a></td>
 	<td class="summary">returns configured transmitter position</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#TransmitFromQueue">TransmitFromQueue (gSelf)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Comms.Manager.TransmitFromQueue">HOUND.Comms.Manager.TransmitFromQueue (gSelf)</a></td>
 	<td class="summary">Trsnsmit next message from queue</td>
 	</tr>
 </table>
 <h2><a href="#abstract_methods">abstract methods </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#startCallbackLoop">startCallbackLoop ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Comms.Manager:startCallbackLoop">HOUND.Comms.Manager:startCallbackLoop ()</a></td>
 	<td class="summary">start loop placeholder</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#stopCallbackLoop">stopCallbackLoop ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Comms.Manager:stopCallbackLoop">HOUND.Comms.Manager:stopCallbackLoop ()</a></td>
 	<td class="summary">stop loop placeholder</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#SetMsgCallback">SetMsgCallback ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Comms.Manager:SetMsgCallback">HOUND.Comms.Manager:SetMsgCallback ()</a></td>
 	<td class="summary">SetMsgCallback placeholder</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#runCallback">runCallback ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Comms.Manager:runCallback">HOUND.Comms.Manager:runCallback ()</a></td>
 	<td class="summary">run callback message scheduler placeholder</td>
 	</tr>
 </table>
@@ -212,8 +213,8 @@
 
     <dl class="function">
     <dt>
-    <a name = "isEnabled"></a>
-    <strong>isEnabled ()</strong>
+    <a name = "HOUND.Comms.Manager:isEnabled"></a>
+    <strong>HOUND.Comms.Manager:isEnabled ()</strong>
     </dt>
     <dd>
     is comm instance enabled
@@ -231,8 +232,8 @@
 
 </dd>
     <dt>
-    <a name = "getSettings"></a>
-    <strong>getSettings (key)</strong>
+    <a name = "HOUND.Comms.Manager:getSettings"></a>
+    <strong>HOUND.Comms.Manager:getSettings (key)</strong>
     </dt>
     <dd>
     get value of setting in settings
@@ -256,8 +257,8 @@
 
 </dd>
     <dt>
-    <a name = "setSettings"></a>
-    <strong>setSettings (key, value)</strong>
+    <a name = "HOUND.Comms.Manager:setSettings"></a>
+    <strong>HOUND.Comms.Manager:setSettings (key, value)</strong>
     </dt>
     <dd>
     set value of setting in settings
@@ -279,8 +280,8 @@
 
 </dd>
     <dt>
-    <a name = "enableText"></a>
-    <strong>enableText ()</strong>
+    <a name = "HOUND.Comms.Manager:enableText"></a>
+    <strong>HOUND.Comms.Manager:enableText ()</strong>
     </dt>
     <dd>
     enable text messages
@@ -293,8 +294,8 @@
 
 </dd>
     <dt>
-    <a name = "disableText"></a>
-    <strong>disableText ()</strong>
+    <a name = "HOUND.Comms.Manager:disableText"></a>
+    <strong>HOUND.Comms.Manager:disableText ()</strong>
     </dt>
     <dd>
     disable text messages
@@ -307,8 +308,8 @@
 
 </dd>
     <dt>
-    <a name = "enableTTS"></a>
-    <strong>enableTTS ()</strong>
+    <a name = "HOUND.Comms.Manager:enableTTS"></a>
+    <strong>HOUND.Comms.Manager:enableTTS ()</strong>
     </dt>
     <dd>
     enable text messages
@@ -321,8 +322,8 @@
 
 </dd>
     <dt>
-    <a name = "disableTTS"></a>
-    <strong>disableTTS ()</strong>
+    <a name = "HOUND.Comms.Manager:disableTTS"></a>
+    <strong>HOUND.Comms.Manager:disableTTS ()</strong>
     </dt>
     <dd>
     disable text messages
@@ -335,8 +336,8 @@
 
 </dd>
     <dt>
-    <a name = "enableAlerts"></a>
-    <strong>enableAlerts ()</strong>
+    <a name = "HOUND.Comms.Manager:enableAlerts"></a>
+    <strong>HOUND.Comms.Manager:enableAlerts ()</strong>
     </dt>
     <dd>
     enable Alert messages
@@ -349,8 +350,8 @@
 
 </dd>
     <dt>
-    <a name = "disableAlerts"></a>
-    <strong>disableAlerts ()</strong>
+    <a name = "HOUND.Comms.Manager:disableAlerts"></a>
+    <strong>HOUND.Comms.Manager:disableAlerts ()</strong>
     </dt>
     <dd>
     disable Alert messages
@@ -363,8 +364,8 @@
 
 </dd>
     <dt>
-    <a name = "setTransmitter"></a>
-    <strong>setTransmitter (transmitterName)</strong>
+    <a name = "HOUND.Comms.Manager:setTransmitter"></a>
+    <strong>HOUND.Comms.Manager:setTransmitter (transmitterName)</strong>
     </dt>
     <dd>
     set transmitter
@@ -383,8 +384,8 @@
 
 </dd>
     <dt>
-    <a name = "removeTransmitter"></a>
-    <strong>removeTransmitter ()</strong>
+    <a name = "HOUND.Comms.Manager:removeTransmitter"></a>
+    <strong>HOUND.Comms.Manager:removeTransmitter ()</strong>
     </dt>
     <dd>
     Remove transmitter
@@ -397,8 +398,8 @@
 
 </dd>
     <dt>
-    <a name = "getCallsign"></a>
-    <strong>getCallsign ()</strong>
+    <a name = "HOUND.Comms.Manager:getCallsign"></a>
+    <strong>HOUND.Comms.Manager:getCallsign ()</strong>
     </dt>
     <dd>
     get configured callsign
@@ -416,8 +417,8 @@
 
 </dd>
     <dt>
-    <a name = "setCallsign"></a>
-    <strong>setCallsign (callsign)</strong>
+    <a name = "HOUND.Comms.Manager:setCallsign"></a>
+    <strong>HOUND.Comms.Manager:setCallsign (callsign)</strong>
     </dt>
     <dd>
     set callsign
@@ -437,8 +438,8 @@
 
 </dd>
     <dt>
-    <a name = "getFreq"></a>
-    <strong>getFreq ()</strong>
+    <a name = "HOUND.Comms.Manager:getFreq"></a>
+    <strong>HOUND.Comms.Manager:getFreq ()</strong>
     </dt>
     <dd>
     get first configured frequency
@@ -456,8 +457,8 @@
 
 </dd>
     <dt>
-    <a name = "getFreqs"></a>
-    <strong>getFreqs ()</strong>
+    <a name = "HOUND.Comms.Manager:getFreqs"></a>
+    <strong>HOUND.Comms.Manager:getFreqs ()</strong>
     </dt>
     <dd>
     get table of all configured frequencies
@@ -475,18 +476,18 @@
 
 </dd>
 </dl>
-    <h2 class="section-header has-description"><a name="Class_HoundCommsManager"></a>Class HoundCommsManager </h2>
+    <h2 class="section-header has-description"><a name="Class_HOUND_Comms_Manager"></a>Class HOUND.Comms.Manager </h2>
 
           <div class="section-description">
-          HoundCommsManager decleration
+          HOUND.Comms.Manager decleration
           </div>
     <dl class="function">
     <dt>
-    <a name = "HoundCommsManager:create"></a>
-    <strong>HoundCommsManager:create (sector, houndConfig[, settings])</strong>
+    <a name = "HOUND.Comms.Manager:create"></a>
+    <strong>HOUND.Comms.Manager:create (sector, houndConfig[, settings])</strong>
     </dt>
     <dd>
-    HoundCommsManager create
+    HOUND.Comms.Manager create
 
 
     <h3>Parameters:</h3>
@@ -520,8 +521,8 @@
 
     <dl class="function">
     <dt>
-    <a name = "updateSettings"></a>
-    <strong>updateSettings (settings)</strong>
+    <a name = "HOUND.Comms.Manager:updateSettings"></a>
+    <strong>HOUND.Comms.Manager:updateSettings (settings)</strong>
     </dt>
     <dd>
     Update settings
@@ -540,8 +541,8 @@
 
 </dd>
     <dt>
-    <a name = "enable"></a>
-    <strong>enable ()</strong>
+    <a name = "HOUND.Comms.Manager:enable"></a>
+    <strong>HOUND.Comms.Manager:enable ()</strong>
     </dt>
     <dd>
     enable comm instance
@@ -554,8 +555,8 @@
 
 </dd>
     <dt>
-    <a name = "disable"></a>
-    <strong>disable ()</strong>
+    <a name = "HOUND.Comms.Manager:disable"></a>
+    <strong>HOUND.Comms.Manager:disable ()</strong>
     </dt>
     <dd>
     disable comm instance
@@ -572,8 +573,8 @@
 
     <dl class="function">
     <dt>
-    <a name = "addMessageObj"></a>
-    <strong>addMessageObj (obj)</strong>
+    <a name = "HOUND.Comms.Manager:addMessageObj"></a>
+    <strong>HOUND.Comms.Manager:addMessageObj (obj)</strong>
     </dt>
     <dd>
     Add message object to queue
@@ -593,8 +594,8 @@
 
 </dd>
     <dt>
-    <a name = "addMessage"></a>
-    <strong>addMessage (coalition, msg[, prio])</strong>
+    <a name = "HOUND.Comms.Manager:addMessage"></a>
+    <strong>HOUND.Comms.Manager:addMessage (coalition, msg[, prio])</strong>
     </dt>
     <dd>
     add message to queue
@@ -623,8 +624,8 @@
 
 </dd>
     <dt>
-    <a name = "addTxtMsg"></a>
-    <strong>addTxtMsg (coalition, msg, prio)</strong>
+    <a name = "HOUND.Comms.Manager:addTxtMsg"></a>
+    <strong>HOUND.Comms.Manager:addTxtMsg (coalition, msg, prio)</strong>
     </dt>
     <dd>
     add text message to queue
@@ -649,8 +650,8 @@
 
 </dd>
     <dt>
-    <a name = "getNextMsg"></a>
-    <strong>getNextMsg ()</strong>
+    <a name = "HOUND.Comms.Manager:getNextMsg"></a>
+    <strong>HOUND.Comms.Manager:getNextMsg ()</strong>
     </dt>
     <dd>
     Get next message from queue
@@ -663,8 +664,8 @@
 
 </dd>
     <dt>
-    <a name = "getTransmitterPos"></a>
-    <strong>getTransmitterPos ()</strong>
+    <a name = "HOUND.Comms.Manager:getTransmitterPos"></a>
+    <strong>HOUND.Comms.Manager:getTransmitterPos ()</strong>
     </dt>
     <dd>
     returns configured transmitter position
@@ -682,8 +683,8 @@
 
 </dd>
     <dt>
-    <a name = "TransmitFromQueue"></a>
-    <strong>TransmitFromQueue (gSelf)</strong>
+    <a name = "HOUND.Comms.Manager.TransmitFromQueue"></a>
+    <strong>HOUND.Comms.Manager.TransmitFromQueue (gSelf)</strong>
     </dt>
     <dd>
     Trsnsmit next message from queue
@@ -711,8 +712,8 @@
 
     <dl class="function">
     <dt>
-    <a name = "startCallbackLoop"></a>
-    <strong>startCallbackLoop ()</strong>
+    <a name = "HOUND.Comms.Manager:startCallbackLoop"></a>
+    <strong>HOUND.Comms.Manager:startCallbackLoop ()</strong>
     </dt>
     <dd>
     start loop placeholder
@@ -725,8 +726,8 @@
 
 </dd>
     <dt>
-    <a name = "stopCallbackLoop"></a>
-    <strong>stopCallbackLoop ()</strong>
+    <a name = "HOUND.Comms.Manager:stopCallbackLoop"></a>
+    <strong>HOUND.Comms.Manager:stopCallbackLoop ()</strong>
     </dt>
     <dd>
     stop loop placeholder
@@ -739,8 +740,8 @@
 
 </dd>
     <dt>
-    <a name = "SetMsgCallback"></a>
-    <strong>SetMsgCallback ()</strong>
+    <a name = "HOUND.Comms.Manager:SetMsgCallback"></a>
+    <strong>HOUND.Comms.Manager:SetMsgCallback ()</strong>
     </dt>
     <dd>
     SetMsgCallback placeholder
@@ -753,8 +754,8 @@
 
 </dd>
     <dt>
-    <a name = "runCallback"></a>
-    <strong>runCallback ()</strong>
+    <a name = "HOUND.Comms.Manager:runCallback"></a>
+    <strong>HOUND.Comms.Manager:runCallback ()</strong>
     </dt>
     <dd>
     run callback message scheduler placeholder
@@ -773,7 +774,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2022-03-21 14:49:47 </i>
+<i style="float:right;">Last updated 2022-03-29 23:19:14 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

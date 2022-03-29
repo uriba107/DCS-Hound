@@ -1,0 +1,720 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Reference</title>
+    <link rel="stylesheet" href="../ldoc_fixed.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Hound<br> ELINT for DCS</h1>
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><a href="../modules/HOUND.html">HOUND</a></li>
+  <li><a href="../modules/HOUND.Logger.html">HOUND.Logger</a></li>
+  <li><a href="../modules/HOUND.DBs.html">HOUND.DBs</a></li>
+  <li><a href="../modules/HOUND.Config.html">HOUND.Config</a></li>
+  <li><a href="../modules/HOUND.Utils.html">HOUND.Utils</a></li>
+  <li><a href="../modules/HOUND.EventHandler.html">HOUND.EventHandler</a></li>
+  <li><a href="../modules/HOUND.Estimator.html">HOUND.Estimator</a></li>
+  <li><a href="../modules/HOUND.Datapoint.html">HOUND.Datapoint</a></li>
+  <li><a href="../modules/HOUND.Contact.html">HOUND.Contact</a></li>
+  <li><a href="../modules/HOUND.Comms.Manager.html">HOUND.Comms.Manager</a></li>
+  <li><a href="../modules/HOUND.Comms.InformationSystem.html">HOUND.Comms.InformationSystem</a></li>
+  <li><a href="../modules/HOUND.Comms.Controller.html">HOUND.Comms.Controller</a></li>
+  <li><a href="../modules/HOUND.Comms.Notifier.html">HOUND.Comms.Notifier</a></li>
+  <li><strong>HOUND.ElintWorker</strong></li>
+  <li><a href="../modules/HOUND.ContactManager.html">HOUND.ContactManager</a></li>
+  <li><a href="../modules/HOUND.Sector.html">HOUND.Sector</a></li>
+</ul>
+<h2>Scripts</h2>
+<ul class="nowrap">
+  <li><a href="../scripts/HoundElint.html">HoundElint</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>HOUND.ElintWorker</code></h1>
+<p>HOUND.ElintWorker</p>
+<p></p>
+
+
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:setCoalition">HOUND.ElintWorker:setCoalition (coalitionId)</a></td>
+	<td class="summary">set coalition
+ retundent function will change global coalition</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:getCoalition">HOUND.ElintWorker:getCoalition ()</a></td>
+	<td class="summary">get worker coalition</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:addPlatform">HOUND.ElintWorker:addPlatform (platformName)</a></td>
+	<td class="summary">add platform</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:removePlatform">HOUND.ElintWorker:removePlatform (platformName)</a></td>
+	<td class="summary">remove specificd platform</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:platformRefresh">HOUND.ElintWorker:platformRefresh ()</a></td>
+	<td class="summary">make sure all platforms are still alive and relevate</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:removeDeadPlatforms">HOUND.ElintWorker:removeDeadPlatforms ()</a></td>
+	<td class="summary">remove dead platforms</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:countPlatforms">HOUND.ElintWorker:countPlatforms ()</a></td>
+	<td class="summary">count number of platforms</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:listPlatforms">HOUND.ElintWorker:listPlatforms ()</a></td>
+	<td class="summary">list all associated platform unit names</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:getNewTrackId">HOUND.ElintWorker:getNewTrackId ()</a></td>
+	<td class="summary">get the next track number</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:isContact">HOUND.ElintWorker:isContact (emitter)</a></td>
+	<td class="summary">return if contact exists in the system</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:addContact">HOUND.ElintWorker:addContact (emitter)</a></td>
+	<td class="summary">add contact to worker</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:getContact">HOUND.ElintWorker:getContact (emitter[, getOnly])</a></td>
+	<td class="summary">get HOUND.Contact from DCS Unit/UID</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:removeContact">HOUND.ElintWorker:removeContact (emitterName)</a></td>
+	<td class="summary">remove Contact from tracking</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:setPreBriefedContact">HOUND.ElintWorker:setPreBriefedContact (emitter)</a></td>
+	<td class="summary">set contact as Prebriefed</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:setDead">HOUND.ElintWorker:setDead (emitter)</a></td>
+	<td class="summary">set contact as Dead</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:isTracked">HOUND.ElintWorker:isTracked (emitter)</a></td>
+	<td class="summary">is contact is tracked</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:addDatapointToEmitter">HOUND.ElintWorker:addDatapointToEmitter (emitter, datapoint)</a></td>
+	<td class="summary">add datapoint to emitter</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:listInSector">HOUND.ElintWorker:listInSector (sectorName)</a></td>
+	<td class="summary">list all contact is a sector</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:UpdateMarkers">HOUND.ElintWorker:UpdateMarkers ()</a></td>
+	<td class="summary">update markers to all contacts</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:listAll">HOUND.ElintWorker:listAll (sectorName)</a></td>
+	<td class="summary">Return all contacts managed by this instance regardless of sector</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:listAllbyRange">HOUND.ElintWorker:listAllbyRange (sectorName)</a></td>
+	<td class="summary">return all contacts managed by this instance sorted by range</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:countContacts">HOUND.ElintWorker:countContacts ([sectorName])</a></td>
+	<td class="summary">return number of contacts tracked</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:sortContacts">HOUND.ElintWorker:sortContacts (sortFunc[, sectorName])</a></td>
+	<td class="summary">return a sorted list of contacts</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:Sniff">HOUND.ElintWorker:Sniff ()</a></td>
+	<td class="summary">Perform a sample of all emitting radars against all platforms
+ generates and stores datapoints as required</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:Process">HOUND.ElintWorker:Process ()</a></td>
+	<td class="summary">Process function
+ process all the information stored in the system to update all radar positions</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header "><a name="Functions"></a>Functions</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HOUND.ElintWorker:setCoalition"></a>
+    <strong>HOUND.ElintWorker:setCoalition (coalitionId)</strong>
+    </dt>
+    <dd>
+    set coalition
+ retundent function will change global coalition
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">coalitionId</span>
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.ElintWorker:getCoalition"></a>
+    <strong>HOUND.ElintWorker:getCoalition ()</strong>
+    </dt>
+    <dd>
+    get worker coalition
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        coalitionId
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.ElintWorker:addPlatform"></a>
+    <strong>HOUND.ElintWorker:addPlatform (platformName)</strong>
+    </dt>
+    <dd>
+    add platform
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">platformName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         DCS Unit Name of platform to be added
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Bool. True if requested platform was added. else false
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.ElintWorker:removePlatform"></a>
+    <strong>HOUND.ElintWorker:removePlatform (platformName)</strong>
+    </dt>
+    <dd>
+    remove specificd platform
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">platformName</span>
+         DCS Unit name to remove
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Bool. true if removed, else false
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.ElintWorker:platformRefresh"></a>
+    <strong>HOUND.ElintWorker:platformRefresh ()</strong>
+    </dt>
+    <dd>
+    make sure all platforms are still alive and relevate
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.ElintWorker:removeDeadPlatforms"></a>
+    <strong>HOUND.ElintWorker:removeDeadPlatforms ()</strong>
+    </dt>
+    <dd>
+    remove dead platforms
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.ElintWorker:countPlatforms"></a>
+    <strong>HOUND.ElintWorker:countPlatforms ()</strong>
+    </dt>
+    <dd>
+    count number of platforms
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Int number of platforms
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.ElintWorker:listPlatforms"></a>
+    <strong>HOUND.ElintWorker:listPlatforms ()</strong>
+    </dt>
+    <dd>
+    list all associated platform unit names
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Table list of active platform names
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.ElintWorker:getNewTrackId"></a>
+    <strong>HOUND.ElintWorker:getNewTrackId ()</strong>
+    </dt>
+    <dd>
+    get the next track number
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        UID for the contact
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.ElintWorker:isContact"></a>
+    <strong>HOUND.ElintWorker:isContact (emitter)</strong>
+    </dt>
+    <dd>
+    return if contact exists in the system
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">emitter</span>
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Bool return True if unit is in the system
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.ElintWorker:addContact"></a>
+    <strong>HOUND.ElintWorker:addContact (emitter)</strong>
+    </dt>
+    <dd>
+    add contact to worker
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">emitter</span>
+         DCS Unit to add
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Name of added unit
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.ElintWorker:getContact"></a>
+    <strong>HOUND.ElintWorker:getContact (emitter[, getOnly])</strong>
+    </dt>
+    <dd>
+    get HOUND.Contact from DCS Unit/UID
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">emitter</span>
+         DCS Unit/name of radar unit
+        </li>
+        <li><span class="parameter">getOnly</span>
+         if true function will not create new unit if not exist
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        HOUND.Contact instance of that Unit
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.ElintWorker:removeContact"></a>
+    <strong>HOUND.ElintWorker:removeContact (emitterName)</strong>
+    </dt>
+    <dd>
+    remove Contact from tracking
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">emitterName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         DCS unit Name to remove
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Bool. true if removed.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.ElintWorker:setPreBriefedContact"></a>
+    <strong>HOUND.ElintWorker:setPreBriefedContact (emitter)</strong>
+    </dt>
+    <dd>
+    set contact as Prebriefed
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">emitter</span>
+         DCS Unit/Unit name of radar
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.ElintWorker:setDead"></a>
+    <strong>HOUND.ElintWorker:setDead (emitter)</strong>
+    </dt>
+    <dd>
+    set contact as Dead
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">emitter</span>
+         DCS Unit/Unit name of radar
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.ElintWorker:isTracked"></a>
+    <strong>HOUND.ElintWorker:isTracked (emitter)</strong>
+    </dt>
+    <dd>
+    is contact is tracked
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">emitter</span>
+         DCS Unit/UID of requested emitter
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Bool. is Unit is being tracked by current HoundWorker instance.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.ElintWorker:addDatapointToEmitter"></a>
+    <strong>HOUND.ElintWorker:addDatapointToEmitter (emitter, datapoint)</strong>
+    </dt>
+    <dd>
+    add datapoint to emitter
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">emitter</span>
+         DCS UNIT with radar
+        </li>
+        <li><span class="parameter">datapoint</span>
+         HOUND.Datapoint instance
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.ElintWorker:listInSector"></a>
+    <strong>HOUND.ElintWorker:listInSector (sectorName)</strong>
+    </dt>
+    <dd>
+    list all contact is a sector
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">sectorName</span>
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.ElintWorker:UpdateMarkers"></a>
+    <strong>HOUND.ElintWorker:UpdateMarkers ()</strong>
+    </dt>
+    <dd>
+    update markers to all contacts
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.ElintWorker:listAll"></a>
+    <strong>HOUND.ElintWorker:listAll (sectorName)</strong>
+    </dt>
+    <dd>
+    Return all contacts managed by this instance regardless of sector
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">sectorName</span>
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.ElintWorker:listAllbyRange"></a>
+    <strong>HOUND.ElintWorker:listAllbyRange (sectorName)</strong>
+    </dt>
+    <dd>
+    return all contacts managed by this instance sorted by range
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">sectorName</span>
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.ElintWorker:countContacts"></a>
+    <strong>HOUND.ElintWorker:countContacts ([sectorName])</strong>
+    </dt>
+    <dd>
+    return number of contacts tracked
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">sectorName</span>
+         String name or sector to filter by
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.ElintWorker:sortContacts"></a>
+    <strong>HOUND.ElintWorker:sortContacts (sortFunc[, sectorName])</strong>
+    </dt>
+    <dd>
+    return a sorted list of contacts
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">sortFunc</span>
+         Function to sort by
+        </li>
+        <li><span class="parameter">sectorName</span>
+         String. sector to filter by
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        sorted list of contacts
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.ElintWorker:Sniff"></a>
+    <strong>HOUND.ElintWorker:Sniff ()</strong>
+    </dt>
+    <dd>
+    Perform a sample of all emitting radars against all platforms
+ generates and stores datapoints as required
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.ElintWorker:Process"></a>
+    <strong>HOUND.ElintWorker:Process ()</strong>
+    </dt>
+    <dd>
+    Process function
+ process all the information stored in the system to update all radar positions
+
+
+
+
+
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+<i style="float:right;">Last updated 2022-03-29 23:19:14 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>
