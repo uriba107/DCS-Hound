@@ -703,7 +703,7 @@ do
         -- @within HOUND.Utils.Marker.instance
         -- @param self Hound Marker instance
         instance.remove = function(self)
-            if type(self.id) == "number" then
+            if self.id > 0 then
                 trigger.action.removeMark(self.id)
                 if self.id % 500 == 0 then
                     collectgarbage("collect")

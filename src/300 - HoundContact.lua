@@ -709,7 +709,10 @@ do
         }
         self._markpoints.p:update(markerArgs)
 
-        if MarkerType == HOUND.MARKER.NONE then return end
+        if MarkerType == HOUND.MARKER.NONE or self:isAccurate() then
+            self._markpoints.u:remove()
+            return 
+        end
 
         if MarkerType == HOUND.MARKER.CIRCLE then
             self:drawAreaMarker()
