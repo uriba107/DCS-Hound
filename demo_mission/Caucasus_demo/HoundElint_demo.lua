@@ -160,9 +160,12 @@ do
     --         env.info(mist.utils.tableShow(data['tasks']))
     --     end
     -- end
-    local validController = Unit.getByName('KC135_no_task'):getController()
-    env.info(mist.utils.tableShow(validController))
+    -- local validController = Unit.getByName('KC135_no_task'):getController()
+    -- env.info(mist.utils.tableShow(validController))
 
-    local invalidController = Unit.getByName('KC135_tanker'):getController()
-    env.info(mist.utils.tableShow(invalidController))
+    -- local invalidController = Unit.getByName('KC135_tanker'):getController()
+    -- env.info(mist.utils.tableShow(invalidController))
+
+    -- mist.debug.dump_G('hound_post_rename_G.lua')
+    -- mist.debug.dumpDBs()
 end
