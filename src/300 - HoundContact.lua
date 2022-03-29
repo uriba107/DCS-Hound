@@ -171,6 +171,12 @@ do
         return HOUND.Utils.absTimeDelta(self.last_seen)/120 < 1.0
     end
 
+    --- check if contact position is accurate
+    -- @return Bool - True target is pre briefed
+    function HOUND.Contact:isAccurate()
+        return self.preBriefed
+    end
+
     --- check if contact is timed out
     -- @return Bool True if timed out
     function HOUND.Contact:isTimedout()

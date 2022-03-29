@@ -98,7 +98,7 @@ do
         msg = msg .. ", I say again " .. LLstr
         msg = msg .. ", MGRS " .. phoneticGridPos
         msg = msg .. ", elevation  " .. HOUND.Utils.getRoundedElevationFt(self.pos.elev) .. " feet MSL"
-        -- HOUND.Logger.trace("az: " .. string.format("%03d",self.uncertenty_data.az))
+
         if HOUND.EXTENDED_INFO then
             msg = msg .. ", ellipse " ..  HOUND.Utils.TTS.simplfyDistance(self.uncertenty_data.major) .. " by " ..  HOUND.Utils.TTS.simplfyDistance(self.uncertenty_data.minor) .. ", aligned bearing " .. HOUND.Utils.TTS.toPhonetic(string.format("%03d",self.uncertenty_data.az))
             msg = msg .. ", Tracked for " .. HOUND.Utils.TTS.getVerbalContactAge(self.first_seen) .. ", last seen " .. HOUND.Utils.TTS.getVerbalContactAge(self.last_seen) .. " ago"
