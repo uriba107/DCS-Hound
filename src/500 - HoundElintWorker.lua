@@ -9,7 +9,7 @@ do
         local instance = {}
         instance._contacts = {}
         instance._platforms = {}
-        instance._settings =  HoundConfig.get(HoundInstanceId)
+        instance._settings =  HOUND.Config.get(HoundInstanceId)
         instance.coalitionId = nil
         instance.TrackIdCounter = 0
         setmetatable(instance, HoundElintWorker)
@@ -47,9 +47,9 @@ do
         end
 
         if candidate ~= nil and candidate:getCoalition() == self:getCoalition()
-            and not setContainsValue(self._platforms,candidate) and HoundUtils.Elint.isValidPlatform(candidate) then
+            and not setContainsValue(self._platforms,candidate) and HOUND.Utils.Elint.isValidPlatform(candidate) then
                 table.insert(self._platforms, candidate)
-                HoundEventHandler.publishEvent({
+                HOUND.EventHandler.publishEvent({
                     id = HOUND.EVENTS.PLATFORM_ADDED,
                     initiator = candidate,
                     houndId = self._settings:getId(),
@@ -57,7 +57,7 @@ do
                 })
                 return true
         end
-        HoundLogger.warn("[Hound] - Failed to add platform "..platformName..". Make sure you use unit name and that all requirments are met.")
+        HOUND.Logger.warn("[Hound] - Failed to add platform "..platformName..". Make sure you use unit name and that all requirments are met.")
         return false
     end
 
@@ -74,7 +74,7 @@ do
             for k,v in ipairs(self._platforms) do
                 if v == candidate then
                     table.remove(self._platforms, k)
-                    HoundEventHandler.publishEvent({
+                    HOUND.EventHandler.publishEvent({
                         id = HOUND.EVENTS.PLATFORM_REMOVED,
                         initiator = candidate,
                         houndId = self._settings:getId(),
@@ -93,7 +93,7 @@ do
         for id,platform in ipairs(self._platforms) do
             if platform:isExist() == false or platform:getLife() <1 then
                 table.remove(self._platforms, id)
-                HoundEventHandler.publishEvent({
+                HOUND.EventHandler.publishEvent({
                     id = HOUND.EVENTS.PLATFORM_DESTROYED,
                     initiator = platform,
                     houndId = self._settings:getId(),
@@ -109,7 +109,7 @@ do
         for id,platform in ipairs(self._platforms) do
             if platform:isExist() == false or platform:getLife() <1  or (platform:getCategory() ~= Object.Category.STATIC and platform:isActive() == false) then
                 table.remove(self._platforms, id)
-                HoundEventHandler.publishEvent({
+                HOUND.EventHandler.publishEvent({
                     id = HOUND.EVENTS.PLATFORM_DESTROYED,
                     initiator = platform,
                     houndId = self._settings:getId(),
@@ -164,7 +164,7 @@ do
         local emitterName = emitter:getName()
         if self._contacts[emitterName] ~= nil then return emitterName end
         self._contacts[emitterName] = HoundContact.New(emitter, self:getCoalition(), self:getNewTrackId())
-        HoundEventHandler.publishEvent({
+        HOUND.EventHandler.publishEvent({
             id = HOUND.EVENTS.RADAR_NEW,
             initiator = emitter,
             houndId = self._settings:getId(),
@@ -201,7 +201,7 @@ do
     function HoundElintWorker:removeContact(emitterName)
         if not type(emitterName) == "string" then return false end
         if self._contacts[emitterName] then
-            HoundEventHandler.publishEvent({
+            HOUND.EventHandler.publishEvent({
                 id = HOUND.EVENTS.RADAR_DESTROYED,
                 initiator = self._contacts[emitterName],
                 houndId = self._settings:getId(),
@@ -220,7 +220,7 @@ do
         local contact = self:getContact(emitter)
         local contactState = contact:useUnitPos()
         if contactState then
-            HoundEventHandler.publishEvent({
+            HOUND.EventHandler.publishEvent({
                 id = contactState,
                 initiator = contact,
                 houndId = self._settings:getId(),
@@ -247,7 +247,7 @@ do
 
     --- add datapoint to emitter
     -- @param emitter DCS UNIT with radar
-    -- @param datapoint HoundDatapoint instance
+    -- @param datapoint HOUND.Datapoint instance
     function HoundElintWorker:addDatapointToEmitter(emitter,datapoint)
         if not self:isTracked(emitter) then
             self:addContact(emitter)
@@ -264,7 +264,7 @@ do
                 table.insert(emitters,emitter)
             end
         end
-        table.sort(emitters,HoundUtils.Sort.ContactsByRange)
+        table.sort(emitters,HOUND.Utils.Sort.ContactsByRange)
         return emitters
     end
 
@@ -293,7 +293,7 @@ do
 
     --- return all contacts managed by this instance sorted by range
     function HoundElintWorker:listAllbyRange(sectorName)
-        return self:sortContacts(HoundUtils.Sort.ContactsByRange,sectorName)
+        return self:sortContacts(HOUND.Utils.Sort.ContactsByRange,sectorName)
     end
 
     --- return number of contacts tracked
@@ -337,14 +337,14 @@ do
         self:removeDeadPlatforms()
 
         if Length(self._platforms) == 0 then
-            HoundLogger.trace("no active platform")
+            HOUND.Logger.trace("no active platform")
             return
         end
 
-        local Radars = HoundUtils.Elint.getActiveRadars(self:getCoalition())
+        local Radars = HOUND.Utils.Elint.getActiveRadars(self:getCoalition())
 
         if Length(Radars) == 0 then
-            HoundLogger.trace("No Transmitting Radars")
+            HOUND.Logger.trace("No Transmitting Radars")
             return
         end
         -- env.info("Recivers: " .. table.getn(self.platform) .. " | Radars: " .. table.getn(Radars))
@@ -370,7 +370,7 @@ do
                     local PlatformUnitCategory = platform:getDesc()["category"]
                     if PlatformUnitCategory == Unit.Category.HELICOPTER or PlatformUnitCategory == Unit.Category.AIRPLANE then
                         isAerialUnit = true
-                        posErr = HoundUtils.Vector.getRandomVec3(self._settings:getPosErr())
+                        posErr = HOUND.Utils.Vector.getRandomVec3(self._settings:getPosErr())
                     end
 
                     if PlatformUnitCategory == Unit.Category.GROUND_UNIT then
@@ -378,11 +378,11 @@ do
                     end
                 end
 
-                if HoundUtils.Geo.checkLOS(platformPos, radarPos) then
+                if HOUND.Utils.Geo.checkLOS(platformPos, radarPos) then
                     local contact = self:getContact(radar)
-                    local sampleAngularResolution = HoundUtils.Elint.getSensorPrecision(platform,contact.band)
+                    local sampleAngularResolution = HOUND.Utils.Elint.getSensorPrecision(platform,contact.band)
                     if sampleAngularResolution < l_math.rad(10.0) then
-                        local az,el = HoundUtils.Elint.getAzimuth( platformPos, radarPos, sampleAngularResolution )
+                        local az,el = HOUND.Utils.Elint.getAzimuth( platformPos, radarPos, sampleAngularResolution )
                         if not isAerialUnit then
                             el = nil
                         else
@@ -391,7 +391,7 @@ do
                             end
                         end
 
-                        local datapoint = HoundDatapoint.New(platform,platformPos, az, el, timer.getAbsTime(),sampleAngularResolution,platformIsStatic)
+                        local datapoint = HOUND.Datapoint.New(platform,platformPos, az, el, timer.getAbsTime(),sampleAngularResolution,platformIsStatic)
                         contact:AddPoint(datapoint)
                     end
                 end
@@ -424,7 +424,7 @@ do
 
                 -- publish event (in case of destroyed radar, event is handled by the notify function)
                 if contactState then
-                    HoundEventHandler.publishEvent({
+                    HOUND.EventHandler.publishEvent({
                         id = contactState,
                         initiator = contact,
                         houndId = self._settings:getId(),

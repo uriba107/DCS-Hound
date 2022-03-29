@@ -45,8 +45,8 @@ do
         -- lu.assertAlmostEquals(az2,,0.0001)
         -- lu.assertAlmostEquals(el2,,0.0001)
 
-        local d1 = HoundDatapoint.New(platform1,p1, az1, el1, timer.getAbsTime(),err,false)
-        local d2 = HoundDatapoint.New(platform2,p2, az2, el2, timer.getAbsTime(),err,false)
+        local d1 = HOUND.Datapoint.New(platform1,p1, az1, el1, timer.getAbsTime(),err,false)
+        local d2 = HOUND.Datapoint.New(platform2,p2, az2, el2, timer.getAbsTime(),err,false)
 
         self.contact:AddPoint(d1)
         self.contact:AddPoint(d2)
@@ -86,8 +86,8 @@ do
         local az1,el1 = HoundUtils.Elint.getAzimuth( p1, tgtPos, err )
         local az2,el2 = HoundUtils.Elint.getAzimuth( p2, tgtPos, err )
 
-        local d1 = HoundDatapoint.New(platform1,p1, az1, el1, timer.getAbsTime(),err,false)
-        local d2 = HoundDatapoint.New(platform2,p2, az2, el2, timer.getAbsTime(),err,false)
+        local d1 = HOUND.Datapoint.New(platform1,p1, az1, el1, timer.getAbsTime(),err,false)
+        local d2 = HOUND.Datapoint.New(platform2,p2, az2, el2, timer.getAbsTime(),err,false)
 
         self.contact:AddPoint(d1)
         self.contact:AddPoint(d2)

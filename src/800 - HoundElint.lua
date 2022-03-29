@@ -17,12 +17,12 @@ do
     -- @return HoundElint Instance
     function HoundElint:create(platformName)
         if not platformName then
-            HoundLogger.error("Failed to initialize Hound instace. Please provide coalition")
+            HOUND.Logger.error("Failed to initialize Hound instace. Please provide coalition")
             return
         end
         local elint = {}
         setmetatable(elint, HoundElint)
-        elint.settings = HoundConfig.get()
+        elint.settings = HOUND.Config.get()
         elint.HoundId = elint.settings:getId()
         elint.contacts = HoundContactManager.get(elint.HoundId)
         elint.elintTaskID = nil
@@ -130,7 +130,7 @@ do
     function HoundElint:addSector(sectorName,sectorSettings,priority)
         if type(sectorName) ~= "string" then return false end
         if string.lower(sectorName) == "default" or string.lower(sectorName) == "all" then
-            HoundLogger.info(sectorName.. " is a reserved sector name")
+            HOUND.Logger.info(sectorName.. " is a reserved sector name")
             return nil
         end
         priority = priority or 50
@@ -763,7 +763,7 @@ do
     -- @local
     function HoundElint:updateSectorMembership()
         local sectors = self:getSectors()
-        table.sort(sectors,HoundUtils.Sort.sectorsByPriorityLowFirst)
+        table.sort(sectors,HOUND.Utils.Sort.sectorsByPriorityLowFirst)
         for _,contact in ipairs(self.contacts:listAll()) do
             for _,sector in pairs(sectors) do
                 sector:updateSectorMembership(contact)
@@ -897,13 +897,13 @@ do
             local doMenus = false
             local doMarkers = false
             if self.timingCounters.lastProcess then
-                doProcess = ((HoundUtils.absTimeDelta(self.timingCounters.lastProcess,runTime)/self.settings.intervals.process) > 0.99)
+                doProcess = ((HOUND.Utils.absTimeDelta(self.timingCounters.lastProcess,runTime)/self.settings.intervals.process) > 0.99)
             end
             if self.timingCounters.lastMenus then
-                doMenus = ((HoundUtils.absTimeDelta(self.timingCounters.lastMenus,runTime)/self.settings.intervals.menus) > 0.99)
+                doMenus = ((HOUND.Utils.absTimeDelta(self.timingCounters.lastMenus,runTime)/self.settings.intervals.menus) > 0.99)
             end
             if self.timingCounters.lastMarkers then
-                doMarkers = ((HoundUtils.absTimeDelta(self.timingCounters.lastMarkers,runTime)/self.settings.intervals.markers) > 0.99)
+                doMarkers = ((HOUND.Utils.absTimeDelta(self.timingCounters.lastMarkers,runTime)/self.settings.intervals.markers) > 0.99)
             end
 
             if doProcess then
@@ -953,7 +953,7 @@ do
             return
         end
         local sectors = self:getSectors()
-        table.sort(sectors,HoundUtils.Sort.sectorsByPriorityLowLast)
+        table.sort(sectors,HOUND.Utils.Sort.sectorsByPriorityLowLast)
         for _,sector in pairs(sectors) do
             sector:populateRadioMenu()
         end
@@ -977,7 +977,7 @@ do
     -- @bool[opt] notify if True a text notification will be printed in 3d world
     function HoundElint:systemOn(notify)
         if self.settings:getCoalition() == nil then
-            HoundLogger.warn("failed to start. no coalition found.")
+            HOUND.Logger.warn("failed to start. no coalition found.")
             return false
         end
         self:systemOff(false)
@@ -989,7 +989,7 @@ do
         end
         self:defaultEventHandler()
         env.info("Hound is now on")
-        HoundEventHandler.publishEvent({id=HOUND.EVENTS.HOUND_ENABLED, houndId = self.settings:getId(), coalition = self.settings:getCoalition()})
+        HOUND.EventHandler.publishEvent({id=HOUND.EVENTS.HOUND_ENABLED, houndId = self.settings:getId(), coalition = self.settings:getCoalition()})
         return true
     end
 
@@ -1047,7 +1047,7 @@ do
         if not filename then
             filename = string.format("hound_contacts_%d.csv",self.settings:getId())
         end
-        local currentGameTime = HoundUtils.Text.getTime()
+        local currentGameTime = HOUND.Utils.Text.getTime()
         local csvFile = io.open(lfs.writedir() .. filename, "w+")
         csvFile:write("TrackId,NatoDesignation,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accuracy,lastSeen,ReportGenerated\n")
         csvFile:flush()
@@ -1072,7 +1072,7 @@ do
             table.insert(units,obj)
         end
         for _,unit in pairs(units) do
-            if unit:getCoalition() ~= self.settings:getCoalition() and unit:isExist() and setContains(HoundDB.Sam,unit:getTypeName()) then
+            if unit:getCoalition() ~= self.settings:getCoalition() and unit:isExist() and setContains(HOUND.DBs.Sam,unit:getTypeName()) then
                 self.contacts:setPreBriefedContact(unit)
             end
         end
@@ -1090,13 +1090,13 @@ do
             return
         end
         local sectors = self:getSectors()
-        table.sort(sectors,HoundUtils.Sort.sectorsByPriorityLowFirst)
+        table.sort(sectors,HOUND.Utils.Sort.sectorsByPriorityLowFirst)
 
         if houndEvent.id == HOUND.EVENTS.RADAR_DETECTED then
-            HoundLogger.trace("Detected HoundElintEvent")
+            HOUND.Logger.trace("Detected HoundElintEvent")
 
             for _,sector in pairs(sectors) do
-                -- HoundLogger.trace("check loop - "..sector:getName().."("..sector:getPriority()..")")
+                -- HOUND.Logger.trace("check loop - "..sector:getName().."("..sector:getPriority()..")")
                 sector:updateSectorMembership(houndEvent.initiator)
             end
             for _,sector in pairs(sectors) do
@@ -1147,11 +1147,11 @@ do
     -- @local
     function HoundElint:defaultEventHandler(remove)
         if remove == false then
-            HoundEventHandler.removeInternalEventHandler(self)
+            HOUND.EventHandler.removeInternalEventHandler(self)
             world.removeEventHandler(self)
             return
         end
-        HoundEventHandler.addInternalEventHandler(self)
+        HOUND.EventHandler.addInternalEventHandler(self)
         world.addEventHandler(self)
     end
 end

@@ -63,17 +63,17 @@ do
         local str,char = HoundUtils.getReportId('C')
         lu.assertEquals(char,'D')
         lu.assertEquals(str,'Delta')
-        lu.assertEquals(str,HoundDB.PHONETICS[char])
+        lu.assertEquals(str,HOUND.DBs.PHONETICS[char])
 
         str,char = HoundUtils.getReportId('Z')
         lu.assertEquals(char,'A')
         lu.assertEquals(str,'Alpha')
-        lu.assertEquals(str,HoundDB.PHONETICS[char])
+        lu.assertEquals(str,HOUND.DBs.PHONETICS[char])
 
         str,char = HoundUtils.getReportId('Y')
         lu.assertEquals(char,'Z')
         lu.assertEquals(str,'Zulu')
-        lu.assertEquals(str,HoundDB.PHONETICS[char])
+        lu.assertEquals(str,HOUND.DBs.PHONETICS[char])
     end
     function TestHoundUtils:TestDecToDMS()
         lu.assertItemsEquals(HoundUtils.DecToDMS(35.443),{d=35,m=26,s=34,mDec=26.580,sDec=580})
@@ -196,10 +196,10 @@ do
         -- HoundUtils.Elint.getAzimuth
 
         -- HoundUtils.getHoundCallsign
-        lu.assertIsTrue(setContainsValue(HoundDB.CALLSIGNS.GENERIC,HoundUtils.getHoundCallsign()))
-        lu.assertIsFalse(setContainsValue(HoundDB.CALLSIGNS.GENERIC,HoundUtils.getHoundCallsign("NATO")))
-        lu.assertIsTrue(setContainsValue(HoundDB.CALLSIGNS.NATO,HoundUtils.getHoundCallsign("NATO")))
-        lu.assertIsFalse(setContainsValue(HoundDB.CALLSIGNS.NATO,HoundUtils.getHoundCallsign()))
+        lu.assertIsTrue(setContainsValue(HOUND.DBs.CALLSIGNS.GENERIC,HoundUtils.getHoundCallsign()))
+        lu.assertIsFalse(setContainsValue(HOUND.DBs.CALLSIGNS.GENERIC,HoundUtils.getHoundCallsign("NATO")))
+        lu.assertIsTrue(setContainsValue(HOUND.DBs.CALLSIGNS.NATO,HoundUtils.getHoundCallsign("NATO")))
+        lu.assertIsFalse(setContainsValue(HOUND.DBs.CALLSIGNS.NATO,HoundUtils.getHoundCallsign()))
     end
 
     function TestHoundUtils:TestPolygon()

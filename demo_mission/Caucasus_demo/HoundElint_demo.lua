@@ -102,6 +102,25 @@ do
         end
     end
 
+    function testing.GrpData(groupName)
+        local grp = Group.getByName(groupName)
+        for k,v in pairs(grp) do
+            env.info("Group['".. k .. "'] is " .. type(v))
+            if type(v) == "table" then
+                env.info("Group['".. k .. "']")
+                env.info(mist.utils.tableShow(v))
+            end
+        end
+        local unit = grp:getUnits()[1]
+        for k,v in pairs(grp) do
+            env.info("Unit['".. k .. "'] is " .. type(v))
+            if type(v) == "table" then
+                env.info("Unit['".. k .. "']")
+                env.info(mist.utils.tableShow(v))
+            end
+        end
+    end
+
     testing.Menu = missionCommands.addSubMenu("Hound Testing")
     missionCommands.addCommand("Destroy Radar",testing.Menu,testing.explode,Unit.getByName("SA-3 P-19"):getPoint())
     missionCommands.addCommand("Toggle SA-3 Activation",testing.Menu,testing.toggleGroup,"SA-3_late")
@@ -114,4 +133,36 @@ do
     missionCommands.addCommand("Get Contacts",testing.Menu,testing.getContacts,Elint_blue)
     missionCommands.addCommand("Add test Marker",testing.Menu,testing.AddMarker)
     missionCommands.addCommand("Toggle marker Counter",testing.Menu,testing.toggleMarkers)
+    missionCommands.addCommand("unit data",testing.Menu,testing.GrpData,'Elint')
+
+end
+
+do
+    -- local valid = mist.getCurrentGroupData('KC135_no_task')
+    -- local invalid = mist.getCurrentGroupData('KC135_tanker')
+
+    -- env.info("Valid tasks:\n")
+    -- env.info(mist.utils.tableShow(valid)) -- ['tasks']))
+    -- env.info("invalid tasks:\n")
+    -- env.info(mist.utils.tableShow(invalid)) -- ['tasks']))
+
+
+    -- for k,v in pairs(valid) do
+    --     env.info("valid - " .. k)
+    -- end
+    -- env.info("Valid waypoints:\n")
+    -- env.info(mist.utils.tableShow(valid['route']['points']))
+    -- env.info("invalid waypoints:\n")
+    -- env.info(mist.utils.tableShow(invalid['route']['points']))
+
+    -- for _,data in pairs({valid,invalid}) do
+    --     if type(data) == "table" and type(data['tasks']) == "table" then
+    --         env.info(mist.utils.tableShow(data['tasks']))
+    --     end
+    -- end
+    local validController = Unit.getByName('KC135_no_task'):getController()
+    env.info(mist.utils.tableShow(validController))
+
+    local invalidController = Unit.getByName('KC135_tanker'):getController()
+    env.info(mist.utils.tableShow(invalidController))
 end

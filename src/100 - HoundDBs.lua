@@ -1,11 +1,11 @@
 --- Hound databases
 -- @local
--- @module HoundDB
--- @field #HoundDB
-HoundDB = {}
+-- @module HOUND.DBs
+-- @field #HOUND.DBs
+HOUND.DBs = {}
 do
     --- SAM database
-    -- @table HoundDB.Sam
+    -- @table HOUND.DBs.Sam
     -- @field @string Name NATO Name
     -- @field #table Assigned Which Battery this radar can belong to
     -- @field #table Role Role of radar in battery
@@ -17,7 +17,7 @@ do
     --     ['Role'] = {"SR"},
     --     ['Band'] = 'C'
     -- }
-    HoundDB.Sam = {
+    HOUND.DBs.Sam = {
         -- EWR --
         ['1L13 EWR'] = {
             ['Name'] = "EWR",
@@ -618,10 +618,10 @@ end
 
 do
     --- Enums for Phonetic AlphaBet
-    -- @table HoundDB.PHONETICS
+    -- @table HOUND.DBs.PHONETICS
     -- @field Characters Phonetic representation
     -- @usage  ['A'] = "Alpha"
-    HoundDB.PHONETICS =  {
+    HOUND.DBs.PHONETICS =  {
         ['A'] = "Alpha",
         ['B'] = "Bravo",
         ['C'] = "Charlie",
@@ -665,10 +665,10 @@ end
 
 do
     --- Units that use DMM format
-    -- @table HoundDb.useDecMin
+    -- @table HOUND.DBs.useDecMin
     -- @field UnitType Bool Value
     -- @usage ['F-16C_blk50'] = true
-    HoundDB.useDecMin =  {
+    HOUND.DBs.useDecMin =  {
         ['F-16C_blk50'] = true,
         ['F-16C_50'] = true,
         ['M-2000C'] = true,
@@ -680,11 +680,11 @@ end
 
 do
     --- Valid platform parameters
-    -- @table HoundDB.Platform
+    -- @table HOUND.DBs.Platform
     -- @field UnitTypeNmae contains table of properties
     -- @usage ['C-130'] = {antenna = {size = 35, factor = 1}}
 
-    HoundDB.Platform =  {
+    HOUND.DBs.Platform =  {
         [Object.Category.STATIC] = {
             ['Comms tower M'] = {antenna = {size = 80, factor = 1}},
             ['Cow'] = {antenna = {size = 1000, factor = 1}}
@@ -730,10 +730,10 @@ do
     }
 
     --- Band vs wavelength
-    -- @table HoundDB.Bands
+    -- @table HOUND.DBs.Bands
     -- @field Band wavelength in meters
     -- @usage ['E'] = 0.119917
-    HoundDB.Bands =  {
+    HOUND.DBs.Bands =  {
         ['A'] = 1.713100,
         ['B'] = 0.799447,
         ['C'] = 0.399723,
@@ -749,10 +749,10 @@ do
     }
 
     --- Hound callsigns
-    -- @table HoundDB.CALLSIGNS
+    -- @table HOUND.DBs.CALLSIGNS
     -- @field NATO list of RC-135 callsigns (source: https://henney.com/chm/callsign.htm)
     -- @field GENERIC list of generic callsigns for hound, mostly vacuum cleaners and fictional detectives
-    HoundDB.CALLSIGNS = {
+    HOUND.DBs.CALLSIGNS = {
         NATO = {
         "ABLOW", "ACTON", "AGRAM", "AMINO", "AWOKE", "BARB", "BART", "BAZOO",
         "BOGUE", "BOOT", "BRAY", "CAMAY", "CAPON", "CASEY", "CHIME", "CHISUM",

@@ -14,7 +14,7 @@ do
     function HoundCommsManager:create(sector,houndConfig,settings)
         if (not houndConfig and type(houndConfig) ~= "table") or
             (not sector and type(sector) ~= "string") then
-                HoundLogger.warn("[Hound] - Comm Controller could not be initilized, missing params")
+                HOUND.Logger.warn("[Hound] - Comm Controller could not be initilized, missing params")
                 return nil
         end
         local CommsManager = {}
@@ -181,7 +181,7 @@ do
         end
         if self.transmitter ~= candidate then
             self.transmitter = candidate
-            HoundEventHandler.publishEvent({
+            HOUND.EventHandler.publishEvent({
                     id = HOUND.EVENTS.TRANSMITTER_ADDED,
                     houndId = self.houndConfig:getId(),
                     initiator = self.sector,
@@ -194,7 +194,7 @@ do
     function HoundCommsManager:removeTransmitter()
         if self.transmitter ~= nil then
             self.transmitter = nil
-            HoundEventHandler.publishEvent({
+            HOUND.EventHandler.publishEvent({
                     id = HOUND.EVENTS.TRANSMITTER_REMOVED,
                     houndId = self.houndConfig:getId(),
                     initiator = self.sector
@@ -317,7 +317,7 @@ do
 
         if transmitterPos == false then
             env.info("[Hound] - Transmitter destroyed")
-            HoundEventHandler.publishEvent({
+            HOUND.EventHandler.publishEvent({
                     id = HOUND.EVENTS.TRANSMITTER_DESTROYED,
                     houndId = gSelf.houndConfig:getId(),
                     initiator = gSelf.sector,
@@ -328,13 +328,13 @@ do
         end
 
         if gSelf.enabled and STTS ~= nil and msgObj.tts ~= nil and gSelf.preferences.enabletts then
-            HoundUtils.TTS.Transmit(msgObj.tts,msgObj.coalition,gSelf.settings,transmitterPos)
-            readTime = HoundUtils.TTS.getReadTime(msgObj.tts,gSelf.settings.speed)
+            HOUND.Utils.TTS.Transmit(msgObj.tts,msgObj.coalition,gSelf.settings,transmitterPos)
+            readTime = HOUND.Utils.TTS.getReadTime(msgObj.tts,gSelf.settings.speed)
             -- env.info("TTS msg: " .. msgObj.tts)
         end
 
         if gSelf.enabled and gSelf.preferences.enabletext and msgObj.txt ~= nil then
-            readTime =  HoundUtils.TTS.getReadTime(msgObj.tts,gSelf.settings.speed) or HoundUtils.TTS.getReadTime(msgObj.txt,gSelf.settings.speed)
+            readTime =  HOUND.Utils.TTS.getReadTime(msgObj.tts,gSelf.settings.speed) or HOUND.Utils.TTS.getReadTime(msgObj.txt,gSelf.settings.speed)
             if msgObj.gid then
                 if type(msgObj.gid) == "table" then
                     for _,gid in ipairs(msgObj.gid) do

@@ -23,13 +23,22 @@ do
         for index, data in pairs(SAM:getUnits()) do
             if setContainsValue({"Kub 1S91 str","SA-11 Buk SR 9S18M1","Osa 9A33 ln"},Unit.getTypeName(data)) and (Unit.getLife(data) > 1 or Unit.isExist(data) or (Unit.getLife(data)/Unit.getLife0(data)) > 0.55) then
                 destroy = false
-            end 
+                -- local pos = Unit.getPoint(data)
+                -- if HOUND.Utils.Geo.isDcsPoint(pos) then
+                --     trigger.action.explosion(pos,250)
+                -- end
+            end
         end
         if destroy then
-            SAM:destroy()
+            -- SAM:destroy()
+            for _, data in pairs(SAM:getUnits()) do
+                if setContainsValue({"Kub 1S91 str","SA-11 Buk SR 9S18M1","Osa 9A33 ln"},Unit.getTypeName(data)) then
+                    local pos = Unit.getPoint(data)
+                    trigger.action.explosion(pos,250)
+                end
+            end
         end
-        env.info(GroupName .. " destroy " .. tostring(destroy))
-
+        -- env.info(GroupName .. " destroy " .. tostring(destroy))
         return destroy
     end
 
@@ -198,4 +207,19 @@ do
     end
 
     world.addEventHandler(humanElint)
+
+    HoundTriggers = {}
+    function HoundTriggers:onHoundEvent(event)
+        if event.coalition == coalition.side.BLUE then
+            if event.id == HOUND.EVENTS.RADAR_DESTROYED then
+                local contact = event.initiator
+                local SAM = contact.unit:getGroup()
+                if SAM:isExist() then
+                    timer.scheduleFunction(Group.destroy, SAM, timer.getTime() + math.random(30,60))
+                end
+            end
+        end
+    end
+
+    HOUND.addEventHandler(HoundTriggers)
 end

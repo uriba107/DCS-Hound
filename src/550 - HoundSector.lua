@@ -16,14 +16,14 @@ do
     -- @param[opt] priority Priority for the sector
     function HoundSector.create(HoundId, name, settings, priority)
         if type(HoundId) ~= "number" or type(name) ~= "string" then
-            HoundLogger.warn("[Hound] - HoundSector.create() missing params")
+            HOUND.Logger.warn("[Hound] - HoundSector.create() missing params")
             return
         end
 
         local instance = {}
         setmetatable(instance, HoundSector)
         instance.name = name
-        instance._hSettings = HoundConfig.get(HoundId)
+        instance._hSettings = HOUND.Config.get(HoundId)
         instance._contacts = HoundContactManager.get(HoundId)
         instance.callsign = "HOUND"
         instance.settings = {
@@ -165,10 +165,10 @@ do
         end
         if NATO == true then namePool = "NATO" end
 
-        callsign = string.upper(callsign or HoundUtils.getHoundCallsign(namePool))
+        callsign = string.upper(callsign or HOUND.Utils.getHoundCallsign(namePool))
 
         while setContainsValue(self._hSettings.callsigns, callsign) do
-            callsign = HoundUtils.getHoundCallsign(namePool)
+            callsign = HOUND.Utils.getHoundCallsign(namePool)
         end
 
         if self.callsign ~= nil or self.callsign ~= "HOUND" then
@@ -199,11 +199,11 @@ do
     -- @param zonecandidate (String) DCS group name, or a drawn map freeform Polygon. sector borders will be group waypoints or polygon points
     function HoundSector:setZone(zonecandidate)
         if self.name == "default" then
-            HoundLogger.warn("[Hound] - cannot set zone to default sector")
+            HOUND.Logger.warn("[Hound] - cannot set zone to default sector")
             return
         end
         if type(zonecandidate) == "string" then
-            local zone = HoundUtils.Zone.getDrawnZone(zonecandidate)
+            local zone = HOUND.Utils.Zone.getDrawnZone(zonecandidate)
             if not zone and (Group.getByName(zonecandidate)) then
                 zone = mist.getGroupPoints(zonecandidate)
             end
@@ -211,7 +211,7 @@ do
             return
         end
         if not zonecandidate then
-            local zone = HoundUtils.Zone.getDrawnZone(self.name .. " Sector")
+            local zone = HOUND.Utils.Zone.getDrawnZone(self.name .. " Sector")
             if zone then
                 self.settings.zone = zone
             end
@@ -247,9 +247,9 @@ do
     --- update contact for zone memberships
     -- @param contact HoundContact instance
     function HoundSector:updateSectorMembership(contact)
-        -- HoundLogger.trace("Evaluating " .. contact:getName() .. " for " .. self.name)
-        local inSector, threatsSector = HoundUtils.Polygon.threatOnSector(self.settings.zone,contact:getPos(),contact:getMaxWeaponsRange())
-        -- HoundLogger.trace(tostring(inSector) .. " " .. tostring(threatsSector))
+        -- HOUND.Logger.trace("Evaluating " .. contact:getName() .. " for " .. self.name)
+        local inSector, threatsSector = HOUND.Utils.Polygon.threatOnSector(self.settings.zone,contact:getPos(),contact:getMaxWeaponsRange())
+        -- HOUND.Logger.trace(tostring(inSector) .. " " .. tostring(threatsSector))
         contact:updateSector(self.name, inSector, threatsSector)
     end
 
@@ -664,9 +664,9 @@ do
                     if not grpMenu.data then
                         grpMenu.data = {}
                         grpMenu.data.gid = grpId
-                        -- grpMenu.data.callsign = HoundUtils.getFormationCallsign(Unit.getByName(player.unitName))
+                        -- grpMenu.data.callsign = HOUND.Utils.getFormationCallsign(Unit.getByName(player.unitName))
                         grpMenu.data.player = player
-                        grpMenu.data.useDMM = HoundUtils.isDMM(player.type)
+                        grpMenu.data.useDMM = HOUND.Utils.isDMM(player.type)
                         grpMenu.data.menus = {}
                     end
                     for _,typeAssigned in pairs(grpMenu.data.menus) do
@@ -886,7 +886,7 @@ do
 
         local reportId
         reportId, loopData.reportIdx =
-            HoundUtils.getReportId(loopData.reportIdx)
+            HOUND.Utils.getReportId(loopData.reportIdx)
 
         local header = self.callsign
         local footer = reportId .. "."
@@ -899,7 +899,7 @@ do
             footer = "you have " .. footer
         end
         header = header .. reportId .. " " ..
-                                    HoundUtils.TTS.getTtsTime() .. ". "
+                                    HOUND.Utils.TTS.getTtsTime() .. ". "
 
         local msgObj = {
             coalition = self._hSettings:getCoalition(),
@@ -924,13 +924,13 @@ do
 
         if requester ~= nil then
             msgObj.gid = requester.groupId
-            useDMM =  HoundUtils.isDMM(requester.type)
+            useDMM =  HOUND.Utils.isDMM(requester.type)
         end
 
         if gSelf.comms.controller:isEnabled() then
             msgObj.tts = contact:generateTtsReport(useDMM)
             if requester ~= nil then
-                msgObj.tts = HoundUtils.getFormationCallsign(requester) .. ", " .. gSelf.callsign .. ", " ..
+                msgObj.tts = HOUND.Utils.getFormationCallsign(requester) .. ", " .. gSelf.callsign .. ", " ..
                                  msgObj.tts
             end
             if gSelf.comms.controller:getSettings("enableText") == true then
@@ -946,7 +946,7 @@ do
     function HoundSector:TransmitCheckInAck(player)
         if not player then return end
         local msgObj = {priority = 1,coalition = self._hSettings:getCoalition(), gid = player.groupId}
-        local msg = HoundUtils.getFormationCallsign(player) .. ", " .. self.callsign .. ", Roger. "
+        local msg = HOUND.Utils.getFormationCallsign(player) .. ", " .. self.callsign .. ", Roger. "
         if self:countContacts() > 0 then
             msg = msg .. "Tasking is available."
         else
@@ -965,7 +965,7 @@ do
     function HoundSector:TransmitCheckOutAck(player)
         if not player then return end
         local msgObj = {priority = 1,coalition = self._hSettings:getCoalition(), gid = player.groupId}
-        local msg = HoundUtils.getFormationCallsign(player) .. ", " .. self.callsign .. ", copy checking out. "
+        local msg = HOUND.Utils.getFormationCallsign(player) .. ", " .. self.callsign .. ", copy checking out. "
         msgObj.tts = msg .. "Frequency change approved."
         msgObj.txt = msg
         if self.comms.controller:isEnabled() then

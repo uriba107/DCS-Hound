@@ -126,14 +126,14 @@ do
     -- @param handler handler to register
     -- @see HOUND.EVENTS
     function HOUND.addEventHandler(handler)
-        HoundEventHandler.addEventHandler(handler)
+        HOUND.EventHandler.addEventHandler(handler)
     end
 
     --- deregister event handler (global)
     -- @param handler handler to remove
     -- @see HOUND.EVENTS
     function HOUND.removeEventHandler(handler)
-        HoundEventHandler.removeEventHandler(handler)
+        HOUND.EventHandler.removeEventHandler(handler)
     end
 
     --- helper code for class inheritance
