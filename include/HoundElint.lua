@@ -7,7 +7,7 @@ end
 
 do
     HOUND = {
-        VERSION = "0.2.3-develop",
+        VERSION = "0.2.3-develop-20220330",
         DEBUG = false,
         ELLIPSE_PERCENTILE = 0.6,
         DATAPOINTS_NUM = 30,
@@ -5283,7 +5283,7 @@ do
 
         local msg = {coalition = self._hSettings:getCoalition(), priority = 2 , gid=enrolledGid}
         if (controller and controller:getSettings("enableText")) or (notifier and notifier:getSettings("enableText"))  then
-            msg.txt = self.callsign .. "Reports " .. contact:generatePopUpReport(false,contactPrimarySector)
+            msg.txt = self.callsign .. " Reports " .. contact:generatePopUpReport(false,contactPrimarySector)
         end
         if (controller and controller:getSettings("enableTTS")) or (notifier and notifier:getSettings("enableTTS")) then
             msg.tts = announce .. contact:generatePopUpReport(true,contactPrimarySector)
@@ -6320,4 +6320,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.2.3-develop - Compiled on 2022-03-29 20:18
+-- Hound version 0.2.3-develop-20220330 - Compiled on 2022-03-29 21:05

@@ -829,7 +829,7 @@ do
 
         local msg = {coalition = self._hSettings:getCoalition(), priority = 2 , gid=enrolledGid}
         if (controller and controller:getSettings("enableText")) or (notifier and notifier:getSettings("enableText"))  then
-            msg.txt = self.callsign .. "Reports " .. contact:generatePopUpReport(false,contactPrimarySector)
+            msg.txt = self.callsign .. " Reports " .. contact:generatePopUpReport(false,contactPrimarySector)
         end
         if (controller and controller:getSettings("enableTTS")) or (notifier and notifier:getSettings("enableTTS")) then
             msg.tts = announce .. contact:generatePopUpReport(true,contactPrimarySector)

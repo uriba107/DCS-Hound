@@ -98,7 +98,7 @@ function compile {
     sed ${SED_ARGS} '/^[[:space:]]*--/d' ${TARGET_FILE}
     sed ${SED_ARGS} '$!N;/^[[:space:]]*$/{$q;D;};P;D;' ${TARGET_FILE}
 
-    GIT_BRANCH="-$(git branch --show-current | sed 's/[^a-zA-Z 0-9]/\\&/g')"
+    GIT_BRANCH="-$(git branch --show-current | sed 's/[^a-zA-Z 0-9]/\\&/g')-$(date +%Y%m%d)"
     if [ ${GIT_BRANCH} == "-main" ]; 
        then GIT_BRANCH="";
     fi
