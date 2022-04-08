@@ -706,6 +706,8 @@ do
             -- Airplanes
             ['C-130'] = {antenna = {size = 35, factor = 1}},
             ['Hercules'] = {antenna = {size = 35, factor = 1}}, -- Anubis' C-130J
+            ['EC130'] = {antenna = {size = 35, factor = 1}},  -- Secret Squirrel EC-130
+            ['RC135RJ'] = {antenna = {size = 40, factor = 1}}, -- Secret Squirrel RC-135
             ['C-17A'] = {antenna = {size = 40, factor = 1}}, -- stand-in for RC-135, tuned antenna size to match
             ['S-3B'] = {antenna = {size = 18, factor = 0.8}},
             ['E-3A'] = {antenna = {size = 9, factor = 0.5}},
@@ -723,7 +725,6 @@ do
             ['AJS37'] = {antenna = {size = 4.5, factor = 1}, require = {CLSID='{U22A}'} },
             ['F-16C_50'] = {antenna = {size = 1.45, factor = 1},require = {CLSID='{AN_ASQ_213}'} },
             ['JF-17'] = {antenna = {size = 3.25, factor = 1}, require = {CLSID='{DIS_SPJ_POD}'} },
-            ['RC135RJ'] = {antenna = {size = 40, factor = 1}}, -- Secret Squirl RC-135
             -- ['KC135MPRS'] = {antenna = {size = 40, factor = 1}, require = { TASK={'-Refueling'}}},
             -- ['KC-135'] = {antenna = {size = 40, factor = 1}, require = { TASK={'-Refueling'}}}
         }
