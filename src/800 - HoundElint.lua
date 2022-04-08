@@ -1115,8 +1115,11 @@ do
     -- @param DcsEvent incoming dcs event
     -- @local
     function HoundElint:onEvent(DcsEvent)
+        if type(DcsEvent.initiator) ~= "table" then return end
+
         if DcsEvent.id == world.event.S_EVENT_BIRTH
             and DcsEvent.initiator:getCoalition() == self.settings:getCoalition()
+            and DcsEvent.initiator:getPlayerName() ~= nil
             and setContains(mist.DBs.humansByName,DcsEvent.initiator:getName())
             then
                 self:populateRadioMenu()
@@ -1124,6 +1127,7 @@ do
         end
         if DcsEvent.id == world.event.S_EVENT_PLAYER_LEAVE_UNIT
             and DcsEvent.initiator:getCoalition() == self.settings:getCoalition()
+            and type(DcsEvent.initiator.getName) == "function"
             and setContains(mist.DBs.humansByName,DcsEvent.initiator:getName())
             then
                 local player = mist.DBs.humansByName[DcsEvent.initiator:getName()]

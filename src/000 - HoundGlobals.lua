@@ -30,7 +30,7 @@ do
         DATAPOINTS_NUM = 30,
         DATAPOINTS_INTERVAL = 30,
         CONTACT_TIMEOUT = 900,
-        MGRS_PRECISION = 3,
+        MGRS_PRECISION = 5,
         EXTENDED_INFO = true,
         MIST_VERSION = tonumber(table.concat({mist.majorVersion,mist.minorVersion},".")),
         FORCE_MANAGE_MARKERS = false

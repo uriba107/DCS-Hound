@@ -180,7 +180,7 @@ do
     --- check if contact is timed out
     -- @return Bool True if timed out
     function HOUND.Contact:isTimedout()
-        return HOUND.Utils.absTimeDelta(self.last_seen) > HOUND.CONTACT_TIMEOUT
+        return self:getLastSeen() > HOUND.CONTACT_TIMEOUT
     end
 
     --- Get current state
@@ -247,20 +247,14 @@ do
             local predicted = {}
             if HOUND.Utils.Geo.isDcsPoint(self.pos.p) then
                 predicted.az,predicted.el = HOUND.Utils.Elint.getAzimuth( datapoint.platformPos , self.pos.p, 0.0 )
-                -- HOUND.Logger.trace("sample vs prediction - " .. l_math.deg(datapoint.az) .. " | " .. l_math.deg(predicted.az))
                 if type(self.uncertenty_data) == "table" and self.uncertenty_data.minor and self.uncertenty_data.major and self.uncertenty_data.az then
                     predicted.err = HOUND.Utils.Polygon.azMinMax(HOUND.Contact.calculatePoly(self.uncertenty_data,8,self.pos.p),datapoint.platformPos)
                 end
             end
             self._dataPoints[datapoint.platformId][1]:update(datapoint.az,predicted.az,predicted.err)
-                -- datapoint = self._dataPoints[datapoint.platformId][1]
-                -- datapoint.az =  HOUND.Utils.AzimuthAverage({datapoint.az,self._dataPoints[datapoint.platformId][1].az})
             return
         end
 
-        -- if HOUND.Utils.Geo.isDcsPoint(datapoint:getPos()) then
-        --     datapoint:calcError()
-        -- end
         if Length(self._dataPoints[datapoint.platformId]) < 2 then
             table.insert(self._dataPoints[datapoint.platformId], 1, datapoint)
             return
@@ -462,13 +456,6 @@ do
         if HOUND.Utils.angleDeltaRad(point1.az,point2.az) < err then return end
         local intersection = self.triangulatePoints(point1,point2)
         if not HOUND.Utils.Geo.isDcsPoint(intersection) then return end
-        -- if HOUND.USE_KALMAN then
-        --     local polygon = HOUND.Utils.Polygon.clipPolygons(point1:get2dPoly(),point2:get2dPoly())
-        --     if Length(polygon) > 2 then
-        --         intersection.err = self.calculateEllipseErrors(self.calculateEllipse(polygon,true))
-        --         self._kalman:update(intersection)
-        --     end
-        -- end
         table.insert(targetTable,intersection)
 
     end
@@ -520,10 +507,6 @@ do
                     if HOUND.Utils.Geo.isDcsPoint(datapoint:getPos()) then
                         local point = l_mist.utils.deepCopy(datapoint:getPos())
                         table.insert(estimatePositions,point)
-                        -- if HOUND.USE_KALMAN then
-                        --     point.err = datapoint:getErrors()
-                        --     self._kalman:update(point)
-                        -- end
                     end
                     platforms[datapoint.platformName] = 1
                 end
@@ -554,8 +537,6 @@ do
         -- mobiles agains mobiles
         if numMobilepoints > 1 then
             for i=1,numMobilepoints-1 do
-                -- only process each datapoint once as anchor (it will be processed against every new datapoint anyway)
-                -- local processKalman = (HOUND.USE_KALMAN and not mobileDataPoints[i].processed)
                 for j=i+1,numMobilepoints do
                     if mobileDataPoints[i].platformPos ~= mobileDataPoints[j].platformPos then
                         self:processIntersection(estimatePositions,mobileDataPoints[i],mobileDataPoints[j])
@@ -634,10 +615,8 @@ do
         local theta = l_math.rad(uncertenty_data.az)
 
         -- generate ellips points
-        -- for pointAngle = angleStep, pi_2+angleStep/8, angleStep do
         for i = 1, numPoints do
             local pointAngle = i * angleStep
-            -- env.info("polygon angle " .. l_math.deg(pointAngle))
 
             local point = {}
             point.x = uncertenty_data.major/2 * l_math.cos(pointAngle)
@@ -700,7 +679,7 @@ do
     -- @param MarkerType type of marker to use
     function HOUND.Contact:updateMarker(MarkerType)
         if self.pos.p == nil or self.uncertenty_data == nil and not self:isRecent() then return end
-
+        if self:isAccurate() and self._markpoints.p:isDrawn() then return end
         local markerArgs = {
             text = self.typeName .. " " .. (self.uid%100) ..
                     " (" .. self.uncertenty_data.major .. "/" .. self.uncertenty_data.minor .. "@" .. self.uncertenty_data.az .. ")",
@@ -710,8 +689,10 @@ do
         self._markpoints.p:update(markerArgs)
 
         if MarkerType == HOUND.MARKER.NONE or self:isAccurate() then
-            self._markpoints.u:remove()
-            return 
+            if self._markpoints.u:isDrawn() then
+                self._markpoints.u:remove()
+            end
+            return
         end
 
         if MarkerType == HOUND.MARKER.CIRCLE then
@@ -812,7 +793,7 @@ do
     --- Helper functions
     -- @section helpers
 
-    --- Use Unit Position
+    --- Use DCS Unit Position as contact position
     function HOUND.Contact:useUnitPos()
         if not self.unit:isExist() then
             HOUND.Logger.info("PB failed - unit does not exist")

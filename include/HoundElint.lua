@@ -7,13 +7,13 @@ end
 
 do
     HOUND = {
-        VERSION = "0.2.3-develop-20220330",
+        VERSION = "0.2.3-develop-20220408",
         DEBUG = false,
         ELLIPSE_PERCENTILE = 0.6,
         DATAPOINTS_NUM = 30,
         DATAPOINTS_INTERVAL = 30,
         CONTACT_TIMEOUT = 900,
-        MGRS_PRECISION = 3,
+        MGRS_PRECISION = 5,
         EXTENDED_INFO = true,
         MIST_VERSION = tonumber(table.concat({mist.majorVersion,mist.minorVersion},".")),
         FORCE_MANAGE_MARKERS = false
@@ -1661,6 +1661,10 @@ do
             end
         end
 
+        instance.isDrawn = function(self)
+            return (self.id > 0)
+        end
+
         instance.remove = function(self)
             if self.id > 0 then
                 trigger.action.removeMark(self.id)
@@ -3062,7 +3066,7 @@ do
     end
 
     function HOUND.Contact:isTimedout()
-        return HOUND.Utils.absTimeDelta(self.last_seen) > HOUND.CONTACT_TIMEOUT
+        return self:getLastSeen() > HOUND.CONTACT_TIMEOUT
     end
 
     function HOUND.Contact:getState()
@@ -3478,7 +3482,7 @@ do
 
     function HOUND.Contact:updateMarker(MarkerType)
         if self.pos.p == nil or self.uncertenty_data == nil and not self:isRecent() then return end
-
+        if self:isAccurate() and self._markpoints.p:isDrawn() then return end
         local markerArgs = {
             text = self.typeName .. " " .. (self.uid%100) ..
                     " (" .. self.uncertenty_data.major .. "/" .. self.uncertenty_data.minor .. "@" .. self.uncertenty_data.az .. ")",
@@ -3488,8 +3492,10 @@ do
         self._markpoints.p:update(markerArgs)
 
         if MarkerType == HOUND.MARKER.NONE or self:isAccurate() then
-            self._markpoints.u:remove()
-            return 
+            if self._markpoints.u:isDrawn() then
+                self._markpoints.u:remove()
+            end
+            return
         end
 
         if MarkerType == HOUND.MARKER.CIRCLE then
@@ -6279,8 +6285,11 @@ do
     end
 
     function HoundElint:onEvent(DcsEvent)
+        if type(DcsEvent.initiator) ~= "table" then return end
+
         if DcsEvent.id == world.event.S_EVENT_BIRTH
             and DcsEvent.initiator:getCoalition() == self.settings:getCoalition()
+            and DcsEvent.initiator:getPlayerName() ~= nil
             and setContains(mist.DBs.humansByName,DcsEvent.initiator:getName())
             then
                 self:populateRadioMenu()
@@ -6288,6 +6297,7 @@ do
         end
         if DcsEvent.id == world.event.S_EVENT_PLAYER_LEAVE_UNIT
             and DcsEvent.initiator:getCoalition() == self.settings:getCoalition()
+            and type(DcsEvent.initiator.getName) == "function"
             and setContains(mist.DBs.humansByName,DcsEvent.initiator:getName())
             then
                 local player = mist.DBs.humansByName[DcsEvent.initiator:getName()]
@@ -6320,4 +6330,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.2.3-develop-20220330 - Compiled on 2022-03-29 21:05
+-- Hound version 0.2.3-develop-20220408 - Compiled on 2022-04-08 14:08

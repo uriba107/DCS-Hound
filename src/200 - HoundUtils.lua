@@ -699,6 +699,14 @@ do
             end
         end
 
+        --- Check if marpoint is drawn
+        -- @within HOUND.Utils.Marker.instance
+        -- @param self Hound Marker instance
+        -- @return Bool - True if marker is drawn
+        instance.isDrawn = function(self)
+            return (self.id > 0)
+        end
+
         --- remove markpoint
         -- @within HOUND.Utils.Marker.instance
         -- @param self Hound Marker instance

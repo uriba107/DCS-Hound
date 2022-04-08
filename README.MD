@@ -615,7 +615,7 @@ you can override this to get defferent precision (i.e 5 will give you 10 digits 
 This Reads like this:
  ```
  <Radar Type> <Radar UID>, [Active/Recent/stale etc.] at Bullseye XXX YY, accuracy [Very High/High/Medium/Low etc.], 
- position <LL in Aricraft format>, I repeate <LL in Aricraft format>,
+ position <LL in Aircraft format>, I repeate <LL in Aircraft format>,
  MGRS <MGRS with HOUND.MGRS_PRECISION>,
  elevation XXXX feet MSL,
  ellipse is XX by YY, aligned bearing ZZ,
