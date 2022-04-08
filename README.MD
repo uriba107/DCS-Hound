@@ -844,6 +844,7 @@ If you are upgrading from 0.1 please note that some changes will be required.
 ## More Docs
   * [Main script Documentation](https://uriba107.github.io/DCS-Hound/) - all the options available, even those I didn't write here
   * [Developers Documentation](https://uriba107.github.io/DCS-Hound/dev_docs/) - this is actually everything. You don't need this unless you intend to hack your way to glory.
+  * [Scripting Ideas](SCRIPTING_IDEAS.MD) - A random bunch of scripting ideas. feel free to suggest more via an issue or Pull-Request.
 
 ## Special thanks
   * __[Ciribob](https://github.com/ciribob)__ - without his help, support and acceptence of wierd merge requests. none of this would have been possible.
