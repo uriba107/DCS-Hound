@@ -86,15 +86,14 @@ Hound Currently has a 10 degrees angular resolution cutoff point to avoid introd
 | --------  | --------  | --------  |
 | Comms tower M | 0.29 / 0.03 | A |
 
-
-
 ### Community Mods
 | Platform  | Accuracy Deg. (C/H Bands)|
 | --------  | -------- |
 | Anubis C-130J | 0.65 / 0.07 |
 | VSN EA-6B Prowler   |  2.54 / 0.27  |
 | UH-60L    | 2.86 / 0.31 | B |
-| RC135RJ   |  0.57 / 0.06  | A |
+| RC-135W (SSS)   |  0.57 / 0.06  | A |
+| EC-130H (SSS)   |  0.65 / 0.07 | A |
 
 ## Can I haz syntax pls?
 Yes you can.

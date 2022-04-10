@@ -133,21 +133,30 @@ do
     end
 
     --- get current extimted position
+    -- @return DCS point - estimated position
     function HOUND.Contact:getPos()
         return self.pos.p
     end
 
+    --- get Unit instane assoiciated with contact
+    -- @return Unit object
+    function HOUND.Contact:getUnit()
+        return self.unit
+    end
     --- check if contact has estimated position
+    -- @return Bool True if contact has estimated position
     function HOUND.Contact:hasPos()
         return HOUND.Utils.Geo.isDcsPoint(self.pos.p)
     end
 
     --- get max weapons range
+    -- @return Number max weapon range of contact
     function HOUND.Contact:getMaxWeaponsRange()
         return self.maxWeaponsRange
     end
 
     --- get type assinged string
+    -- @return string
     function HOUND.Contact:getTypeAssigned()
         return table.concat(self.typeAssigned," or ")
     end

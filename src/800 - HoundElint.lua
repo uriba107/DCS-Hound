@@ -1115,7 +1115,8 @@ do
     -- @param DcsEvent incoming dcs event
     -- @local
     function HoundElint:onEvent(DcsEvent)
-        if type(DcsEvent.initiator) ~= "table" then return end
+        if not DcsEvent.initiator or type(DcsEvent.initiator) ~= "table" then return end
+        if type(DcsEvent.initiator.getCoalition) ~= "function" then return end
 
         if DcsEvent.id == world.event.S_EVENT_BIRTH
             and DcsEvent.initiator:getCoalition() == self.settings:getCoalition()
@@ -1138,7 +1139,7 @@ do
         end
         if DcsEvent.id == world.event.S_EVENT_DEAD
             and DcsEvent.initiator:getCoalition() ~= self.settings:getCoalition()
-            and DcsEvent.initiator:hasSensors(Unit.SensorType.RADAR)
+            -- and DcsEvent.initiator:hasSensors(Unit.SensorType.RADAR)
             and self.contacts:isContact(DcsEvent.initiator)
             then
                 self.contacts:setDead(DcsEvent.initiator)

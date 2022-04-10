@@ -7,7 +7,7 @@ end
 
 do
     HOUND = {
-        VERSION = "0.2.3-develop-20220408",
+        VERSION = "0.2.3-develop-20220410",
         DEBUG = false,
         ELLIPSE_PERCENTILE = 0.6,
         DATAPOINTS_NUM = 30,
@@ -3038,6 +3038,9 @@ do
         return self.pos.p
     end
 
+    function HOUND.Contact:getUnit()
+        return self.unit
+    end
     function HOUND.Contact:hasPos()
         return HOUND.Utils.Geo.isDcsPoint(self.pos.p)
     end
@@ -6286,7 +6289,8 @@ do
     end
 
     function HoundElint:onEvent(DcsEvent)
-        if type(DcsEvent.initiator) ~= "table" then return end
+        if not DcsEvent.initiator or type(DcsEvent.initiator) ~= "table" then return end
+        if type(DcsEvent.initiator.getCoalition) ~= "function" then return end
 
         if DcsEvent.id == world.event.S_EVENT_BIRTH
             and DcsEvent.initiator:getCoalition() == self.settings:getCoalition()
@@ -6309,7 +6313,6 @@ do
         end
         if DcsEvent.id == world.event.S_EVENT_DEAD
             and DcsEvent.initiator:getCoalition() ~= self.settings:getCoalition()
-            and DcsEvent.initiator:hasSensors(Unit.SensorType.RADAR)
             and self.contacts:isContact(DcsEvent.initiator)
             then
                 self.contacts:setDead(DcsEvent.initiator)
@@ -6331,4 +6334,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.2.3-develop-20220408 - Compiled on 2022-04-08 20:08
+-- Hound version 0.2.3-develop-20220410 - Compiled on 2022-04-10 13:36
