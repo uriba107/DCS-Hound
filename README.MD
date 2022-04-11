@@ -43,7 +43,7 @@ Hound Currently has a 10 degrees angular resolution cutoff point to avoid introd
 | Platform  | Accuracy Deg. (C/H Bands)| Min. Band | Remarks |
 | --------  | ----------- | - | - |
 | C-130     | 0.65 / 0.07 | A ||
-| C-17      | 0.57 / 0.06 | A | Stand-it for RC-135 |
+| C-17      | 0.57 / 0.06 | A | Stand-in for RC-135 |
 | An-30M    | 0.92 / 0.10 | A ||
 | Tu-95     | 0.46 / 0.05 | A ||
 | Tu-142    | 0.46 / 0.05 | A ||
@@ -626,7 +626,7 @@ If you are satisfied by only supressing the Extended uncertenty and the Extended
 ```lua
   HOUND.showExtendedInfo(false)
 ```
-If a more extensive change is desired, The recommended way to achieve it is to `COPY` the `HOUND.Contact:generateTtsReport` and `HOUND.Contact:generateTextReport` functions from `src/301 - HOUND.Contact_comms.lua` file in this repo to a new file. In that new file perform the changes you want. To activate load the new file to the mission using `Do script file` **AFTER** the main Hound script is loaded. this will replace the original implementation without  editing the original file. allowing a simpler upgrades to newer Hound versions without loosing you changes.  
+If a more extensive change is desired, The recommended way to achieve it is to `COPY` the `HOUND.Contact:generateTtsReport` and `HOUND.Contact:generateTextReport` functions from `src/301 - HoundContact_comms.lua` file in this repo to a new file. In that new file perform the changes you want. To activate load the new file to the mission using `Do script file` **AFTER** the main Hound script is loaded. this will replace the original implementation without  editing the original file. allowing a simpler upgrades to newer Hound versions without loosing you changes.  
 
  ### Notifier
  ---
@@ -722,7 +722,7 @@ houndEvent = {
     id = <HOUND.EVENT> enum,
     coalition = <coalition.side> enum of coalition emitting the event,
     houndId = Hound Instance ID that emitted the event,
-    initiator = DCS unit or HOUND.Contact
+    initiator = DCS unit or HoundContact
     time = time of the event (timer.getTimer())
 }
 ```

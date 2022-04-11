@@ -98,7 +98,7 @@ do
     -- @field id event enum from HOUND.EVENTS
     -- @field houndId Hound Instace ID that emitted the event
     -- @field coalition coalition ID of the Hound Instance that emitted the event
-    -- @field initiator DCS Unit or HOUND.Contact Subclass that triggered the event
+    -- @field initiator DCS Unit or HoundContact Subclass that triggered the event
     -- @field time of event
 
     --- Global functions
