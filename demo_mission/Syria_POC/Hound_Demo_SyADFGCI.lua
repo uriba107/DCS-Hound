@@ -104,7 +104,7 @@ do
         if event.coalition == coalition.side.BLUE then
             if event.id == HOUND.EVENTS.RADAR_DETECTED then
                 local contact = event.initiator
-                trigger.action.outTextForCoalition(event.coalition,"Let's pretend a SEAD flight was fragged to strike " .. contact:getName(),10)
+                trigger.action.outTextForCoalition(event.coalition,"Fragging a SEAD flight to strike " .. contact:getName(),10)
                 local grp = contact:getUnit():getGroup()
                 if not grp then return end
                 -- select SEAD flight
