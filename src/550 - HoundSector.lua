@@ -658,7 +658,7 @@ do
                 local grpId = player.groupId
                 local grpMenu = self.comms.menu[player]
 
-                if not grpMenuDone[grpId] then
+                if not grpMenuDone[grpId] and grpMenu ~= nil then
                     grpMenuDone[grpId] = true
 
                     if not grpMenu.data then

@@ -831,14 +831,16 @@ TrackId,NatoDesignation,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accurac
   * On initial detection accuracy will usually be very high with solution nowhere near the radar actual position. This is sorted by the system as more datapoints are gathered. allow at least 2 minutes for contact to stablize.
   * Adding low resolution platforms will degrade the solution as Hound currently does not reject "bad data". Hound will drop readings that have more then 10 degrees of error. but if resolution is above the threashold, but very far away, it may still degrate the resolution.
   * Overlapping of sectors is currently not recommended. you can add a small high priority sector on top of a larger sector, but this is the ONLY tested overlap, and there might be some un-expected behavour with that.
-  * MIST 4.4 is REQUIRED. However if used with MIST 4.5.103+ some a additional functionality is enabled. (e.g SAM that threaten )
+  * MIST 4.4 is REQUIRED. However if used with MIST 4.5.103+ some a additional functionality is enabled. (e.g SAM that threaten sectors )
 
 ## Breaking changes
 If you are upgrading from 0.1 please note that some changes will be required.
   * `enableController()` no longer accepts boolean to enable or disable text. please use [`enableText()`](#text-messages) call.
   * Every function that has `ATIS` in it needs to be changesd to have `Atis` - note the capitalization.
   * "name" argument passed in the TTS config table is no longer used. (silent failure)
-  * `setTransmitter()` is now a sector function. in general passing everything directly to `Istance.controller` or `Instance.atis` will no longer work due to changes in the internal architecture. 
+  * `setTransmitter()` is now a sector function. in general passing everything directly to `Instance.controller` or `Instance.atis` will no longer work due to changes in the internal architecture. 
+From 0.2.2 to 0.2.3 there was an internal change and all classes (except form `HoundElint`) where wrapped into `HOUND` class (rather then several independent classes).
+  *  HoundEventHandler now called HOUND.EventHandler please make sure to update you scripts
 
 ## More Docs
   * [Main script Documentation](https://uriba107.github.io/DCS-Hound/) - all the options available, even those I didn't write here
@@ -846,10 +848,10 @@ If you are upgrading from 0.1 please note that some changes will be required.
   * [Scripting Ideas](SCRIPTING_IDEAS.MD) - A random bunch of scripting ideas. feel free to suggest more via an issue or Pull-Request.
 
 ## Special thanks
-  * __[Ciribob](https://github.com/ciribob)__ - without his help, support and acceptence of wierd merge requests. none of this would have been possible.
   * __Grimes__ - For [MIST](https://github.com/mrSkortch/MissionScriptingTools) and because Without the [Hoggit Wiki](https://wiki.hoggitworld.com/) we would all be fumbling in the dark.
   * __[flywaldair](https://github.com/walder)__ - Hound was initially inspired by [Skynet IADS](https://github.com/walder/Skynet-IADS).
-  * __Nikos__, __[Jester](https://github.com/hbjonsson)__, __[davidp57](https://github.com/davidp57)__, __Pene__ and all the rest - For the feeback and suggestions pushing Hound even further
+  * __[Ciribob](https://github.com/ciribob)__ - without his help, support and acceptence of wierd merge requests. none of this would have been possible.
+  * __Nikos__, __[Jester](https://github.com/hbjonsson)__, __[Pene](https://github.com/Penecruz)__, __[davidp57](https://github.com/davidp57)__ and all the rest - For the feeback and suggestions pushing Hound even further
 
 And a very special thanks is (and will always be) reserved to those who choose to click the button below :) 
 
