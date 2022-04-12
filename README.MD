@@ -106,8 +106,8 @@ if upgrading from Hound 0.1 please see [Breaking changes](#breaking-changes)
 
 `
 for TTS you'll need to set up STTS properly. consult Ciribob's repo for that. You will require you to comment out the sanitation in "DCS World/Scripts/MissionScripting.lua"
-`
-
+`  
+for more information of desanitization process, look [here](#desanitize-dcs-scripting-engine).
 ### adding scripts in mission editor
 ``` NOTE the order of scripts - it's important ```  
 on a "ONCE" type action with "time more 1" condition, add the scripts in the following order
@@ -826,6 +826,8 @@ CSV structure:
 ```
 TrackId,NatoDesignation,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accuracy,lastSeen,ReportGenerated
 ```
+
+**NOTE**: This function requires you do [de-sanitize](#desanitize-dcs-scripting-engine) `io` and `lfs` modules in DCS scripting engine.
 ---
 ## Known Issues
   * On initial detection accuracy will usually be very high with solution nowhere near the radar actual position. This is sorted by the system as more datapoints are gathered. allow at least 2 minutes for contact to stablize.
@@ -846,6 +848,31 @@ From 0.2.2 to 0.2.3 there was an internal change and all classes (except form `H
   * [Main script Documentation](https://uriba107.github.io/DCS-Hound/) - all the options available, even those I didn't write here
   * [Developers Documentation](https://uriba107.github.io/DCS-Hound/dev_docs/) - this is actually everything. You don't need this unless you intend to hack your way to glory.
   * [Scripting Ideas](SCRIPTING_IDEAS.MD) - A random bunch of scripting ideas. feel free to suggest more via an issue or Pull-Request.
+
+### Desanitize DCS Scripting Engine
+By default the DCS scripting engine blocks all access to the OS to avoid potential security risks.
+some functions, most notably anything that needs to write to disk, will not work in this default state.
+You'll need to "De-sanitize" the DCS Scripting Engine and allow these LUA core modules to be used.
+
+`NOTE: This is DCS core files changes, that grants DCS access to functions that allows it to run potential malicious code.
+USE WITH CAUTION`
+
+This is done by editing a single core DCS lua file. this change will be reverted on every DCS update and will need to be re-applied.
+open the file `<DCS_ROOT_FOLDER>/scripts/MissionScripting.lua` in your favorite text editor (NodePad++ for example)
+in that file you'll see the following 3 lines.
+```lua
+sanitizeModule('os')
+sanitizeModule('io')
+sanitizeModule('lfs')
+```
+Each of these lines reprisent a core lua module that is disabled by DCS Scripting Engine. to enable them just comment out the line that corresponds to the module needed. when all 3 are enabled, that part of the file will look like this
+```lua
+-- sanitizeModule('os')
+-- sanitizeModule('io')
+-- sanitizeModule('lfs')
+```
+for example, STTS require all 3 to be available. 
+[dumpIntelBrief](#csv-export) requires `io` and `lfs` to be available
 
 ## Special thanks
   * __Grimes__ - For [MIST](https://github.com/mrSkortch/MissionScriptingTools) and because Without the [Hoggit Wiki](https://wiki.hoggitworld.com/) we would all be fumbling in the dark.
