@@ -3347,7 +3347,7 @@ do
     function HOUND.Contact:processData()
         if self.preBriefed then
             HOUND.Logger.trace(self:getName().." is PB..")
-            if self.unit:isExist() then
+            if type(self.unit) == "table" and self.unit.isExist and self.unit:isExist() then
                 local unitPos = self.unit:getPosition()
                 if l_mist.utils.get3DDist(unitPos.p,self.pos.p) < 0.1 then
                     return
@@ -6365,7 +6365,7 @@ do
                     return
         end
 
-        if DcsEvent.id == world.event.S_EVENT_DEAD 
+        if DcsEvent.id == world.event.S_EVENT_DEAD
             and DcsEvent.initiator:getCoalition() ~= self.settings:getCoalition()
             and self.contacts:isContact(DcsEvent.initiator)
                 then
@@ -6389,4 +6389,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.2.3-develop-20220417 - Compiled on 2022-04-17 14:57
+-- Hound version 0.2.3-develop-20220417 - Compiled on 2022-04-17 20:24
