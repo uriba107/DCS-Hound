@@ -416,9 +416,9 @@ do
                     contactState = contact:CleanTimedout()
                 end
 
-                if self._settings:getBDA() and contact:getLastSeen() > 60 and contact:isAlive() == false then
-                    contact:destroy()
+                if self._settings:getBDA() and contact:getLastSeen() > 60 and not contact:isAlive() then
                     self:removeContact(contactName)
+                    contact:destroy()
                     return
                 end
 

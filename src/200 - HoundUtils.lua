@@ -14,21 +14,23 @@ do
 -- @field Text Text functions
 -- @field Elint Elint functions
 -- @field Sort Sort funtions
+-- @field Filter Filter functions
 -- @field ReportId intrnal ATIS numerator
 -- @field _MarkId internal markId Counter
 -- @field _HoundId internal HoundId counter
     HOUND.Utils = {
         Mapping = {},
-        Geo = {},
-        Marker = {},
-        TTS = {},
-        Text = {},
-        Elint = {},
-        Vector={},
-        Zone={},
-        Polygon={},
-        Cluster={},
-        Sort = {},
+        Geo     = {},
+        Marker  = {},
+        TTS     = {},
+        Text    = {},
+        Elint   = {},
+        Vector  = {},
+        Zone    = {},
+        Polygon = {},
+        Cluster = {},
+        Sort    = {},
+        Filter  = {},
         ReportId = nil,
         _HoundId = 0
     }
@@ -975,7 +977,7 @@ do
 
     function HOUND.Utils.TTS.toPhonetic(str)
         local retval = ""
-        str = string.upper(str)
+        str = string.upper(tostring(str))
         for i=1, string.len(str) do
             retval = retval .. HOUND.DBs.PHONETICS[string.sub(str, i, i)] .. " "
         end
@@ -2068,5 +2070,64 @@ do
     -- @usage table.sort(unSorted,HOUND.Utils.Sort.sectorsByPriorityLowLast)
     function HOUND.Utils.Sort.sectorsByPriorityLowLast(a,b)
         return a:getPriority() < b:getPriority()
+    end
+
+    --- Filter Functions
+    -- @section Filter
+
+    --- get Groups by prefix
+    -- Implementation taken from Skynet-IADS
+    -- @param prefix string
+    -- @return table of DCS groups indexed by group name
+    function HOUND.Utils.Filter.groupsByPrefix(prefix)
+        if type(prefix) ~= "string" then return {} end
+        local groups = {}
+        for groupName, groupData in pairs(l_mist.DBs.groupsByName) do
+            local pos = string.find(groupName, prefix, 1, true)
+            if pos and pos == 1 then
+                --mist returns groups, units and, StaticObjects
+                local dcsObject = Group.getByName(groupName)
+                if dcsObject then
+                    groups[groupName] = dcsObject
+                end
+            end
+        end
+        return groups
+    end
+
+    --- get Units by prefix
+    -- Implementation taken from Skynet-IADS
+    -- @param prefix string
+    -- @return table of DCS Units indexed by Unit name
+    function HOUND.Utils.Filter.unitsByPrefix(prefix)
+        if type(prefix) ~= "string" then return {} end
+        local units = {}
+        for unitName, unit in pairs(l_mist.DBs.unitsByName) do
+            local pos = string.find(unitName, prefix, 1, true)
+            --somehow the MIST unit db contains StaticObject, we check to see we only add Units
+            local dcsUnit = Unit.getByName(unitName)
+            if pos and pos == 1 and dcsUnit then
+                units[unitName] = dcsUnit
+            end
+        end
+        return units
+    end
+
+    --- get StatcObjects by prefix
+    -- Implementation taken from Skynet-IADS
+    -- @param prefix string
+    -- @return table of DCS StaticObjects indexed by object name
+    function HOUND.Utils.Filter.staticObjectsByPrefix(prefix)
+        if type(prefix) ~= "string" then return {} end
+        local objects = {}
+        for objectName, unit in pairs(l_mist.DBs.unitsByName) do
+            local pos = string.find(objectName, prefix, 1, true)
+            --somehow the MIST unit db contains StaticObject, we check to see we only add Units
+            local dcsObject = StaticObject.getByName(objectName)
+            if pos and pos == 1 and dcsObject then
+                objects[objectName] = dcsObject
+            end
+        end
+        return objects
     end
 end

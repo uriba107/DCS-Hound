@@ -142,6 +142,9 @@ do
         end
     end
 
+    --- getters and setters
+    -- @section Getters_Setters
+
     --- get name
     -- @return string name of sector
     function HOUND.Sector:getName()
@@ -244,14 +247,8 @@ do
         end
     end
 
-    --- update contact for zone memberships
-    -- @param contact HOUND.Contact instance
-    function HOUND.Sector:updateSectorMembership(contact)
-        -- HOUND.Logger.trace("Evaluating " .. contact:getName() .. " for " .. self.name)
-        local inSector, threatsSector = HOUND.Utils.Polygon.threatOnSector(self.settings.zone,contact:getPos(),contact:getMaxWeaponsRange())
-        -- HOUND.Logger.trace(tostring(inSector) .. " " .. tostring(threatsSector))
-        contact:updateSector(self.name, inSector, threatsSector)
-    end
+    --- Controller Functions
+    -- @section Controller
 
     --- enable controller
     -- @param[opt] userSettings contoller settings
@@ -287,6 +284,16 @@ do
             return self.comms.controller:getFreqs()
         end
         return {}
+    end
+
+    --- checks for controller in sector
+    -- @return true if Sector has controller
+    function HOUND.Sector:hasController() return self.comms.controller ~= nil end
+
+    --- checks if controller is enabled for the sector
+    -- @return true if Sector controller is enabled
+    function HOUND.Sector:isControllerEnabled()
+        return self.comms.controller ~= nil and self.comms.controller:isEnabled()
     end
 
     --- Transmit custom TTS message on controller
@@ -332,6 +339,9 @@ do
     function HOUND.Sector:disableTTS()
         if self.comms.controller then self.comms.controller:disableTTS() end
     end
+
+    --- ATIS Functions
+    -- @section ATIS
 
     --- enable ATIS in sector
     -- @param userSettings ATIS settings array
@@ -382,15 +392,8 @@ do
         return self.comms.atis ~= nil and self.comms.atis:isEnabled()
     end
 
-    --- checks for controller in sector
-    -- @return true if Sector has controller
-    function HOUND.Sector:hasController() return self.comms.controller ~= nil end
-
-    --- checks if controller is enabled for the sector
-    -- @return true if Sector controller is enabled
-    function HOUND.Sector:isControllerEnabled()
-        return self.comms.controller ~= nil and self.comms.controller:isEnabled()
-    end
+    --- Notifier Functions
+    -- @section Notifier
 
     --- enable Notifier in sector
     -- @param[opt] userSettings table of settings for Notifier
@@ -436,6 +439,9 @@ do
         return self.comms.notifier ~= nil and self.comms.notifier:isEnabled()
     end
 
+    --- Contact Functions
+    -- @section contacs
+
     --- return a sorted list of all contacts for the sector
     function HOUND.Sector:getContacts()
         local effectiveSectorName = self.name
@@ -453,7 +459,18 @@ do
         end
         return self._contacts:countContacts(effectiveSectorName)
     end
+
+    --- update contact for zone memberships
+    -- @param contact HOUND.Contact instance
+    function HOUND.Sector:updateSectorMembership(contact)
+        -- HOUND.Logger.trace("Evaluating " .. contact:getName() .. " for " .. self.name)
+        local inSector, threatsSector = HOUND.Utils.Polygon.threatOnSector(self.settings.zone,contact:getPos(),contact:getMaxWeaponsRange())
+        -- HOUND.Logger.trace(tostring(inSector) .. " " .. tostring(threatsSector))
+        contact:updateSector(self.name, inSector, threatsSector)
+    end
+
     -------------- Radio Menu stuff -----------------------------
+    
     --- Radio Menu
     -- @section menu
 
@@ -568,6 +585,15 @@ do
     --- create check menu items for players
     -- @local
     function HOUND.Sector:createCheckIn()
+        -- unsubscribe disconnected users
+        for _,player in pairs(self.comms.menu.enrolled) do
+            local playerUnit = Unit.getByName(player.unitName)
+            local humanOccupied = playerUnit:getPlayerName()
+            if not humanOccupied then
+                self.comms.menu.enrolled[player] = nil
+            end
+        end
+        -- now do work
         grpMenuDone = {}
         for _,player in pairs(l_mist.DBs.humansByName) do
             local grpId = player.groupId

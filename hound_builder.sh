@@ -77,6 +77,7 @@ function lint_compiled {
 }
 
 function compile {
+    set -e
     highlight "Compile script"
     echo "-- Hound ELINT system for DCS" > ${TARGET_FILE}
     # echo 'env.info("[Hound] - start loading (".. HOUND.VERSION..")")' >> ${TARGET_FILE}
@@ -110,8 +111,7 @@ function compile {
     if [ -f  ${TARGET_FILE}.orig ]; then
     rm -f ${TARGET_FILE}.orig
     fi
-
-    # basic lint
+    set +e
 } 
 
 function print_includes {
@@ -121,6 +121,7 @@ function print_includes {
 }
 
 function update_mission {
+    set -e
     SCRIPT_PATH="l10n/DEFAULT"
     MISSION_PATH=${1:-"demo_mission"}
     MISSION_FILE=${2:-"HoundElint_demo"}
@@ -147,6 +148,7 @@ function update_mission {
     done
     echo "CleanUp ${MISSION_FILE}"
     rm -rf ./${MISSION_PATH}/l10n
+    set +e
     }
 
 ## main

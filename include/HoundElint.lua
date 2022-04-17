@@ -3,11 +3,16 @@ do
     if STTS ~= nil then
         STTS.DIRECTORY = "C:\\Program Files\\DCS-SimpleRadio-Standalone"
     end
+
+    math.random()
+    for i=1,math.random(2,5) do
+        math.random(math.random(math.floor(math.random()*300),300),math.random(math.floor(math.random()*10000),10000))
+    end
 end
 
 do
     HOUND = {
-        VERSION = "0.2.3-develop-20220411",
+        VERSION = "0.2.3-develop-20220417",
         DEBUG = false,
         ELLIPSE_PERCENTILE = 0.6,
         DATAPOINTS_NUM = 30,
@@ -1208,16 +1213,17 @@ do
 
     HOUND.Utils = {
         Mapping = {},
-        Geo = {},
-        Marker = {},
-        TTS = {},
-        Text = {},
-        Elint = {},
-        Vector={},
-        Zone={},
-        Polygon={},
-        Cluster={},
-        Sort = {},
+        Geo     = {},
+        Marker  = {},
+        TTS     = {},
+        Text    = {},
+        Elint   = {},
+        Vector  = {},
+        Zone    = {},
+        Polygon = {},
+        Cluster = {},
+        Sort    = {},
+        Filter  = {},
         ReportId = nil,
         _HoundId = 0
     }
@@ -1843,7 +1849,7 @@ do
 
     function HOUND.Utils.TTS.toPhonetic(str)
         local retval = ""
-        str = string.upper(str)
+        str = string.upper(tostring(str))
         for i=1, string.len(str) do
             retval = retval .. HOUND.DBs.PHONETICS[string.sub(str, i, i)] .. " "
         end
@@ -2551,6 +2557,47 @@ do
     function HOUND.Utils.Sort.sectorsByPriorityLowLast(a,b)
         return a:getPriority() < b:getPriority()
     end
+
+    function HOUND.Utils.Filter.groupsByPrefix(prefix)
+        if type(prefix) ~= "string" then return {} end
+        local groups = {}
+        for groupName, groupData in pairs(l_mist.DBs.groupsByName) do
+            local pos = string.find(groupName, prefix, 1, true)
+            if pos and pos == 1 then
+                local dcsObject = Group.getByName(groupName)
+                if dcsObject then
+                    groups[groupName] = dcsObject
+                end
+            end
+        end
+        return groups
+    end
+
+    function HOUND.Utils.Filter.unitsByPrefix(prefix)
+        if type(prefix) ~= "string" then return {} end
+        local units = {}
+        for unitName, unit in pairs(l_mist.DBs.unitsByName) do
+            local pos = string.find(unitName, prefix, 1, true)
+            local dcsUnit = Unit.getByName(unitName)
+            if pos and pos == 1 and dcsUnit then
+                units[unitName] = dcsUnit
+            end
+        end
+        return units
+    end
+
+    function HOUND.Utils.Filter.staticObjectsByPrefix(prefix)
+        if type(prefix) ~= "string" then return {} end
+        local objects = {}
+        for objectName, unit in pairs(l_mist.DBs.unitsByName) do
+            local pos = string.find(objectName, prefix, 1, true)
+            local dcsObject = StaticObject.getByName(objectName)
+            if pos and pos == 1 and dcsObject then
+                objects[objectName] = dcsObject
+            end
+        end
+        return objects
+    end
 end
 do
     HOUND.EventHandler = {
@@ -2946,6 +2993,7 @@ do
         elintcontact.unit = DCS_Unit
         elintcontact.uid = ContactId or DCS_Unit:getID()
         elintcontact.DCStypeName = DCS_Unit:getTypeName()
+        elintcontact.DCSgroupName = DCS_Unit:getGroup():getName()
         elintcontact.typeName = DCS_Unit:getTypeName()
         elintcontact.isEWR = false
         elintcontact.typeAssigned = {"Unknown"}
@@ -3059,6 +3107,7 @@ do
 
     function HOUND.Contact:setDead()
         self.unitAlive = false
+        self.unit = self.unit:getName()
     end
 
     function HOUND.Contact:isRecent()
@@ -3293,7 +3342,6 @@ do
         local intersection = self.triangulatePoints(point1,point2)
         if not HOUND.Utils.Geo.isDcsPoint(intersection) then return end
         table.insert(targetTable,intersection)
-
     end
 
     function HOUND.Contact:processData()
@@ -3374,9 +3422,7 @@ do
         end
 
         if Length(estimatePositions) > 2 or (Length(estimatePositions) > 0 and staticPlatformsOnly) then
-
             self.pos.p = HOUND.Utils.Cluster.weightedMean(estimatePositions)
-
             self.uncertenty_data = self.calculateEllipse(estimatePositions,false,self.pos.p)
 
             if type(staticClipPolygon2D) == "table" and ( staticPlatformsOnly) then
@@ -3431,7 +3477,6 @@ do
 
         for i = 1, numPoints do
             local pointAngle = i * angleStep
-
             local point = {}
             point.x = uncertenty_data.major/2 * l_math.cos(pointAngle)
             point.z = uncertenty_data.minor/2 * l_math.sin(pointAngle)
@@ -3594,6 +3639,7 @@ do
         self.uncertenty_data.r  = 0.1
 
         table.insert(self.detected_by,"External")
+        self:updateMarker(HOUND.MARKER.NONE)
         return state
     end
 
@@ -4570,9 +4616,9 @@ do
                     contactState = contact:CleanTimedout()
                 end
 
-                if self._settings:getBDA() and contact:getLastSeen() > 60 and contact:isAlive() == false then
-                    contact:destroy()
+                if self._settings:getBDA() and contact:getLastSeen() > 60 and not contact:isAlive() then
                     self:removeContact(contactName)
+                    contact:destroy()
                     return
                 end
 
@@ -4802,11 +4848,6 @@ do
         end
     end
 
-    function HOUND.Sector:updateSectorMembership(contact)
-        local inSector, threatsSector = HOUND.Utils.Polygon.threatOnSector(self.settings.zone,contact:getPos(),contact:getMaxWeaponsRange())
-        contact:updateSector(self.name, inSector, threatsSector)
-    end
-
     function HOUND.Sector:enableController(userSettings)
         if not userSettings then userSettings = {} end
         local settings = { controller = userSettings }
@@ -4836,6 +4877,12 @@ do
             return self.comms.controller:getFreqs()
         end
         return {}
+    end
+
+    function HOUND.Sector:hasController() return self.comms.controller ~= nil end
+
+    function HOUND.Sector:isControllerEnabled()
+        return self.comms.controller ~= nil and self.comms.controller:isEnabled()
     end
 
     function HOUND.Sector:transmitOnController(msg)
@@ -4910,12 +4957,6 @@ do
         return self.comms.atis ~= nil and self.comms.atis:isEnabled()
     end
 
-    function HOUND.Sector:hasController() return self.comms.controller ~= nil end
-
-    function HOUND.Sector:isControllerEnabled()
-        return self.comms.controller ~= nil and self.comms.controller:isEnabled()
-    end
-
     function HOUND.Sector:enableNotifier(userSettings)
         if not userSettings then userSettings = {} end
         local settings = { notifier = userSettings }
@@ -4965,6 +5006,11 @@ do
             effectiveSectorName = "default"
         end
         return self._contacts:countContacts(effectiveSectorName)
+    end
+
+    function HOUND.Sector:updateSectorMembership(contact)
+        local inSector, threatsSector = HOUND.Utils.Polygon.threatOnSector(self.settings.zone,contact:getPos(),contact:getMaxWeaponsRange())
+        contact:updateSector(self.name, inSector, threatsSector)
     end
 
     function HOUND.Sector.removeRadioMenu(self)
@@ -5053,6 +5099,13 @@ do
     end
 
     function HOUND.Sector:createCheckIn()
+        for _,player in pairs(self.comms.menu.enrolled) do
+            local playerUnit = Unit.getByName(player.unitName)
+            local humanOccupied = playerUnit:getPlayerName()
+            if not humanOccupied then
+                self.comms.menu.enrolled[player] = nil
+            end
+        end
         grpMenuDone = {}
         for _,player in pairs(l_mist.DBs.humansByName) do
             local grpId = player.groupId
@@ -6300,24 +6353,26 @@ do
                 self:populateRadioMenu()
                 return
         end
-        if DcsEvent.id == world.event.S_EVENT_PLAYER_LEAVE_UNIT
+
+        if (DcsEvent.id == world.event.S_EVENT_PLAYER_LEAVE_UNIT
+            or DcsEvent.id == world.event.S_EVENT_PILOT_DEAD
+            or DcsEvent.id == world.event.S_EVENT_EJECTION)
             and DcsEvent.initiator:getCoalition() == self.settings:getCoalition()
             and type(DcsEvent.initiator.getName) == "function"
             and setContains(mist.DBs.humansByName,DcsEvent.initiator:getName())
-            then
-                local player = mist.DBs.humansByName[DcsEvent.initiator:getName()]
-                for _,sector in pairs(self:getSectors()) do
-                    sector.checkOut({self=sector,player=player},true,true)
-                end
-                return
+                then
+                    self:populateRadioMenu()
+                    return
         end
-        if DcsEvent.id == world.event.S_EVENT_DEAD
+
+        if DcsEvent.id == world.event.S_EVENT_DEAD 
             and DcsEvent.initiator:getCoalition() ~= self.settings:getCoalition()
             and self.contacts:isContact(DcsEvent.initiator)
-            then
-                self.contacts:setDead(DcsEvent.initiator)
-                return
+                then
+                    self.contacts:setDead(DcsEvent.initiator)
+                    return
         end
+
     end
 
     function HoundElint:defaultEventHandler(remove)
@@ -6334,4 +6389,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.2.3-develop-20220411 - Compiled on 2022-04-11 17:03
+-- Hound version 0.2.3-develop-20220417 - Compiled on 2022-04-17 14:57

@@ -8,6 +8,12 @@ do
     if STTS ~= nil then
         STTS.DIRECTORY = "C:\\Program Files\\DCS-SimpleRadio-Standalone"
     end
+
+    -- randomize the randomness.
+    math.random()
+    for i=1,math.random(2,5) do
+        math.random(math.random(math.floor(math.random()*300),300),math.random(math.floor(math.random()*10000),10000))
+    end
 end
 
 do

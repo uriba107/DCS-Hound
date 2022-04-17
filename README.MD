@@ -749,6 +749,7 @@ to remove use
     HOUND.removeEventHandler(CustomHoundScript)
 ```
 `NOTE: Event handlers are global so make sure you validate coalition or houndId as the event might be from a different Instance from a different coalition`
+`RADAR_DESTROYED event is delayed from the DCS Unit destroyed event, so unit is gone by then. unit field in a dead contact is unitName not unit object like on other events. Try and use initiator.DCSgroupName whenever possible`
 
 ---
 ## Performace Tuning

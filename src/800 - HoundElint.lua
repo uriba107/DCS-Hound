@@ -1126,25 +1126,28 @@ do
                 self:populateRadioMenu()
                 return
         end
-        if DcsEvent.id == world.event.S_EVENT_PLAYER_LEAVE_UNIT
+
+        if (DcsEvent.id == world.event.S_EVENT_PLAYER_LEAVE_UNIT
+            or DcsEvent.id == world.event.S_EVENT_PILOT_DEAD
+            or DcsEvent.id == world.event.S_EVENT_EJECTION)
             and DcsEvent.initiator:getCoalition() == self.settings:getCoalition()
             and type(DcsEvent.initiator.getName) == "function"
             and setContains(mist.DBs.humansByName,DcsEvent.initiator:getName())
-            then
-                local player = mist.DBs.humansByName[DcsEvent.initiator:getName()]
-                for _,sector in pairs(self:getSectors()) do
-                    sector.checkOut({self=sector,player=player},true,true)
-                end
-                return
+                then
+                    self:populateRadioMenu()
+                    return
         end
-        if DcsEvent.id == world.event.S_EVENT_DEAD
+
+        if DcsEvent.id == world.event.S_EVENT_DEAD 
             and DcsEvent.initiator:getCoalition() ~= self.settings:getCoalition()
             -- and DcsEvent.initiator:hasSensors(Unit.SensorType.RADAR)
             and self.contacts:isContact(DcsEvent.initiator)
-            then
-                self.contacts:setDead(DcsEvent.initiator)
-                return
+                then
+                    self.contacts:setDead(DcsEvent.initiator)
+                    return
         end
+
+
     end
 
     --- enable/disable Hound instance internal event handling

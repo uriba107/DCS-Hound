@@ -27,6 +27,7 @@ do
         elintcontact.unit = DCS_Unit
         elintcontact.uid = ContactId or DCS_Unit:getID()
         elintcontact.DCStypeName = DCS_Unit:getTypeName()
+        elintcontact.DCSgroupName = DCS_Unit:getGroup():getName()
         elintcontact.typeName = DCS_Unit:getTypeName()
         elintcontact.isEWR = false
         elintcontact.typeAssigned = {"Unknown"}
@@ -170,8 +171,10 @@ do
 
     --- set internal alive flag to false
     -- This is internal function ment to be called on "S_EVENT_DEAD"
+    -- unit will be changed to Unit.name because DCS will remove the unit at the end of the event.
     function HOUND.Contact:setDead()
         self.unitAlive = false
+        self.unit = self.unit:getName()
     end
 
     --- check if contact is recent
@@ -466,7 +469,6 @@ do
         local intersection = self.triangulatePoints(point1,point2)
         if not HOUND.Utils.Geo.isDcsPoint(intersection) then return end
         table.insert(targetTable,intersection)
-
     end
 
     --- process data in contact
@@ -557,9 +559,7 @@ do
 
 
         if Length(estimatePositions) > 2 or (Length(estimatePositions) > 0 and staticPlatformsOnly) then
-
             self.pos.p = HOUND.Utils.Cluster.weightedMean(estimatePositions)
-
             self.uncertenty_data = self.calculateEllipse(estimatePositions,false,self.pos.p)
 
             if type(staticClipPolygon2D) == "table" and ( staticPlatformsOnly) then
@@ -626,7 +626,6 @@ do
         -- generate ellips points
         for i = 1, numPoints do
             local pointAngle = i * angleStep
-
             local point = {}
             point.x = uncertenty_data.major/2 * l_math.cos(pointAngle)
             point.z = uncertenty_data.minor/2 * l_math.sin(pointAngle)
@@ -825,6 +824,7 @@ do
         self.uncertenty_data.r  = 0.1
 
         table.insert(self.detected_by,"External")
+        self:updateMarker(HOUND.MARKER.NONE)
         return state
     end
 
