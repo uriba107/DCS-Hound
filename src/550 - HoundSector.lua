@@ -470,7 +470,7 @@ do
     end
 
     -------------- Radio Menu stuff -----------------------------
-    
+
     --- Radio Menu
     -- @section menu
 
@@ -588,9 +588,11 @@ do
         -- unsubscribe disconnected users
         for _,player in pairs(self.comms.menu.enrolled) do
             local playerUnit = Unit.getByName(player.unitName)
-            local humanOccupied = playerUnit:getPlayerName()
-            if not humanOccupied then
-                self.comms.menu.enrolled[player] = nil
+            if playerUnit then
+                local humanOccupied = playerUnit:getPlayerName()
+                if not humanOccupied then
+                    self.comms.menu.enrolled[player] = nil
+                end
             end
         end
         -- now do work

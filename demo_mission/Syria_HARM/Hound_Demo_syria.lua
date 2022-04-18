@@ -93,10 +93,9 @@ do
 ----- Apache playground -----
     HOUND_MISSION.PLAYGROUND = {
         unitCounter = 0,
-        zoneNames = {'PlayGround_Hula','PlayGround_Golan'},
-        zoneLevel = {
-            PlayGround_Hula = "EASY",
-            PlayGround_Golan = "EASY"
+        ranges = {
+            Hula = {zone='PlayGround_Hula',level='EASY'},
+            Golan = {zone='PlayGround_Golan',level='EASY'}
         },
         vehicleTypes = {
             EASY = {
@@ -117,7 +116,7 @@ do
                 'Strela-10M3','Strela-10M3',
                 'ZSU-23-4 Shilka','ZSU-23-4 Shilka',
                 '2S6 Tunguska'
-            }
+            },
         }
     }
 
@@ -126,21 +125,15 @@ do
         return HOUND_MISSION.PLAYGROUND.unitCounter
     end
 
-    function HOUND_MISSION.PLAYGROUND.updateZoneLevel(zone,level)
-        if not setContainsValue(HOUND_MISSION.PLAYGROUND.zoneNames,zone) or type(level) ~= "string" then return end
-        if type(level) ~= "string" then return end
+    function HOUND_MISSION.PLAYGROUND.updateRangeLevel(args)
+        if #args < 2 then return end
+        local rangeName = args[1]
+        local level = args[2]
+        if not HOUND_MISSION.PLAYGROUND.ranges[rangeName] or type(level) ~= "string" then return end
         level = level:upper()
-        if setContainsValue({"EASY","MEDUIM","HARD"},level) then
-            HOUND_MISSION.PLAYGROUND.zoneLevel[zone] = level
+        if HOUND_MISSION.PLAYGROUND.vehicleTypes[level] then
+            HOUND_MISSION.PLAYGROUND.ranges[rangeName].level = level
         end
-    end
-
-    function HOUND_MISSION.PLAYGROUND.setHulaDifficulty(level)
-        HOUND_MISSION.PLAYGROUND.updateZoneLevel("PlayGround_Hula",level)
-        HOUND_MISSION.PLAYGROUND.buildRangeMenu()
-    end
-    function HOUND_MISSION.PLAYGROUND.setGolanDifficulty(level)
-        HOUND_MISSION.PLAYGROUND.updateZoneLevel("PlayGround_Golan",level)
         HOUND_MISSION.PLAYGROUND.buildRangeMenu()
     end
 
@@ -149,46 +142,25 @@ do
             MAIN_MENU.apache = {}
             MAIN_MENU.apache.root = missionCommands.addSubMenuForCoalition(coalition.side.BLUE,"Spawn Apache Targets")
         end
+        -- if not MAIN_MENU.apache.spawnTankGroup then
+        --     MAIN_MENU.apache.spawnTankGroup = missionCommands.addCommandForCoalition(coalition.side.BLUE,"Spawn Random Target",MAIN_MENU.apache.root,HOUND_MISSION.PLAYGROUND.spawnGroup)
+        -- end
+        for rangeName,rangeData in pairs(HOUND_MISSION.PLAYGROUND.ranges) do
+            if not MAIN_MENU.apache[rangeName] then
+                MAIN_MENU.apache[rangeName] = {}
+            end
+            if MAIN_MENU.apache[rangeName].main then
+                MAIN_MENU.apache[rangeName].main = missionCommands.removeItemForCoalition(coalition.side.BLUE,MAIN_MENU.apache[rangeName].main)
+            end
+            MAIN_MENU.apache[rangeName].main = missionCommands.addSubMenuForCoalition(coalition.side.BLUE,rangeName .. " Range (" .. rangeData.level:upper() .. ")",MAIN_MENU.apache.root)
+            MAIN_MENU.apache[rangeName].spawn = missionCommands.addCommandForCoalition(coalition.side.BLUE,"Spawn Group",MAIN_MENU.apache[rangeName].main,HOUND_MISSION.PLAYGROUND.spawnGroup,rangeName)
 
-        if not MAIN_MENU.apache.spawnTankGroup then
-            MAIN_MENU.apache.spawnTankGroup = missionCommands.addCommandForCoalition(coalition.side.BLUE,"Spawn Random Target",MAIN_MENU.apache.root,HOUND_MISSION.PLAYGROUND.spawnGroup)
+            MAIN_MENU.apache[rangeName].level = {}
+            MAIN_MENU.apache[rangeName].level.main = missionCommands.addSubMenuForCoalition(coalition.side.BLUE,"Set difficulty",MAIN_MENU.apache[rangeName].main)
+            for _,level in ipairs({'EASY','MEDIUM','HARD'}) do
+                MAIN_MENU.apache[rangeName].level[level] = missionCommands.addCommandForCoalition(coalition.side.BLUE,level,MAIN_MENU.apache[rangeName].level.main,HOUND_MISSION.PLAYGROUND.updateRangeLevel,{rangeName,level})
+            end
         end
-        HOUND_MISSION.PLAYGROUND.buildHulaMenu()
-        HOUND_MISSION.PLAYGROUND.buildGolanMenu()
-    end
-
-    function HOUND_MISSION.PLAYGROUND.buildHulaMenu()
-        if not MAIN_MENU.apache.hula then
-            MAIN_MENU.apache.hula = {}
-        end
-        if MAIN_MENU.apache.hula.main then
-            MAIN_MENU.apache.hula.main = missionCommands.removeItemForCoalition(coalition.side.BLUE,MAIN_MENU.apache.hula.main)
-        end
-        MAIN_MENU.apache.hula.main = missionCommands.addSubMenuForCoalition(coalition.side.BLUE,"Hula Range (" .. HOUND_MISSION.PLAYGROUND.zoneLevel.PlayGround_Hula .. ")",MAIN_MENU.apache.root)
-        MAIN_MENU.apache.hula.spawn = missionCommands.addCommandForCoalition(coalition.side.BLUE,"Spawn Group",MAIN_MENU.apache.hula.main,HOUND_MISSION.PLAYGROUND.spawnGroup,"PlayGround_Hula")
-
-        MAIN_MENU.apache.hula.level = {}
-        MAIN_MENU.apache.hula.level.main = missionCommands.addSubMenuForCoalition(coalition.side.BLUE,"Set difficulty",MAIN_MENU.apache.hula.main)
-        MAIN_MENU.apache.hula.level.easy = missionCommands.addCommandForCoalition(coalition.side.BLUE,"EASY",MAIN_MENU.apache.hula.level.main,HOUND_MISSION.PLAYGROUND.setHulaDifficulty,"EASY")
-        MAIN_MENU.apache.hula.level.medium = missionCommands.addCommandForCoalition(coalition.side.BLUE,"MEDIUM",MAIN_MENU.apache.hula.level.main,HOUND_MISSION.PLAYGROUND.setHulaDifficulty,"MEDIUM")
-        MAIN_MENU.apache.hula.level.hard = missionCommands.addCommandForCoalition(coalition.side.BLUE,"HARD",MAIN_MENU.apache.hula.level.main,HOUND_MISSION.PLAYGROUND.setHulaDifficulty,"HARD")
-    end
-
-    function HOUND_MISSION.PLAYGROUND.buildGolanMenu()
-        if not MAIN_MENU.apache.golan then
-            MAIN_MENU.apache.golan = {}
-        end
-        if MAIN_MENU.apache.golan.main then
-            MAIN_MENU.apache.golan.main = missionCommands.removeItemForCoalition(coalition.side.BLUE,MAIN_MENU.apache.golan.main)
-        end
-        MAIN_MENU.apache.golan.main = missionCommands.addSubMenuForCoalition(coalition.side.BLUE,"Golan Range (" .. HOUND_MISSION.PLAYGROUND.zoneLevel.PlayGround_Golan .. ")",MAIN_MENU.apache.root)
-        MAIN_MENU.apache.golan.spawn = missionCommands.addCommandForCoalition(coalition.side.BLUE,"Spawn Group",MAIN_MENU.apache.golan.main,HOUND_MISSION.PLAYGROUND.spawnGroup,"PlayGround_Golan")
-
-        MAIN_MENU.apache.golan.level = {}
-        MAIN_MENU.apache.golan.level.main = missionCommands.addSubMenuForCoalition(coalition.side.BLUE,"Set difficulty",MAIN_MENU.apache.golan.main)
-        MAIN_MENU.apache.golan.level.easy = missionCommands.addCommandForCoalition(coalition.side.BLUE,"EASY",MAIN_MENU.apache.golan.level.main,HOUND_MISSION.PLAYGROUND.setGolanDifficulty,"EASY")
-        MAIN_MENU.apache.golan.level.medium = missionCommands.addCommandForCoalition(coalition.side.BLUE,"MEDIUM",MAIN_MENU.apache.golan.level.main,HOUND_MISSION.PLAYGROUND.setGolanDifficulty,"MEDIUM")
-        MAIN_MENU.apache.golan.level.hard = missionCommands.addCommandForCoalition(coalition.side.BLUE,"HARD",MAIN_MENU.apache.golan.level.main,HOUND_MISSION.PLAYGROUND.setGolanDifficulty,"HARD")
     end
 
     function HOUND_MISSION.PLAYGROUND.createUnitList(pos,radius,innerradius,difficulty)
@@ -218,9 +190,10 @@ do
         return unitList
     end
 
-    function HOUND_MISSION.PLAYGROUND.spawnGroup(location)
-        local zone = location or HOUND_MISSION.randomTemplate(HOUND_MISSION.PLAYGROUND.zoneNames)
-        local level = HOUND_MISSION.PLAYGROUND.zoneLevel[zone] or "EASY"
+    function HOUND_MISSION.PLAYGROUND.spawnGroup(rangeName)
+        local rangeData = HOUND_MISSION.PLAYGROUND.ranges[rangeName] or HOUND_MISSION.randomTemplate(HOUND_MISSION.PLAYGROUND.ranges)
+        local zone = rangeData.zone
+        local level = rangeData.level
         local pos = mist.getRandomPointInZone(zone, 750)
         local grpData = {
             units = HOUND_MISSION.PLAYGROUND.createUnitList(pos,200,25,level),
@@ -229,13 +202,13 @@ do
         }
         local grp = mist.dynAdd(grpData)
         if type(grp) == "table" and type(grp['name']) == "string" then
-            local control = grp:getController()
+            local control = Group.getByName(grp['name']):getController()
             if control then
                 control:setOnOff(true)
                 control:setOption(0,2) -- ROE, Open_file
                 control:setOption(9,2) -- Alarm_State, RED
             end
-            trigger.action.outText("Apache Targets group has spawned in " .. zone , 15)
+            trigger.action.outText("Apache Targets group has spawned in " .. rangeName , 15)
         end
     end
 
@@ -244,10 +217,8 @@ do
         root = missionCommands.addSubMenuForCoalition(coalition.side.BLUE,"Mission Actions"),
     }
     MAIN_MENU.activateSa6 = missionCommands.addCommandForCoalition(coalition.side.BLUE,"Activate SA-6",MAIN_MENU.root,HOUND_MISSION.SA6.GoLive)
-
-
     HOUND_MISSION.PLAYGROUND.buildRangeMenu()
-  
+
 ----- Lebanon MANPADS -----
 
     HOUND_MISSION.MANPADS = {}
@@ -361,8 +332,14 @@ do
         if event.coalition == coalition.side.BLUE then
             if event.id == HOUND.EVENTS.RADAR_DESTROYED then
                 local contact = event.initiator
-                local SAM = Group.getByName(contact.DCSgroupName)
-                if SAM:isExist() and
+                env.info("HoundEvent for group " .. contact:getGroupName() )
+                local SAM = Group.getByName(contact:getGroupName())
+                if SAM then
+                    env.info(mist.utils.tableShow(SAM))
+                else
+                    env.info(tostring(SAM))
+                end 
+                if SAM and SAM:getSize() > 0 and
                     setContainsValue({HOUND_MISSION.SA6.North,HOUND_MISSION.SA6.South,HOUND_MISSION.SA6.Joker},SAM)
                     then
                         timer.scheduleFunction(Group.destroy, SAM, timer.getTime() + math.random(30,60))

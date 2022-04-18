@@ -136,6 +136,7 @@ function update_mission {
 
     cd ${MISSION_PATH}
     /usr/bin/zip -ur ${MISSION_FILE}.miz ${SCRIPT_PATH}
+    set +e
     until [ -d "./include" ]; do
         cd ..
     done
@@ -148,7 +149,6 @@ function update_mission {
     done
     echo "CleanUp ${MISSION_FILE}"
     rm -rf ./${MISSION_PATH}/l10n
-    set +e
     }
 
 ## main

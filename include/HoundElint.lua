@@ -12,7 +12,7 @@ end
 
 do
     HOUND = {
-        VERSION = "0.2.3-develop-20220417",
+        VERSION = "0.2.3-develop-20220419",
         DEBUG = false,
         ELLIPSE_PERCENTILE = 0.6,
         DATAPOINTS_NUM = 30,
@@ -2993,7 +2993,7 @@ do
         elintcontact.unit = DCS_Unit
         elintcontact.uid = ContactId or DCS_Unit:getID()
         elintcontact.DCStypeName = DCS_Unit:getTypeName()
-        elintcontact.DCSgroupName = DCS_Unit:getGroup():getName()
+        elintcontact.DCSgroupName = Group.getName(DCS_Unit:getGroup())
         elintcontact.typeName = DCS_Unit:getTypeName()
         elintcontact.isEWR = false
         elintcontact.typeAssigned = {"Unknown"}
@@ -3064,6 +3064,9 @@ do
         return self.uid%100
     end
 
+    function HOUND.Contact:getGroupName()
+        return self.DCSgroupName
+    end
     function HOUND.Contact:getLastSeen()
         return HOUND.Utils.absTimeDelta(self.last_seen)
     end
@@ -3111,7 +3114,7 @@ do
     end
 
     function HOUND.Contact:isRecent()
-        return HOUND.Utils.absTimeDelta(self.last_seen)/120 < 1.0
+        return self:getLastSeen()/120 < 1.0
     end
 
     function HOUND.Contact:isAccurate()
@@ -3530,7 +3533,7 @@ do
     end
 
     function HOUND.Contact:updateMarker(MarkerType)
-        if self.pos.p == nil or self.uncertenty_data == nil and not self:isRecent() then return end
+        if not self:hasPos() or self.uncertenty_data == nil or not self:isRecent() then return end
         if self:isAccurate() and self._markpoints.p:isDrawn() then return end
         local markerArgs = {
             text = self.typeName .. " " .. (self.uid%100) ..
@@ -5101,9 +5104,11 @@ do
     function HOUND.Sector:createCheckIn()
         for _,player in pairs(self.comms.menu.enrolled) do
             local playerUnit = Unit.getByName(player.unitName)
-            local humanOccupied = playerUnit:getPlayerName()
-            if not humanOccupied then
-                self.comms.menu.enrolled[player] = nil
+            if playerUnit then
+                local humanOccupied = playerUnit:getPlayerName()
+                if not humanOccupied then
+                    self.comms.menu.enrolled[player] = nil
+                end
             end
         end
         grpMenuDone = {}
@@ -6389,4 +6394,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.2.3-develop-20220417 - Compiled on 2022-04-17 20:24
+-- Hound version 0.2.3-develop-20220419 - Compiled on 2022-04-18 23:19

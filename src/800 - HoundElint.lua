@@ -1138,7 +1138,7 @@ do
                     return
         end
 
-        if DcsEvent.id == world.event.S_EVENT_DEAD 
+        if DcsEvent.id == world.event.S_EVENT_DEAD
             and DcsEvent.initiator:getCoalition() ~= self.settings:getCoalition()
             -- and DcsEvent.initiator:hasSensors(Unit.SensorType.RADAR)
             and self.contacts:isContact(DcsEvent.initiator)

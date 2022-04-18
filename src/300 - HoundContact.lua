@@ -27,7 +27,7 @@ do
         elintcontact.unit = DCS_Unit
         elintcontact.uid = ContactId or DCS_Unit:getID()
         elintcontact.DCStypeName = DCS_Unit:getTypeName()
-        elintcontact.DCSgroupName = DCS_Unit:getGroup():getName()
+        elintcontact.DCSgroupName = Group.getName(DCS_Unit:getGroup())
         elintcontact.typeName = DCS_Unit:getTypeName()
         elintcontact.isEWR = false
         elintcontact.typeAssigned = {"Unknown"}
@@ -109,6 +109,11 @@ do
         return self.uid%100
     end
 
+    --- Get Contact Group Name
+    -- @return String
+    function HOUND.Contact:getGroupName()
+        return self.DCSgroupName
+    end
     --- Get last seen in seconds
     -- @return number in seconds since contact was last seen
     function HOUND.Contact:getLastSeen()
@@ -178,9 +183,9 @@ do
     end
 
     --- check if contact is recent
-    -- @return Bool True if seen in the 2 minutes
+    -- @return Bool True if seen in the last 2 minutes
     function HOUND.Contact:isRecent()
-        return HOUND.Utils.absTimeDelta(self.last_seen)/120 < 1.0
+        return self:getLastSeen()/120 < 1.0
     end
 
     --- check if contact position is accurate
@@ -477,7 +482,7 @@ do
     function HOUND.Contact:processData()
         if self.preBriefed then
             HOUND.Logger.trace(self:getName().." is PB..")
-            if self.unit:isExist() then
+            if type(self.unit) == "table" and self.unit.isExist and self.unit:isExist() then
                 local unitPos = self.unit:getPosition()
                 if l_mist.utils.get3DDist(unitPos.p,self.pos.p) < 0.1 then
                     HOUND.Logger.trace("No change in position.. skipping..")
@@ -686,7 +691,7 @@ do
     --- Update marker positions
     -- @param MarkerType type of marker to use
     function HOUND.Contact:updateMarker(MarkerType)
-        if self.pos.p == nil or self.uncertenty_data == nil and not self:isRecent() then return end
+        if not self:hasPos() or self.uncertenty_data == nil or not self:isRecent() then return end
         if self:isAccurate() and self._markpoints.p:isDrawn() then return end
         local markerArgs = {
             text = self.typeName .. " " .. (self.uid%100) ..
