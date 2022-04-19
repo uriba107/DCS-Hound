@@ -12,7 +12,7 @@ end
 
 do
     HOUND = {
-        VERSION = "0.2.3-develop-20220419",
+        VERSION = "0.2.3-develop-20220420",
         DEBUG = false,
         ELLIPSE_PERCENTILE = 0.6,
         DATAPOINTS_NUM = 30,
@@ -3625,9 +3625,9 @@ do
             HOUND.Logger.info("PB failed - unit does not exist")
             return
         end
-        local state = HOUND.EVENTS.RADAR_DETECTED
+        self.state = HOUND.EVENTS.RADAR_DETECTED
         if type(self.pos.p) == "table" then
-            state = HOUND.EVENTS.RADAR_UPDATED
+            self.state = HOUND.EVENTS.RADAR_UPDATED
         end
         local unitPos = self.unit:getPosition()
         self.preBriefed = true
@@ -3643,7 +3643,7 @@ do
 
         table.insert(self.detected_by,"External")
         self:updateMarker(HOUND.MARKER.NONE)
-        return state
+        return self.state
     end
 
     function HOUND.Contact:export()
@@ -6307,12 +6307,21 @@ do
     end
 
     function HoundElint:preBriefedContact(DCS_Object_Name)
+        if type(DCS_Object_Name) ~= "string" then return end
         local units = {}
         local obj = Group.getByName(DCS_Object_Name) or Unit.getByName(DCS_Object_Name)
         if obj and obj.getUnits then
             units = obj:getUnits()
         elseif obj and obj.getGroup then
             table.insert(units,obj)
+        end
+        if not obj then
+            HOUND.Logger.info("Cannot pre-brief " .. DCS_Object_Name .. ": object does not exist.")
+            return
+        end
+        if not self:isRunning() then
+            HOUND.Logger.info("Cannot pre-brief " .. DCS_Object_Name .. ": Hound instance is not running.")
+            return
         end
         for _,unit in pairs(units) do
             if unit:getCoalition() ~= self.settings:getCoalition() and unit:isExist() and setContains(HOUND.DBs.Sam,unit:getTypeName()) then
@@ -6394,4 +6403,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.2.3-develop-20220419 - Compiled on 2022-04-18 23:19
+-- Hound version 0.2.3-develop-20220420 - Compiled on 2022-04-19 22:42

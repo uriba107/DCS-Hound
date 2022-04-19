@@ -3,14 +3,12 @@ do
         STTS.DIRECTORY = "C:\\Program Files\\DCS-SimpleRadio-Standalone"
     end
 
---------------------------- MISSION LOGIC ---------------------------
+    --------------------------- MISSION LOGIC ---------------------------
     HOUND_MISSION = {}
     function HOUND_MISSION.randomTemplate(templates)
         if type(templates) ~= "table" then return nil end
         return templates[math.random(1,#templates)]
     end
-
-
 --------------------------- Skynet and Mobile stuff ---------------------------
     redIADS = SkynetIADS:create('lebanonIADS')
     redIADS:addEarlyWarningRadarsByPrefix('EWR-SKYNET')
@@ -30,26 +28,38 @@ do
     HOUND_MISSION.SA6.South = nil
     HOUND_MISSION.SA6.template = "SYR_SA6"
     HOUND_MISSION.SA6.spawnJoker = function() return (math.random() < 0.4) end
+
+    function HOUND_MISSION.SA6.destroyRadar(group)
+        if type(group) == "string" and HOUND_MISSION.SA6[group] then
+            group =  HOUND_MISSION.SA6[group]
+        end
+        for _, data in pairs(group:getUnits()) do
+            if setContainsValue({"Kub 1S91 str","SA-11 Buk SR 9S18M1","Osa 9A33 ln"},Unit.getTypeName(data)) then
+                HOUND_MISSION.SA6.destroyPos(Unit.getPoint(data))
+            end
+        end
+    end
+
+    function HOUND_MISSION.SA6.destroyPos(pos)
+        if HOUND.Utils.Geo.isDcsPoint(pos) then
+            trigger.action.explosion(pos,250)
+        end
+    end
+
     function HOUND_MISSION.SA6.destroy(GroupName)
+        local destroy = true
+        if not GroupName then return destroy end
         env.info("check " .. GroupName)
 
         local SAM = Group.getByName(GroupName)
-        local destroy = true
         for _,data in pairs(SAM:getUnits()) do
             if setContainsValue({"Kub 1S91 str","SA-11 Buk SR 9S18M1","Osa 9A33 ln"},Unit.getTypeName(data)) and (Unit.getLife(data) > 1 or Unit.isExist(data) or (Unit.getLife(data)/Unit.getLife0(data)) > 0.55) then
                 destroy = false
             end
         end
         if destroy then
-            -- SAM:destroy()
-            for _, data in pairs(SAM:getUnits()) do
-                if setContainsValue({"Kub 1S91 str","SA-11 Buk SR 9S18M1","Osa 9A33 ln"},Unit.getTypeName(data)) then
-                    local pos = Unit.getPoint(data)
-                    trigger.action.explosion(pos,250)
-                end
-            end
+            HOUND_MISSION.SA6.destroyRadar(SAM)
         end
-        -- env.info(GroupName .. " destroy " .. tostring(destroy))
         return destroy
     end
 
@@ -142,9 +152,7 @@ do
             MAIN_MENU.apache = {}
             MAIN_MENU.apache.root = missionCommands.addSubMenuForCoalition(coalition.side.BLUE,"Spawn Apache Targets")
         end
-        -- if not MAIN_MENU.apache.spawnTankGroup then
-        --     MAIN_MENU.apache.spawnTankGroup = missionCommands.addCommandForCoalition(coalition.side.BLUE,"Spawn Random Target",MAIN_MENU.apache.root,HOUND_MISSION.PLAYGROUND.spawnGroup)
-        -- end
+
         for rangeName,rangeData in pairs(HOUND_MISSION.PLAYGROUND.ranges) do
             if not MAIN_MENU.apache[rangeName] then
                 MAIN_MENU.apache[rangeName] = {}
@@ -217,6 +225,14 @@ do
         root = missionCommands.addSubMenuForCoalition(coalition.side.BLUE,"Mission Actions"),
     }
     MAIN_MENU.activateSa6 = missionCommands.addCommandForCoalition(coalition.side.BLUE,"Activate SA-6",MAIN_MENU.root,HOUND_MISSION.SA6.GoLive)
+    MAIN_MENU.debug = {}
+    MAIN_MENU.debug.main = missionCommands.addSubMenuForCoalition(coalition.side.BLUE,"Debug")
+    MAIN_MENU.debug.north = missionCommands.addCommandForCoalition(coalition.side.BLUE,"blowup north",MAIN_MENU.debug.main,HOUND_MISSION.SA6.destroyRadar,"North")
+    MAIN_MENU.debug.south = missionCommands.addCommandForCoalition(coalition.side.BLUE,"blowup south",MAIN_MENU.debug.main,HOUND_MISSION.SA6.destroyRadar,"South")
+    MAIN_MENU.debug.p19 = missionCommands.addCommandForCoalition(coalition.side.BLUE,"blowup p-19",MAIN_MENU.debug.main,HOUND_MISSION.SA6.destroyPos,Group.getByName('SYR_SA-2'):getUnit(10):getPoint())
+    MAIN_MENU.debug.fs = missionCommands.addCommandForCoalition(coalition.side.BLUE,"blowup FanSong",MAIN_MENU.debug.main,HOUND_MISSION.SA6.destroyPos,Group.getByName('SYR_SA-2'):getUnit(1):getPoint())
+
+
     HOUND_MISSION.PLAYGROUND.buildRangeMenu()
 
 ----- Lebanon MANPADS -----
@@ -288,17 +304,16 @@ do
     HoundBlue:setZone("Lebanon","Sector_Lebanon")
     HoundBlue:setZone("Northern Israel","Sector_Israel")
 
-    HoundBlue:preBriefedContact('SYR_SA-2')
-
-    for ewrUnitName,_ in pairs(HOUND.Utils.Filter.unitsByPrefix("EWR-")) do
-        HoundBlue:preBriefedContact(ewrUnitName)
-    end
-
     HoundBlue:setMarkerType(HOUND.MARKER.POLYGON)
     HoundBlue:enableMarkers()
     HoundBlue:enableBDA()
     HoundBlue:systemOn()
 
+    HoundBlue:preBriefedContact('SYR_SA-2')
+
+    for ewrUnitName,_ in pairs(HOUND.Utils.Filter.unitsByPrefix("EWR-")) do
+        HoundBlue:preBriefedContact(ewrUnitName)
+    end
 
     humanElint = {}
     function humanElint:onEvent(DcsEvent)
@@ -334,11 +349,6 @@ do
                 local contact = event.initiator
                 env.info("HoundEvent for group " .. contact:getGroupName() )
                 local SAM = Group.getByName(contact:getGroupName())
-                if SAM then
-                    env.info(mist.utils.tableShow(SAM))
-                else
-                    env.info(tostring(SAM))
-                end 
                 if SAM and SAM:getSize() > 0 and
                     setContainsValue({HOUND_MISSION.SA6.North,HOUND_MISSION.SA6.South,HOUND_MISSION.SA6.Joker},SAM)
                     then

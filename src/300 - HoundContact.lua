@@ -812,9 +812,9 @@ do
             HOUND.Logger.info("PB failed - unit does not exist")
             return
         end
-        local state = HOUND.EVENTS.RADAR_DETECTED
+        self.state = HOUND.EVENTS.RADAR_DETECTED
         if type(self.pos.p) == "table" then
-            state = HOUND.EVENTS.RADAR_UPDATED
+            self.state = HOUND.EVENTS.RADAR_UPDATED
         end
         local unitPos = self.unit:getPosition()
         self.preBriefed = true
@@ -830,7 +830,7 @@ do
 
         table.insert(self.detected_by,"External")
         self:updateMarker(HOUND.MARKER.NONE)
-        return state
+        return self.state
     end
 
     --- Generate contact export object

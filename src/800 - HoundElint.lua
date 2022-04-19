@@ -1064,12 +1064,21 @@ do
     --- set/create a pre Briefed contacts
     -- @param DCS_Object_Name name of DCS Unit or Group to add
     function HoundElint:preBriefedContact(DCS_Object_Name)
+        if type(DCS_Object_Name) ~= "string" then return end
         local units = {}
         local obj = Group.getByName(DCS_Object_Name) or Unit.getByName(DCS_Object_Name)
         if obj and obj.getUnits then
             units = obj:getUnits()
         elseif obj and obj.getGroup then
             table.insert(units,obj)
+        end
+        if not obj then
+            HOUND.Logger.info("Cannot pre-brief " .. DCS_Object_Name .. ": object does not exist.")
+            return
+        end
+        if not self:isRunning() then
+            HOUND.Logger.info("Cannot pre-brief " .. DCS_Object_Name .. ": Hound instance is not running.")
+            return
         end
         for _,unit in pairs(units) do
             if unit:getCoalition() ~= self.settings:getCoalition() and unit:isExist() and setContains(HOUND.DBs.Sam,unit:getTypeName()) then
