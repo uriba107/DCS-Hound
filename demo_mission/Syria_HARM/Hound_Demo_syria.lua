@@ -12,15 +12,30 @@ do
 --------------------------- Skynet and Mobile stuff ---------------------------
     redIADS = SkynetIADS:create('lebanonIADS')
     redIADS:addEarlyWarningRadarsByPrefix('EWR-SKYNET')
-    redIADS:activate()
-    -- TODO: itterate over SHORAD units activate some and add to skynet
-    for grpName,grp in pairs( HOUND.Utils.Filter.groupsByPrefix("SHORAD-")) do
-        grp:enableEmission(false)
-        if math.random() < 0.4 then
-            grp:activate()
-            redIADS:addSAMSite(grpName)
+    -- redIADS:addSAMSitesByPrefix("SHORAD-")
+
+        -- TODO: itterate over SHORAD units activate some and add to skynet
+        for grpName,grp in pairs( HOUND.Utils.Filter.groupsByPrefix("SHORAD-")) do
+            grp:enableEmission(false)
+            if math.random() < 0.3 then
+                grp:activate()
+                grp:enableEmission(false)
+                redIADS:addSAMSite(grpName)
+            end
         end
-    end
+
+    redIADS:activate()
+
+    -- local iadsDebug = redIADS:getDebugSettings()  
+    -- iadsDebug.IADSStatus = true
+    -- iadsDebug.contacts = true
+    -- iadsDebug.addedEWRadar = true
+    -- iadsDebug.addedSAMSite = true
+    -- iadsDebug.warnings = true
+    -- iadsDebug.radarWentLive = true
+    -- iadsDebug.radarWentDark = true
+    -- iadsDebug.samSiteStatusEnvOutput = true
+    -- iadsDebug.earlyWarningRadarStatusEnvOutput = true
 
 ----- Hound Demo Logic -----
     HOUND_MISSION.SA6 = {}
@@ -264,7 +279,46 @@ do
     HOUND_MISSION.MANPADS.updateMenu()
 
 
+--------------------------- HOUND EventHandler SETUP ---------------------------
+-- starting with events because I want to catch the Hound enable event normally, this will be done later
+
+    HoundTriggers = {}
+    function HoundTriggers.dumpCsv(interval)
+        HoundBlue:dumpIntelBrief()
+        if interval then
+            return timer.getTime() + interval
+        end
+    end
+    -- HoundTriggers.taskId = timer.scheduleFunction( HoundTriggers.dumpCsv, 300, timer.getTime() + 30 )
+    HoundTriggers.taskId = nil
+
+    function HoundTriggers:onHoundEvent(event)
+        if event.coalition == coalition.side.BLUE then
+            if event.id == HOUND.EVENTS.RADAR_DESTROYED then
+                local contact = event.initiator
+                local SAM = Group.getByName(contact:getGroupName())
+                if SAM and SAM:getSize() > 0 and
+                    setContainsValue({HOUND_MISSION.SA6.North,HOUND_MISSION.SA6.South,HOUND_MISSION.SA6.Joker},SAM)
+                    then
+                        timer.scheduleFunction(Group.destroy, SAM, timer.getTime() + math.random(30,60))
+                end
+            end
+            if event.id == HOUND.EVENTS.HOUND_ENABLED then
+                HoundTriggers.taskId = timer.scheduleFunction( HoundTriggers.dumpCsv, 300, timer.getTime() + 30 )
+            end
+            if event.id == HOUND.EVENTS.HOUND_DISABLED then
+                if HoundTriggers.taskId then
+                    timer.removeFunction(HoundTriggers.taskId)
+                end
+            end
+        end
+    end
+
+    HOUND.addEventHandler(HoundTriggers)
+
+
 --------------------------- HOUND SETUP ---------------------------
+
     HoundBlue = HoundElint:create(coalition.side.BLUE)
 
     -- HoundBlue:addPlatform("ELINT North") -- C-130
@@ -307,13 +361,16 @@ do
     HoundBlue:setMarkerType(HOUND.MARKER.POLYGON)
     HoundBlue:enableMarkers()
     HoundBlue:enableBDA()
-    HoundBlue:systemOn()
 
     HoundBlue:preBriefedContact('SYR_SA-2')
 
     for ewrUnitName,_ in pairs(HOUND.Utils.Filter.unitsByPrefix("EWR-")) do
         HoundBlue:preBriefedContact(ewrUnitName)
     end
+
+
+    HoundBlue:systemOn()
+
 
     humanElint = {}
     function humanElint:onEvent(DcsEvent)
@@ -342,20 +399,4 @@ do
 
     world.addEventHandler(humanElint)
 
-    HoundTriggers = {}
-    function HoundTriggers:onHoundEvent(event)
-        if event.coalition == coalition.side.BLUE then
-            if event.id == HOUND.EVENTS.RADAR_DESTROYED then
-                local contact = event.initiator
-                env.info("HoundEvent for group " .. contact:getGroupName() )
-                local SAM = Group.getByName(contact:getGroupName())
-                if SAM and SAM:getSize() > 0 and
-                    setContainsValue({HOUND_MISSION.SA6.North,HOUND_MISSION.SA6.South,HOUND_MISSION.SA6.Joker},SAM)
-                    then
-                        timer.scheduleFunction(Group.destroy, SAM, timer.getTime() + math.random(30,60))
-                end
-            end
-        end
-    end
-    HOUND.addEventHandler(HoundTriggers)
 end

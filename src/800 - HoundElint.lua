@@ -42,6 +42,7 @@ do
         elint.sectors = {
             default = HOUND.Sector.create(elint.HoundId,"default",nil,100)
         }
+        elint:defaultEventHandler()
         return elint
     end
 
@@ -49,6 +50,8 @@ do
     -- initiates cleanup
     function HoundElint:destroy()
         self:systemOff(false)
+        self:defaultEventHandler(false)
+
         for name,sector in pairs(self.sectors) do
             self.sectors[name] = sector:destroy()
         end
@@ -987,16 +990,20 @@ do
             trigger.action.outTextForCoalition(self.settings:getCoalition(),
                                            "Hound ELINT system is now Operating", 10)
         end
-        self:defaultEventHandler()
+        -- self:defaultEventHandler()
         env.info("Hound is now on")
-        HOUND.EventHandler.publishEvent({id=HOUND.EVENTS.HOUND_ENABLED, houndId = self.settings:getId(), coalition = self.settings:getCoalition()})
+        HOUND.EventHandler.publishEvent({
+            id = HOUND.EVENTS.HOUND_ENABLED,
+            houndId = self.settings:getId(),
+            coalition = self.settings:getCoalition()
+        })
         return true
     end
 
     --- Turn Hound system off
     -- @bool[opt] notify if True a text notification will be printed in 3d world
     function HoundElint:systemOff(notify)
-        self:defaultEventHandler(false)
+        -- self:defaultEventHandler(false)
         if self.elintTaskID ~= nil then
             timer.removeFunction(self.elintTaskID)
         end
@@ -1005,6 +1012,11 @@ do
                                            "Hound ELINT system is now Offline", 10)
         end
         env.info("Hound is now off")
+        HOUND.EventHandler.publishEvent({
+            id = HOUND.EVENTS.HOUND_DISABLED,
+            houndId = self.settings:getId(),
+            coalition = self.settings:getCoalition()
+        })
         return true
     end
 
@@ -1040,10 +1052,14 @@ do
     end
 
     --- dump Intel Brief to csv
-    -- will dump intel summery to CSV
-    -- @param[opt] filename filename to write to. will write to saved games
+    -- will dump intel summery to CSV in the DCS saved games folder
+    -- requires desanitization of lfs and io modules
+    -- @param[opt] filename target filename. (default: hound_contacts_%d.csv)
     function HoundElint:dumpIntelBrief(filename)
-        if lfs == nil or io == nil then return end
+        if lfs == nil or io == nil then
+            HOUND.Logger.info("cannot write CSV. please desanitize lfs and io")
+            return
+        end
         if not filename then
             filename = string.format("hound_contacts_%d.csv",self.settings:getId())
         end
@@ -1076,10 +1092,10 @@ do
             HOUND.Logger.info("Cannot pre-brief " .. DCS_Object_Name .. ": object does not exist.")
             return
         end
-        if not self:isRunning() then
-            HOUND.Logger.info("Cannot pre-brief " .. DCS_Object_Name .. ": Hound instance is not running.")
-            return
-        end
+        -- if not self:isRunning() then
+        --     HOUND.Logger.info("Cannot pre-brief " .. DCS_Object_Name .. ": Hound instance is not running.")
+        --     return
+        -- end
         for _,unit in pairs(units) do
             if unit:getCoalition() ~= self.settings:getCoalition() and unit:isExist() and setContains(HOUND.DBs.Sam,unit:getTypeName()) then
                 self.contacts:setPreBriefedContact(unit)
@@ -1094,18 +1110,14 @@ do
     -- @param houndEvent incoming event
     -- @local
     function HoundElint:onHoundEvent(houndEvent)
+        if houndEvent.houndId ~= self.settings:getId() then return end
         if houndEvent.id == HOUND.EVENTS.HOUND_DISABLED then return end
-        if houndEvent.houndId ~= self.settings:getId() then
-            return
-        end
+
         local sectors = self:getSectors()
         table.sort(sectors,HOUND.Utils.Sort.sectorsByPriorityLowFirst)
 
         if houndEvent.id == HOUND.EVENTS.RADAR_DETECTED then
-            HOUND.Logger.trace("Detected HoundElintEvent")
-
             for _,sector in pairs(sectors) do
-                -- HOUND.Logger.trace("check loop - "..sector:getName().."("..sector:getPriority()..")")
                 sector:updateSectorMembership(houndEvent.initiator)
             end
             for _,sector in pairs(sectors) do
@@ -1124,6 +1136,7 @@ do
     -- @param DcsEvent incoming dcs event
     -- @local
     function HoundElint:onEvent(DcsEvent)
+        if not self:isRunning() then return end
         if not DcsEvent.initiator or type(DcsEvent.initiator) ~= "table" then return end
         if type(DcsEvent.initiator.getCoalition) ~= "function" then return end
 

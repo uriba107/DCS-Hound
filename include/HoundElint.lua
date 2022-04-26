@@ -12,7 +12,7 @@ end
 
 do
     HOUND = {
-        VERSION = "0.2.3-develop-20220420",
+        VERSION = "0.2.3-develop-20220427",
         DEBUG = false,
         ELLIPSE_PERCENTILE = 0.6,
         DATAPOINTS_NUM = 30,
@@ -5513,11 +5513,14 @@ do
         elint.sectors = {
             default = HOUND.Sector.create(elint.HoundId,"default",nil,100)
         }
+        elint:defaultEventHandler()
         return elint
     end
 
     function HoundElint:destroy()
         self:systemOff(false)
+        self:defaultEventHandler(false)
+
         for name,sector in pairs(self.sectors) do
             self.sectors[name] = sector:destroy()
         end
@@ -6241,14 +6244,16 @@ do
             trigger.action.outTextForCoalition(self.settings:getCoalition(),
                                            "Hound ELINT system is now Operating", 10)
         end
-        self:defaultEventHandler()
         env.info("Hound is now on")
-        HOUND.EventHandler.publishEvent({id=HOUND.EVENTS.HOUND_ENABLED, houndId = self.settings:getId(), coalition = self.settings:getCoalition()})
+        HOUND.EventHandler.publishEvent({
+            id = HOUND.EVENTS.HOUND_ENABLED,
+            houndId = self.settings:getId(),
+            coalition = self.settings:getCoalition()
+        })
         return true
     end
 
     function HoundElint:systemOff(notify)
-        self:defaultEventHandler(false)
         if self.elintTaskID ~= nil then
             timer.removeFunction(self.elintTaskID)
         end
@@ -6257,6 +6262,11 @@ do
                                            "Hound ELINT system is now Offline", 10)
         end
         env.info("Hound is now off")
+        HOUND.EventHandler.publishEvent({
+            id = HOUND.EVENTS.HOUND_DISABLED,
+            houndId = self.settings:getId(),
+            coalition = self.settings:getCoalition()
+        })
         return true
     end
 
@@ -6288,7 +6298,10 @@ do
     end
 
     function HoundElint:dumpIntelBrief(filename)
-        if lfs == nil or io == nil then return end
+        if lfs == nil or io == nil then
+            HOUND.Logger.info("cannot write CSV. please desanitize lfs and io")
+            return
+        end
         if not filename then
             filename = string.format("hound_contacts_%d.csv",self.settings:getId())
         end
@@ -6319,10 +6332,6 @@ do
             HOUND.Logger.info("Cannot pre-brief " .. DCS_Object_Name .. ": object does not exist.")
             return
         end
-        if not self:isRunning() then
-            HOUND.Logger.info("Cannot pre-brief " .. DCS_Object_Name .. ": Hound instance is not running.")
-            return
-        end
         for _,unit in pairs(units) do
             if unit:getCoalition() ~= self.settings:getCoalition() and unit:isExist() and setContains(HOUND.DBs.Sam,unit:getTypeName()) then
                 self.contacts:setPreBriefedContact(unit)
@@ -6331,15 +6340,13 @@ do
     end
 
     function HoundElint:onHoundEvent(houndEvent)
+        if houndEvent.houndId ~= self.settings:getId() then return end
         if houndEvent.id == HOUND.EVENTS.HOUND_DISABLED then return end
-        if houndEvent.houndId ~= self.settings:getId() then
-            return
-        end
+
         local sectors = self:getSectors()
         table.sort(sectors,HOUND.Utils.Sort.sectorsByPriorityLowFirst)
 
         if houndEvent.id == HOUND.EVENTS.RADAR_DETECTED then
-
             for _,sector in pairs(sectors) do
                 sector:updateSectorMembership(houndEvent.initiator)
             end
@@ -6356,6 +6363,7 @@ do
     end
 
     function HoundElint:onEvent(DcsEvent)
+        if not self:isRunning() then return end
         if not DcsEvent.initiator or type(DcsEvent.initiator) ~= "table" then return end
         if type(DcsEvent.initiator.getCoalition) ~= "function" then return end
 
@@ -6403,4 +6411,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.2.3-develop-20220420 - Compiled on 2022-04-19 22:42
+-- Hound version 0.2.3-develop-20220427 - Compiled on 2022-04-26 22:17
