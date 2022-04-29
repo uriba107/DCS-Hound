@@ -106,7 +106,6 @@ do
             sumCos = sumCos + l_math.cos(azimuths[i])
         end
         return (l_math.atan2(sumSin,sumCos) + pi_2) % pi_2
-
     end
 
     --- return the tilt of a point cluster
@@ -194,10 +193,14 @@ do
 
     --- return ground elevation rouded to 50 feet
     -- @param elev Height in meters
+    -- @param[opt] resolution round to the nerest increment. default is 50
     -- @return elevation converted to feet, rounded to the nearest 50 ft
 
-    function HOUND.Utils.getRoundedElevationFt(elev)
-        return HOUND.Utils.roundToNearest(l_mist.utils.metersToFeet(elev),50)
+    function HOUND.Utils.getRoundedElevationFt(elev,resolution)
+        if not resolution then
+            resolution = 50
+        end
+        return HOUND.Utils.roundToNearest(l_mist.utils.metersToFeet(elev),resolution)
     end
 
     --- return rounted number nearest a set interval
@@ -418,6 +421,7 @@ do
     -- @param payloadName Name of payload
     -- @return Bool always true
     function HOUND.Utils.hasPayload(DCS_Unit,payloadName)
+        -- TODO: add implementation
         return true
     end
 
@@ -426,6 +430,7 @@ do
     -- @param taskName Name of task
     -- @return Bool always true
     function HOUND.Utils.hasTask(DCS_Unit,taskName)
+        -- TODO: add implementation
         return true
     end
 
@@ -1125,15 +1130,6 @@ do
     -- @return table {az,el} error in radians per element
 
     function HOUND.Utils.Elint.generateAngularError(variance)
-        -- local stddev = variance /2
-        -- local Magnitude = l_math.sqrt(-2 * l_math.log(l_math.random())) * stddev
-        -- local Theta = 2* math.pi * l_math.random()
-
-        -- -- from radius and angle you can get the point on the circles
-        -- local epsilon = {
-        --     az = Magnitude * l_math.cos(Theta),
-        --     el = Magnitude * l_math.sin(Theta)
-        -- }
         local vec2 = HOUND.Utils.Vector.getRandomVec2(variance)
         local epsilon = {
             az = vec2.x,
@@ -1227,17 +1223,10 @@ do
             if setContains(HOUND.DBs.Platform[mainCategory],type) then
                 if HOUND.DBs.Platform[mainCategory][type]['require'] then
                     local platformData = HOUND.DBs.Platform[mainCategory][type]
-                    -- local groupData = mist.getCurrentGroupData(candidate:getGroup():getName())
                     -- TODO: actually make logic here
                     if setContains(platformData['require'],'CLSID') then
                         local required = platformData['require']['CLSID']
-                        -- local hardpoints = groupData["units"][candidate:getNumber()]["payload"]["pylons"]
-                        -- for _,hardpoint in pairs(hardpoints) do
-                        --     if hardpoint["CLSID"] == required then
-                        --         isValid = true
-                        --     end
-                        -- end
-                        -- (currently always retuns true)
+                        -- then if payload is valid (currently always retuns true)
                         isValid = HOUND.Utils.hasPayload(candidate,required)
                     end
                     if setContains(platformData['require'],'TASK') then
@@ -1270,25 +1259,6 @@ do
                 z = l_math.cos(Phi)*l_math.sin(Theta),
                 y = l_math.sin(Phi)
             }
-        -- local unitVector = {
-        --     x = l_math.cos(Theta),
-        --     z = l_math.sin(Theta),
-        --     y = 0
-        -- }
-
-        -- if Phi ~= nil then
-        --     unitVector.x = unitVector.x * l_math.cos(Phi)
-        --     unitVector.z = unitVector.z * l_math.cos(Phi)
-        --     unitVector.y = l_math.sin(Phi)
-        --     -- unitVector = {
-        --     --     x = l_math.cos(Phi)*l_math.cos(Theta),
-        --     --     z = l_math.cos(Phi)*l_math.sin(Theta),
-        --     --     y = l_math.sin(Phi)
-        --     -- }
-        -- end
-        -- if Theta ~= nil and Phi == nil then
-
-        -- end
         return unitVector
     end
 
@@ -1416,8 +1386,6 @@ do
 
     --- Polygon functions
     -- @section Polygon
-
-
 
     --- Check if polygon is under threat of SAM
     -- @param polygon Table of point reprasenting a polygon
@@ -1562,11 +1530,9 @@ do
         local function calcCircle(p1,p2,p3)
             local cx,cz, r
             if HOUND.Utils.Geo.isDcsPoint(p1) and not p2 and not p3 then
-                -- env.info("returning single point " .. mist.utils.tableShow(p1))
                 return {x = p1.x, z = p1.z,r = 0}
             end
             if HOUND.Utils.Geo.isDcsPoint(p1) and HOUND.Utils.Geo.isDcsPoint(p2) and not p3 then
-                -- env.info("returning two point circle")
                 cx = 0.5 * (p1.x + p2.x)
                 cz = 0.5 * (p1.z + p2.z)
             else
@@ -1600,9 +1566,6 @@ do
         end
 
         local function mec(pts,n,boundary,b)
-            -- env.info(mist.utils.tableShow(pts).. " " .. n)
-            -- env.info(mist.utils.tableShow(boundary).. " " .. b)
-            -- env.info("====")
             local circle
             if b == 3 then
                 circle = calcCircle(boundary[1],boundary[2],boundary[3])
@@ -2019,8 +1982,8 @@ do
     -- @section Sort
 
     --- Sort contacts by engament range
-    -- @param a HOUND.Contact instance
-    -- @param b HOUND.Contact Instance
+    -- @param a @{HOUND.Contact} instance
+    -- @param b @{HOUND.Contact} Instance
     -- @return Bool
     -- @usage table.sort(unSorted,HOUND.Utils.Sort.ContactsByRange)
     function HOUND.Utils.Sort.ContactsByRange(a,b)
@@ -2029,6 +1992,9 @@ do
         end
         if a.maxWeaponsRange ~= b.maxWeaponsRange then
             return a.maxWeaponsRange > b.maxWeaponsRange
+        end
+        if a.detectionRange ~= b.detectionRange then
+            return a.detectionRange > b.detectionRange
         end
         if a.typeAssigned ~= b.typeAssigned then
             return table.concat(a.typeAssigned) < table.concat(b.typeAssigned)
@@ -2043,8 +2009,8 @@ do
     end
 
     --- Sort contacts by ID
-    -- @param a HOUND.Contact instance
-    -- @param b HOUND.Contact Instance
+    -- @param a @{HOUND.Contact} instance
+    -- @param b @{HOUND.Contact} Instance
     -- @return Bool
     -- @usage table.sort(unSorted,HOUND.Utils.Sort.ContactsById)
     function HOUND.Utils.Sort.ContactsById(a,b)
@@ -2055,8 +2021,8 @@ do
     end
 
     --- sort sectors by priority (low first)
-    -- @param a HOUND.Sector instance
-    -- @param b HOUND.Sector Instance
+    -- @param a @{HOUND.Sector} instance
+    -- @param b @{HOUND.Sector} Instance
     -- @return Bool
     -- @usage table.sort(unSorted,HOUND.Utils.Sort.sectorsByPriorityLowFirst)
     function HOUND.Utils.Sort.sectorsByPriorityLowFirst(a,b)
@@ -2064,8 +2030,8 @@ do
     end
 
     --- sort sectors by priority (Low last)
-    -- @param a HOUND.Sector instance
-    -- @param b HOUND.Sector Instance
+    -- @param a @{HOUND.Sector} instance
+    -- @param b @{HOUND.Sector} Instance
     -- @return Bool
     -- @usage table.sort(unSorted,HOUND.Utils.Sort.sectorsByPriorityLowLast)
     function HOUND.Utils.Sort.sectorsByPriorityLowLast(a,b)

@@ -93,14 +93,14 @@ do
          -- make sure setting singletons are different between instances
         lu.assertNotEquals(self.houndBlue.settings,self.houndRed.settings)
         -- make sure setting singelton is same in in same instance
-        lu.assertIs(self.houndBlue.settings,self.houndBlue.contacts._settings)
+        lu.assertIs(self.houndBlue.settings,self.houndBlue.contacts.settings)
         lu.assertIsTrue(self.houndBlue:setMarkerType(HOUND.MARKER.CIRCLE))
         -- direct check of change
         lu.assertEquals(self.houndBlue.settings.preferences.markerType,HOUND.MARKER.CIRCLE)
         -- check again that configs are the same
-        lu.assertEquals(self.houndBlue.settings,self.houndBlue.contacts._settings)
+        lu.assertEquals(self.houndBlue.settings,self.houndBlue.contacts.settings)
         -- check via internal function on inheritance
-        lu.assertEquals(self.houndBlue.contacts._settings:getMarkerType(),HOUND.MARKER.CIRCLE)
+        lu.assertEquals(self.houndBlue.contacts.settings:getMarkerType(),HOUND.MARKER.CIRCLE)
     end
 
     function TestHoundFunctionalInit:Test_01_init_05_HoundStartup()

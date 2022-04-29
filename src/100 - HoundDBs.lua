@@ -1,7 +1,7 @@
 --- Hound databases
 -- @local
 -- @module HOUND.DBs
--- @field #HOUND.DBs
+-- @field HOUND.DBs
 HOUND.DBs = {}
 do
     --- SAM database
@@ -10,27 +10,43 @@ do
     -- @field #table Assigned Which Battery this radar can belong to
     -- @field #table Role Role of radar in battery
     -- @field #string Band Radio Band the radar operates in
+    -- @field #bool Primary set to True if this is a primary radar for site (usually FCR)
     -- @usage
     -- ['p-19 s-125 sr'] = {
     --     ['Name'] = "Flat Face",
     --     ['Assigned'] = {"SA-2","SA-3"},
     --     ['Role'] = {"SR"},
-    --     ['Band'] = 'C'
+    --     ['Band'] = 'C',
+    --     ['Primary'] = false
     -- }
     HOUND.DBs.Sam = {
         -- EWR --
         ['1L13 EWR'] = {
-            ['Name'] = "EWR",
+            ['Name'] = "Box Spring",
             ['Assigned'] = {"EWR"},
             ['Role'] = {"EWR"},
             ['Band'] = 'A',
             ['Primary'] = false
         },
         ['55G6 EWR'] = {
-            ['Name'] = "EWR",
+            ['Name'] = "Tall Rack",
             ['Assigned'] = {"EWR"},
             ['Role'] = {"EWR"},
             ['Band'] = 'A',
+            ['Primary'] = false
+        },
+        ['FPS-117'] = {
+            ['Name'] = "Seek Igloo",
+            ['Assigned'] = {"EWR"},
+            ['Role'] = {"EWR"},
+            ['Band'] = 'D',
+            ['Primary'] = false
+        },
+        ['FPS-117 Dome'] = {
+            ['Name'] = "Seek Igloo",
+            ['Assigned'] = {"EWR"},
+            ['Role'] = {"EWR"},
+            ['Band'] = 'D',
             ['Primary'] = false
         },
         -- SAM radars --
@@ -681,13 +697,13 @@ end
 do
     --- Valid platform parameters
     -- @table HOUND.DBs.Platform
-    -- @field UnitTypeNmae contains table of properties
+    -- @field UnitTypeName contains table of properties
     -- @usage ['C-130'] = {antenna = {size = 35, factor = 1}}
 
     HOUND.DBs.Platform =  {
         [Object.Category.STATIC] = {
             ['Comms tower M'] = {antenna = {size = 80, factor = 1}},
-            ['Cow'] = {antenna = {size = 1000, factor = 1}}
+            ['Cow'] = {antenna = {size = 1000, factor = 10}}
         },
         [Object.Category.UNIT] = {
             -- Ground Units
@@ -755,25 +771,25 @@ do
     -- @field GENERIC list of generic callsigns for hound, mostly vacuum cleaners and fictional detectives
     HOUND.DBs.CALLSIGNS = {
         NATO = {
-        "ABLOW", "ACTON", "AGRAM", "AMINO", "AWOKE", "BARB", "BART", "BAZOO",
-        "BOGUE", "BOOT", "BRAY", "CAMAY", "CAPON", "CASEY", "CHIME", "CHISUM",
-        "COBRA", "COSMO", "CRISP", "DAGDA", "DALLY", "DEVON", "DIVE", "DOZER",
-        "DUPLE", "EXOR", "EXUDE", "EXULT", "FLOSS", "FLOUT", "FLUKY", "FURR",
-        "GENUS", "GOBO", "GOLLY", "GOOFY", "GROUP", "HAKE", "HARMO", "HAWG",
-        "HERMA", "HEXAD", "HOLE", "HURDS", "HYMN", "IOTA", "JOSS", "KELT", "LARVA",
-        "LUMPY", "MAFIA", "MINE", "MORTY", "MURKY", "NEVIN", "NEWLY", "NORTH",
-        "OLIVE", "ORKIN", "PARRY", "PATIO", "PATSY", "PATTY", "PERMA", "PITTS",
-        "POKER", "POOK", "PRIME", "PYTHON", "RAGU", "REMUS", "RINGY", "RITZ",
-        "RIVET", "RIVET", "ROSE", "RULE", "RUNNY", "SAME", "SAVOY", "SCENT",
-        "SCROW", "SEAT", "SLAG", "SLOG", "SNOOP", "SPRY", "STINT", "STOB", "TAKE",
-        "TALLY", "TAPE", "TOLL", "TONUS", "TOPCAT", "TORA", "TOTTY", "TOXIC",
-        "TRIAL", "TRYST", "VALVO", "VEIN", "VELA", "VETCH", "VINE", "VULCAN",
-        "WATT", "WORTH", "ZEPEL", "ZIPPY"},
+            "ABLOW", "ACTON", "AGRAM", "AMINO", "AWOKE", "BARB", "BART", "BAZOO",
+            "BOGUE", "BOOT", "BRAY", "CAMAY", "CAPON", "CASEY", "CHIME", "CHISUM",
+            "COBRA", "COSMO", "CRISP", "DAGDA", "DALLY", "DEVON", "DIVE", "DOZER",
+            "DUPLE", "EXOR", "EXUDE", "EXULT", "FLOSS", "FLOUT", "FLUKY", "FURR",
+            "GENUS", "GOBO", "GOLLY", "GOOFY", "GROUP", "HAKE", "HARMO", "HAWG",
+            "HERMA", "HEXAD", "HOLE", "HURDS", "HYMN", "IOTA", "JOSS", "KELT", "LARVA",
+            "LUMPY", "MAFIA", "MINE", "MORTY", "MURKY", "NEVIN", "NEWLY", "NORTH",
+            "OLIVE", "ORKIN", "PARRY", "PATIO", "PATSY", "PATTY", "PERMA", "PITTS",
+            "POKER", "POOK", "PRIME", "PYTHON", "RAGU", "REMUS", "RINGY", "RITZ",
+            "RIVET", "RIVET", "ROSE", "RULE", "RUNNY", "SAME", "SAVOY", "SCENT",
+            "SCROW", "SEAT", "SLAG", "SLOG", "SNOOP", "SPRY", "STINT", "STOB", "TAKE",
+            "TALLY", "TAPE", "TOLL", "TONUS", "TOPCAT", "TORA", "TOTTY", "TOXIC",
+            "TRIAL", "TRYST", "VALVO", "VEIN", "VELA", "VETCH", "VINE", "VULCAN",
+            "WATT", "WORTH", "ZEPEL", "ZIPPY"},
         GENERIC = {
             "VACUUM", "HOOVER", "KIRBY","ROOMBA","DYSON","SHERLOCK","WATSON","GADGET",
             "HORATIO","CAINE","CHRISTIE","BENSON","GIBBS","COLOMBO","HOLT","DIAZ",
-            "SCULLY","MULDER","MARVIN","MARS","MORNINGSTAR","STEELE","SHAFT","CASTEL","BECKETT","JONES",
-            "LARA","CROFT","VENTURA","SCOOBY","SHAGGY","DANEEL","OLIVAW","BALEY","GISKARD"
+            "SCULLY","MULDER","MARVIN","MARS","MORNINGSTAR","STEELE","CASTEL","BECKETT","INDIANA","JONES",
+            "LARA","CROFT","VENTURA","SCOOBY","SHAGGY"
         }
     }
 

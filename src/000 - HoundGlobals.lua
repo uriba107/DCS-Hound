@@ -30,7 +30,7 @@ do
     -- @field EXTENDED_INFO Hound will add more in depth uncertenty info to controller messages (default is true)
     -- @field FORCE_MANAGE_MARKERS Force Hound to use internal counter for markIds (default is false).
     HOUND = {
-        VERSION = "0.2.3-TRUNK",
+        VERSION = "0.3.0-TRUNK",
         DEBUG = true,
         ELLIPSE_PERCENTILE = 0.6,
         DATAPOINTS_NUM = 30,
@@ -177,7 +177,6 @@ do
         -- Return true if the caller is an instance of theClass
         function new_class:isa( theClass )
             local b_isa = false
-
             local cur_class = new_class
 
             while ( nil ~= cur_class ) and ( false == b_isa ) do
@@ -187,10 +186,8 @@ do
                     cur_class = cur_class:superClass()
                 end
             end
-
             return b_isa
         end
-
         return new_class
     end
 

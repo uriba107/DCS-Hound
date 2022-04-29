@@ -13,7 +13,7 @@ do
 
     --- returns ELINT worker for HoundId
     -- @param HoundInstanceId Hound Id
-    -- @return HOUND.ElintWorker for specified HoundInstanceId
+    -- @return @{HOUND.ElintWorker} for specified HoundInstanceId
     -- @within HOUND.ContactManager
     function HOUND.ContactManager.get(HoundInstanceId)
         if HOUND.ContactManager._workers[HoundInstanceId] then

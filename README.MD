@@ -294,6 +294,9 @@ you may choose to disable this behaviour
 -- get current value
 local bool = HoundInstance:getBDA()
 ```
+
+This setting only affects automatic marking of dead contacts. you can manually mark a contact as dead (and notifications will be transmitted) regardless of BDA settings.  
+To mark a contact as dead use ```HoundInstance:markDeadContact(radarUnit)``` see [extended docs](#more-docs) for more information.
 ---
 ### Reposition Controller radio menu
 By default the [Controller](#sam-controller) will generate the "ELINT" root menu in the base F10 menu.
@@ -592,11 +595,11 @@ disable is done via
     HoundInstance:disableAlerts("all")
 ```
 
-By default the controller will provide you with MGRS in 6 digits format (3 for easting and 3 northing).
+By default the controller will provide you with MGRS in 10 digits format (5 for easting and 5 northing).
 this is set by a global variable 
-you can override this to get defferent precision (i.e 5 will give you 10 digits MGRS)  
+you can override this to get different precision (i.e 3 will give you 6 digits MGRS)  
 ```lua
-    HOUND.setMgrsPresicion(5)
+    HOUND.setMgrsPresicion(3)
 ```
 
  #### ***Controller message format***
@@ -837,12 +840,14 @@ TrackId,NatoDesignation,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accurac
   * MIST 4.4 is REQUIRED. However if used with MIST 4.5.103+ some a additional functionality is enabled. (e.g SAM that threaten sectors )
 
 ## Breaking changes
+### 0.1.X to 0.2.X
 If you are upgrading from 0.1 please note that some changes will be required.
   * `enableController()` no longer accepts boolean to enable or disable text. please use [`enableText()`](#text-messages) call.
   * Every function that has `ATIS` in it needs to be changesd to have `Atis` - note the capitalization.
   * "name" argument passed in the TTS config table is no longer used. (silent failure)
   * `setTransmitter()` is now a sector function. in general passing everything directly to `Instance.controller` or `Instance.atis` will no longer work due to changes in the internal architecture. 
-From 0.2.2 to 0.2.3 there was an internal change and all classes (except form `HoundElint`) where wrapped into `HOUND` class (rather then several independent classes).
+### 0.2.X to 0.3.X 
+From 0.2 to 0.3 there was an internal change and all classes (except form `HoundElint`) where wrapped into `HOUND` class (rather then several independent classes).
   *  HoundEventHandler now called HOUND.EventHandler please make sure to update you scripts
 
 ## More Docs

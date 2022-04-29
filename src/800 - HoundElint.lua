@@ -122,6 +122,60 @@ do
         return self.contacts:countContacts()
     end
 
+    --- set/create a pre Briefed contacts
+    -- @param DCS_Object_Name name of DCS Unit or Group to add
+    function HoundElint:preBriefedContact(DCS_Object_Name)
+        if type(DCS_Object_Name) ~= "string" then return end
+        local units = {}
+        local obj = Group.getByName(DCS_Object_Name) or Unit.getByName(DCS_Object_Name)
+        if obj and obj.getUnits then
+            units = obj:getUnits()
+        elseif obj and obj.getGroup then
+            table.insert(units,obj)
+        end
+        if not obj then
+            HOUND.Logger.info("Cannot pre-brief " .. DCS_Object_Name .. ": object does not exist.")
+            return
+        end
+        for _,unit in pairs(units) do
+            if unit:getCoalition() ~= self.settings:getCoalition() and unit:isExist() and setContains(HOUND.DBs.Sam,unit:getTypeName()) then
+                self.contacts:setPreBriefedContact(unit)
+            end
+        end
+    end
+
+    --- Mark Radar as dead
+    -- @param radarUnit DCS Unit, DCS Group or Unit/Group name to mark as dead
+    function HoundElint:markDeadContact(radarUnit)
+        local units={}
+        local obj = radarUnit
+        if type(radarUnit) == "string" then
+            obj = Group.getByName(radarUnit) or Unit.getByName(radarUnit)
+        end
+        if obj and obj.getUnits then
+            units = obj:getUnits()
+            for _,unit in pairs(units) do
+                unit = unit:getName()
+            end
+        elseif obj and obj.getGroup then
+            table.insert(units,obj:getName())
+        end
+        if not obj then
+            if type(radarUnit) == "string" then
+                table.insert(units,radarUnit)
+            else
+                HOUND.Logger.info("Cannot mark as dead: object does not exist.")
+                return
+            end
+        end
+        for _,unit in pairs(units) do
+            if self.contacts:isContact(unit) then
+                self.contacts:setDead(unit)
+            end
+        end
+
+    end
+
     --- Sector managment
     -- @section sectors
 
@@ -234,6 +288,7 @@ do
 
     --- return HOUND.Sector instance
     -- @string sectorName Name of wanted sector
+    -- @return HOUND.Sector
     function HoundElint:getSector(sectorName)
         if setContains(self.sectors,sectorName) then
             return self.sectors[sectorName]
@@ -943,8 +998,8 @@ do
     --- Purge the root radio menu
     -- @local
     function HoundElint:purgeRadioMenu()
-        for _,sectorName in pairs(self.sectors) do
-            self.sectors[sectorName]:removeRadioMenu()
+        for _,sector in pairs(self:getSectors()) do
+            sector:removeRadioMenu()
         end
         self.settings:removeRadioMenu()
     end
@@ -1007,6 +1062,7 @@ do
         if self.elintTaskID ~= nil then
             timer.removeFunction(self.elintTaskID)
         end
+        self:purgeRadioMenu()
         if notify == nil or notify then
             trigger.action.outTextForCoalition(self.settings:getCoalition(),
                                            "Hound ELINT system is now Offline", 10)
@@ -1025,6 +1081,9 @@ do
     function HoundElint:isRunning()
         return (self.elintTaskID ~= nil)
     end
+
+    --- Exports
+    -- @section export
 
     --- get an exported list of all contacts tracked by the instance
     -- @return table of all contact tracked for integration with external tools
@@ -1077,32 +1136,6 @@ do
         csvFile:close()
     end
 
-    --- set/create a pre Briefed contacts
-    -- @param DCS_Object_Name name of DCS Unit or Group to add
-    function HoundElint:preBriefedContact(DCS_Object_Name)
-        if type(DCS_Object_Name) ~= "string" then return end
-        local units = {}
-        local obj = Group.getByName(DCS_Object_Name) or Unit.getByName(DCS_Object_Name)
-        if obj and obj.getUnits then
-            units = obj:getUnits()
-        elseif obj and obj.getGroup then
-            table.insert(units,obj)
-        end
-        if not obj then
-            HOUND.Logger.info("Cannot pre-brief " .. DCS_Object_Name .. ": object does not exist.")
-            return
-        end
-        -- if not self:isRunning() then
-        --     HOUND.Logger.info("Cannot pre-brief " .. DCS_Object_Name .. ": Hound instance is not running.")
-        --     return
-        -- end
-        for _,unit in pairs(units) do
-            if unit:getCoalition() ~= self.settings:getCoalition() and unit:isExist() and setContains(HOUND.DBs.Sam,unit:getTypeName()) then
-                self.contacts:setPreBriefedContact(unit)
-            end
-        end
-    end
-
     --- EventHandler functions
     -- @section eventHandler
 
@@ -1125,7 +1158,7 @@ do
             end
         end
 
-        if houndEvent.id == HOUND.EVENTS.RADAR_DESTROYED and self.settings:getBDA() then
+        if houndEvent.id == HOUND.EVENTS.RADAR_DESTROYED then
             for _,sector in pairs(sectors) do
                 sector:notifyDeadEmitter(houndEvent.initiator)
             end
@@ -1144,9 +1177,7 @@ do
             and DcsEvent.initiator:getCoalition() == self.settings:getCoalition()
             and DcsEvent.initiator:getPlayerName() ~= nil
             and setContains(mist.DBs.humansByName,DcsEvent.initiator:getName())
-            then
-                self:populateRadioMenu()
-                return
+            then return self:populateRadioMenu()
         end
 
         if (DcsEvent.id == world.event.S_EVENT_PLAYER_LEAVE_UNIT
@@ -1155,21 +1186,14 @@ do
             and DcsEvent.initiator:getCoalition() == self.settings:getCoalition()
             and type(DcsEvent.initiator.getName) == "function"
             and setContains(mist.DBs.humansByName,DcsEvent.initiator:getName())
-                then
-                    self:populateRadioMenu()
-                    return
+                then return self:populateRadioMenu()
         end
 
         if DcsEvent.id == world.event.S_EVENT_DEAD
             and DcsEvent.initiator:getCoalition() ~= self.settings:getCoalition()
-            -- and DcsEvent.initiator:hasSensors(Unit.SensorType.RADAR)
-            and self.contacts:isContact(DcsEvent.initiator)
-                then
-                    self.contacts:setDead(DcsEvent.initiator)
-                    return
+            and self:getBDA()
+            then return self:markDeadContact(DcsEvent.initiator)
         end
-
-
     end
 
     --- enable/disable Hound instance internal event handling

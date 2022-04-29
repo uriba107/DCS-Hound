@@ -14,7 +14,7 @@ do
     -- @return HOUND.Comms.Notifier Instance
     function HOUND.Comms.Notifier:create(sector,houndConfig,settings)
         local instance = self:superClass():create(sector,houndConfig,settings)
-        setmetatable(instance, self)
+        setmetatable(instance, HOUND.Comms.Notifier)
         self.__index = self
 
         instance.settings.freq = "243.000,121.500"

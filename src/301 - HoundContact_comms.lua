@@ -85,7 +85,14 @@ do
             BR = HOUND.Utils.getBR(self.pos.p,refPos)
         end
         local phoneticGridPos,phoneticBulls = self:getTtsData(true,HOUND.MGRS_PRECISION)
-        local msg =  self:getName() .. ", " .. HOUND.Utils.TTS.getVerbalContactAge(self.last_seen,true)
+        local msg =  self:getName()
+        if self:isAccurate()
+            then
+                msg = msg .. ", reported"
+            else
+               msg = msg .. ", " .. HOUND.Utils.TTS.getVerbalContactAge(self.last_seen,true)
+
+        end
         if BR ~= nil
             then
                 msg = msg .. " from you " .. HOUND.Utils.TTS.toPhonetic(BR.brStr) .. " for " .. BR.rng
@@ -97,11 +104,16 @@ do
         msg = msg .. ", position " .. LLstr
         msg = msg .. ", I say again " .. LLstr
         msg = msg .. ", MGRS " .. phoneticGridPos
-        msg = msg .. ", elevation  " .. HOUND.Utils.getRoundedElevationFt(self.pos.elev) .. " feet MSL"
+        msg = msg .. ", elevation  " .. self:getElev() .. " feet MSL"
 
         if HOUND.EXTENDED_INFO then
-            msg = msg .. ", ellipse " ..  HOUND.Utils.TTS.simplfyDistance(self.uncertenty_data.major) .. " by " ..  HOUND.Utils.TTS.simplfyDistance(self.uncertenty_data.minor) .. ", aligned bearing " .. HOUND.Utils.TTS.toPhonetic(string.format("%03d",self.uncertenty_data.az))
-            msg = msg .. ", Tracked for " .. HOUND.Utils.TTS.getVerbalContactAge(self.first_seen) .. ", last seen " .. HOUND.Utils.TTS.getVerbalContactAge(self.last_seen) .. " ago"
+            if self:isAccurate()
+                then
+                    msg = msg .. ", Reported " .. HOUND.Utils.TTS.getVerbalContactAge(self.first_seen) .. " ago"
+                else
+                    msg = msg .. ", ellipse " ..  HOUND.Utils.TTS.simplfyDistance(self.uncertenty_data.major) .. " by " ..  HOUND.Utils.TTS.simplfyDistance(self.uncertenty_data.minor) .. ", aligned bearing " .. HOUND.Utils.TTS.toPhonetic(string.format("%03d",self.uncertenty_data.az))
+                    msg = msg .. ", Tracked for " .. HOUND.Utils.TTS.getVerbalContactAge(self.first_seen) .. ", last seen " .. HOUND.Utils.TTS.getVerbalContactAge(self.last_seen) .. " ago"
+                end
         end
         msg = msg .. ". " .. HOUND.Utils.getControllerResponse()
         return msg
@@ -120,7 +132,13 @@ do
         if refPos ~= nil and refPos.x ~= nil and refPos.z ~= nil then
             BR = HOUND.Utils.getBR(self.pos.p,refPos)
         end
-        local msg =  self:getName() .." (" .. HOUND.Utils.TTS.getVerbalContactAge(self.last_seen,true).. ")\n"
+        local msg =  self:getName()
+        if self:isAccurate()
+            then
+                msg = msg .." (Reported)\n"
+            else
+                msg = msg .." (" .. HOUND.Utils.TTS.getVerbalContactAge(self.last_seen,true).. ")\n"
+        end
         msg = msg .. "Accuracy: " .. HOUND.Utils.TTS.getVerbalConfidenceLevel( self.uncertenty_data.r ) .. "\n"
         msg = msg .. "BE: " .. BePos .. "\n" -- .. " (grid ".. GridPos ..")\n"
         if BR ~= nil then
@@ -128,10 +146,14 @@ do
         end
         msg = msg .. "LL: " .. HOUND.Utils.Text.getLL(self.pos.LL.lat,self.pos.LL.lon,useDMM).."\n"
         msg = msg .. "MGRS: " .. GridPos .. "\n"
-        msg = msg .. "Elev: " .. HOUND.Utils.getRoundedElevationFt(self.pos.elev) .. "ft"
+        msg = msg .. "Elev: " .. self:getElev() .. "ft"
         if HOUND.EXTENDED_INFO then
-            msg = msg .. "\nEllipse: " ..  self.uncertenty_data.major .. " by " ..  self.uncertenty_data.minor .. " aligned bearing " .. string.format("%03d",self.uncertenty_data.az) .. "\n"
-            msg = msg .. "Tracked for: " .. HOUND.Utils.TTS.getVerbalContactAge(self.first_seen) .. " Last Contact: " ..  HOUND.Utils.TTS.getVerbalContactAge(self.last_seen) .. " ago. "
+            if self:isAccurate() then
+                msg = msg .. "\nReported " .. HOUND.Utils.TTS.getVerbalContactAge(self.first_seen) .. " ago. "
+            else
+                msg = msg .. "\nEllipse: " ..  self.uncertenty_data.major .. " by " ..  self.uncertenty_data.minor .. " aligned bearing " .. string.format("%03d",self.uncertenty_data.az) .. "\n"
+                msg = msg .. "Tracked for: " .. HOUND.Utils.TTS.getVerbalContactAge(self.first_seen) .. " Last Contact: " ..  HOUND.Utils.TTS.getVerbalContactAge(self.last_seen) .. " ago. "
+            end
         end
         return msg
     end

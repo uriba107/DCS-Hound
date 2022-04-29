@@ -16,7 +16,7 @@ do
     -- @param DCS_Unit emitter DCS Unit
     -- @param HoundCoalition coalition Id of Hound Instace
     -- @param[opt] ContactId specify uid for the contact. if not present Unit ID will be used
-    -- @return HOUND.Contact
+    -- @return HOUND.Contact instance
     function HOUND.Contact.New(DCS_Unit,HoundCoalition,ContactId)
         if not DCS_Unit or type(DCS_Unit) ~= "table" or not DCS_Unit.getName or not HoundCoalition then
             HOUND.Logger.warn("failed to create HOUND.Contact instance")
@@ -28,6 +28,7 @@ do
         elintcontact.uid = ContactId or DCS_Unit:getID()
         elintcontact.DCStypeName = DCS_Unit:getTypeName()
         elintcontact.DCSgroupName = Group.getName(DCS_Unit:getGroup())
+        elintcontact.DCSunitName = DCS_Unit:getName()
         elintcontact.typeName = DCS_Unit:getTypeName()
         elintcontact.isEWR = false
         elintcontact.typeAssigned = {"Unknown"}
@@ -65,7 +66,6 @@ do
         elintcontact.maxWeaponsRange = HOUND.Utils.getSamMaxRange(DCS_Unit)
         elintcontact.detectionRange = HOUND.Utils.getRadarDetectionRange(DCS_Unit)
         elintcontact._dataPoints = {}
-        -- elintcontact._markpointID = nil
         elintcontact._markpoints = {
             p = HOUND.Utils.Marker.create(),
             u = HOUND.Utils.Marker.create()
@@ -144,6 +144,17 @@ do
         return self.pos.p
     end
 
+    --- get current estimated position elevation
+    -- @return Integer Elevation in ft.
+    function HOUND.Contact:getElev()
+        if not self:hasPos() then return 0 end
+        local step = 50
+        if self:isAccurate() then
+            step = 1
+        end
+        return HOUND.Utils.getRoundedElevationFt(self.pos.elev,step)
+    end
+
     --- get Unit instane assoiciated with contact
     -- @return Unit object
     function HOUND.Contact:getUnit()
@@ -168,7 +179,6 @@ do
     end
 
     --- check if contact DCS Unit is still alive
-    -- @return State (bool)
     -- @return Boolean
     function HOUND.Contact:isAlive()
         return self.unitAlive
@@ -179,7 +189,7 @@ do
     -- unit will be changed to Unit.name because DCS will remove the unit at the end of the event.
     function HOUND.Contact:setDead()
         self.unitAlive = false
-        self.unit = self.unit:getName()
+        self.unit = self.DCSunitName
     end
 
     --- check if contact is recent
@@ -201,8 +211,7 @@ do
     end
 
     --- Get current state
-    -- @return Contact state
-    -- @see HOUND.EVENTS
+    -- @return Contact state in @{HOUND.EVENTS}
     function HOUND.Contact:getState()
         return self.state
     end
@@ -247,7 +256,7 @@ do
     end
 
     --- Add Datapoint to content
-    -- @param datapoint HOUND.Datapoint
+    -- @param datapoint @{HOUND.Datapoint}
     function HOUND.Contact:AddPoint(datapoint)
         self.last_seen = datapoint.t
         if Length(self._dataPoints[datapoint.platformId]) == 0 then
@@ -301,8 +310,8 @@ do
 
     --- Take two HOUND.Datapoints and return the location of intersection
     -- @local
-    -- @param earlyPoint HOUND.Datapoint
-    -- @param latePoint HOUND.Datapoint
+    -- @param earlyPoint @{HOUND.Datapoint}
+    -- @param latePoint @{HOUND.Datapoint}
     -- @return Position
     function HOUND.Contact.triangulatePoints(earlyPoint, latePoint)
         local p1 = earlyPoint.platformPos
@@ -466,8 +475,8 @@ do
 
     --- process the intersection
     -- @param targetTable where should the result be stored
-    -- @param point1 HOUND.Datapoint Instance no.1
-    -- @param point2 HOUND.Datapoint Instance no.2
+    -- @param point1 @{HOUND.Datapoint} Instance no.1
+    -- @param point2 @{HOUND.Datapoint} Instance no.2
     function HOUND.Contact:processIntersection(targetTable,point1,point2)
         local err = (point1.platformPrecision + point2.platformPrecision)/2
         if HOUND.Utils.angleDeltaRad(point1.az,point2.az) < err then return end
@@ -477,8 +486,7 @@ do
     end
 
     --- process data in contact
-    -- @return HoundEvent
-    -- @see HOUND.EVENTS
+    -- @return HoundEvent id (@{HOUND.EVENTS})
     function HOUND.Contact:processData()
         if self.preBriefed then
             HOUND.Logger.trace(self:getName().." is PB..")
@@ -561,7 +569,6 @@ do
                 mobileDataPoints[i].processed = true
             end
         end
-
 
         if Length(estimatePositions) > 2 or (Length(estimatePositions) > 0 and staticPlatformsOnly) then
             self.pos.p = HOUND.Utils.Cluster.weightedMean(estimatePositions)

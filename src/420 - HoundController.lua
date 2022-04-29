@@ -15,7 +15,7 @@ do
     -- @return HOUND.Comms.Controller Instance
     function HOUND.Comms.Controller:create(sector,houndConfig,settings)
         local instance = self:superClass():create(sector,houndConfig,settings)
-        setmetatable(instance, self)
+        setmetatable(instance, HOUND.Comms.Controller)
         self.__index = self
 
         instance.preferences.alerts = true

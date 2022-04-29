@@ -16,7 +16,7 @@ do
     -- @return HOUND.Comms.InformationSystem Instance
     function HOUND.Comms.InformationSystem:create(sector,houndConfig,settings)
         local instance = self:superClass():create(sector,houndConfig,settings)
-        setmetatable(instance, self)
+        setmetatable(instance, HOUND.Comms.InformationSystem)
         self.__index = self
 
         instance.settings.freq = 250.500

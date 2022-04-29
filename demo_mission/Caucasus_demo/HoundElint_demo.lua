@@ -34,6 +34,7 @@ do
     Elint_blue:enableController()
     Elint_blue:enableText()
     Elint_blue:enableAtis()
+    -- Elint_blue:disableBDA()
     -- Elint_blue:setMarkerType(HOUND.MARKER.NONE)
 
     Elint_blue:addSector("Fake")
@@ -85,6 +86,10 @@ do
         trigger.action.explosion(pos,1000)
     end
 
+    function testing.markDead(unit)
+        Elint_blue:markDeadContact(unit)
+    end
+
     function testing.toggleGroup(groupName)
         local grp = Group.getByName(groupName)
         if grp and grp:isExist() then
@@ -123,6 +128,8 @@ do
 
     testing.Menu = missionCommands.addSubMenu("Hound Testing")
     missionCommands.addCommand("Destroy Radar",testing.Menu,testing.explode,Unit.getByName("SA-3 P-19"):getPoint())
+    missionCommands.addCommand("Mark dead Radar",testing.Menu,testing.markDead,"SA-3 P-19")
+
     missionCommands.addCommand("Toggle SA-3 Activation",testing.Menu,testing.toggleGroup,"SA-3_late")
     -- missionCommands.addCommand("Destroy C17",testing.Menu,Unit.destroy,Unit.getByName("ELINT_C17"))
     -- missionCommands.addCommand("Remove C17",testing.Menu,testing.removePlatform,{houndInstance=Elint_blue,unit_name="ELINT_C17"})
