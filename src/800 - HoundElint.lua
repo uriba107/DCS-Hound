@@ -1153,14 +1153,18 @@ do
             for _,sector in pairs(sectors) do
                 sector:updateSectorMembership(houndEvent.initiator)
             end
-            for _,sector in pairs(sectors) do
-                sector:notifyNewEmitter(houndEvent.initiator)
+            if self:isRunning() then
+                for _,sector in pairs(sectors) do
+                    sector:notifyNewEmitter(houndEvent.initiator)
+                end
             end
         end
 
         if houndEvent.id == HOUND.EVENTS.RADAR_DESTROYED then
-            for _,sector in pairs(sectors) do
-                sector:notifyDeadEmitter(houndEvent.initiator)
+            if self:isRunning() then
+                for _,sector in pairs(sectors) do
+                    sector:notifyDeadEmitter(houndEvent.initiator)
+                end
             end
         end
     end
@@ -1169,9 +1173,16 @@ do
     -- @param DcsEvent incoming dcs event
     -- @local
     function HoundElint:onEvent(DcsEvent)
-        if not self:isRunning() then return end
         if not DcsEvent.initiator or type(DcsEvent.initiator) ~= "table" then return end
         if type(DcsEvent.initiator.getCoalition) ~= "function" then return end
+
+        if DcsEvent.id == world.event.S_EVENT_DEAD
+            and DcsEvent.initiator:getCoalition() ~= self.settings:getCoalition()
+            and self:getBDA()
+            then return self:markDeadContact(DcsEvent.initiator)
+        end
+
+        if not self:isRunning() then return end
 
         if DcsEvent.id == world.event.S_EVENT_BIRTH
             and DcsEvent.initiator:getCoalition() == self.settings:getCoalition()
@@ -1187,12 +1198,6 @@ do
             and type(DcsEvent.initiator.getName) == "function"
             and setContains(mist.DBs.humansByName,DcsEvent.initiator:getName())
                 then return self:populateRadioMenu()
-        end
-
-        if DcsEvent.id == world.event.S_EVENT_DEAD
-            and DcsEvent.initiator:getCoalition() ~= self.settings:getCoalition()
-            and self:getBDA()
-            then return self:markDeadContact(DcsEvent.initiator)
         end
     end
 

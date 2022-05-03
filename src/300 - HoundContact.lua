@@ -489,19 +489,11 @@ do
     -- @return HoundEvent id (@{HOUND.EVENTS})
     function HOUND.Contact:processData()
         if self.preBriefed then
-            HOUND.Logger.trace(self:getName().." is PB..")
             if type(self.unit) == "table" and self.unit.isExist and self.unit:isExist() then
                 local unitPos = self.unit:getPosition()
-                if l_mist.utils.get3DDist(unitPos.p,self.pos.p) < 0.1 then
-                    HOUND.Logger.trace("No change in position.. skipping..")
-                    return
-                end
-                HOUND.Logger.trace("position changed.. removing PB mark..")
+                if l_mist.utils.get3DDist(unitPos.p,self.pos.p) < 0.25 then return end
                 self.preBriefed = false
-            else
-                HOUND.Logger.trace("PB Unit does not exist")
-                return
-            end
+            else return end
         end
 
         if not self:isRecent() then
@@ -751,7 +743,6 @@ do
     -- @param sectorName
     -- @return Boot True if theat
     function HOUND.Contact:isInSector(sectorName)
-        -- HOUND.Logger.trace("inSector " .. self:getName() .. " (" .. tostring(sectorName) .."): ".. tostring(self.threatSectors[sectorName]) )
         return self.threatSectors[sectorName] or false
     end
 

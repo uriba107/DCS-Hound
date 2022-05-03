@@ -463,9 +463,7 @@ do
     --- update contact for zone memberships
     -- @param contact HOUND.Contact instance
     function HOUND.Sector:updateSectorMembership(contact)
-        -- HOUND.Logger.trace("Evaluating " .. contact:getName() .. " for " .. self.name)
         local inSector, threatsSector = HOUND.Utils.Polygon.threatOnSector(self.settings.zone,contact:getPos(),contact:getMaxWeaponsRange())
-        -- HOUND.Logger.trace(tostring(inSector) .. " " .. tostring(threatsSector))
         contact:updateSector(self.name, inSector, threatsSector)
     end
 
@@ -844,7 +842,6 @@ do
         if not controller and not notifier then return end
         if (not controller or not controller:isEnabled() or not controller:getSettings("alerts")) and (not notifier or not notifier:isEnabled())
              then return end
-        if contact:isAccurate() then return end
 
         local contactPrimarySector = contact:getPrimarySector()
         if self.name ~= "default" and self.name ~= contactPrimarySector then return end

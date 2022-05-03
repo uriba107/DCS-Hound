@@ -62,13 +62,21 @@ do
         if NATO then
             reportedName = self:getNatoDesignation()
         end
-        local str = reportedName .. ", " .. HOUND.Utils.TTS.getVerbalContactAge(self.last_seen,true,NATO)
+        local str = reportedName
+        if self:isAccurate() then
+            str = str .. ", reported"
+        else
+            str = str .. ", " .. HOUND.Utils.TTS.getVerbalContactAge(self.last_seen,true,NATO)
+        end
         if NATO then
             str = str .. " bullseye " .. phoneticBulls
         else
-            str = str .. " at " .. phoneticGridPos -- .. ", bullseye " .. phoneticBulls
+            str = str .. " at " .. phoneticGridPos
         end
-        str = str .. ", accuracy " .. HOUND.Utils.TTS.getVerbalConfidenceLevel( self.uncertenty_data.r ) .. "."
+        if not self:isAccurate() then
+            str = str .. ", accuracy " .. HOUND.Utils.TTS.getVerbalConfidenceLevel( self.uncertenty_data.r )
+        end
+        str = str .. "."
         return str
     end
 
@@ -91,7 +99,6 @@ do
                 msg = msg .. ", reported"
             else
                msg = msg .. ", " .. HOUND.Utils.TTS.getVerbalContactAge(self.last_seen,true)
-
         end
         if BR ~= nil
             then

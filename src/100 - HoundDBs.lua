@@ -377,14 +377,14 @@ do
         },
         ['S-300PMU2 92H6E tr'] = {
             ['Name'] = 'Grave Stone',
-            ['Assigned'] = {"SA-20B"},
+            ['Assigned'] = {"SA-20"},
             ['Role'] = {"TR"},
             ['Band'] = 'I',
             ['Primary'] = true
         },
         ['S-300PMU2 64H6E2 sr'] = {
             ['Name'] = "Big Bird",
-            ['Assigned'] = {"SA-20B"},
+            ['Assigned'] = {"SA-20"},
             ['Role'] = {"SR"},
             ['Band'] = 'C',
             ['Primary'] = false
@@ -422,6 +422,13 @@ do
             ['Assigned'] = {"SA-10"},
             ['Role'] = {"TR"},
             ['Band'] = 'J',
+            ['Primary'] = true
+        },
+        ['Fire Can radar'] = {
+            ['Name'] = "Fire Can",
+            ['Assigned'] = {"AAA"},
+            ['Role'] = {"TR"},
+            ['Band'] = 'E',
             ['Primary'] = true
         },
         -- SAM Assets pack

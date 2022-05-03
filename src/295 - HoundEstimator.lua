@@ -18,7 +18,6 @@ do
             score = HOUND.Utils.Mapping.linear(err,0,100000,1,0,true)
             score = HOUND.Utils.Cluster.gaussianKernel(score,0.2)
         end
-        -- HOUND.Logger.trace("err in KM: ".. err/1000 .. " | score: " .. score)
         if type(score) == "number" then
             return score
         else
@@ -50,7 +49,6 @@ do
             end
 
             if type(datapoint.err.score) ~= "table" then
-                HOUND.Logger.trace("Datapoint did not contain score")
                 return self.estimated.p
             end
             self.P.x = self.P.x + math.sqrt(datapoint.err.score.x)
@@ -58,7 +56,6 @@ do
 
             local Kx = self.P.x / (self.P.x+(datapoint.err.score.x))
             local Kz = self.P.z / (self.P.z+(datapoint.err.score.z))
-            -- HOUND.Logger.trace("score(K): " .. datapoint.err.score.x .. "/" .. datapoint.err.score.z .. " (" .. self.K.x .. "/".. self.K.z  .. ")")
 
             self.estimated.p.x = self.estimated.p.x + (Kx * (datapoint.x-self.estimated.p.x))
             self.estimated.p.z = self.estimated.p.z + (Kz * (datapoint.z-self.estimated.p.z))
@@ -66,7 +63,6 @@ do
             self.P.x = (1-Kx) * self.P.x
             self.P.z = (1-Kz) * self.P.z
 
-            -- HOUND.Logger.trace("P: " .. self.P.x .. "|" .. self.P.z .. " || old logic: ".. (1-self.K.x) .. "|" .. (1-self.K.z))
             self.estimated.p = HOUND.Utils.Geo.setHeight(self.estimated.p)
             return self.estimated.p
         end
@@ -105,10 +101,8 @@ do
             self.P = self.P + l_math.sqrt(noiseP) -- add "process noise" in the form of standard diviation
             local K = self.P / (self.P+self.noise)
             local deltaAz = newAz-predAz
-            -- HOUND.Logger.trace("In values: " .. l_math.deg(newAz) .. " p: " .. l_math.deg(predAz) .. " delta " .. l_math.deg(deltaAz) .. " with Gain: " .. l_math.deg(self.K * deltaAz))
             self.estimated = ((self.estimated + K * (deltaAz)) + PI_2) % PI_2
             self.P = (1-K) * self.P
-            -- HOUND.Logger.trace("Out values: " .. l_math.deg(self.estimated) )
         end
 
         Kalman.get = function (self)

@@ -336,17 +336,11 @@ do
     function HOUND.ElintWorker:Sniff()
         self:removeDeadPlatforms()
 
-        if Length(self.platforms) == 0 then
-            HOUND.Logger.trace("no active platform")
-            return
-        end
+        if Length(self.platforms) == 0 then return end
 
         local Radars = HOUND.Utils.Elint.getActiveRadars(self:getCoalition())
 
-        if Length(Radars) == 0 then
-            HOUND.Logger.trace("No Transmitting Radars")
-            return
-        end
+        if Length(Radars) == 0 then return end
         -- env.info("Recivers: " .. table.getn(self.platform) .. " | Radars: " .. table.getn(Radars))
         for _,RadarName in ipairs(Radars) do
             local radar = Unit.getByName(RadarName)
