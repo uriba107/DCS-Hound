@@ -9,6 +9,7 @@ end
 do
     Elint_blue = HoundElint:create(coalition.side.BLUE)
 
+    Elint_blue:preBriefedContact('PB-test-1')
     Elint_blue:systemOn()
 
     Elint_blue:addPlatform("ELINT_C17")
@@ -89,6 +90,9 @@ do
     function testing.markDead(unit)
         Elint_blue:markDeadContact(unit)
     end
+    function testing.markPB(unit)
+        Elint_blue:preBriefedContact(unit)
+    end
 
     function testing.toggleGroup(groupName)
         local grp = Group.getByName(groupName)
@@ -129,6 +133,7 @@ do
     testing.Menu = missionCommands.addSubMenu("Hound Testing")
     missionCommands.addCommand("Destroy Radar",testing.Menu,testing.explode,Unit.getByName("SA-3 P-19"):getPoint())
     missionCommands.addCommand("Mark dead Radar",testing.Menu,testing.markDead,"SA-3 P-19")
+    missionCommands.addCommand("Mark PB",testing.Menu,testing.markPB,"PB-test-3")
 
     missionCommands.addCommand("Toggle SA-3 Activation",testing.Menu,testing.toggleGroup,"SA-3_late")
     -- missionCommands.addCommand("Destroy C17",testing.Menu,Unit.destroy,Unit.getByName("ELINT_C17"))
