@@ -12,7 +12,7 @@ end
 
 do
     HOUND = {
-        VERSION = "0.3.0-develop-20220429",
+        VERSION = "0.3.0-develop-20220503",
         DEBUG = false,
         ELLIPSE_PERCENTILE = 0.6,
         DATAPOINTS_NUM = 30,
@@ -627,14 +627,14 @@ do
         },
         ['S-300PMU2 92H6E tr'] = {
             ['Name'] = 'Grave Stone',
-            ['Assigned'] = {"SA-20B"},
+            ['Assigned'] = {"SA-20"},
             ['Role'] = {"TR"},
             ['Band'] = 'I',
             ['Primary'] = true
         },
         ['S-300PMU2 64H6E2 sr'] = {
             ['Name'] = "Big Bird",
-            ['Assigned'] = {"SA-20B"},
+            ['Assigned'] = {"SA-20"},
             ['Role'] = {"SR"},
             ['Band'] = 'C',
             ['Primary'] = false
@@ -672,6 +672,13 @@ do
             ['Assigned'] = {"SA-10"},
             ['Role'] = {"TR"},
             ['Band'] = 'J',
+            ['Primary'] = true
+        },
+        ['Fire Can radar'] = {
+            ['Name'] = "Fire Can",
+            ['Assigned'] = {"AAA"},
+            ['Role'] = {"TR"},
+            ['Band'] = 'E',
             ['Primary'] = true
         },
         ['EWR 55G6U NEBO-U'] = {
@@ -3373,16 +3380,11 @@ do
 
     function HOUND.Contact:processData()
         if self.preBriefed then
-            HOUND.Logger.trace(self:getName().." is PB..")
             if type(self.unit) == "table" and self.unit.isExist and self.unit:isExist() then
                 local unitPos = self.unit:getPosition()
-                if l_mist.utils.get3DDist(unitPos.p,self.pos.p) < 0.1 then
-                    return
-                end
+                if l_mist.utils.get3DDist(unitPos.p,self.pos.p) < 0.25 then return end
                 self.preBriefed = false
-            else
-                return
-            end
+            else return end
         end
 
         if not self:isRecent() then
@@ -3740,13 +3742,21 @@ do
         if NATO then
             reportedName = self:getNatoDesignation()
         end
-        local str = reportedName .. ", " .. HOUND.Utils.TTS.getVerbalContactAge(self.last_seen,true,NATO)
+        local str = reportedName
+        if self:isAccurate() then
+            str = str .. ", reported"
+        else
+            str = str .. ", " .. HOUND.Utils.TTS.getVerbalContactAge(self.last_seen,true,NATO)
+        end
         if NATO then
             str = str .. " bullseye " .. phoneticBulls
         else
-            str = str .. " at " .. phoneticGridPos -- .. ", bullseye " .. phoneticBulls
+            str = str .. " at " .. phoneticGridPos
         end
-        str = str .. ", accuracy " .. HOUND.Utils.TTS.getVerbalConfidenceLevel( self.uncertenty_data.r ) .. "."
+        if not self:isAccurate() then
+            str = str .. ", accuracy " .. HOUND.Utils.TTS.getVerbalConfidenceLevel( self.uncertenty_data.r )
+        end
+        str = str .. "."
         return str
     end
 
@@ -3765,7 +3775,6 @@ do
                 msg = msg .. ", reported"
             else
                msg = msg .. ", " .. HOUND.Utils.TTS.getVerbalContactAge(self.last_seen,true)
-
         end
         if BR ~= nil
             then
@@ -4595,15 +4604,11 @@ do
     function HOUND.ElintWorker:Sniff()
         self:removeDeadPlatforms()
 
-        if Length(self.platforms) == 0 then
-            return
-        end
+        if Length(self.platforms) == 0 then return end
 
         local Radars = HOUND.Utils.Elint.getActiveRadars(self:getCoalition())
 
-        if Length(Radars) == 0 then
-            return
-        end
+        if Length(Radars) == 0 then return end
         for _,RadarName in ipairs(Radars) do
             local radar = Unit.getByName(RadarName)
             local radarPos = radar:getPosition().p
@@ -5384,7 +5389,6 @@ do
         if not controller and not notifier then return end
         if (not controller or not controller:isEnabled() or not controller:getSettings("alerts")) and (not notifier or not notifier:isEnabled())
              then return end
-        if contact:isAccurate() then return end
 
         local contactPrimarySector = contact:getPrimarySector()
         if self.name ~= "default" and self.name ~= contactPrimarySector then return end
@@ -6428,22 +6432,33 @@ do
             for _,sector in pairs(sectors) do
                 sector:updateSectorMembership(houndEvent.initiator)
             end
-            for _,sector in pairs(sectors) do
-                sector:notifyNewEmitter(houndEvent.initiator)
+            if self:isRunning() then
+                for _,sector in pairs(sectors) do
+                    sector:notifyNewEmitter(houndEvent.initiator)
+                end
             end
         end
 
         if houndEvent.id == HOUND.EVENTS.RADAR_DESTROYED then
-            for _,sector in pairs(sectors) do
-                sector:notifyDeadEmitter(houndEvent.initiator)
+            if self:isRunning() then
+                for _,sector in pairs(sectors) do
+                    sector:notifyDeadEmitter(houndEvent.initiator)
+                end
             end
         end
     end
 
     function HoundElint:onEvent(DcsEvent)
-        if not self:isRunning() then return end
         if not DcsEvent.initiator or type(DcsEvent.initiator) ~= "table" then return end
         if type(DcsEvent.initiator.getCoalition) ~= "function" then return end
+
+        if DcsEvent.id == world.event.S_EVENT_DEAD
+            and DcsEvent.initiator:getCoalition() ~= self.settings:getCoalition()
+            and self:getBDA()
+            then return self:markDeadContact(DcsEvent.initiator)
+        end
+
+        if not self:isRunning() then return end
 
         if DcsEvent.id == world.event.S_EVENT_BIRTH
             and DcsEvent.initiator:getCoalition() == self.settings:getCoalition()
@@ -6459,12 +6474,6 @@ do
             and type(DcsEvent.initiator.getName) == "function"
             and setContains(mist.DBs.humansByName,DcsEvent.initiator:getName())
                 then return self:populateRadioMenu()
-        end
-
-        if DcsEvent.id == world.event.S_EVENT_DEAD
-            and DcsEvent.initiator:getCoalition() ~= self.settings:getCoalition()
-            and self:getBDA()
-            then return self:markDeadContact(DcsEvent.initiator)
         end
     end
 
@@ -6482,4 +6491,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.3.0-develop-20220429 - Compiled on 2022-04-29 12:08
+-- Hound version 0.3.0-develop-20220503 - Compiled on 2022-05-03 20:57
