@@ -832,26 +832,24 @@ TrackId,NatoDesignation,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accurac
 ```
 
 Sample data
-```CSV
+```csv
 TrackId,NatoDesignation,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accuracy,lastSeen,ReportGenerated
-I-1,2,Fan-song,Asleep,187/78,33.72173263283,35.800633677283,36S YC 5951 3482,Precise,1700,1715
-I-2,2 or 3,Flat Face,Active,187/78,33.723212658667,35.799935311662,36S YC 5944 3498,Precise,1714,1715
-E-13,6,Straight Flush,Active,185/77,33.730050913622,35.871393407891,36S YC 6604 3592,Very High,1714,1715
-E-14,6,Straight Flush,Active,189/84,33.62679661342,35.734022593937,36S YC 5361 2412,Very High,1714,1715
-E-15,6,Straight Flush,Active,182/71,33.844039272863,35.949154848806,36S YC 7289 4877,Very High,1714,1715
-E-11,8,Osa,Active,188/34,34.45016481669,35.852106222757,36S YD 6202 1576,Very High,1714,1715
-E-9,Tunguska,Tunguska,Active,198/69,33.901411052642,35.548778762754,36S YC 3567 5414,Very High,1714,1715
-E-10,Tunguska,Tunguska,Active,197/69,33.89410415154,35.58128320514,36S YC 3870 5341,Very High,1714,1715
-E-12,EWR,EWR,Active,185/97,33.411029889647,35.841561233221,36S YC 6425 46,Unactionable,1714,1715
-I-3,EWR,EWR,Active,147/60,34.207544426277,36.618624168388,37S BT 8059 8773,Precise,1714,1715
-I-4,EWR,EWR,Active,191/81,33.678492714384,35.704000279601,36S YC 5068 2979,Precise,1714,1715
-I-5,EWR,EWR,Active,170/44,34.301649756789,36.114851999779,37S BT 3446 9937,Precise,1714,1715
-I-6,EWR,EWR,Active,200/75,33.820851785526,35.486437019542,36S YC 3012 4507,Precise,1714,1715
-I-7,EWR,EWR,Active,185/64,33.950048069293,35.87800652163,36S YC 6597 6034,Precise,1714,1715
-I-8,EWR,EWR,Active,183/52,34.151685286409,35.911686450578,36S YC 6845 8280,Precise,1714,1715
+I-1,2,Fan-song,Down,187/78,33.72173263283,35.800633677283,36S YC 5951 3482,Precise,1700,1710
+I-2,2 or 3,Flat Face,Active,187/78,33.723212658667,35.799935311662,36S YC 5944 3498,Precise,1710,1710
+E-11,6,Straight Flush,Active,189/83,33.636191191754,35.743945206698,36S YC 5451 2519,Very High,1710,1710
+E-12,6,Straight Flush,Active,182/71,33.838453757664,35.947211250926,36S YC 7272 4815,Very High,1710,1710
+E-13,15,Tor,Down,197/84,33.657910334442,35.498846337623,36S YC 3171 2702,Very High,1708,1710
+E-10,8,Osa,Active,185/77,33.734453783558,35.863280432357,36S YC 6528 3639,Very High,1710,1710
+E-9,EWR,EWR,Active,185/96,33.423544482484,35.863605141384,36S YC 6626 190,Very Low,1710,1710
+I-3,EWR,EWR,Active,147/60,34.207544426277,36.618624168388,37S BT 8059 8773,Precise,1710,1710
+I-4,EWR,EWR,Active,191/81,33.678492714384,35.704000279601,36S YC 5068 2979,Precise,1710,1710
+I-5,EWR,EWR,Active,170/44,34.301649756789,36.114851999779,37S BT 3446 9937,Precise,1710,1710
+I-7,EWR,EWR,Active,185/64,33.950048069293,35.87800652163,36S YC 6597 6034,Precise,1710,1710
+I-8,EWR,EWR,Active,183/52,34.151685286409,35.911686450578,36S YC 6845 8280,Precise,1710,1710
 ```
 
 **NOTE**: This function requires you do [de-sanitize](#desanitize-dcs-scripting-engine) `io` and `lfs` modules in DCS scripting engine.
+
 ---
 ## Known Issues
   * On initial detection accuracy will usually be very high with solution nowhere near the radar actual position. This is sorted by the system as more datapoints are gathered. allow at least 2 minutes for contact to stablize.
@@ -871,7 +869,7 @@ From 0.2 to 0.3 there was an internal change and all classes (except form `Hound
   *  HoundEventHandler now called HOUND.EventHandler please make sure to update you scripts
 
 ## More Docs
-  * [Main script Documentation](https://uriba107.github.io/DCS-Hound/) - all the options available, even those I didn't write here
+  * [Main script Documentation](https://uriba107.github.io/DCS-Hound/) - all the options available for the avarage mission builder, even those I didn't write here
   * [Developers Documentation](https://uriba107.github.io/DCS-Hound/dev_docs/) - this is actually everything. You don't need this unless you intend to hack your way to glory.
   * [Scripting Ideas](SCRIPTING_IDEAS.MD) - A random bunch of scripting ideas. feel free to suggest more via an issue or Pull-Request.
 
