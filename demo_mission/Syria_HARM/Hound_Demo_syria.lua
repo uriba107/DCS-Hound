@@ -57,7 +57,7 @@ do
 
     function HOUND_MISSION.SA6.destroyPos(pos)
         if HOUND.Utils.Geo.isDcsPoint(pos) then
-            trigger.action.explosion(pos,250)
+            trigger.action.explosion(pos,50)
         end
     end
 

@@ -1124,7 +1124,7 @@ do
         end
         local currentGameTime = HOUND.Utils.Text.getTime()
         local csvFile = io.open(lfs.writedir() .. filename, "w+")
-        csvFile:write("TrackId,NatoDesignation,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accuracy,lastSeen,ReportGenerated\n")
+        csvFile:write("TrackId,NatoDesignation,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accuracy,lastSeen,DCStype,DCSunit,DCSgroup,ReportGenerated\n")
         csvFile:flush()
         for _,emitter in pairs(self.contacts:listAllbyRange()) do
             local entry = emitter:generateIntelBrief()
@@ -1179,7 +1179,8 @@ do
         if DcsEvent.id == world.event.S_EVENT_DEAD
             and DcsEvent.initiator:getCoalition() ~= self.settings:getCoalition()
             and self:getBDA()
-            then return self:markDeadContact(DcsEvent.initiator)
+            then
+                return self:markDeadContact(DcsEvent.initiator)
         end
 
         if not self:isRunning() then return end

@@ -114,6 +114,18 @@ do
     function HOUND.Contact:getGroupName()
         return self.DCSgroupName
     end
+
+    --- Get the DCS unit name
+    -- @return String
+    function HOUND.Contact:getDcsName()
+        return self.DCSunitName
+    end
+
+    --- Get the underlying DCS Object
+    -- @return DCS Unit or DCS staticObject
+    function HOUND.Contact:getDCSObject()
+        return self.unit or self.DCSunitName
+    end
     --- Get last seen in seconds
     -- @return number in seconds since contact was last seen
     function HOUND.Contact:getLastSeen()
@@ -178,6 +190,17 @@ do
         return table.concat(self.typeAssigned," or ")
     end
 
+    --- get unit health
+    function HOUND.Contact:getLife()
+        if self:isAlive() and (not self.unit or not self.unit.getLife) then
+            HOUND.Logger.error("something is wrong with the object for " .. self.DCSunitName)
+            self:updateDeadDCSObject()
+        end
+        if type(self.unit) == "table" and self.unit.getLife then
+            return self.unit:getLife()
+        end
+        return 0
+    end
     --- check if contact DCS Unit is still alive
     -- @return Boolean
     function HOUND.Contact:isAlive()
@@ -189,7 +212,16 @@ do
     -- unit will be changed to Unit.name because DCS will remove the unit at the end of the event.
     function HOUND.Contact:setDead()
         self.unitAlive = false
-        self.unit = self.DCSunitName
+        self:updateDeadDCSObject()
+    end
+
+    --- update the internal DCS Object
+    -- Since March 2022, Dead units are converted to staticObject on delayed death
+    function HOUND.Contact:updateDeadDCSObject()
+        self.unit = Unit.getByName(self.DCSunitName) or Object.getByName(self.DCSunitName)
+        if not self.unit then
+            self.unit = self.DCSunitName
+        end
     end
 
     --- check if contact is recent

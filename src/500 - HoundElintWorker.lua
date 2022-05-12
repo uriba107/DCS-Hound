@@ -201,6 +201,7 @@ do
     function HOUND.ElintWorker:removeContact(emitterName)
         if not type(emitterName) == "string" then return false end
         if self.contacts[emitterName] then
+            self.contacts[emitterName]:updateDeadDCSObject()
             HOUND.EventHandler.publishEvent({
                 id = HOUND.EVENTS.RADAR_DESTROYED,
                 initiator = self.contacts[emitterName],
@@ -409,7 +410,9 @@ do
                 if contact:isTimedout() then
                     contactState = contact:CleanTimedout()
                 end
-
+                if self.settings:getBDA() and contact:isAlive() and contact:getLife() < 1 then
+                    contact:setDead()
+                end
                 if not contact:isAlive() and contact:getLastSeen() > 60 then
                     self:removeContact(contactName)
                     contact:destroy()

@@ -83,7 +83,21 @@ do
         HOUND.FORCE_MANAGE_MARKERS = not HOUND.FORCE_MANAGE_MARKERS
     end
 
-    function testing.explode(pos)
+    function testing.boom(unit)
+        local pos = unit:getPoint()
+        local life0 = unit:getLife0()
+        local life = unit:getLife()
+        local ittr = 1
+        while life > 1 and ittr < 10 do
+            local pwr = math.max(0.0055,(life-1)/life0)
+            env.info(ittr .. " | unit has " .. unit:getLife() .. " started with " .. life0 .. "explody power: " .. pwr)
+            trigger.action.explosion(pos,pwr)
+            life = unit:getLife()
+            ittr = ittr+1
+        end 
+    end
+
+    function testing.badaBoom(pos)
         trigger.action.explosion(pos,1000)
     end
 
@@ -131,7 +145,8 @@ do
     end
 
     testing.Menu = missionCommands.addSubMenu("Hound Testing")
-    missionCommands.addCommand("Destroy Radar",testing.Menu,testing.explode,Unit.getByName("SA-3 P-19"):getPoint())
+    missionCommands.addCommand("Poke Radar",testing.Menu,testing.boom,Unit.getByName("PB-test-3"))
+    -- missionCommands.addCommand("Poke Radar",testing.Menu,testing.boom,Unit.getByName("SA-3 P-19"))
     missionCommands.addCommand("Mark dead Radar",testing.Menu,testing.markDead,"SA-3 P-19")
     missionCommands.addCommand("Mark PB",testing.Menu,testing.markPB,"PB-test-3")
 
@@ -146,7 +161,6 @@ do
     missionCommands.addCommand("Add test Marker",testing.Menu,testing.AddMarker)
     missionCommands.addCommand("Toggle marker Counter",testing.Menu,testing.toggleMarkers)
     missionCommands.addCommand("unit data",testing.Menu,testing.GrpData,'Elint')
-
 end
 
 do

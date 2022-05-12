@@ -224,17 +224,16 @@ do
     --- Generate Intel brief Message (for export)
     -- @return string - compiled message
     function HOUND.Contact:generateIntelBrief()
-        -- track ECHO 1017, straigh flush, ACTIVE, BULLSEYE 012 13, lat/lon, accuracy very high.
-        -- TrackId,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accuracy
+        -- TrackId,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accuracy,DCS type,DCS Unit,DCS Group
         local msg = ""
         if self:hasPos() then
             local GridPos,BePos = self:getTextData(true,HOUND.MGRS_PRECISION)
             msg = {
                 self:getTrackId(),self:getNatoDesignation(),self:getType(),
                 HOUND.Utils.TTS.getVerbalContactAge(self.last_seen,true,true),
-                BePos,self.pos.LL.lat,self.pos.LL.lon, GridPos,
+                BePos,string.format("%02.6f",self.pos.LL.lat),string.format("%03.6f",self.pos.LL.lon), GridPos,
                 HOUND.Utils.TTS.getVerbalConfidenceLevel( self.uncertenty_data.r ),
-                HOUND.Utils.Text.getTime(self.last_seen)
+                HOUND.Utils.Text.getTime(self.last_seen),self.DCStypeName,self.DCSunitName,self.DCSgroupName
             }
             msg = table.concat(msg,",")
         end

@@ -12,7 +12,7 @@ end
 
 do
     HOUND = {
-        VERSION = "0.3.0-develop-20220503",
+        VERSION = "0.3.0-develop-20220512",
         DEBUG = false,
         ELLIPSE_PERCENTILE = 0.6,
         DATAPOINTS_NUM = 30,
@@ -3089,6 +3089,14 @@ do
     function HOUND.Contact:getGroupName()
         return self.DCSgroupName
     end
+
+    function HOUND.Contact:getDcsName()
+        return self.DCSunitName
+    end
+
+    function HOUND.Contact:getDCSObject()
+        return self.unit or self.DCSunitName
+    end
     function HOUND.Contact:getLastSeen()
         return HOUND.Utils.absTimeDelta(self.last_seen)
     end
@@ -3135,13 +3143,30 @@ do
         return table.concat(self.typeAssigned," or ")
     end
 
+    function HOUND.Contact:getLife()
+        if self:isAlive() and (not self.unit or not self.unit.getLife) then
+            HOUND.Logger.error("something is wrong with the object for " .. self.DCSunitName)
+            self:updateDeadDCSObject()
+        end
+        if type(self.unit) == "table" and self.unit.getLife then
+            return self.unit:getLife()
+        end
+        return 0
+    end
     function HOUND.Contact:isAlive()
         return self.unitAlive
     end
 
     function HOUND.Contact:setDead()
         self.unitAlive = false
-        self.unit = self.DCSunitName
+        self:updateDeadDCSObject()
+    end
+
+    function HOUND.Contact:updateDeadDCSObject()
+        self.unit = Unit.getByName(self.DCSunitName) or Object.getByName(self.DCSunitName)
+        if not self.unit then
+            self.unit = self.DCSunitName
+        end
     end
 
     function HOUND.Contact:isRecent()
@@ -3890,9 +3915,9 @@ do
             msg = {
                 self:getTrackId(),self:getNatoDesignation(),self:getType(),
                 HOUND.Utils.TTS.getVerbalContactAge(self.last_seen,true,true),
-                BePos,self.pos.LL.lat,self.pos.LL.lon, GridPos,
+                BePos,string.format("%02.6f",self.pos.LL.lat),string.format("%03.6f",self.pos.LL.lon), GridPos,
                 HOUND.Utils.TTS.getVerbalConfidenceLevel( self.uncertenty_data.r ),
-                HOUND.Utils.Text.getTime(self.last_seen)
+                HOUND.Utils.Text.getTime(self.last_seen),self.DCStypeName,self.DCSunitName,self.DCSgroupName
             }
             msg = table.concat(msg,",")
         end
@@ -4491,6 +4516,7 @@ do
     function HOUND.ElintWorker:removeContact(emitterName)
         if not type(emitterName) == "string" then return false end
         if self.contacts[emitterName] then
+            self.contacts[emitterName]:updateDeadDCSObject()
             HOUND.EventHandler.publishEvent({
                 id = HOUND.EVENTS.RADAR_DESTROYED,
                 initiator = self.contacts[emitterName],
@@ -4669,7 +4695,9 @@ do
                 if contact:isTimedout() then
                     contactState = contact:CleanTimedout()
                 end
-
+                if self.settings:getBDA() and contact:isAlive() and contact:getLife() < 1 then
+                    contact:setDead()
+                end
                 if not contact:isAlive() and contact:getLastSeen() > 60 then
                     self:removeContact(contactName)
                     contact:destroy()
@@ -6409,7 +6437,7 @@ do
         end
         local currentGameTime = HOUND.Utils.Text.getTime()
         local csvFile = io.open(lfs.writedir() .. filename, "w+")
-        csvFile:write("TrackId,NatoDesignation,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accuracy,lastSeen,ReportGenerated\n")
+        csvFile:write("TrackId,NatoDesignation,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accuracy,lastSeen,DCStype,DCSunit,DCSgroup,ReportGenerated\n")
         csvFile:flush()
         for _,emitter in pairs(self.contacts:listAllbyRange()) do
             local entry = emitter:generateIntelBrief()
@@ -6455,7 +6483,8 @@ do
         if DcsEvent.id == world.event.S_EVENT_DEAD
             and DcsEvent.initiator:getCoalition() ~= self.settings:getCoalition()
             and self:getBDA()
-            then return self:markDeadContact(DcsEvent.initiator)
+            then
+                return self:markDeadContact(DcsEvent.initiator)
         end
 
         if not self:isRunning() then return end
@@ -6491,4 +6520,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.3.0-develop-20220503 - Compiled on 2022-05-03 20:57
+-- Hound version 0.3.0-develop-20220512 - Compiled on 2022-05-12 20:18
