@@ -177,6 +177,18 @@ But this is an example of a more compex configuration.
     HoundBlue:enableBDA()
     HoundBlue:systemOn()
 ```
+
+### On screen Debug
+when this setting is enabled, Hound will print a short status report after each update cycle. (every ~15 seconds by default)
+it is controlled by the `onScreenDebug` function. this output is disabled by default
+```lua
+-- to enable
+    HoundBlue:onScreenDebug(true)
+-- to disable
+    HoundBlue:onScreenDebug(false)
+```
+
+
 # Deep Dive
 
 ## Initialization

@@ -12,7 +12,7 @@ end
 
 do
     HOUND = {
-        VERSION = "0.3.0-develop-20220512",
+        VERSION = "0.3.0-develop-20220521",
         DEBUG = false,
         ELLIPSE_PERCENTILE = 0.6,
         DATAPOINTS_NUM = 30,
@@ -1064,6 +1064,7 @@ do
             root = nil,
             parent = nil
         }
+        instance.onScreenDebug = false
 
         instance.getId = function (self)
             return self.id
@@ -1184,6 +1185,18 @@ do
         instance.setHardcore = function(self,value)
             if type(value) == "boolean" then
                 self.preferences.hardcore = value
+                return true
+            end
+            return false
+        end
+
+        instance.getOnScreenDebug = function(self)
+            return self.onScreenDebug
+        end
+
+        instance.setOnScreenDebug = function(self,value)
+            if type(value) == "boolean" then
+                self.onScreenDebug = value
                 return true
             end
             return false
@@ -3169,6 +3182,10 @@ do
         end
     end
 
+    function HOUND.Contact:isActive()
+        return self:getLastSeen()/16 < 1.0
+    end
+
     function HOUND.Contact:isRecent()
         return self:getLastSeen()/120 < 1.0
     end
@@ -3587,11 +3604,13 @@ do
         if not self:hasPos() or self.uncertenty_data == nil or not self:isRecent() then return end
         if self:isAccurate() and self._markpoints.p:isDrawn() then return end
         local markerArgs = {
-            text = self.typeName .. " " .. (self.uid%100) ..
-                    " (" .. self.uncertenty_data.major .. "/" .. self.uncertenty_data.minor .. "@" .. self.uncertenty_data.az .. ")",
+            text = self.typeName .. " " .. (self.uid%100),
             pos = self.pos.p,
             coalition = self._platformCoalition
         }
+        if not self:isAccurate() then
+            markerArgs.text = markerArgs.text .. " (" .. self.uncertenty_data.major .. "/" .. self.uncertenty_data.minor .. "@" .. self.uncertenty_data.az .. ")"
+        end
         self._markpoints.p:update(markerArgs)
 
         if MarkerType == HOUND.MARKER.NONE or self:isAccurate() then
@@ -4611,18 +4630,23 @@ do
         return Length(self.contacts)
     end
 
-    function HOUND.ElintWorker:sortContacts(sortFunc,sectorName)
-        if type(sortFunc) ~= "function" then return end
-        local sorted = {}
+    function HOUND.ElintWorker:getContacts(sectorName)
+        local contacts = {}
         for _,emitter in pairs(self.contacts) do
             if sectorName then
                 if emitter:isInSector(sectorName) then
-                    table.insert(sorted,emitter)
+                    table.insert(contacts,emitter)
                 end
             else
-                table.insert(sorted,emitter)
+                table.insert(contacts,emitter)
             end
         end
+        return contacts
+    end
+
+    function HOUND.ElintWorker:sortContacts(sortFunc,sectorName)
+        if type(sortFunc) ~= "function" then return end
+        local sorted = self:getContacts(sectorName)
         table.sort(sorted, sortFunc)
         return sorted
     end
@@ -4886,6 +4910,10 @@ do
 
     function HOUND.Sector:getZone()
         return self.settings.zone
+    end
+
+    function HOUND.Sector:hasZone()
+        return self:getZone() ~= nil
     end
 
     function HOUND.Sector:setZone(zonecandidate)
@@ -5625,6 +5653,10 @@ do
         return false
     end
 
+    function HoundElint:onScreenDebug(value)
+        return self.settings:setOnScreenDebug(value)
+    end
+
     function HoundElint:addPlatform(platformName)
         return self.contacts:addPlatform(platformName)
     end
@@ -5641,8 +5673,30 @@ do
         return self.contacts:listPlatforms()
     end
 
-    function HoundElint:countContacts()
-        return self.contacts:countContacts()
+    function HoundElint:countContacts(sectorName)
+        return self.contacts:countContacts(sectorName)
+    end
+
+    function HoundElint:countActiveContacts(sectorName)
+        local activeContactCount = 0
+        local contacts =  self.contacts:getContacts(sectorName)
+        for _,contact in pairs(contacts) do
+            if contact:isActive() then
+                activeContactCount = activeContactCount +1
+            end
+        end
+        return activeContactCount
+    end
+
+    function HoundElint:countPreBriefedContacts(sectorName)
+        local pbContactCount = 0
+        local contacts =  self.contacts:getContacts(sectorName)
+        for _,contact in pairs(contacts) do
+            if contact:isAccurate() then
+                pbContactCount = pbContactCount +1
+            end
+        end
+        return pbContactCount
     end
 
     function HoundElint:preBriefedContact(DCS_Object_Name)
@@ -5751,6 +5805,9 @@ do
                 if string.lower(element) == "notifier" then
                     addToList=sector:hasNotifier()
                 end
+                if string.lower(element) == "zone" then
+                    addToList=sector:hasZone()
+                end
             end
 
             if addToList then
@@ -5774,6 +5831,9 @@ do
                 if string.lower(element) == "notifier" then
                     addToList=sector:hasNotifier()
                 end
+                if string.lower(element) == "zone" then
+                    addToList=sector:hasZone()
+                end
             end
 
             if addToList then
@@ -5781,6 +5841,10 @@ do
             end
         end
         return sectors
+    end
+
+    function HoundElint:countSectors(element)
+        return Length(self:listSectors(element))
     end
 
     function HoundElint:getSector(sectorName)
@@ -6330,6 +6394,9 @@ do
                 self.timingCounters.lastMarkers = runTime
             end
         end
+        if self.settings:getOnScreenDebug() then
+            trigger.action.outText(self:printDebugging(),self.settings.intervals.scan*0.75)
+        end
         return nextRun
     end
 
@@ -6433,7 +6500,7 @@ do
             return
         end
         if not filename then
-            filename = string.format("hound_contacts_%d.csv",self.settings:getId())
+            filename = string.format("hound_contacts_%d.csv",self:getId())
         end
         local currentGameTime = HOUND.Utils.Text.getTime()
         local csvFile = io.open(lfs.writedir() .. filename, "w+")
@@ -6447,6 +6514,15 @@ do
             end
         end
         csvFile:close()
+    end
+
+    function HoundElint:printDebugging()
+        local debugMsg = "Hound instace " .. self:getId() .. " (".. HOUND.Utils.getCoalitionString(self:getCoalition()) .. ")\n"
+        debugMsg = debugMsg .. "-----------------------------\n"
+        debugMsg = debugMsg .. "Platforms: " .. self:countPlatforms() .. " | sectors: " .. self:countSectors()
+        debugMsg = debugMsg .. " (Z:"..self:countSectors("zone").." ,C:"..self:countSectors("controller").." ,A: " .. self:countSectors("atis") .. " ,N:"..self:countSectors("notifier") ..") | "
+        debugMsg = debugMsg .. "Contacts: ".. self:countContacts() .. " (A:" .. self:countActiveContacts() .. " ,PB:" .. self:countPreBriefedContacts() .. ")"
+        return debugMsg
     end
 
     function HoundElint:onHoundEvent(houndEvent)
@@ -6520,4 +6596,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.3.0-develop-20220512 - Compiled on 2022-05-12 20:18
+-- Hound version 0.3.0-develop-20220521 - Compiled on 2022-05-21 18:38
