@@ -142,6 +142,18 @@
 	<td class="summary">Get contact UID</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact:getGroupName">HOUND.Contact:getGroupName ()</a></td>
+	<td class="summary">Get Contact Group Name</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact:getDcsName">HOUND.Contact:getDcsName ()</a></td>
+	<td class="summary">Get the DCS unit name</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact:getDCSObject">HOUND.Contact:getDCSObject ()</a></td>
+	<td class="summary">Get the underlying DCS Object</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#HOUND.Contact:getLastSeen">HOUND.Contact:getLastSeen ()</a></td>
 	<td class="summary">Get last seen in seconds</td>
 	</tr>
@@ -158,6 +170,14 @@
 	<td class="summary">get current extimted position</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact:getElev">HOUND.Contact:getElev ()</a></td>
+	<td class="summary">get current estimated position elevation</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact:getUnit">HOUND.Contact:getUnit ()</a></td>
+	<td class="summary">get Unit instane assoiciated with contact</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#HOUND.Contact:hasPos">HOUND.Contact:hasPos ()</a></td>
 	<td class="summary">check if contact has estimated position</td>
 	</tr>
@@ -170,13 +190,27 @@
 	<td class="summary">get type assinged string</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact:getLife">HOUND.Contact:getLife ()</a></td>
+	<td class="summary">get unit health</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#HOUND.Contact:isAlive">HOUND.Contact:isAlive ()</a></td>
 	<td class="summary">check if contact DCS Unit is still alive</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Contact:setDead">HOUND.Contact:setDead ()</a></td>
 	<td class="summary">set internal alive flag to false
- This is internal function ment to be called on "S_EVENT_DEAD"</td>
+ This is internal function ment to be called on "S_EVENT_DEAD"
+ unit will be changed to Unit.name because DCS will remove the unit at the end of the event.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact:updateDeadDCSObject">HOUND.Contact:updateDeadDCSObject ()</a></td>
+	<td class="summary">update the internal DCS Object
+ Since March 2022, Dead units are converted to staticObject on delayed death</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact:isActive">HOUND.Contact:isActive ()</a></td>
+	<td class="summary">Check if contact is Active</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Contact:isRecent">HOUND.Contact:isRecent ()</a></td>
@@ -589,7 +623,7 @@
     <h3>Returns:</h3>
     <ol>
 
-        HOUND.Contact
+        HOUND.Contact instance
     </ol>
 
 
@@ -672,6 +706,63 @@
 
 </dd>
     <dt>
+    <a name = "HOUND.Contact:getGroupName"></a>
+    <strong>HOUND.Contact:getGroupName ()</strong>
+    </dt>
+    <dd>
+    Get Contact Group Name
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        String
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact:getDcsName"></a>
+    <strong>HOUND.Contact:getDcsName ()</strong>
+    </dt>
+    <dd>
+    Get the DCS unit name
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        String
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact:getDCSObject"></a>
+    <strong>HOUND.Contact:getDCSObject ()</strong>
+    </dt>
+    <dd>
+    Get the underlying DCS Object
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        DCS Unit or DCS staticObject
+    </ol>
+
+
+
+
+</dd>
+    <dt>
     <a name = "HOUND.Contact:getLastSeen"></a>
     <strong>HOUND.Contact:getLastSeen ()</strong>
     </dt>
@@ -737,6 +828,49 @@
 
 
 
+    <h3>Returns:</h3>
+    <ol>
+
+        DCS point - estimated position
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact:getElev"></a>
+    <strong>HOUND.Contact:getElev ()</strong>
+    </dt>
+    <dd>
+    get current estimated position elevation
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Integer Elevation in ft.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact:getUnit"></a>
+    <strong>HOUND.Contact:getUnit ()</strong>
+    </dt>
+    <dd>
+    get Unit instane assoiciated with contact
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Unit object
+    </ol>
 
 
 
@@ -751,6 +885,11 @@
 
 
 
+    <h3>Returns:</h3>
+    <ol>
+
+        Bool True if contact has estimated position
+    </ol>
 
 
 
@@ -765,6 +904,11 @@
 
 
 
+    <h3>Returns:</h3>
+    <ol>
+
+        Number max weapon range of contact
+    </ol>
 
 
 
@@ -776,6 +920,25 @@
     </dt>
     <dd>
     get type assinged string
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        string
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact:getLife"></a>
+    <strong>HOUND.Contact:getLife ()</strong>
+    </dt>
+    <dd>
+    get unit health
 
 
 
@@ -795,10 +958,8 @@
 
     <h3>Returns:</h3>
     <ol>
-        <li>
-        State (bool)</li>
-        <li>
-        Boolean</li>
+
+        Boolean
     </ol>
 
 
@@ -812,9 +973,44 @@
     <dd>
     set internal alive flag to false
  This is internal function ment to be called on "S_EVENT_DEAD"
+ unit will be changed to Unit.name because DCS will remove the unit at the end of the event.
 
 
 
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact:updateDeadDCSObject"></a>
+    <strong>HOUND.Contact:updateDeadDCSObject ()</strong>
+    </dt>
+    <dd>
+    update the internal DCS Object
+ Since March 2022, Dead units are converted to staticObject on delayed death
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact:isActive"></a>
+    <strong>HOUND.Contact:isActive ()</strong>
+    </dt>
+    <dd>
+    Check if contact is Active
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Bool True if seen in the last 15 seconds
+    </ol>
 
 
 
@@ -832,7 +1028,7 @@
     <h3>Returns:</h3>
     <ol>
 
-        Bool True if seen in the 2 minutes
+        Bool True if seen in the last 2 minutes
     </ol>
 
 
@@ -889,14 +1085,10 @@
     <h3>Returns:</h3>
     <ol>
 
-        Contact state
+        Contact state in <a href="../modules/HOUND.html#EVENTS">HOUND.EVENTS</a>
     </ol>
 
 
-    <h3>See also:</h3>
-    <ul>
-         <a href="../modules/HOUND.html#EVENTS">HOUND.EVENTS</a>
-    </ul>
 
 
 </dd>
@@ -974,7 +1166,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">datapoint</span>
-         HOUND.Datapoint
+         <a href="../modules/HOUND.Datapoint.html#">HOUND.Datapoint</a>
         </li>
     </ul>
 
@@ -994,10 +1186,10 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">earlyPoint</span>
-         HOUND.Datapoint
+         <a href="../modules/HOUND.Datapoint.html#">HOUND.Datapoint</a>
         </li>
         <li><span class="parameter">latePoint</span>
-         HOUND.Datapoint
+         <a href="../modules/HOUND.Datapoint.html#">HOUND.Datapoint</a>
         </li>
     </ul>
 
@@ -1163,10 +1355,10 @@
          where should the result be stored
         </li>
         <li><span class="parameter">point1</span>
-         HOUND.Datapoint Instance no.1
+         <a href="../modules/HOUND.Datapoint.html#">HOUND.Datapoint</a> Instance no.1
         </li>
         <li><span class="parameter">point2</span>
-         HOUND.Datapoint Instance no.2
+         <a href="../modules/HOUND.Datapoint.html#">HOUND.Datapoint</a> Instance no.2
         </li>
     </ul>
 
@@ -1187,14 +1379,10 @@
     <h3>Returns:</h3>
     <ol>
 
-        HoundEvent
+        HoundEvent id (<a href="../modules/HOUND.html#EVENTS">HOUND.EVENTS</a>)
     </ol>
 
 
-    <h3>See also:</h3>
-    <ul>
-         <a href="../modules/HOUND.html#EVENTS">HOUND.EVENTS</a>
-    </ul>
 
 
 </dd>
@@ -1512,7 +1700,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2022-04-08 17:08:48 </i>
+<i style="float:right;">Last updated 2022-05-21 23:51:09 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

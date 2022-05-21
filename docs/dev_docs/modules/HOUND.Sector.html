@@ -33,6 +33,12 @@
 <h2>Contents</h2>
 <ul>
 <li><a href="#Class_HOUND_Sector">Class HOUND.Sector </a></li>
+<li><a href="#getters_and_setters">getters and setters </a></li>
+<li><a href="#Controller_Functions">Controller Functions </a></li>
+<li><a href="#ATIS_Functions">ATIS Functions </a></li>
+<li><a href="#Notifier_Functions">Notifier Functions </a></li>
+<li><a href="#Contact_Functions">Contact Functions </a></li>
+<li><a href="#Radio_Menu">Radio Menu </a></li>
 </ul>
 
 
@@ -88,6 +94,9 @@
 	<td class="name" nowrap><a href="#HOUND.Sector:updateServices">HOUND.Sector:updateServices ()</a></td>
 	<td class="summary">Update internal services with settings stored in the sector.</td>
 	</tr>
+</table>
+<h2><a href="#getters_and_setters">getters and setters </a></h2>
+<table class="function_list">
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Sector:getName">HOUND.Sector:getName ()</a></td>
 	<td class="summary">get name</td>
@@ -103,6 +112,14 @@
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Sector:getCallsign">HOUND.Sector:getCallsign ()</a></td>
 	<td class="summary">get callsign for sector</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:getZone">HOUND.Sector:getZone ()</a></td>
+	<td class="summary">get zone polygon</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:hasZone">HOUND.Sector:hasZone ()</a></td>
+	<td class="summary">has zone</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Sector:setZone">HOUND.Sector:setZone (zonecandidate)</a></td>
@@ -124,10 +141,9 @@
 	<td class="name" nowrap><a href="#HOUND.Sector:removeTransmitter">HOUND.Sector:removeTransmitter ()</a></td>
 	<td class="summary">removes transmitter from sector</td>
 	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Sector:updateSectorMembership">HOUND.Sector:updateSectorMembership (contact)</a></td>
-	<td class="summary">update contact for zone memberships</td>
-	</tr>
+</table>
+<h2><a href="#Controller_Functions">Controller Functions </a></h2>
+<table class="function_list">
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Sector:enableController">HOUND.Sector:enableController ([userSettings])</a></td>
 	<td class="summary">enable controller</td>
@@ -143,6 +159,14 @@
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Sector:getControllerFreq">HOUND.Sector:getControllerFreq ()</a></td>
 	<td class="summary">get controller frequencies</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:hasController">HOUND.Sector:hasController ()</a></td>
+	<td class="summary">checks for controller in sector</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:isControllerEnabled">HOUND.Sector:isControllerEnabled ()</a></td>
+	<td class="summary">checks if controller is enabled for the sector</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Sector:transmitOnController">HOUND.Sector:transmitOnController (msg)</a></td>
@@ -172,6 +196,9 @@
 	<td class="name" nowrap><a href="#HOUND.Sector:disableTTS">HOUND.Sector:disableTTS ()</a></td>
 	<td class="summary">disable Controller tts for sector</td>
 	</tr>
+</table>
+<h2><a href="#ATIS_Functions">ATIS Functions </a></h2>
+<table class="function_list">
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Sector:enableAtis">HOUND.Sector:enableAtis (userSettings)</a></td>
 	<td class="summary">enable ATIS in sector</td>
@@ -200,14 +227,9 @@
 	<td class="name" nowrap><a href="#HOUND.Sector:isAtisEnabled">HOUND.Sector:isAtisEnabled ()</a></td>
 	<td class="summary">checks if ats is enabled for the sector</td>
 	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Sector:hasController">HOUND.Sector:hasController ()</a></td>
-	<td class="summary">checks for controller in sector</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Sector:isControllerEnabled">HOUND.Sector:isControllerEnabled ()</a></td>
-	<td class="summary">checks if controller is enabled for the sector</td>
-	</tr>
+</table>
+<h2><a href="#Notifier_Functions">Notifier Functions </a></h2>
+<table class="function_list">
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Sector:enableNotifier">HOUND.Sector:enableNotifier ([userSettings])</a></td>
 	<td class="summary">enable Notifier in sector</td>
@@ -232,6 +254,9 @@
 	<td class="name" nowrap><a href="#HOUND.Sector:isNotifierEnabled">HOUND.Sector:isNotifierEnabled ()</a></td>
 	<td class="summary">checks if ats is enabled for the sector</td>
 	</tr>
+</table>
+<h2><a href="#Contact_Functions">Contact Functions </a></h2>
+<table class="function_list">
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Sector:getContacts">HOUND.Sector:getContacts ()</a></td>
 	<td class="summary">return a sorted list of all contacts for the sector</td>
@@ -240,6 +265,13 @@
 	<td class="name" nowrap><a href="#HOUND.Sector:countContacts">HOUND.Sector:countContacts ()</a></td>
 	<td class="summary">count the number of contacts for the sector</td>
 	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:updateSectorMembership">HOUND.Sector:updateSectorMembership (contact)</a></td>
+	<td class="summary">update contact for zone memberships</td>
+	</tr>
+</table>
+<h2><a href="#Radio_Menu">Radio Menu </a></h2>
+<table class="function_list">
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Sector.removeRadioMenu">HOUND.Sector.removeRadioMenu (self)</a></td>
 	<td class="summary">remove all radio menus for</td>
@@ -421,6 +453,10 @@
 
 
 </dd>
+</dl>
+    <h2 class="section-header "><a name="getters_and_setters"></a>getters and setters </h2>
+
+    <dl class="function">
     <dt>
     <a name = "HOUND.Sector:getName"></a>
     <strong>HOUND.Sector:getName ()</strong>
@@ -498,6 +534,44 @@
     <ol>
 
         string Callsign for current sector
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:getZone"></a>
+    <strong>HOUND.Sector:getZone ()</strong>
+    </dt>
+    <dd>
+    get zone polygon
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table of points or nil
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:hasZone"></a>
+    <strong>HOUND.Sector:hasZone ()</strong>
+    </dt>
+    <dd>
+    has zone
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Bool. True if sector has zone
     </ol>
 
 
@@ -586,26 +660,10 @@
 
 
 </dd>
-    <dt>
-    <a name = "HOUND.Sector:updateSectorMembership"></a>
-    <strong>HOUND.Sector:updateSectorMembership (contact)</strong>
-    </dt>
-    <dd>
-    update contact for zone memberships
+</dl>
+    <h2 class="section-header "><a name="Controller_Functions"></a>Controller Functions </h2>
 
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">contact</span>
-         HOUND.Contact instance
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
+    <dl class="function">
     <dt>
     <a name = "HOUND.Sector:enableController"></a>
     <strong>HOUND.Sector:enableController ([userSettings])</strong>
@@ -664,6 +722,44 @@
 
 
 
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:hasController"></a>
+    <strong>HOUND.Sector:hasController ()</strong>
+    </dt>
+    <dd>
+    checks for controller in sector
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        true if Sector has controller
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:isControllerEnabled"></a>
+    <strong>HOUND.Sector:isControllerEnabled ()</strong>
+    </dt>
+    <dd>
+    checks if controller is enabled for the sector
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        true if Sector controller is enabled
+    </ol>
 
 
 
@@ -773,6 +869,10 @@
 
 
 </dd>
+</dl>
+    <h2 class="section-header "><a name="ATIS_Functions"></a>ATIS Functions </h2>
+
+    <dl class="function">
     <dt>
     <a name = "HOUND.Sector:enableAtis"></a>
     <strong>HOUND.Sector:enableAtis (userSettings)</strong>
@@ -894,44 +994,10 @@
 
 
 </dd>
-    <dt>
-    <a name = "HOUND.Sector:hasController"></a>
-    <strong>HOUND.Sector:hasController ()</strong>
-    </dt>
-    <dd>
-    checks for controller in sector
+</dl>
+    <h2 class="section-header "><a name="Notifier_Functions"></a>Notifier Functions </h2>
 
-
-
-    <h3>Returns:</h3>
-    <ol>
-
-        true if Sector has controller
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Sector:isControllerEnabled"></a>
-    <strong>HOUND.Sector:isControllerEnabled ()</strong>
-    </dt>
-    <dd>
-    checks if controller is enabled for the sector
-
-
-
-    <h3>Returns:</h3>
-    <ol>
-
-        true if Sector controller is enabled
-    </ol>
-
-
-
-
-</dd>
+    <dl class="function">
     <dt>
     <a name = "HOUND.Sector:enableNotifier"></a>
     <strong>HOUND.Sector:enableNotifier ([userSettings])</strong>
@@ -1033,6 +1099,10 @@
 
 
 </dd>
+</dl>
+    <h2 class="section-header "><a name="Contact_Functions"></a>Contact Functions </h2>
+
+    <dl class="function">
     <dt>
     <a name = "HOUND.Sector:getContacts"></a>
     <strong>HOUND.Sector:getContacts ()</strong>
@@ -1061,6 +1131,30 @@
 
 
 </dd>
+    <dt>
+    <a name = "HOUND.Sector:updateSectorMembership"></a>
+    <strong>HOUND.Sector:updateSectorMembership (contact)</strong>
+    </dt>
+    <dd>
+    update contact for zone memberships
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">contact</span>
+         HOUND.Contact instance
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Radio_Menu"></a>Radio Menu </h2>
+
+    <dl class="function">
     <dt>
     <a name = "HOUND.Sector.removeRadioMenu"></a>
     <strong>HOUND.Sector.removeRadioMenu (self)</strong>
@@ -1425,7 +1519,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2022-04-08 17:08:48 </i>
+<i style="float:right;">Last updated 2022-05-21 23:51:09 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

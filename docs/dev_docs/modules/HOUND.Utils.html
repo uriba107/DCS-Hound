@@ -46,6 +46,7 @@
 <li><a href="#Polygon_functions">Polygon functions </a></li>
 <li><a href="#Clustering_algorithems__for_future_use_">Clustering algorithems (for future use) </a></li>
 <li><a href="#Sort_Functions">Sort Functions </a></li>
+<li><a href="#Filter_Functions">Filter Functions </a></li>
 </ul>
 
 
@@ -133,7 +134,7 @@
 	<td class="summary">return Radar detection Range for provided unit</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.getRoundedElevationFt">HOUND.Utils.getRoundedElevationFt (elev)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.getRoundedElevationFt">HOUND.Utils.getRoundedElevationFt (elev[, resolution])</a></td>
 	<td class="summary">return ground elevation rouded to 50 feet</td>
 	</tr>
 	<tr>
@@ -495,6 +496,24 @@
 	<td class="summary">sort sectors by priority (Low last)</td>
 	</tr>
 </table>
+<h2><a href="#Filter_Functions">Filter Functions </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Filter.groupsByPrefix">HOUND.Utils.Filter.groupsByPrefix (prefix)</a></td>
+	<td class="summary">get Groups by prefix
+ Implementation taken from Skynet-IADS</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Filter.unitsByPrefix">HOUND.Utils.Filter.unitsByPrefix (prefix)</a></td>
+	<td class="summary">get Units by prefix
+ Implementation taken from Skynet-IADS</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Filter.staticObjectsByPrefix">HOUND.Utils.Filter.staticObjectsByPrefix (prefix)</a></td>
+	<td class="summary">get StatcObjects by prefix
+ Implementation taken from Skynet-IADS</td>
+	</tr>
+</table>
 
 <br/>
 <br/>
@@ -530,6 +549,9 @@
         </li>
         <li><span class="parameter">Sort</span>
          Sort funtions
+        </li>
+        <li><span class="parameter">Filter</span>
+         Filter functions
         </li>
         <li><span class="parameter">ReportId</span>
          intrnal ATIS numerator
@@ -812,7 +834,7 @@
 </dd>
     <dt>
     <a name = "HOUND.Utils.getRoundedElevationFt"></a>
-    <strong>HOUND.Utils.getRoundedElevationFt (elev)</strong>
+    <strong>HOUND.Utils.getRoundedElevationFt (elev[, resolution])</strong>
     </dt>
     <dd>
     return ground elevation rouded to 50 feet
@@ -822,6 +844,10 @@
     <ul>
         <li><span class="parameter">elev</span>
          Height in meters
+        </li>
+        <li><span class="parameter">resolution</span>
+         round to the nerest increment. default is 50
+         (<em>optional</em>)
         </li>
     </ul>
 
@@ -2853,10 +2879,10 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">a</span>
-         HOUND.Contact instance
+         <a href="../modules/HOUND.Contact.html#">HOUND.Contact</a> instance
         </li>
         <li><span class="parameter">b</span>
-         HOUND.Contact Instance
+         <a href="../modules/HOUND.Contact.html#">HOUND.Contact</a> Instance
         </li>
     </ul>
 
@@ -2885,10 +2911,10 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">a</span>
-         HOUND.Contact instance
+         <a href="../modules/HOUND.Contact.html#">HOUND.Contact</a> instance
         </li>
         <li><span class="parameter">b</span>
-         HOUND.Contact Instance
+         <a href="../modules/HOUND.Contact.html#">HOUND.Contact</a> Instance
         </li>
     </ul>
 
@@ -2917,10 +2943,10 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">a</span>
-         HOUND.Sector instance
+         <a href="../modules/HOUND.Sector.html#">HOUND.Sector</a> instance
         </li>
         <li><span class="parameter">b</span>
-         HOUND.Sector Instance
+         <a href="../modules/HOUND.Sector.html#">HOUND.Sector</a> Instance
         </li>
     </ul>
 
@@ -2949,10 +2975,10 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">a</span>
-         HOUND.Sector instance
+         <a href="../modules/HOUND.Sector.html#">HOUND.Sector</a> instance
         </li>
         <li><span class="parameter">b</span>
-         HOUND.Sector Instance
+         <a href="../modules/HOUND.Sector.html#">HOUND.Sector</a> Instance
         </li>
     </ul>
 
@@ -2971,13 +2997,95 @@
 
 </dd>
 </dl>
+    <h2 class="section-header "><a name="Filter_Functions"></a>Filter Functions </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HOUND.Utils.Filter.groupsByPrefix"></a>
+    <strong>HOUND.Utils.Filter.groupsByPrefix (prefix)</strong>
+    </dt>
+    <dd>
+    get Groups by prefix
+ Implementation taken from Skynet-IADS
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">prefix</span>
+         string
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table of DCS groups indexed by group name
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.Filter.unitsByPrefix"></a>
+    <strong>HOUND.Utils.Filter.unitsByPrefix (prefix)</strong>
+    </dt>
+    <dd>
+    get Units by prefix
+ Implementation taken from Skynet-IADS
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">prefix</span>
+         string
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table of DCS Units indexed by Unit name
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.Filter.staticObjectsByPrefix"></a>
+    <strong>HOUND.Utils.Filter.staticObjectsByPrefix (prefix)</strong>
+    </dt>
+    <dd>
+    get StatcObjects by prefix
+ Implementation taken from Skynet-IADS
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">prefix</span>
+         string
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table of DCS StaticObjects indexed by object name
+    </ol>
+
+
+
+
+</dd>
+</dl>
 
 
 </div> <!-- id="content" -->
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2022-04-08 17:08:48 </i>
+<i style="float:right;">Last updated 2022-05-21 23:51:09 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>
