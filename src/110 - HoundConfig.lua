@@ -47,6 +47,7 @@ do
             root = nil,
             parent = nil
         }
+        instance.onScreenDebug = false
 
         --- get hound ID
         -- @within HOUND.Config.instance
@@ -255,6 +256,26 @@ do
         instance.setHardcore = function(self,value)
             if type(value) == "boolean" then
                 self.preferences.hardcore = value
+                return true
+            end
+            return false
+        end
+
+        --- On screen Debug Output getter
+        -- @within HOUND.Config.instance
+        -- @param self config instance
+        -- @return Bool true if Debug output will be used
+        instance.getOnScreenDebug = function(self)
+            return self.onScreenDebug
+        end
+
+        --- On screen Debug output setter
+        -- @param self config instance
+        -- @bool value set this value
+        -- @return Bool True if change was made
+        instance.setOnScreenDebug = function(self,value)
+            if type(value) == "boolean" then
+                self.onScreenDebug = value
                 return true
             end
             return false

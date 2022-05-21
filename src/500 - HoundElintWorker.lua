@@ -312,22 +312,30 @@ do
         return Length(self.contacts)
     end
 
+    --- return list of contacts
+    -- @param[opt] sectorName String. sector to filter by
+    -- @return list of @{HOUND.Contact}
+    function HOUND.ElintWorker:getContacts(sectorName)
+        local contacts = {}
+        for _,emitter in pairs(self.contacts) do
+            if sectorName then
+                if emitter:isInSector(sectorName) then
+                    table.insert(contacts,emitter)
+                end
+            else
+                table.insert(contacts,emitter)
+            end
+        end
+        return contacts
+    end
+
     --- return a sorted list of contacts
     -- @param sortFunc Function to sort by
     -- @param[opt] sectorName String. sector to filter by
     -- @return sorted list of @{HOUND.Contact}
     function HOUND.ElintWorker:sortContacts(sortFunc,sectorName)
         if type(sortFunc) ~= "function" then return end
-        local sorted = {}
-        for _,emitter in pairs(self.contacts) do
-            if sectorName then
-                if emitter:isInSector(sectorName) then
-                    table.insert(sorted,emitter)
-                end
-            else
-                table.insert(sorted,emitter)
-            end
-        end
+        local sorted = self:getContacts(sectorName)
         table.sort(sorted, sortFunc)
         return sorted
     end

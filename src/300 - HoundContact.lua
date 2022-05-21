@@ -224,6 +224,12 @@ do
         end
     end
 
+    --- Check if contact is Active
+    -- @return Bool True if seen in the last 15 seconds
+    function HOUND.Contact:isActive()
+        return self:getLastSeen()/16 < 1.0
+    end
+
     --- check if contact is recent
     -- @return Bool True if seen in the last 2 minutes
     function HOUND.Contact:isRecent()
@@ -725,11 +731,13 @@ do
         if not self:hasPos() or self.uncertenty_data == nil or not self:isRecent() then return end
         if self:isAccurate() and self._markpoints.p:isDrawn() then return end
         local markerArgs = {
-            text = self.typeName .. " " .. (self.uid%100) ..
-                    " (" .. self.uncertenty_data.major .. "/" .. self.uncertenty_data.minor .. "@" .. self.uncertenty_data.az .. ")",
+            text = self.typeName .. " " .. (self.uid%100),
             pos = self.pos.p,
             coalition = self._platformCoalition
         }
+        if not self:isAccurate() then
+            markerArgs.text = markerArgs.text .. " (" .. self.uncertenty_data.major .. "/" .. self.uncertenty_data.minor .. "@" .. self.uncertenty_data.az .. ")"
+        end
         self._markpoints.p:update(markerArgs)
 
         if MarkerType == HOUND.MARKER.NONE or self:isAccurate() then

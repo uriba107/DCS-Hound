@@ -40,6 +40,7 @@ do
 
     Elint_blue:addSector("Fake")
     Elint_blue:setZone("Fake")
+    -- Elint_blue:onScreenDebug(true)
 
 
 end

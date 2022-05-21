@@ -84,6 +84,13 @@ do
         return false
     end
 
+    --- set onScreenDebug
+    -- @param value Bool
+    -- @return Bool True if chaned
+    function HoundElint:onScreenDebug(value)
+        return self.settings:setOnScreenDebug(value)
+    end
+
     --- Platforms managment
     -- @section platforms
 
@@ -117,9 +124,38 @@ do
     -- @section contacts
 
     --- count contacts
+    -- @param[opt] sectorName String name or sector to filter by
     -- @return Int number of contacts currently tracked
-    function HoundElint:countContacts()
-        return self.contacts:countContacts()
+    function HoundElint:countContacts(sectorName)
+        return self.contacts:countContacts(sectorName)
+    end
+
+    --- count Active contacts
+    -- @param[opt] sectorName String name or sector to filter by
+    -- @return Int number of contacts currently Transmitting
+    function HoundElint:countActiveContacts(sectorName)
+        local activeContactCount = 0
+        local contacts =  self.contacts:getContacts(sectorName)
+        for _,contact in pairs(contacts) do
+            if contact:isActive() then
+                activeContactCount = activeContactCount +1
+            end
+        end
+        return activeContactCount
+    end
+
+    --- count preBriefed contacts
+    -- @param[opt] sectorName String name or sector to filter by
+    -- @return Int number of contacts currently in PB status
+    function HoundElint:countPreBriefedContacts(sectorName)
+        local pbContactCount = 0
+        local contacts =  self.contacts:getContacts(sectorName)
+        for _,contact in pairs(contacts) do
+            if contact:isAccurate() then
+                pbContactCount = pbContactCount +1
+            end
+        end
+        return pbContactCount
     end
 
     --- set/create a pre Briefed contacts
@@ -235,7 +271,7 @@ do
     end
 
     --- list all sectors
-    -- @string[opt] element list only sectors with specified element. Valid options are "controller", "atis" and "notifier"
+    -- @string[opt] element list only sectors with specified element. Valid options are "controller", "atis", "notifier" and "zone"
     -- @return list of sector names
     function HoundElint:listSectors(element)
         local sectors = {}
@@ -251,6 +287,9 @@ do
                 if string.lower(element) == "notifier" then
                     addToList=sector:hasNotifier()
                 end
+                if string.lower(element) == "zone" then
+                    addToList=sector:hasZone()
+                end
             end
 
             if addToList then
@@ -261,7 +300,7 @@ do
     end
 
     --- get all sectors
-    -- @string[opt] element list only sectors with specified element. Valid options are "controller", "atis" and "notifier"
+    -- @string[opt] element list only sectors with specified element. Valid options are "controller", "atis", "notifier" and "zone"
     -- @return list of HOUND.Sector instances
     function HoundElint:getSectors(element)
         local sectors = {}
@@ -277,6 +316,9 @@ do
                 if string.lower(element) == "notifier" then
                     addToList=sector:hasNotifier()
                 end
+                if string.lower(element) == "zone" then
+                    addToList=sector:hasZone()
+                end
             end
 
             if addToList then
@@ -284,6 +326,13 @@ do
             end
         end
         return sectors
+    end
+
+    --- return number of sectors
+    -- @string[opt] element count only sectors with specified element ("controller"/"atis"/"notifier"/"zone")
+    -- @return Int. number of sectors
+    function HoundElint:countSectors(element)
+        return Length(self:listSectors(element))
     end
 
     --- return HOUND.Sector instance
@@ -991,6 +1040,9 @@ do
                 slowLoop:Stop()
             end
         end
+        if self.settings:getOnScreenDebug() then
+            trigger.action.outText(self:printDebugging(),self.settings.intervals.scan*0.75)
+        end
         timeCycle:Stop()
         return nextRun
     end
@@ -1120,7 +1172,7 @@ do
             return
         end
         if not filename then
-            filename = string.format("hound_contacts_%d.csv",self.settings:getId())
+            filename = string.format("hound_contacts_%d.csv",self:getId())
         end
         local currentGameTime = HOUND.Utils.Text.getTime()
         local csvFile = io.open(lfs.writedir() .. filename, "w+")
@@ -1134,6 +1186,17 @@ do
             end
         end
         csvFile:close()
+    end
+
+    --- return Debugging information
+    -- @return string
+    function HoundElint:printDebugging()
+        local debugMsg = "Hound instace " .. self:getId() .. " (".. HOUND.Utils.getCoalitionString(self:getCoalition()) .. ")\n"
+        debugMsg = debugMsg .. "-----------------------------\n"
+        debugMsg = debugMsg .. "Platforms: " .. self:countPlatforms() .. " | sectors: " .. self:countSectors()
+        debugMsg = debugMsg .. " (Z:"..self:countSectors("zone").." ,C:"..self:countSectors("controller").." ,A: " .. self:countSectors("atis") .. " ,N:"..self:countSectors("notifier") ..") | "
+        debugMsg = debugMsg .. "Contacts: ".. self:countContacts() .. " (A:" .. self:countActiveContacts() .. " ,PB:" .. self:countPreBriefedContacts() .. ")"
+        return debugMsg
     end
 
     --- EventHandler functions

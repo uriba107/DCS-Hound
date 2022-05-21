@@ -55,14 +55,14 @@ do
 
         lu.assertEquals(contactState,HOUND.EVENTS.RADAR_DETECTED)
 
-        lu.assertAlmostEquals(tgtPos.x,d1.estimatedPos.x,0.5)
-        lu.assertAlmostEquals(tgtPos.z,d1.estimatedPos.z,0.5)
+        lu.assertAlmostEquals(tgtPos.x,d1.estimatedPos.x,0.75)
+        lu.assertAlmostEquals(tgtPos.z,d1.estimatedPos.z,0.75)
 
-        lu.assertAlmostEquals(tgtPos.x,d2.estimatedPos.x,0.5)
-        lu.assertAlmostEquals(tgtPos.z,d2.estimatedPos.z,0.5)
+        lu.assertAlmostEquals(tgtPos.x,d2.estimatedPos.x,0.75)
+        lu.assertAlmostEquals(tgtPos.z,d2.estimatedPos.z,0.75)
 
-        lu.assertAlmostEquals(tgtPos.x,self.contact:getPos().x,0.5)
-        lu.assertAlmostEquals(tgtPos.z,self.contact:getPos().z,0.5)
+        lu.assertAlmostEquals(tgtPos.x,self.contact:getPos().x,0.75)
+        lu.assertAlmostEquals(tgtPos.z,self.contact:getPos().z,0.75)
         -- lu.assertItemsEquals(tgtPos,d1.estimatedPos)
         -- lu.assertItemsEquals(tgtPos,d2.estimatedPos)
         -- lu.assertItemsEquals(tgtPos,self.contact:getPos())

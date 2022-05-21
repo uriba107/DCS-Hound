@@ -66,7 +66,7 @@ do
         control:setOption(20,false) -- ENGAGE_AIR_WEAPONS, false
 
     end
-    function TestHoundFunctionalInit:Test_02_base_01_Init()
+    function TestHoundFunctional:Test_02_base_01_Init()
         -- make sure nothing is currently active
         lu.assertIsNil(self.houndBlue)
         self.houndBlue = HoundElint:create(coalition.side.BLUE)
@@ -88,7 +88,7 @@ do
         lu.assertIsTrue(self.houndBlue:isRunning())
     end
 
-    function TestHoundFunctionalInit:Test_02_base_02_controllers()
+    function TestHoundFunctional:Test_02_base_02_controllers()
         lu.assertIsTrue(self.houndBlue:isRunning())
         lu.assertEquals(self.houndBlue:countPlatforms(),2)
         lu.assertEquals(self.houndBlue:countContacts(),0)
@@ -147,7 +147,7 @@ do
         lu.assertIsFalse(self.houndBlue:getNotifierState("default"))
     end
 
-    function TestHoundFunctionalInit:Test_02_base_03_turnRadarsOn()
+    function TestHoundFunctional:Test_02_base_03_turnRadarsOn()
         lu.assertIsTrue(self.houndBlue:isRunning())
         lu.assertEquals(self.houndBlue:countPlatforms(),2)
         lu.assertEquals(self.houndBlue:countContacts(),0)
@@ -185,7 +185,7 @@ do
         -- lu.assertIsTrue(sa6:getUnits()[1]:getRadar())
     end
 
-    function TestHoundFunctionalInit:Test_02_base_04_Multi_Sector()
+    function TestHoundFunctional:Test_02_base_04_Multi_Sector()
         lu.assertIsTrue(self.houndBlue:isRunning())
         lu.assertEquals(self.houndBlue:countPlatforms(),2)
         self.houndBlue:setAtisUpdateInterval(60)
@@ -237,7 +237,7 @@ do
 
     end
 
-    function TestHoundFunctionalInit:Test_02_base_05_Multi_Sector_zone()
+    function TestHoundFunctional:Test_02_base_05_Multi_Sector_zone()
         lu.assertItemsEquals(self.houndBlue:listSectors(),{"default","Saipan"})
         self.houndBlue:addSector("Tinian")
         lu.assertItemsEquals(self.houndBlue:listSectors(),{"default","Saipan","Tinian"})
@@ -265,7 +265,7 @@ do
         lu.assertItemsEquals(zoneManual,zoneAutomatic)
     end
 
-    function TestHoundFunctionalInit:Test_02_base_06_radio_menu()
+    function TestHoundFunctional:Test_02_base_06_radio_menu()
         lu.assertIsTable(self.houndBlue.settings:getRadioMenu())
         local originalMenu = mist.utils.deepCopy(self.houndBlue.settings:getRadioMenu())
         self.houndBlue:purgeRadioMenu()
@@ -286,13 +286,15 @@ do
         self.houndBlue:populateRadioMenu()
     end
 
-    function TestHoundFunctionalInit:Test_02_base_07_prebriefed()
-        self.houndBlue:preBriefedContact('EWR_SAIPAN')
+    function TestHoundFunctional:Test_02_base_07_prebriefed()
+        lu.assertEquals(self.houndBlue:countPreBriefedContacts(),0)
         self.houndBlue:preBriefedContact('SA-5_SAIPAN')
+        lu.assertEquals(self.houndBlue:countPreBriefedContacts(),2)
         self.houndBlue:preBriefedContact('fakeUnitName')
+        lu.assertEquals(self.houndBlue:countPreBriefedContacts(),2)
     end
 
-    function TestHoundFunctionalInit:Test_02_base_08_human_elint()
+    function TestHoundFunctional:Test_02_base_08_human_elint()
         humanElint = {}
         humanElint.HoundInstance =  self.houndBlue
         function humanElint:onEvent(DcsEvent)

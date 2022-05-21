@@ -192,10 +192,16 @@ do
         return self.callsign
     end
 
-    -- get zone polygon
+    --- get zone polygon
     -- @return table of points or nil
     function HOUND.Sector:getZone()
         return self.settings.zone
+    end
+
+    --- has zone
+    -- @return Bool. True if sector has zone
+    function HOUND.Sector:hasZone()
+        return self:getZone() ~= nil
     end
 
     --- Set zone in sector
