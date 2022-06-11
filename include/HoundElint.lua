@@ -12,7 +12,7 @@ end
 
 do
     HOUND = {
-        VERSION = "0.3.0-develop-20220521",
+        VERSION = "0.3.0-develop-20220612",
         DEBUG = false,
         ELLIPSE_PERCENTILE = 0.6,
         DATAPOINTS_NUM = 30,
@@ -268,13 +268,26 @@ do
         end
     end
 
+    function HOUND.Logger.onScreenDebug(text,time)
+        if type(text) ~= "string" then return end
+        if type(time) ~= "number" then
+            time = 15
+        end
+        trigger.action.outText(text,math.ceil(time))
+    end
+
     if HOUND.DEBUG then
         HOUND.Logger.setBaseLevel(HOUND.Logger.LEVEL.trace)
     end
 end
-HOUND.DBs = {}
+
 do
-    HOUND.DBs.Sam = {
+    HOUND.DB = {}
+
+    local l_mist = mist
+    local l_math = math
+
+    HOUND.DB.Radars = {
         ['1L13 EWR'] = {
             ['Name'] = "Box Spring",
             ['Assigned'] = {"EWR"},
@@ -885,10 +898,8 @@ do
             ['Primary'] = true
         }
     }
-end
 
-do
-    HOUND.DBs.PHONETICS =  {
+    HOUND.DB.PHONETICS =  {
         ['A'] = "Alpha",
         ['B'] = "Bravo",
         ['C'] = "Charlie",
@@ -928,10 +939,8 @@ do
         [' '] = ",",
         ['.'] = "Decimal"
     }
-end
 
-do
-    HOUND.DBs.useDecMin =  {
+    HOUND.DB.useDecMin =  {
         ['F-16C_blk50'] = true,
         ['F-16C_50'] = true,
         ['M-2000C'] = true,
@@ -939,52 +948,57 @@ do
         ['A-10C_2'] = true,
         ['AH-64D_BLK_II'] = true,
     }
-end
 
-do
-
-    HOUND.DBs.Platform =  {
+    HOUND.DB.Platform =  {
         [Object.Category.STATIC] = {
-            ['Comms tower M'] = {antenna = {size = 80, factor = 1}},
-            ['Cow'] = {antenna = {size = 1000, factor = 10}}
+            ['Comms tower M'] = {antenna = {size = 80, factor = 1},ins_error=0},
+            ['Cow'] = {antenna = {size = 1000, factor = 10},ins_error=0}
         },
         [Object.Category.UNIT] = {
-            ['MLRS FDDM'] = {antenna = {size = 15, factor = 1}},
-            ['SPK-11'] = {antenna = {size = 15, factor = 1}},
-            ['CH-47D'] = {antenna = {size = 12, factor = 1}},
-            ['CH-53E'] = {antenna = {size = 10, factor = 1}},
-            ['MIL-26'] = {antenna = {size = 20, factor = 1}},
-            ['SH-60B'] = {antenna = {size = 8, factor = 1}},
-            ['UH-60A'] = {antenna = {size = 8, factor = 1}},
-            ['UH-60L'] = {antenna = {size = 8, factor = 1}}, -- community UH-69L
-            ['Mi-8MT'] = {antenna = {size = 8, factor = 1}},
-            ['UH-1H'] = {antenna = {size = 4, factor = 1}},
-            ['KA-27'] = {antenna = {size = 4, factor = 1}},
-            ['C-130'] = {antenna = {size = 35, factor = 1}},
-            ['Hercules'] = {antenna = {size = 35, factor = 1}}, -- Anubis' C-130J
-            ['EC130'] = {antenna = {size = 35, factor = 1}},  -- Secret Squirrel EC-130
-            ['RC135RJ'] = {antenna = {size = 40, factor = 1}}, -- Secret Squirrel RC-135
-            ['C-17A'] = {antenna = {size = 40, factor = 1}}, -- stand-in for RC-135, tuned antenna size to match
-            ['S-3B'] = {antenna = {size = 18, factor = 0.8}},
-            ['E-3A'] = {antenna = {size = 9, factor = 0.5}},
-            ['E-2C'] = {antenna = {size = 7, factor = 0.5}},
-            ['Tu-95MS'] = {antenna = {size = 50, factor = 1}},
-            ['Tu-142'] = {antenna = {size = 50, factor = 1}},
-            ['IL-76MD'] = {antenna = {size = 48, factor = 0.8}},
-            ['H-6J'] = {antenna = {size = 3.5, factor = 1}},
-            ['An-30M'] = {antenna = {size = 25, factor = 1}},
-            ['A-50'] = {antenna = {size = 9, factor = 0.5}},
-            ['An-26B'] = {antenna = {size = 26, factor = 0.9}},
-            ['C-47'] = {antenna = {size = 12, factor = 1}},
-            ['EA_6B'] = {antenna = {size = 9, factor = 1}}, -- VSN EA-6B
-            ['Su-25T'] = {antenna = {size = 3.5, factor = 1}, require = {CLSID='{Fantasmagoria}'} },
-            ['AJS37'] = {antenna = {size = 4.5, factor = 1}, require = {CLSID='{U22A}'} },
-            ['F-16C_50'] = {antenna = {size = 1.45, factor = 1},require = {CLSID='{AN_ASQ_213}'} },
-            ['JF-17'] = {antenna = {size = 3.25, factor = 1}, require = {CLSID='{DIS_SPJ_POD}'} },
+            ['MLRS FDDM'] = {antenna = {size = 15, factor = 1},ins_error=0},
+            ['SPK-11'] = {antenna = {size = 15, factor = 1},ins_error=0},
+            ['CH-47D'] = {antenna = {size = 12, factor = 1},ins_error=0},
+            ['CH-53E'] = {antenna = {size = 10, factor = 1},ins_error=0},
+            ['MIL-26'] = {antenna = {size = 20, factor = 1},ins_error=50},
+            ['SH-60B'] = {antenna = {size = 8, factor = 1},ins_error=0},
+            ['UH-60A'] = {antenna = {size = 8, factor = 1},ins_error=0},
+            ['UH-60L'] = {antenna = {size = 8, factor = 1},ins_error=0}, -- community UH-69L
+            ['Mi-8MT'] = {antenna = {size = 8, factor = 1},ins_error=0},
+            ['UH-1H'] = {antenna = {size = 4, factor = 1},ins_error=50},
+            ['KA-27'] = {antenna = {size = 4, factor = 1},ins_error=50},
+            ['C-130'] = {antenna = {size = 35, factor = 1},ins_error=0},
+            ['Hercules'] = {antenna = {size = 35, factor = 1},ins_error=0}, -- Anubis' C-130J
+            ['EC130'] = {antenna = {size = 35, factor = 1},ins_error=0},  -- Secret Squirrel EC-130
+            ['RC135RJ'] = {antenna = {size = 40, factor = 1},ins_error=0}, -- Secret Squirrel RC-135
+            ['C-17A'] = {antenna = {size = 40, factor = 1},ins_error=0}, -- stand-in for RC-135, tuned antenna size to match
+            ['S-3B'] = {antenna = {size = 18, factor = 0.8},ins_error=0},
+            ['E-3A'] = {antenna = {size = 9, factor = 0.5},ins_error=0},
+            ['E-2C'] = {antenna = {size = 7, factor = 0.5},ins_error=0},
+            ['Tu-95MS'] = {antenna = {size = 50, factor = 1},ins_error=50},
+            ['Tu-142'] = {antenna = {size = 50, factor = 1},ins_error=0},
+            ['IL-76MD'] = {antenna = {size = 48, factor = 0.8},ins_error=50},
+            ['H-6J'] = {antenna = {size = 3.5, factor = 1},ins_error=100},
+            ['An-30M'] = {antenna = {size = 25, factor = 1},ins_error=50},
+            ['A-50'] = {antenna = {size = 9, factor = 0.5},ins_error=0},
+            ['An-26B'] = {antenna = {size = 26, factor = 1},ins_error=100},
+            ['C-47'] = {antenna = {size = 12, factor = 1},ins_error=100},
+            ['EA_6B'] = {antenna = {size = 9, factor = 1},ins_error=0}, -- VSN EA-6B
+            ['Su-25T'] = {antenna = {size = 3.5, factor = 1}, require = {CLSID='{Fantasmagoria}'},ins_error=50},
+            ['AJS37'] = {antenna = {size = 4.5, factor = 1}, require = {CLSID='{U22A}'},ins_error=50},
+            ['F-16C_50'] = {antenna = {size = 1.45, factor = 1},require = {CLSID='{AN_ASQ_213}'},ins_error=0},
+            ['JF-17'] = {antenna = {size = 3.25, factor = 1}, require = {CLSID='{DIS_SPJ_POD}'},ins_error=0},
+            ['Mirage-F1CE'] = {antenna = {size = 3.7, factor = 1}, require = {CLSID='{TMV_018_Syrel_POD}'},ins_error=100}, -- temporary for intial release, CE had not INS, therefor could do ELINT.
+            ['Mirage-F1EE'] = {antenna = {size = 3.7, factor = 1}, require = {CLSID='{TMV_018_Syrel_POD}'},ins_error=50}, -- does not reflect features in actual released product
+            ['Mirage-F1M-CE'] = {antenna = {size = 3.7, factor = 1}, require = {CLSID='{TMV_018_Syrel_POD}'},ins_error=0}, -- does not reflect features in actual released product
+            ['Mirage-F1M-EE'] = {antenna = {size = 3.7, factor = 1}, require = {CLSID='{TMV_018_Syrel_POD}'},ins_error=0}, -- does not reflect features in actual released product
+            ['Mirage-F1CR'] = {antenna = {size = 4, factor = 1}, require = {CLSID='{ASTAC_POD}'},ins_error=0}, -- AI only (FAF)
+            ['Mirage-F1EQ'] = {antenna = {size = 3.7, factor = 1}, require = {CLSID='{TMV_018_Syrel_POD}'},ins_error=50}, -- AI only (Iraq)
+            ['Mirage-F1EDA'] = {antenna = {size = 3.7, factor = 1}, require = {CLSID='{TMV_018_Syrel_POD}'},ins_error=50}, -- AI only (Qatar)
+
         }
     }
 
-    HOUND.DBs.Bands =  {
+    HOUND.DB.Bands =  {
         ['A'] = 1.713100,
         ['B'] = 0.799447,
         ['C'] = 0.399723,
@@ -999,30 +1013,128 @@ do
         ['L'] = 0.005996,
     }
 
-    HOUND.DBs.CALLSIGNS = {
+    HOUND.DB.CALLSIGNS = {
         NATO = {
             "ABLOW", "ACTON", "AGRAM", "AMINO", "AWOKE", "BARB", "BART", "BAZOO",
             "BOGUE", "BOOT", "BRAY", "CAMAY", "CAPON", "CASEY", "CHIME", "CHISUM",
             "COBRA", "COSMO", "CRISP", "DAGDA", "DALLY", "DEVON", "DIVE", "DOZER",
             "DUPLE", "EXOR", "EXUDE", "EXULT", "FLOSS", "FLOUT", "FLUKY", "FURR",
-            "GENUS", "GOBO", "GOLLY", "GOOFY", "GROUP", "HAKE", "HARMO", "HAWG",
+            "GENUS", "GOBO", "GOLLY", "GOOFY", "GROUP", "HAKE", "HARMO",
             "HERMA", "HEXAD", "HOLE", "HURDS", "HYMN", "IOTA", "JOSS", "KELT", "LARVA",
             "LUMPY", "MAFIA", "MINE", "MORTY", "MURKY", "NEVIN", "NEWLY", "NORTH",
             "OLIVE", "ORKIN", "PARRY", "PATIO", "PATSY", "PATTY", "PERMA", "PITTS",
             "POKER", "POOK", "PRIME", "PYTHON", "RAGU", "REMUS", "RINGY", "RITZ",
-            "RIVET", "RIVET", "ROSE", "RULE", "RUNNY", "SAME", "SAVOY", "SCENT",
+            "RIVET", "ROSE", "RULE", "RUNNY", "SAME", "SAVOY", "SCENT",
             "SCROW", "SEAT", "SLAG", "SLOG", "SNOOP", "SPRY", "STINT", "STOB", "TAKE",
             "TALLY", "TAPE", "TOLL", "TONUS", "TOPCAT", "TORA", "TOTTY", "TOXIC",
             "TRIAL", "TRYST", "VALVO", "VEIN", "VELA", "VETCH", "VINE", "VULCAN",
-            "WATT", "WORTH", "ZEPEL", "ZIPPY"},
+            "WATT", "WORTH", "ZEPEL", "ZIPPY"
+        },
         GENERIC = {
             "VACUUM", "HOOVER", "KIRBY","ROOMBA","DYSON","SHERLOCK","WATSON","GADGET",
             "HORATIO","CAINE","CHRISTIE","BENSON","GIBBS","COLOMBO","HOLT","DIAZ",
-            "SCULLY","MULDER","MARVIN","MARS","MORNINGSTAR","STEELE","CASTEL","BECKETT","INDIANA","JONES",
-            "LARA","CROFT","VENTURA","SCOOBY","SHAGGY"
+            "SCULLY","MULDER","MARVIN","MARS","MORNINGSTAR","STEELE","CASTEL","BECKETT",
+            "INDIANA","JONES","LARA","CROFT","VENTURA","SCOOBY","SHAGGY"
         }
     }
 
+    function HOUND.DB.getRadarData(typeName)
+        if not HOUND.DB.Radars[typeName] then return end
+        local data = l_mist.utils.deepCopy(HOUND.DB.Radars[typeName])
+        data.isEWR = setContainsValue(data.Role,"EWR")
+        return data
+    end
+
+    function HOUND.DB.isValidPlatform(candidate)
+        if type(candidate) ~= "table" or type(candidate.isExist) ~= "function" or not candidate:isExist()
+             then return false
+        end
+
+        local isValid = false
+        local mainCategory = candidate:getCategory()
+        local type = candidate:getTypeName()
+
+        if setContains(HOUND.DB.Platform,mainCategory) then
+            if setContains(HOUND.DB.Platform[mainCategory],type) then
+                if HOUND.DB.Platform[mainCategory][type]['require'] then
+                    local platformData = HOUND.DB.Platform[mainCategory][type]
+                    if setContains(platformData['require'],'CLSID') then
+                        local required = platformData['require']['CLSID']
+                        isValid = HOUND.Utils.hasPayload(candidate,required)
+                    end
+                    if setContains(platformData['require'],'TASK') then
+                        local required = platformData['require']['TASK']
+                        isValid = not HOUND.Utils.hasTask(candidate,required)
+                    end
+                else
+                    isValid = true
+                end
+            end
+        end
+        return isValid
+    end
+
+    function HOUND.DB.getPlatformData(DCS_Unit)
+        if type(DCS_Unit) ~= "table" or not DCS_Unit.getTypeName or not DCS_Unit.getCategory then return end
+
+        local platformData={
+            pos = l_mist.utils.deepCopy(DCS_Unit:getPosition().p),
+            isStatic = false,
+            isAerial = false,
+        }
+
+        local mainCategory = DCS_Unit:getCategory()
+        local typeName = DCS_Unit:getTypeName()
+        local DbInfo = HOUND.DB.Platform[mainCategory][typeName]
+
+        local errorDist = DbInfo.ins_error or 0
+        platformData.posErr = HOUND.Utils.Vector.getRandomVec2(errorDist)
+        platformData.posErr.y = 0
+        platformData.ApertureSize = (DbInfo.antenna.size * DbInfo.antenna.factor) or 0
+
+        if DCS_Unit:getCategory() == Object.Category.STATIC then
+            platformData.isStatic = true
+        else
+            local PlatformUnitCategory = DCS_Unit:getDesc()["category"]
+            if PlatformUnitCategory == Unit.Category.HELICOPTER or PlatformUnitCategory == Unit.Category.AIRPLANE then
+                platformData.isAerial = true
+            end
+        end
+        if not platformData.isAerial then
+            platformData.pos.y = platformData.pos.y + DCS_Unit:getDesc()["box"]["max"]["y"]
+        end
+        return platformData
+    end
+
+    function HOUND.DB.getDefraction(band,antenna_size)
+        if band == nil or antenna_size == nil or antenna_size == 0 then return l_math.rad(30) end
+        return HOUND.DB.Bands[band]/antenna_size
+    end
+
+    function HOUND.DB.getApertureSize(DCS_Unit)
+        if type(DCS_Unit) ~= "table" or not DCS_Unit.getTypeName or not DCS_Unit.getCategory then return 0 end
+        local mainCategory = DCS_Unit:getCategory()
+        local typeName = DCS_Unit:getTypeName()
+        if setContains(HOUND.DB.Platform,mainCategory) then
+            if setContains(HOUND.DB.Platform[mainCategory],typeName) then
+                return HOUND.DB.Platform[mainCategory][typeName].antenna.size *  HOUND.DB.Platform[mainCategory][typeName].antenna.factor
+            end
+        end
+        return 0
+    end
+
+    function HOUND.DB.getEmitterBand(DCS_Unit)
+        if type(DCS_Unit) ~= "table" or not DCS_Unit.getTypeName then return 'C' end
+        local typeName = DCS_Unit:getTypeName()
+        if setContains(HOUND.DB.Radars,typeName) then
+            return HOUND.DB.Radars[typeName].Band
+        end
+        return 'C'
+    end
+
+    function HOUND.DB.getSensorPrecision(platform,emitterBand)
+        return HOUND.DB.getDefraction(emitterBand,HOUND.DB.getApertureSize(platform)) or l_math.rad(20.0) -- precision
+    end
 end
 do
 
@@ -1053,7 +1165,7 @@ do
             hardcore = false,
             detectDeadRadars = true,
             NatoBrevity = false,
-            platformPosErr = 0,
+            platformPosErr = false,
             useNatoCallsigns = false,
             AtisUpdateInterval = 300
         }
@@ -1171,7 +1283,7 @@ do
         end
 
         instance.setPosErr = function(self,value)
-            if type(value) == "number" then
+            if type(value) == "boolean" then
                 self.preferences.platformPosErr = value
                 return true
             end
@@ -1433,7 +1545,7 @@ do
             HOUND.Utils.ReportId = returnId
         end
 
-        return HOUND.DBs.PHONETICS[string.char(returnId)],string.char(returnId)
+        return HOUND.DB.PHONETICS[string.char(returnId)],string.char(returnId)
     end
 
     function HOUND.Utils.DecToDMS(cood)
@@ -1507,7 +1619,7 @@ do
     end
 
     function HOUND.Utils.getHoundCallsign(namePool)
-        local SelectedPool = HOUND.DBs.CALLSIGNS[namePool] or HOUND.DBs.CALLSIGNS.GENERIC
+        local SelectedPool = HOUND.DB.CALLSIGNS[namePool] or HOUND.DB.CALLSIGNS.GENERIC
         return SelectedPool[l_math.random(1, Length(SelectedPool))]
     end
 
@@ -1520,7 +1632,7 @@ do
         if type(DCS_Unit) == "Table" and DCS_Unit.getTypeName then
             typeName = DCS_Unit:getTypeName()
         end
-        return setContains(HOUND.DBs.useDecMin,typeName)
+        return setContains(HOUND.DB.useDecMin,typeName)
     end
 
     function HOUND.Utils.hasPayload(DCS_Unit,payloadName)
@@ -1804,7 +1916,7 @@ do
         local hours = DHMS.h
         local minutes = DHMS.m
         if hours == 0 then
-            hours = HOUND.DBs.PHONETICS["0"]
+            hours = HOUND.DB.PHONETICS["0"]
         else
             hours = string.format("%02d",hours)
         end
@@ -1884,7 +1996,7 @@ do
         local retval = ""
         str = string.upper(tostring(str))
         for i=1, string.len(str) do
-            retval = retval .. HOUND.DBs.PHONETICS[string.sub(str, i, i)] .. " "
+            retval = retval .. HOUND.DB.PHONETICS[string.sub(str, i, i)] .. " "
         end
         return retval:match( "^%s*(.-)%s*$" ) -- return and strip trailing whitespaces
     end
@@ -1942,36 +2054,6 @@ do
         if timestamp == nil then timestamp = timer.getAbsTime() end
         local DHMS = l_mist.time.getDHMS(timestamp)
         return string.format("%02d",DHMS.h)  .. string.format("%02d",DHMS.m)
-    end
-
-    function HOUND.Utils.Elint.getDefraction(band,antenna_size)
-        if band == nil or antenna_size == nil or antenna_size == 0 then return l_math.rad(30) end
-        return HOUND.DBs.Bands[band]/antenna_size
-    end
-
-    function HOUND.Utils.Elint.getApertureSize(DCS_Unit)
-        if type(DCS_Unit) ~= "table" or not DCS_Unit.getTypeName or not DCS_Unit.getCategory then return 0 end
-        local mainCategory = DCS_Unit:getCategory()
-        local typeName = DCS_Unit:getTypeName()
-        if setContains(HOUND.DBs.Platform,mainCategory) then
-            if setContains(HOUND.DBs.Platform[mainCategory],typeName) then
-                return HOUND.DBs.Platform[mainCategory][typeName].antenna.size *  HOUND.DBs.Platform[mainCategory][typeName].antenna.factor
-            end
-        end
-        return 0
-    end
-
-    function HOUND.Utils.Elint.getEmitterBand(DCS_Unit)
-        if type(DCS_Unit) ~= "table" or not DCS_Unit.getTypeName then return 'C' end
-        local typeName = DCS_Unit:getTypeName()
-        if setContains(HOUND.DBs.Sam,typeName) then
-            return HOUND.DBs.Sam[typeName].Band
-        end
-        return 'C'
-    end
-
-    function HOUND.Utils.Elint.getSensorPrecision(platform,emitterBand)
-        return  HOUND.Utils.Elint.getDefraction(emitterBand,HOUND.Utils.Elint.getApertureSize(platform)) or l_math.rad(20.0) -- precision
     end
 
     function HOUND.Utils.Elint.generateAngularError(variance)
@@ -2033,35 +2115,6 @@ do
         return radars
     end
 
-    function HOUND.Utils.Elint.isValidPlatform(candidate)
-        if type(candidate) ~= "table" or type(candidate.isExist) ~= "function" or not candidate:isExist()
-             then return false
-        end
-
-        local isValid = false
-        local mainCategory = candidate:getCategory()
-        local type = candidate:getTypeName()
-
-        if setContains(HOUND.DBs.Platform,mainCategory) then
-            if setContains(HOUND.DBs.Platform[mainCategory],type) then
-                if HOUND.DBs.Platform[mainCategory][type]['require'] then
-                    local platformData = HOUND.DBs.Platform[mainCategory][type]
-                    if setContains(platformData['require'],'CLSID') then
-                        local required = platformData['require']['CLSID']
-                        isValid = HOUND.Utils.hasPayload(candidate,required)
-                    end
-                    if setContains(platformData['require'],'TASK') then
-                        local required = platformData['require']['TASK']
-                        isValid = not HOUND.Utils.hasTask(candidate,required)
-                    end
-                else
-                    isValid = true
-                end
-            end
-        end
-        return isValid
-    end
-
     function HOUND.Utils.Vector.getUnitVector(Theta,Phi)
         if not Theta then
             return {x=0,y=0,z=0}
@@ -2079,8 +2132,7 @@ do
         if variance == 0 then return {x=0,y=0,z=0} end
         local stddev = variance /2
         local Magnitude = l_math.sqrt(-2 * l_math.log(l_math.random())) * stddev
-        local Theta = 2* math.pi * l_math.random()
-
+        local Theta = pi_2 * l_math.random()
         local epsilon = HOUND.Utils.Vector.getUnitVector(Theta)
         for axis,value in pairs(epsilon) do
             epsilon[axis] = value * Magnitude
@@ -2092,8 +2144,8 @@ do
         if variance == 0 then return {x=0,y=0,z=0} end
         local stddev = variance /2
         local Magnitude = l_math.sqrt(-2 * l_math.log(l_math.random())) * stddev
-        local Theta = 2* math.pi * l_math.random()
-        local Phi = 2* math.pi * l_math.random()
+        local Theta = pi_2 * l_math.random()
+        local Phi = pi_2 * l_math.random()
 
         local epsilon = HOUND.Utils.Vector.getUnitVector(Theta,Phi)
         for axis,value in pairs(epsilon) do
@@ -3040,12 +3092,12 @@ do
             elintcontact.typeAssigned = {"Naval"}
         end
 
-        if setContains(HOUND.DBs.Sam,DCS_Unit:getTypeName())  then
-            local unitName = DCS_Unit:getTypeName()
-            elintcontact.typeName =  HOUND.DBs.Sam[unitName].Name
-            elintcontact.isEWR = setContainsValue(HOUND.DBs.Sam[unitName].Role,"EWR")
-            elintcontact.typeAssigned = HOUND.DBs.Sam[unitName].Assigned
-            elintcontact.band = HOUND.DBs.Sam[unitName].Band
+        local contactData = HOUND.DB.getRadarData(elintcontact.DCStypeName)
+        if contactData  then
+            elintcontact.typeName =  contactData.Name
+            elintcontact.isEWR = contactData.isEWR
+            elintcontact.typeAssigned = contactData.Assigned
+            elintcontact.band = contactData.Band
         end
 
         elintcontact.pos = {
@@ -4404,7 +4456,7 @@ do
         end
 
         if candidate ~= nil and candidate:getCoalition() == self:getCoalition()
-            and not setContainsValue(self.platforms,candidate) and HOUND.Utils.Elint.isValidPlatform(candidate) then
+            and not setContainsValue(self.platforms,candidate) and HOUND.DB.isValidPlatform(candidate) then
                 table.insert(self.platforms, candidate)
                 HOUND.EventHandler.publishEvent({
                     id = HOUND.EVENTS.PLATFORM_ADDED,
@@ -4665,40 +4717,25 @@ do
             radarPos.y = radarPos.y + radar:getDesc()["box"]["max"]["y"] -- use vehicle bounting box for height
 
             for _,platform in ipairs(self.platforms) do
-                local platformPos = platform:getPosition().p
-                local platformIsStatic = false
-                local isAerialUnit = false
-                local posErr = {x = 0, z = 0, y = 0 }
+                local platformData = HOUND.DB.getPlatformData(platform)
 
-                if platform:getCategory() == Object.Category.STATIC then
-                    platformIsStatic = true
-                    platformPos.y = platformPos.y + platform:getDesc()["box"]["max"]["y"]
-                else
-                    local PlatformUnitCategory = platform:getDesc()["category"]
-                    if PlatformUnitCategory == Unit.Category.HELICOPTER or PlatformUnitCategory == Unit.Category.AIRPLANE then
-                        isAerialUnit = true
-                        posErr = HOUND.Utils.Vector.getRandomVec3(self.settings:getPosErr())
-                    end
-
-                    if PlatformUnitCategory == Unit.Category.GROUND_UNIT then
-                        platformPos.y = platformPos.y + platform:getDesc()["box"]["max"]["y"]
-                    end
-                end
-
-                if HOUND.Utils.Geo.checkLOS(platformPos, radarPos) then
+                if HOUND.Utils.Geo.checkLOS(platformData.pos, radarPos) then
                     local contact = self:getContact(radar)
-                    local sampleAngularResolution = HOUND.Utils.Elint.getSensorPrecision(platform,contact.band)
+                    local sampleAngularResolution = HOUND.DB.getSensorPrecision(platform,contact.band)
                     if sampleAngularResolution < l_math.rad(10.0) then
-                        local az,el = HOUND.Utils.Elint.getAzimuth( platformPos, radarPos, sampleAngularResolution )
-                        if not isAerialUnit then
+                        local az,el = HOUND.Utils.Elint.getAzimuth( platformData.pos, radarPos, sampleAngularResolution )
+                        if not platformData.isAerial then
                             el = nil
-                        else
-                            for axis,value in pairs(platformPos) do
-                                platformPos[axis] = value + posErr[axis]
-                            end
                         end
 
-                        local datapoint = HOUND.Datapoint.New(platform,platformPos, az, el, timer.getAbsTime(),sampleAngularResolution,platformIsStatic)
+                        if not platform.isStatic and self.settings:getPosErr() then
+                            for axis,value in pairs(platformData.pos) do
+                                platformData.pos[axis] = value + platformData.posErr[axis]
+                            end
+
+                        end
+
+                        local datapoint = HOUND.Datapoint.New(platform,platformData.pos, az, el, timer.getAbsTime(),sampleAngularResolution,platformData.isStatic)
                         contact:AddPoint(datapoint)
                     end
                 end
@@ -5713,7 +5750,7 @@ do
             return
         end
         for _,unit in pairs(units) do
-            if unit:getCoalition() ~= self.settings:getCoalition() and unit:isExist() and setContains(HOUND.DBs.Sam,unit:getTypeName()) then
+            if unit:getCoalition() ~= self.settings:getCoalition() and unit:isExist() and setContains(HOUND.DB.Radars,unit:getTypeName()) then
                 self.contacts:setPreBriefedContact(unit)
             end
         end
@@ -5758,6 +5795,9 @@ do
         priority = priority or 50
         if not self.sectors[sectorName] then
             self.sectors[sectorName] = HOUND.Sector.create(self.settings:getId(),sectorName,sectorSettings,priority)
+            if self.settings:getOnScreenDebug() then
+                HOUND.Logger.onScreenDebug("Sector " .. sectorName  .. " was added to Hound instance ".. self:getId(),10)
+            end
             return self.sectors[sectorName]
         end
 
@@ -5767,6 +5807,9 @@ do
     function HoundElint:removeSector(sectorName)
         if sectorName == nil then return false end
         self.sectors[sectorName] = self.sectors[sectorName]:destroy()
+        if self.settings:getOnScreenDebug() then
+            HOUND.Logger.onScreenDebug("Sector " .. sectorName .. " was removed from Hound instance ".. self:getId(),10)
+        end
         return true
     end
 
@@ -6307,6 +6350,15 @@ do
         end
         return false
     end
+
+    function HoundElint:enablePlatformPosErrors()
+        return self.settings:setPosErr(true)
+    end
+
+    function HoundElint:disablePlatformPosErrors()
+        return self.settings:setPosErr(false)
+    end
+
     function HoundElint:getBDA()
         return self.settings:getBDA()
     end
@@ -6395,7 +6447,7 @@ do
             end
         end
         if self.settings:getOnScreenDebug() then
-            trigger.action.outText(self:printDebugging(),self.settings.intervals.scan*0.75)
+            HOUND.Logger.onScreenDebug(self:printDebugging(),self.settings.intervals.scan*0.75)
         end
         return nextRun
     end
@@ -6596,4 +6648,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.3.0-develop-20220521 - Compiled on 2022-05-21 18:38
+-- Hound version 0.3.0-develop-20220612 - Compiled on 2022-06-11 21:23
