@@ -80,7 +80,7 @@ do
         local p1 = platform1:getPosition().p
         local p2 = platform2:getPosition().p
 
-        local err = HOUND.Utils.Elint.getSensorPrecision(platform1,HOUND.Utils.Elint.getEmitterBand(emitter))
+        local err = HOUND.DB.getSensorPrecision(platform1,HOUND.DB.getEmitterBand(emitter))
         lu.assertEquals(err,0.002141375)
 
         local az1,el1 = HOUND.Utils.Elint.getAzimuth( p1, tgtPos, err )

@@ -63,17 +63,17 @@ do
         local str,char = HOUND.Utils.getReportId('C')
         lu.assertEquals(char,'D')
         lu.assertEquals(str,'Delta')
-        lu.assertEquals(str,HOUND.DBs.PHONETICS[char])
+        lu.assertEquals(str,HOUND.DB.PHONETICS[char])
 
         str,char = HOUND.Utils.getReportId('Z')
         lu.assertEquals(char,'A')
         lu.assertEquals(str,'Alpha')
-        lu.assertEquals(str,HOUND.DBs.PHONETICS[char])
+        lu.assertEquals(str,HOUND.DB.PHONETICS[char])
 
         str,char = HOUND.Utils.getReportId('Y')
         lu.assertEquals(char,'Z')
         lu.assertEquals(str,'Zulu')
-        lu.assertEquals(str,HOUND.DBs.PHONETICS[char])
+        lu.assertEquals(str,HOUND.DB.PHONETICS[char])
     end
     function TestHoundUtils:TestDecToDMS()
         lu.assertItemsEquals(HOUND.Utils.DecToDMS(35.443),{d=35,m=26,s=34,mDec=26.580,sDec=580})
@@ -178,29 +178,29 @@ do
         local emitter = Unit.getByName("TOR_SAIPAN-1")
         local platform = Unit.getByName("ELINT_BLUE_C17_EAST")
 
-        -- HOUND.Utils.Elint.getEmitterBand
-        lu.assertEquals(HOUND.Utils.Elint.getEmitterBand(),'C')
-        lu.assertEquals(HOUND.Utils.Elint.getEmitterBand(emitter),'F')
+        -- HOUND.DB.getEmitterBand
+        lu.assertEquals(HOUND.DB.getEmitterBand(),'C')
+        lu.assertEquals(HOUND.DB.getEmitterBand(emitter),'F')
 
-        -- HOUND.Utils.Elint.getApertureSize
-        lu.assertEquals(HOUND.Utils.Elint.getApertureSize(),0)
-        lu.assertEquals(HOUND.Utils.Elint.getApertureSize(platform),40)
+        -- HOUND.DB.getApertureSize
+        lu.assertEquals(HOUND.DB.getApertureSize(),0)
+        lu.assertEquals(HOUND.DB.getApertureSize(platform),40)
 
-        -- HOUND.Utils.Elint.getDefraction
-        lu.assertEquals(HOUND.Utils.Elint.getDefraction(), math.rad(30))
-        lu.assertEquals(HOUND.Utils.Elint.getDefraction(HOUND.Utils.Elint.getEmitterBand(emitter),HOUND.Utils.Elint.getApertureSize(platform)),0.002141375)
+        -- HOUND.DB.getDefraction
+        lu.assertEquals(HOUND.DB.getDefraction(), math.rad(30))
+        lu.assertEquals(HOUND.DB.getDefraction(HOUND.DB.getEmitterBand(emitter),HOUND.DB.getApertureSize(platform)),0.002141375)
 
-        -- HOUND.Utils.Elint.getSensorPrecision
-        lu.assertEquals(HOUND.Utils.Elint.getSensorPrecision(platform,HOUND.Utils.Elint.getEmitterBand(emitter)),0.002141375)
+        -- HOUND.DB.getSensorPrecision
+        lu.assertEquals(HOUND.DB.getSensorPrecision(platform,HOUND.DB.getEmitterBand(emitter)),0.002141375)
         -- HOUND.Utils.Elint.generateAngularError
 
         -- HOUND.Utils.Elint.getAzimuth
 
         -- HOUND.Utils.getHoundCallsign
-        lu.assertIsTrue(setContainsValue(HOUND.DBs.CALLSIGNS.GENERIC,HOUND.Utils.getHoundCallsign()))
-        lu.assertIsFalse(setContainsValue(HOUND.DBs.CALLSIGNS.GENERIC,HOUND.Utils.getHoundCallsign("NATO")))
-        lu.assertIsTrue(setContainsValue(HOUND.DBs.CALLSIGNS.NATO,HOUND.Utils.getHoundCallsign("NATO")))
-        lu.assertIsFalse(setContainsValue(HOUND.DBs.CALLSIGNS.NATO,HOUND.Utils.getHoundCallsign()))
+        lu.assertIsTrue(setContainsValue(HOUND.DB.CALLSIGNS.GENERIC,HOUND.Utils.getHoundCallsign()))
+        lu.assertIsFalse(setContainsValue(HOUND.DB.CALLSIGNS.GENERIC,HOUND.Utils.getHoundCallsign("NATO")))
+        lu.assertIsTrue(setContainsValue(HOUND.DB.CALLSIGNS.NATO,HOUND.Utils.getHoundCallsign("NATO")))
+        lu.assertIsFalse(setContainsValue(HOUND.DB.CALLSIGNS.NATO,HOUND.Utils.getHoundCallsign()))
     end
 
     function TestHoundUtils:TestPolygon()

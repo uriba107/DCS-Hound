@@ -25,7 +25,7 @@ function PBviaUnit(HoundInstance,unitName)
         if contact.visible and contact.type then
             local candidate = contact.object
             local type = candidate:getTypeName()
-            if  HOUND.DBs.Sam[type] then
+            if  HOUND.DB.Radars[type] then
                 HoundInstance:preBriefedContact(candidate:getName())
             end
         end
