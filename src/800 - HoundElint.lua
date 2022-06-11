@@ -174,7 +174,7 @@ do
             return
         end
         for _,unit in pairs(units) do
-            if unit:getCoalition() ~= self.settings:getCoalition() and unit:isExist() and setContains(HOUND.DBs.Sam,unit:getTypeName()) then
+            if unit:getCoalition() ~= self.settings:getCoalition() and unit:isExist() and setContains(HOUND.DB.Radars,unit:getTypeName()) then
                 self.contacts:setPreBriefedContact(unit)
             end
         end
@@ -229,6 +229,9 @@ do
         priority = priority or 50
         if not self.sectors[sectorName] then
             self.sectors[sectorName] = HOUND.Sector.create(self.settings:getId(),sectorName,sectorSettings,priority)
+            if self.settings:getOnScreenDebug() then
+                HOUND.Logger.onScreenDebug("Sector " .. sectorName  .. " was added to Hound instance ".. self:getId(),10)
+            end
             return self.sectors[sectorName]
         end
 
@@ -241,6 +244,9 @@ do
     function HoundElint:removeSector(sectorName)
         if sectorName == nil then return false end
         self.sectors[sectorName] = self.sectors[sectorName]:destroy()
+        if self.settings:getOnScreenDebug() then
+            HOUND.Logger.onScreenDebug("Sector " .. sectorName .. " was removed from Hound instance ".. self:getId(),10)
+        end
         return true
     end
 
@@ -918,6 +924,19 @@ do
         end
         return false
     end
+
+    --- enable platforms INS position errors
+    -- @return Bool if settings was updated
+    function HoundElint:enablePlatformPosErrors()
+        return self.settings:setPosErr(true)
+    end
+
+    --- disable platforms INS position errors
+    -- @return Bool if settings was updated
+    function HoundElint:disablePlatformPosErrors()
+        return self.settings:setPosErr(false)
+    end
+
     --- get current BDA setting state
     -- @return Bool current state
     function HoundElint:getBDA()
@@ -1041,7 +1060,7 @@ do
             end
         end
         if self.settings:getOnScreenDebug() then
-            trigger.action.outText(self:printDebugging(),self.settings.intervals.scan*0.75)
+            HOUND.Logger.onScreenDebug(self:printDebugging(),self.settings.intervals.scan*0.75)
         end
         timeCycle:Stop()
         return nextRun

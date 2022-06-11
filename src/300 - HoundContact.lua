@@ -40,12 +40,12 @@ do
             elintcontact.typeAssigned = {"Naval"}
         end
 
-        if setContains(HOUND.DBs.Sam,DCS_Unit:getTypeName())  then
-            local unitName = DCS_Unit:getTypeName()
-            elintcontact.typeName =  HOUND.DBs.Sam[unitName].Name
-            elintcontact.isEWR = setContainsValue(HOUND.DBs.Sam[unitName].Role,"EWR")
-            elintcontact.typeAssigned = HOUND.DBs.Sam[unitName].Assigned
-            elintcontact.band = HOUND.DBs.Sam[unitName].Band
+        local contactData = HOUND.DB.getRadarData(elintcontact.DCStypeName)
+        if contactData  then
+            elintcontact.typeName =  contactData.Name
+            elintcontact.isEWR = contactData.isEWR
+            elintcontact.typeAssigned = contactData.Assigned
+            elintcontact.band = contactData.Band
         end
 
         elintcontact.pos = {

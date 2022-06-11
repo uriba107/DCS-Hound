@@ -36,7 +36,7 @@ do
             hardcore = false,
             detectDeadRadars = true,
             NatoBrevity = false,
-            platformPosErr = 0,
+            platformPosErr = false,
             useNatoCallsigns = false,
             AtisUpdateInterval = 300
         }
@@ -222,7 +222,7 @@ do
         --- Position error getter
         -- @within HOUND.Config.instance
         -- @param self config instance
-        -- @return Int desired error in meters
+        -- @return Bool True if platform position error is used
         instance.getPosErr = function(self)
             return self.preferences.platformPosErr
         end
@@ -230,10 +230,10 @@ do
         --- Platform Position error setter
         -- @within HOUND.Config.instance
         -- @param self config instance
-        -- @int value set error radius in meters
+        -- @bool value true if you want to use platform position error
         -- @return Bool True if change was made
         instance.setPosErr = function(self,value)
-            if type(value) == "number" then
+            if type(value) == "boolean" then
                 self.preferences.platformPosErr = value
                 return true
             end
@@ -290,7 +290,6 @@ do
             if not self.radioMenu.root then
                 self.radioMenu.root = missionCommands.addSubMenuForCoalition(
                     self:getCoalition(), 'ELINT',self:getRadioMenuParent())
-                -- self.radioMenu.root = missionCommands.addSubMenu('ELINT',self:getRadioMenuParent())
             end
             return self.radioMenu.root
         end
@@ -321,7 +320,7 @@ do
         -- @param self HOUND.Config instance
         -- @param parent desired parent menu
         -- @usage
-        -- local servicesMenu =missionCommands.addSubMenuForCoalition(
+        -- local servicesMenu = missionCommands.addSubMenuForCoalition(
         --          coalition.side.BLUE, 'AWACS, Tankers and ELINT..')
         -- HOUND.Config:setRadioMenuParent(servicesMenu)
         instance.setRadioMenuParent = function (self,parent)

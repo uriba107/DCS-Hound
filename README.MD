@@ -294,6 +294,17 @@ It is highly recommended that you use one of them (or `HOUND.Utils.getMarkId()`)
 In addition to all that Hound will only delete its own markers (by tracking every Marker ID it's placing)
 
 ---
+### Platform position errors
+Position of the platform is a baseline used for the triangulation. In the real world however position on the platform is always never accurate. Older aircraft have INS systems that drift overtime unless updated periodically, while in newer Aircraft a less "drifty" system is updated automatically from GPS.
+To simulate this you can enable position errors. When this setting is enabled, a random error is introduced to platform's position when stored. 
+```lua
+    HoundInstance:enablePlatformPosErrors()
+
+    -- disable (default)
+    HoundInstance:disablePlatformPosErrors()
+```
+
+---
 ### DBA reports
 By default the [Controller](#sam-controller) and [Notifier](#notifier) will push alerts when a radar is destroyed when track is dropped.
 you may choose to disable this behaviour
@@ -309,6 +320,7 @@ local bool = HoundInstance:getBDA()
 
 This setting only affects automatic marking of dead contacts. you can manually mark a contact as dead (and notifications will be transmitted) regardless of BDA settings.  
 To mark a contact as dead use ```HoundInstance:markDeadContact(radarUnit)``` see [extended docs](#more-docs) for more information.
+
 ---
 ### Reposition Controller radio menu
 By default the [Controller](#sam-controller) will generate the "ELINT" root menu in the base F10 menu.

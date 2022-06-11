@@ -47,7 +47,7 @@ do
         end
 
         if candidate ~= nil and candidate:getCoalition() == self:getCoalition()
-            and not setContainsValue(self.platforms,candidate) and HOUND.Utils.Elint.isValidPlatform(candidate) then
+            and not setContainsValue(self.platforms,candidate) and HOUND.DB.isValidPlatform(candidate) then
                 table.insert(self.platforms, candidate)
                 HOUND.EventHandler.publishEvent({
                     id = HOUND.EVENTS.PLATFORM_ADDED,
@@ -360,41 +360,54 @@ do
             radarPos.y = radarPos.y + radar:getDesc()["box"]["max"]["y"] -- use vehicle bounting box for height
 
             for _,platform in ipairs(self.platforms) do
-                local platformPos = platform:getPosition().p
-                -- local platformId = platform:getName()
-                local platformIsStatic = false
-                local isAerialUnit = false
-                local posErr = {x = 0, z = 0, y = 0 }
+                local platformData = HOUND.DB.getPlatformData(platform)
+                -- local platformPos = platform:getPosition().p
+                -- local platformIsStatic = false
+                -- local isAerialUnit = false
+                -- local posErr = {x = 0, z = 0, y = 0 }
 
-                if platform:getCategory() == Object.Category.STATIC then
-                    platformIsStatic = true
-                    platformPos.y = platformPos.y + platform:getDesc()["box"]["max"]["y"]
-                else
-                    local PlatformUnitCategory = platform:getDesc()["category"]
-                    if PlatformUnitCategory == Unit.Category.HELICOPTER or PlatformUnitCategory == Unit.Category.AIRPLANE then
-                        isAerialUnit = true
-                        posErr = HOUND.Utils.Vector.getRandomVec3(self.settings:getPosErr())
-                    end
+                -- if platform:getCategory() == Object.Category.STATIC then
+                --     platformIsStatic = true
+                --     platformPos.y = platformPos.y + platform:getDesc()["box"]["max"]["y"]
+                -- else
+                --     local PlatformUnitCategory = platform:getDesc()["category"]
+                --     if PlatformUnitCategory == Unit.Category.HELICOPTER or PlatformUnitCategory == Unit.Category.AIRPLANE then
+                --         isAerialUnit = true
+                --         posErr = HOUND.Utils.Vector.getRandomVec3(self.settings:getPosErr())
+                --     end
 
-                    if PlatformUnitCategory == Unit.Category.GROUND_UNIT then
-                        platformPos.y = platformPos.y + platform:getDesc()["box"]["max"]["y"]
-                    end
-                end
+                --     if PlatformUnitCategory == Unit.Category.GROUND_UNIT then
+                --         platformPos.y = platformPos.y + platform:getDesc()["box"]["max"]["y"]
+                --     end
+                -- end
 
-                if HOUND.Utils.Geo.checkLOS(platformPos, radarPos) then
+                if HOUND.Utils.Geo.checkLOS(platformData.pos, radarPos) then
                     local contact = self:getContact(radar)
-                    local sampleAngularResolution = HOUND.Utils.Elint.getSensorPrecision(platform,contact.band)
+                    local sampleAngularResolution = HOUND.DB.getSensorPrecision(platform,contact.band)
                     if sampleAngularResolution < l_math.rad(10.0) then
-                        local az,el = HOUND.Utils.Elint.getAzimuth( platformPos, radarPos, sampleAngularResolution )
-                        if not isAerialUnit then
+                        local az,el = HOUND.Utils.Elint.getAzimuth( platformData.pos, radarPos, sampleAngularResolution )
+                        if not platformData.isAerial then
                             el = nil
-                        else
-                            for axis,value in pairs(platformPos) do
-                                platformPos[axis] = value + posErr[axis]
-                            end
                         end
 
-                        local datapoint = HOUND.Datapoint.New(platform,platformPos, az, el, timer.getAbsTime(),sampleAngularResolution,platformIsStatic)
+                        if not platform.isStatic and self.settings:getPosErr() then
+                            --  local origPos = mist.utils.deepCopy(platformData.pos)
+                            --  local hasErr = 0
+                            for axis,value in pairs(platformData.pos) do
+                                -- hasErr = hasErr + platformData.posErr[axis]
+                                platformData.pos[axis] = value + platformData.posErr[axis]
+                            end
+                            -- if hasErr > 0 and HOUND.DEBUG then
+                            --     -- HOUND.Logger.trace(mist.utils.tableShow(origPos))
+                            --     -- HOUND.Logger.trace(mist.utils.tableShow(platformData.posErr))
+                            --     -- HOUND.Logger.trace(mist.utils.tableShow(platformData.pos))
+
+                            --     trigger.action.lineToAll(-1,HOUND.Utils.Marker.getId(),origPos,platformData.pos,{0,255,0,255},4)
+                            --     trigger.action.markToAll(HOUND.Utils.Marker.getId(),"pos+err",platformData.pos)
+                            -- end
+                        end
+
+                        local datapoint = HOUND.Datapoint.New(platform,platformData.pos, az, el, timer.getAbsTime(),sampleAngularResolution,platformData.isStatic)
                         contact:AddPoint(datapoint)
                     end
                 end

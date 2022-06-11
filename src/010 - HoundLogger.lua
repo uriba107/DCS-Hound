@@ -147,6 +147,14 @@ do
         end
     end
 
+    function HOUND.Logger.onScreenDebug(text,time)
+        if type(text) ~= "string" then return end
+        if type(time) ~= "number" then
+            time = 15
+        end
+        trigger.action.outText(text,math.ceil(time))
+    end
+
     if HOUND.DEBUG then
         HOUND.Logger.setBaseLevel(HOUND.Logger.LEVEL.trace)
     end

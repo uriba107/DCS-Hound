@@ -301,7 +301,7 @@ do
             HOUND.Utils.ReportId = returnId
         end
 
-        return HOUND.DBs.PHONETICS[string.char(returnId)],string.char(returnId)
+        return HOUND.DB.PHONETICS[string.char(returnId)],string.char(returnId)
     end
 
     --- Convert Decimal Degrees to DMS (D.DD to DMS)
@@ -398,7 +398,7 @@ do
     -- @param[opt] namePool string "GENERIC" or "NATO"
     -- @return string random callsign from pool
     function HOUND.Utils.getHoundCallsign(namePool)
-        local SelectedPool = HOUND.DBs.CALLSIGNS[namePool] or HOUND.DBs.CALLSIGNS.GENERIC
+        local SelectedPool = HOUND.DB.CALLSIGNS[namePool] or HOUND.DB.CALLSIGNS.GENERIC
         return SelectedPool[l_math.random(1, Length(SelectedPool))]
     end
 
@@ -413,7 +413,7 @@ do
         if type(DCS_Unit) == "Table" and DCS_Unit.getTypeName then
             typeName = DCS_Unit:getTypeName()
         end
-        return setContains(HOUND.DBs.useDecMin,typeName)
+        return setContains(HOUND.DB.useDecMin,typeName)
     end
 
     --- does unit has payload (placeholder)
@@ -873,7 +873,7 @@ do
         local minutes = DHMS.m
         -- local seconds = DHMS.s
         if hours == 0 then
-            hours = HOUND.DBs.PHONETICS["0"]
+            hours = HOUND.DB.PHONETICS["0"]
         else
             hours = string.format("%02d",hours)
         end
@@ -984,7 +984,7 @@ do
         local retval = ""
         str = string.upper(tostring(str))
         for i=1, string.len(str) do
-            retval = retval .. HOUND.DBs.PHONETICS[string.sub(str, i, i)] .. " "
+            retval = retval .. HOUND.DB.PHONETICS[string.sub(str, i, i)] .. " "
         end
         return retval:match( "^%s*(.-)%s*$" ) -- return and strip trailing whitespaces
     end
@@ -1076,55 +1076,6 @@ do
     --- Elint functions
     -- @section elint
 
-    --- Get defraction
-    -- for band and effective antenna size return angular resolution
-    -- @local
-    -- @param band Radar transmission band (A-L) as defined in HOUND.DBs
-    -- @param antenna_size Effective antenna size for platform as defined in HOUND.DBs
-    -- @return angular resolution in Radians for Band Antenna combo
-
-    function HOUND.Utils.Elint.getDefraction(band,antenna_size)
-        if band == nil or antenna_size == nil or antenna_size == 0 then return l_math.rad(30) end
-        return HOUND.DBs.Bands[band]/antenna_size
-    end
-
-    --- get Effective Aperture size for unit
-    -- @local
-    -- @param DCS_Unit Unit requested (used as platform)
-    -- @return Effective aperture size in meters
-    function HOUND.Utils.Elint.getApertureSize(DCS_Unit)
-        if type(DCS_Unit) ~= "table" or not DCS_Unit.getTypeName or not DCS_Unit.getCategory then return 0 end
-        local mainCategory = DCS_Unit:getCategory()
-        local typeName = DCS_Unit:getTypeName()
-        if setContains(HOUND.DBs.Platform,mainCategory) then
-            if setContains(HOUND.DBs.Platform[mainCategory],typeName) then
-                return HOUND.DBs.Platform[mainCategory][typeName].antenna.size *  HOUND.DBs.Platform[mainCategory][typeName].antenna.factor
-            end
-        end
-        return 0
-    end
-
-    --- Get emitter Band
-    -- @local
-    -- @param DCS_Unit Radar unit
-    -- @return Char radar band
-    function HOUND.Utils.Elint.getEmitterBand(DCS_Unit)
-        if type(DCS_Unit) ~= "table" or not DCS_Unit.getTypeName then return 'C' end
-        local typeName = DCS_Unit:getTypeName()
-        if setContains(HOUND.DBs.Sam,typeName) then
-            return HOUND.DBs.Sam[typeName].Band
-        end
-        return 'C'
-    end
-
-    --- Elint Function - Get sensor precision
-    -- @param platform Instance of DCS Unit which is the detecting platform
-    -- @param emitterBand Radar Band (frequency) of radar (A-L)
-    -- @return angular resolution in Radians of platform against specific Radar frequency
-    function HOUND.Utils.Elint.getSensorPrecision(platform,emitterBand)
-        return  HOUND.Utils.Elint.getDefraction(emitterBand,HOUND.Utils.Elint.getApertureSize(platform)) or l_math.rad(20.0) -- precision
-    end
-
     --- Elint Function - Generate angular error
     -- @param variance amount of variance in gausian random function
     -- @return table {az,el} error in radians per element
@@ -1141,7 +1092,7 @@ do
     --- Get Azimuth (and elevation) between two points
     -- @param src position of the source (i.e Hound platform)
     -- @param dst position of the destination (i.e emitting radar)
-    -- @param sensorPrecision angular resolution (in rad) of platform against radar @{HOUND.Utils.Elint.getSensorPrecision}
+    -- @param sensorPrecision angular resolution (in rad) of platform against radar
     -- @return Azimuth (radians) from source to destination (0 to 2*pi)
     -- @return elevation angle (radians) from source to destination (-pi to pi)
 
@@ -1207,41 +1158,6 @@ do
         return radars
     end
 
-    --- check if canidate Object is a valid platform
-    -- @param candidate DCS Object (Unit or Static Object)
-    -- @return Bool. True if object is valid platform
-    function HOUND.Utils.Elint.isValidPlatform(candidate)
-        if type(candidate) ~= "table" or type(candidate.isExist) ~= "function" or not candidate:isExist()
-             then return false
-        end
-
-        local isValid = false
-        local mainCategory = candidate:getCategory()
-        local type = candidate:getTypeName()
-
-        if setContains(HOUND.DBs.Platform,mainCategory) then
-            if setContains(HOUND.DBs.Platform[mainCategory],type) then
-                if HOUND.DBs.Platform[mainCategory][type]['require'] then
-                    local platformData = HOUND.DBs.Platform[mainCategory][type]
-                    -- TODO: actually make logic here
-                    if setContains(platformData['require'],'CLSID') then
-                        local required = platformData['require']['CLSID']
-                        -- then if payload is valid (currently always retuns true)
-                        isValid = HOUND.Utils.hasPayload(candidate,required)
-                    end
-                    if setContains(platformData['require'],'TASK') then
-                        local required = platformData['require']['TASK']
-                        -- check for tasking requirements (for now will always return false)
-                        isValid = not HOUND.Utils.hasTask(candidate,required)
-                    end
-                else
-                    isValid = true
-                end
-            end
-        end
-        return isValid
-    end
-
     --- Vector functions
     -- @section Vectors
 
@@ -1271,8 +1187,7 @@ do
         if variance == 0 then return {x=0,y=0,z=0} end
         local stddev = variance /2
         local Magnitude = l_math.sqrt(-2 * l_math.log(l_math.random())) * stddev
-        local Theta = 2* math.pi * l_math.random()
-
+        local Theta = pi_2 * l_math.random()
         local epsilon = HOUND.Utils.Vector.getUnitVector(Theta)
         for axis,value in pairs(epsilon) do
             epsilon[axis] = value * Magnitude
@@ -1289,8 +1204,8 @@ do
         if variance == 0 then return {x=0,y=0,z=0} end
         local stddev = variance /2
         local Magnitude = l_math.sqrt(-2 * l_math.log(l_math.random())) * stddev
-        local Theta = 2* math.pi * l_math.random()
-        local Phi = 2* math.pi * l_math.random()
+        local Theta = pi_2 * l_math.random()
+        local Phi = pi_2 * l_math.random()
 
         -- from radius and angle you can get the point on the circles
         local epsilon = HOUND.Utils.Vector.getUnitVector(Theta,Phi)
