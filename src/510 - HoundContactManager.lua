@@ -1,28 +1,28 @@
-    --- HoundContactManager
-    -- Wrapper for HoundElintWorker
-    -- @module HoundContactManager
+    --- HOUND.ContactManager
+    -- Wrapper for HOUND.ElintWorker
+    -- @module HOUND.ContactManager
 do
-    --- HoundElintWorker#Wrapper
-    -- @type HoundContactManager
-    -- @within HoundContactManager
-    HoundContactManager = {
+    --- HOUND.ElintWorker#Wrapper
+    -- @type HOUND.ContactManager
+    -- @within HOUND.ContactManager
+    HOUND.ContactManager = {
         _workers = {}
     }
 
-    HoundContactManager.__index = HoundContactManager
+    HOUND.ContactManager.__index = HOUND.ContactManager
 
     --- returns ELINT worker for HoundId
     -- @param HoundInstanceId Hound Id
-    -- @return HoundElintWorker for specified HoundInstanceId
-    -- @within HoundContactManager
-    function HoundContactManager.get(HoundInstanceId)
-        if HoundContactManager._workers[HoundInstanceId] then
-            return HoundContactManager._workers[HoundInstanceId]
+    -- @return @{HOUND.ElintWorker} for specified HoundInstanceId
+    -- @within HOUND.ContactManager
+    function HOUND.ContactManager.get(HoundInstanceId)
+        if HOUND.ContactManager._workers[HoundInstanceId] then
+            return HOUND.ContactManager._workers[HoundInstanceId]
         end
 
-        local worker = HoundElintWorker.create(HoundInstanceId)
-        HoundContactManager._workers[HoundInstanceId] = worker
+        local worker = HOUND.ElintWorker.create(HoundInstanceId)
+        HOUND.ContactManager._workers[HoundInstanceId] = worker
 
-        return HoundContactManager._workers[HoundInstanceId]
+        return HOUND.ContactManager._workers[HoundInstanceId]
     end
 end

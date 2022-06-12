@@ -41,20 +41,21 @@
 <h2>Modules</h2>
 <ul class="nowrap">
   <li><a href="../modules/HOUND.html">HOUND</a></li>
-  <li><a href="../modules/HoundLogger.html">HoundLogger</a></li>
-  <li><a href="../modules/HoundDB.html">HoundDB</a></li>
-  <li><a href="../modules/HoundConfig.html">HoundConfig</a></li>
-  <li><a href="../modules/HoundUtils.html">HoundUtils</a></li>
-  <li><a href="../modules/HoundEventHandler.html">HoundEventHandler</a></li>
-  <li><a href="../modules/HoundEstimator.html">HoundEstimator</a></li>
-  <li><strong>HoundDatapoint</strong></li>
-  <li><a href="../modules/HoundContact.html">HoundContact</a></li>
-  <li><a href="../modules/HoundCommsManager.html">HoundCommsManager</a></li>
-  <li><a href="../modules/HoundInformationSystem.html">HoundInformationSystem</a></li>
-  <li><a href="../modules/HoundController.html">HoundController</a></li>
-  <li><a href="../modules/HoundElintWorker.html">HoundElintWorker</a></li>
-  <li><a href="../modules/HoundContactManager.html">HoundContactManager</a></li>
-  <li><a href="../modules/HoundSector.html">HoundSector</a></li>
+  <li><a href="../modules/HOUND.Logger.html">HOUND.Logger</a></li>
+  <li><a href="../modules/HOUND.DB.html">HOUND.DB</a></li>
+  <li><a href="../modules/HOUND.Config.html">HOUND.Config</a></li>
+  <li><a href="../modules/HOUND.Utils.html">HOUND.Utils</a></li>
+  <li><a href="../modules/HOUND.EventHandler.html">HOUND.EventHandler</a></li>
+  <li><a href="../modules/HOUND.Estimator.html">HOUND.Estimator</a></li>
+  <li><strong>HOUND.Datapoint</strong></li>
+  <li><a href="../modules/HOUND.Contact.html">HOUND.Contact</a></li>
+  <li><a href="../modules/HOUND.Comms.Manager.html">HOUND.Comms.Manager</a></li>
+  <li><a href="../modules/HOUND.Comms.InformationSystem.html">HOUND.Comms.InformationSystem</a></li>
+  <li><a href="../modules/HOUND.Comms.Controller.html">HOUND.Comms.Controller</a></li>
+  <li><a href="../modules/HOUND.Comms.Notifier.html">HOUND.Comms.Notifier</a></li>
+  <li><a href="../modules/HOUND.ElintWorker.html">HOUND.ElintWorker</a></li>
+  <li><a href="../modules/HOUND.ContactManager.html">HOUND.ContactManager</a></li>
+  <li><a href="../modules/HOUND.Sector.html">HOUND.Sector</a></li>
 </ul>
 <h2>Scripts</h2>
 <ul class="nowrap">
@@ -65,73 +66,73 @@
 
 <div id="content">
 
-<h1>Module <code>HoundDatapoint</code></h1>
-<p>HoundDatapoint</p>
+<h1>Module <code>HOUND.Datapoint</code></h1>
+<p>HOUND.Datapoint</p>
 <p></p>
 
 
 <h2><a href="#Functions">Functions</a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#New">New (platform0, p0, az0, el0, t0[, angularResolution[, isPlatformStatic]])</a></td>
-	<td class="summary">Create new HoundDatapoint instance</td>
+	<td class="name" nowrap><a href="#HOUND.Datapoint.New">HOUND.Datapoint.New (platform0, p0, az0, el0, t0[, angularResolution[, isPlatformStatic]])</a></td>
+	<td class="summary">Create new HOUND.Datapoint instance</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#isStatic">isStatic (self)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Datapoint.isStatic">HOUND.Datapoint.isStatic (self)</a></td>
 	<td class="summary">check if platform is static</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#getPos">getPos (self)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Datapoint.getPos">HOUND.Datapoint.getPos (self)</a></td>
 	<td class="summary">Get estimated position</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#getAge">getAge (self)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Datapoint.getAge">HOUND.Datapoint.getAge (self)</a></td>
 	<td class="summary">Get datapoint age in seconds</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#get2dPoly">get2dPoly (self)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Datapoint.get2dPoly">HOUND.Datapoint.get2dPoly (self)</a></td>
 	<td class="summary">Get 2D polygon</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#get3dPoly">get3dPoly (self)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Datapoint.get3dPoly">HOUND.Datapoint.get3dPoly (self)</a></td>
 	<td class="summary">Get 3D polygon</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#getEllipseParams">getEllipseParams (self)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Datapoint.getEllipseParams">HOUND.Datapoint.getEllipseParams (self)</a></td>
 	<td class="summary">Get 3D polygon ellipse parameters</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#getErrors">getErrors (self)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Datapoint.getErrors">HOUND.Datapoint.getErrors (self)</a></td>
 	<td class="summary">Get computed error table</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#calcError">calcError (self)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Datapoint.calcError">HOUND.Datapoint.calcError (self)</a></td>
 	<td class="summary">calculate errors on 3dPoly</td>
 	</tr>
 </table>
 <h2><a href="#Tables">Tables</a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#HoundDatapoint">HoundDatapoint</a></td>
+	<td class="name" nowrap><a href="#HOUND.Datapoint">HOUND.Datapoint</a></td>
 	<td class="summary"></td>
 	</tr>
 </table>
 <h2><a href="#Local_Functions">Local Functions</a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#estimatePos">estimatePos (self)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Datapoint.estimatePos">HOUND.Datapoint.estimatePos (self)</a></td>
 	<td class="summary">Estimate contact position from Datapoint information only</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#calcPolygons">calcPolygons (self)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Datapoint.calcPolygons">HOUND.Datapoint.calcPolygons (self)</a></td>
 	<td class="summary">generate Az only Triangle and if possible Az/El polygon footprint</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#update">update (self, newAz[, predictedAz[, processNoise]])</a></td>
+	<td class="name" nowrap><a href="#HOUND.Datapoint.update">HOUND.Datapoint.update (self, newAz[, predictedAz[, processNoise]])</a></td>
 	<td class="summary">Smooth azimuth using Kalman filter</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#getId">getId ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Datapoint.getId">HOUND.Datapoint.getId ()</a></td>
 	<td class="summary">Assign id for each Datapoint for debugging</td>
 	</tr>
 </table>
@@ -144,11 +145,11 @@
 
     <dl class="function">
     <dt>
-    <a name = "New"></a>
-    <strong>New (platform0, p0, az0, el0, t0[, angularResolution[, isPlatformStatic]])</strong>
+    <a name = "HOUND.Datapoint.New"></a>
+    <strong>HOUND.Datapoint.New (platform0, p0, az0, el0, t0[, angularResolution[, isPlatformStatic]])</strong>
     </dt>
     <dd>
-    Create new HoundDatapoint instance
+    Create new HOUND.Datapoint instance
 
 
     <h3>Parameters:</h3>
@@ -189,8 +190,8 @@
 
 </dd>
     <dt>
-    <a name = "isStatic"></a>
-    <strong>isStatic (self)</strong>
+    <a name = "HOUND.Datapoint.isStatic"></a>
+    <strong>HOUND.Datapoint.isStatic (self)</strong>
     </dt>
     <dd>
     check if platform is static
@@ -214,8 +215,8 @@
 
 </dd>
     <dt>
-    <a name = "getPos"></a>
-    <strong>getPos (self)</strong>
+    <a name = "HOUND.Datapoint.getPos"></a>
+    <strong>HOUND.Datapoint.getPos (self)</strong>
     </dt>
     <dd>
     Get estimated position
@@ -239,8 +240,8 @@
 
 </dd>
     <dt>
-    <a name = "getAge"></a>
-    <strong>getAge (self)</strong>
+    <a name = "HOUND.Datapoint.getAge"></a>
+    <strong>HOUND.Datapoint.getAge (self)</strong>
     </dt>
     <dd>
     Get datapoint age in seconds
@@ -264,8 +265,8 @@
 
 </dd>
     <dt>
-    <a name = "get2dPoly"></a>
-    <strong>get2dPoly (self)</strong>
+    <a name = "HOUND.Datapoint.get2dPoly"></a>
+    <strong>HOUND.Datapoint.get2dPoly (self)</strong>
     </dt>
     <dd>
     Get 2D polygon
@@ -289,8 +290,8 @@
 
 </dd>
     <dt>
-    <a name = "get3dPoly"></a>
-    <strong>get3dPoly (self)</strong>
+    <a name = "HOUND.Datapoint.get3dPoly"></a>
+    <strong>HOUND.Datapoint.get3dPoly (self)</strong>
     </dt>
     <dd>
     Get 3D polygon
@@ -314,8 +315,8 @@
 
 </dd>
     <dt>
-    <a name = "getEllipseParams"></a>
-    <strong>getEllipseParams (self)</strong>
+    <a name = "HOUND.Datapoint.getEllipseParams"></a>
+    <strong>HOUND.Datapoint.getEllipseParams (self)</strong>
     </dt>
     <dd>
     Get 3D polygon ellipse parameters
@@ -339,8 +340,8 @@
 
 </dd>
     <dt>
-    <a name = "getErrors"></a>
-    <strong>getErrors (self)</strong>
+    <a name = "HOUND.Datapoint.getErrors"></a>
+    <strong>HOUND.Datapoint.getErrors (self)</strong>
     </dt>
     <dd>
     Get computed error table
@@ -364,8 +365,8 @@
 
 </dd>
     <dt>
-    <a name = "calcError"></a>
-    <strong>calcError (self)</strong>
+    <a name = "HOUND.Datapoint.calcError"></a>
+    <strong>HOUND.Datapoint.calcError (self)</strong>
     </dt>
     <dd>
     calculate errors on 3dPoly
@@ -388,8 +389,8 @@
 
     <dl class="function">
     <dt>
-    <a name = "HoundDatapoint"></a>
-    <strong>HoundDatapoint</strong>
+    <a name = "HOUND.Datapoint"></a>
+    <strong>HOUND.Datapoint</strong>
     </dt>
     <dd>
 
@@ -436,8 +437,8 @@
 
     <dl class="function">
     <dt>
-    <a name = "estimatePos"></a>
-    <strong>estimatePos (self)</strong>
+    <a name = "HOUND.Datapoint.estimatePos"></a>
+    <strong>HOUND.Datapoint.estimatePos (self)</strong>
     </dt>
     <dd>
     Estimate contact position from Datapoint information only
@@ -456,8 +457,8 @@
 
 </dd>
     <dt>
-    <a name = "calcPolygons"></a>
-    <strong>calcPolygons (self)</strong>
+    <a name = "HOUND.Datapoint.calcPolygons"></a>
+    <strong>HOUND.Datapoint.calcPolygons (self)</strong>
     </dt>
     <dd>
     generate Az only Triangle and if possible Az/El polygon footprint
@@ -485,8 +486,8 @@
 
 </dd>
     <dt>
-    <a name = "update"></a>
-    <strong>update (self, newAz[, predictedAz[, processNoise]])</strong>
+    <a name = "HOUND.Datapoint.update"></a>
+    <strong>HOUND.Datapoint.update (self, newAz[, predictedAz[, processNoise]])</strong>
     </dt>
     <dd>
     Smooth azimuth using Kalman filter
@@ -516,8 +517,8 @@
 
 </dd>
     <dt>
-    <a name = "getId"></a>
-    <strong>getId ()</strong>
+    <a name = "HOUND.Datapoint.getId"></a>
+    <strong>HOUND.Datapoint.getId ()</strong>
     </dt>
     <dd>
     Assign id for each Datapoint for debugging
@@ -541,7 +542,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2022-03-21 14:49:47 </i>
+<i style="float:right;">Last updated 2022-06-12 13:47:44 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

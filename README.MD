@@ -43,7 +43,7 @@ Hound Currently has a 10 degrees angular resolution cutoff point to avoid introd
 | Platform  | Accuracy Deg. (C/H Bands)| Min. Band | Remarks |
 | --------  | ----------- | - | - |
 | C-130     | 0.65 / 0.07 | A ||
-| C-17      | 0.46 / 0.05 | A ||
+| C-17      | 0.57 / 0.06 | A | Stand-in for RC-135 |
 | An-30M    | 0.92 / 0.10 | A ||
 | Tu-95     | 0.46 / 0.05 | A ||
 | Tu-142    | 0.46 / 0.05 | A ||
@@ -86,14 +86,14 @@ Hound Currently has a 10 degrees angular resolution cutoff point to avoid introd
 | --------  | --------  | --------  |
 | Comms tower M | 0.29 / 0.03 | A |
 
-
-
 ### Community Mods
 | Platform  | Accuracy Deg. (C/H Bands)|
 | --------  | -------- |
 | Anubis C-130J | 0.65 / 0.07 |
 | VSN EA-6B Prowler   |  2.54 / 0.27  |
 | UH-60L    | 2.86 / 0.31 | B |
+| RC-135W (SSS)   |  0.57 / 0.06  | A |
+| EC-130H (SSS)   |  0.65 / 0.07 | A |
 
 ## Can I haz syntax pls?
 Yes you can.
@@ -106,8 +106,8 @@ if upgrading from Hound 0.1 please see [Breaking changes](#breaking-changes)
 
 `
 for TTS you'll need to set up STTS properly. consult Ciribob's repo for that. You will require you to comment out the sanitation in "DCS World/Scripts/MissionScripting.lua"
-`
-
+`  
+for more information of desanitization process, look [here](#desanitize-dcs-scripting-engine).
 ### adding scripts in mission editor
 ``` NOTE the order of scripts - it's important ```  
 on a "ONCE" type action with "time more 1" condition, add the scripts in the following order
@@ -177,6 +177,18 @@ But this is an example of a more compex configuration.
     HoundBlue:enableBDA()
     HoundBlue:systemOn()
 ```
+
+### On screen Debug
+when this setting is enabled, Hound will print a short status report after each update cycle. (every ~15 seconds by default)
+it is controlled by the `onScreenDebug` function. this output is disabled by default
+```lua
+-- to enable
+    HoundBlue:onScreenDebug(true)
+-- to disable
+    HoundBlue:onScreenDebug(false)
+```
+
+
 # Deep Dive
 
 ## Initialization
@@ -276,10 +288,21 @@ if from any reason you still encounter issues you can force Hound to use the int
 HOUND.FORCE_MANAGE_MARKERS = true
 ```
 
-By default the internal counter starts from 10,000. You can change the initial value to avoid conflicts with other numbering things (which are not MOOSE or MIST) by using the method `HoundUtils.setInitialMarkId()`. As mentioned earlier, if MOOSE or MIST v4.5 are present their numbering engine will take priority over Hound's internal Numbering.
-It is highly recommended that you use one of them (or `HoundUtils.getMarkId()`) for all other scripted Map markers.
+By default the internal counter starts from 10,000. You can change the initial value to avoid conflicts with other numbering things (which are not MOOSE or MIST) by using the method `HOUND.Utils.setInitialMarkId()`. As mentioned earlier, if MOOSE or MIST v4.5 are present their numbering engine will take priority over Hound's internal Numbering.
+It is highly recommended that you use one of them (or `HOUND.Utils.getMarkId()`) for all other scripted Map markers.
 
 In addition to all that Hound will only delete its own markers (by tracking every Marker ID it's placing)
+
+---
+### Platform position errors
+Position of the platform is a baseline used for the triangulation. In the real world however position on the platform is always never accurate. Older aircraft have INS systems that drift overtime unless updated periodically, while in newer Aircraft a less "drifty" system is updated automatically from GPS.
+To simulate this you can enable position errors. When this setting is enabled, a random error is introduced to platform's position when stored. 
+```lua
+    HoundInstance:enablePlatformPosErrors()
+
+    -- disable (default)
+    HoundInstance:disablePlatformPosErrors()
+```
 
 ---
 ### DBA reports
@@ -294,6 +317,10 @@ you may choose to disable this behaviour
 -- get current value
 local bool = HoundInstance:getBDA()
 ```
+
+This setting only affects automatic marking of dead contacts. you can manually mark a contact as dead (and notifications will be transmitted) regardless of BDA settings.  
+To mark a contact as dead use ```HoundInstance:markDeadContact(radarUnit)``` see [extended docs](#more-docs) for more information.
+
 ---
 ### Reposition Controller radio menu
 By default the [Controller](#sam-controller) will generate the "ELINT" root menu in the base F10 menu.
@@ -592,11 +619,11 @@ disable is done via
     HoundInstance:disableAlerts("all")
 ```
 
-By default the controller will provide you with MGRS in 6 digits format (3 for easting and 3 northing).
+By default the controller will provide you with MGRS in 10 digits format (5 for easting and 5 northing).
 this is set by a global variable 
-you can override this to get defferent precision (i.e 5 will give you 10 digits MGRS)  
+you can override this to get different precision (i.e 3 will give you 6 digits MGRS)  
 ```lua
-    HOUND.setMgrsPresicion(5)
+    HOUND.setMgrsPresicion(3)
 ```
 
  #### ***Controller message format***
@@ -614,7 +641,7 @@ you can override this to get defferent precision (i.e 5 will give you 10 digits 
 This Reads like this:
  ```
  <Radar Type> <Radar UID>, [Active/Recent/stale etc.] at Bullseye XXX YY, accuracy [Very High/High/Medium/Low etc.], 
- position <LL in Aricraft format>, I repeate <LL in Aricraft format>,
+ position <LL in Aircraft format>, I repeate <LL in Aircraft format>,
  MGRS <MGRS with HOUND.MGRS_PRECISION>,
  elevation XXXX feet MSL,
  ellipse is XX by YY, aligned bearing ZZ,
@@ -626,7 +653,7 @@ If you are satisfied by only supressing the Extended uncertenty and the Extended
 ```lua
   HOUND.showExtendedInfo(false)
 ```
-If a more extensive change is desired, The recommended way to achieve it is to `COPY` the `HoundContact:generateTtsReport` and `HoundContact:generateTextReport` functions from `src/301 - HoundContact_comms.lua` file in this repo to a new file. In that new file perform the changes you want. To activate load the new file to the mission using `Do script file` **AFTER** the main Hound script is loaded. this will replace the original implementation without  editing the original file. allowing a simpler upgrades to newer Hound versions without loosing you changes.  
+If a more extensive change is desired, The recommended way to achieve it is to `COPY` the `HOUND.Contact:generateTtsReport` and `HOUND.Contact:generateTextReport` functions from `src/301 - HoundContact_comms.lua` file in this repo to a new file. In that new file perform the changes you want. To activate load the new file to the mission using `Do script file` **AFTER** the main Hound script is loaded. this will replace the original implementation without  editing the original file. allowing a simpler upgrades to newer Hound versions without loosing you changes.  
 
  ### Notifier
  ---
@@ -749,6 +776,7 @@ to remove use
     HOUND.removeEventHandler(CustomHoundScript)
 ```
 `NOTE: Event handlers are global so make sure you validate coalition or houndId as the event might be from a different Instance from a different coalition`
+`RADAR_DESTROYED event is delayed from the DCS Unit destroyed event, so unit is gone by then. unit field in a dead contact is unitName not unit object like on other events. Try and use initiator.DCSgroupName whenever possible`
 
 ---
 ## Performace Tuning
@@ -824,31 +852,81 @@ HoundInstance:dumpIntelBrief("custom_name.csv")
 ```
 CSV structure:
 ```
-TrackId,NatoDesignation,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accuracy,lastSeen,ReportGenerated
+TrackId,NatoDesignation,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accuracy,lastSeen,DCStype,DCSunit,DCSgroup,ReportGenerated
 ```
+
+Sample data
+```csv
+TrackId,NatoDesignation,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accuracy,lastSeen,DCStype,DCSunit,DCSgroup,ReportGenerated
+I-1,2,Fan-song,Down,187/78,33.721733,35.800634,36S YC 5951 3482,Precise,1700,SNR_75V,SYR_SA-2_TR,SYR_SA-2,1705
+I-2,2 or 3,Flat Face,Active,187/78,33.723213,35.799935,36S YC 5944 3498,Precise,1705,p-19 s-125 sr,SYR_SA-2_SR,SYR_SA-2,1705
+E-12,11 or 17,Snow Drift,Active,186/77,33.734985,35.821898,36S YC 6144 3634,High,1705,SA-11 Buk SR 9S18M1,SYRIA gnd 3 unit1,SYRIA gnd 3,1705
+E-10,6,Straight Flush,Active,189/84,33.622484,35.727605,36S YC 5303 2363,High,1705,Kub 1S91 str,SYRIA gnd 2 unit1,SYRIA gnd 2,1705
+E-11,6,Straight Flush,Active,181/71,33.845855,35.952393,36S YC 7318 4898,Very High,1705,Kub 1S91 str,SYRIA gnd 1 unit1,SYRIA gnd 1,1705
+E-9,EWR,Box Spring,Active,185/96,33.418094,35.864466,36S YC 6636 130,Very Low,1705,1L13 EWR,EWR-SKYNET-1,EWR-SKYNET-0,1705
+I-3,EWR,Box Spring,Active,147/60,34.207544,36.618624,37S BT 8059 8773,Precise,1705,1L13 EWR,EWR-SKYNET-4-1,EWR-SKYNET-4,1705
+I-4,EWR,Box Spring,Active,191/81,33.678493,35.704000,36S YC 5068 2979,Precise,1705,1L13 EWR,EWR-SKYNET-1-1,EWR-SKYNET-1,1705
+I-5,EWR,Box Spring,Active,170/44,34.301650,36.114852,37S BT 3446 9937,Precise,1705,1L13 EWR,EWR-SKYNET-5-1,EWR-SKYNET-5,1705
+I-6,EWR,Box Spring,Active,200/75,33.820852,35.486437,36S YC 3012 4507,Precise,1705,1L13 EWR,EWR-SKYNET-6-1,EWR-SKYNET-6,1705
+I-7,EWR,Box Spring,Active,185/64,33.950048,35.878007,36S YC 6597 6034,Precise,1705,1L13 EWR,EWR-SKYNET-2-1,EWR-SKYNET-2,1705
+I-8,EWR,Box Spring,Active,183/52,34.151685,35.911686,36S YC 6845 8280,Precise,1705,1L13 EWR,EWR-SKYNET-3-1,EWR-SKYNET-3,17050
+```
+
+**NOTE**: This function requires you do [de-sanitize](#desanitize-dcs-scripting-engine) `io` and `lfs` modules in DCS scripting engine.
+
 ---
 ## Known Issues
   * On initial detection accuracy will usually be very high with solution nowhere near the radar actual position. This is sorted by the system as more datapoints are gathered. allow at least 2 minutes for contact to stablize.
   * Adding low resolution platforms will degrade the solution as Hound currently does not reject "bad data". Hound will drop readings that have more then 10 degrees of error. but if resolution is above the threashold, but very far away, it may still degrate the resolution.
   * Overlapping of sectors is currently not recommended. you can add a small high priority sector on top of a larger sector, but this is the ONLY tested overlap, and there might be some un-expected behavour with that.
-  * MIST 4.4 is REQUIRED. However if used with MIST 4.5.103+ some a additional functionality is enabled. (e.g SAM that threaten )
+  * MIST 4.4 is REQUIRED. However if used with MIST 4.5.103+ some a additional functionality is enabled. (e.g SAM that threaten sectors )
 
 ## Breaking changes
+### 0.1.X to 0.2.X
 If you are upgrading from 0.1 please note that some changes will be required.
   * `enableController()` no longer accepts boolean to enable or disable text. please use [`enableText()`](#text-messages) call.
   * Every function that has `ATIS` in it needs to be changesd to have `Atis` - note the capitalization.
   * "name" argument passed in the TTS config table is no longer used. (silent failure)
-  * `setTransmitter()` is now a sector function. in general passing everything directly to `Istance.controller` or `Instance.atis` will no longer work due to changes in the internal architecture. 
+  * `setTransmitter()` is now a sector function. in general passing everything directly to `Instance.controller` or `Instance.atis` will no longer work due to changes in the internal architecture. 
+### 0.2.X to 0.3.X 
+From 0.2 to 0.3 there was an internal change and all classes (except form `HoundElint`) where wrapped into `HOUND` class (rather then several independent classes).
+  *  HoundEventHandler now called HOUND.EventHandler please make sure to update you scripts
 
 ## More Docs
-  * [Main script Documentation](https://uriba107.github.io/DCS-Hound/) - all the options available, even those I didn't write here
+  * [Main script Documentation](https://uriba107.github.io/DCS-Hound/) - all the options available for the avarage mission builder, even those I didn't write here
   * [Developers Documentation](https://uriba107.github.io/DCS-Hound/dev_docs/) - this is actually everything. You don't need this unless you intend to hack your way to glory.
+  * [Scripting Ideas](SCRIPTING_IDEAS.MD) - A random bunch of scripting ideas. feel free to suggest more via an issue or Pull-Request.
+
+### Desanitize DCS Scripting Engine
+By default the DCS scripting engine blocks all access to the OS to avoid potential security risks.
+some functions, most notably anything that needs to write to disk, will not work in this default state.
+You'll need to "De-sanitize" the DCS Scripting Engine and allow these LUA core modules to be used.
+
+`NOTE: This is DCS core files changes, that grants DCS access to functions that allows it to run potential malicious code.
+USE WITH CAUTION`
+
+This is done by editing a single core DCS lua file. this change will be reverted on every DCS update and will need to be re-applied.
+open the file `<DCS_ROOT_FOLDER>/scripts/MissionScripting.lua` in your favorite text editor (NodePad++ for example)
+in that file you'll see the following 3 lines.
+```lua
+sanitizeModule('os')
+sanitizeModule('io')
+sanitizeModule('lfs')
+```
+Each of these lines reprisent a core lua module that is disabled by DCS Scripting Engine. to enable them just comment out the line that corresponds to the module needed. when all 3 are enabled, that part of the file will look like this
+```lua
+-- sanitizeModule('os')
+-- sanitizeModule('io')
+-- sanitizeModule('lfs')
+```
+for example, STTS require all 3 to be available. 
+[dumpIntelBrief](#csv-export) requires `io` and `lfs` to be available
 
 ## Special thanks
-  * __[Ciribob](https://github.com/ciribob)__ - without his help, support and acceptence of wierd merge requests. none of this would have been possible.
   * __Grimes__ - For [MIST](https://github.com/mrSkortch/MissionScriptingTools) and because Without the [Hoggit Wiki](https://wiki.hoggitworld.com/) we would all be fumbling in the dark.
   * __[flywaldair](https://github.com/walder)__ - Hound was initially inspired by [Skynet IADS](https://github.com/walder/Skynet-IADS).
-  * __Nikos__, __[Jester](https://github.com/hbjonsson)__, __[davidp57](https://github.com/davidp57)__, __Pene__ and all the rest - For the feeback and suggestions pushing Hound even further
+  * __[Ciribob](https://github.com/ciribob)__ - without his help, support and acceptence of wierd merge requests. none of this would have been possible.
+  * __Nikos__, __[Jester](https://github.com/hbjonsson)__, __[Pene](https://github.com/Penecruz)__, __[davidp57](https://github.com/davidp57)__ and all the rest - For the feeback and suggestions pushing Hound even further
 
 And a very special thanks is (and will always be) reserved to those who choose to click the button below :) 
 

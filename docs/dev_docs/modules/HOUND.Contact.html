@@ -33,7 +33,7 @@
 <h2>Contents</h2>
 <ul>
 <li><a href="#Functions">Functions</a></li>
-<li><a href="#Class_HoundContact">Class HoundContact </a></li>
+<li><a href="#Class_HOUND_Contact">Class HOUND.Contact </a></li>
 <li><a href="#Getters_and_Setters">Getters and Setters </a></li>
 <li><a href="#Data_Processing">Data Processing </a></li>
 <li><a href="#Marker_managment">Marker managment </a></li>
@@ -45,20 +45,21 @@
 <h2>Modules</h2>
 <ul class="nowrap">
   <li><a href="../modules/HOUND.html">HOUND</a></li>
-  <li><a href="../modules/HoundLogger.html">HoundLogger</a></li>
-  <li><a href="../modules/HoundDB.html">HoundDB</a></li>
-  <li><a href="../modules/HoundConfig.html">HoundConfig</a></li>
-  <li><a href="../modules/HoundUtils.html">HoundUtils</a></li>
-  <li><a href="../modules/HoundEventHandler.html">HoundEventHandler</a></li>
-  <li><a href="../modules/HoundEstimator.html">HoundEstimator</a></li>
-  <li><a href="../modules/HoundDatapoint.html">HoundDatapoint</a></li>
-  <li><strong>HoundContact</strong></li>
-  <li><a href="../modules/HoundCommsManager.html">HoundCommsManager</a></li>
-  <li><a href="../modules/HoundInformationSystem.html">HoundInformationSystem</a></li>
-  <li><a href="../modules/HoundController.html">HoundController</a></li>
-  <li><a href="../modules/HoundElintWorker.html">HoundElintWorker</a></li>
-  <li><a href="../modules/HoundContactManager.html">HoundContactManager</a></li>
-  <li><a href="../modules/HoundSector.html">HoundSector</a></li>
+  <li><a href="../modules/HOUND.Logger.html">HOUND.Logger</a></li>
+  <li><a href="../modules/HOUND.DB.html">HOUND.DB</a></li>
+  <li><a href="../modules/HOUND.Config.html">HOUND.Config</a></li>
+  <li><a href="../modules/HOUND.Utils.html">HOUND.Utils</a></li>
+  <li><a href="../modules/HOUND.EventHandler.html">HOUND.EventHandler</a></li>
+  <li><a href="../modules/HOUND.Estimator.html">HOUND.Estimator</a></li>
+  <li><a href="../modules/HOUND.Datapoint.html">HOUND.Datapoint</a></li>
+  <li><strong>HOUND.Contact</strong></li>
+  <li><a href="../modules/HOUND.Comms.Manager.html">HOUND.Comms.Manager</a></li>
+  <li><a href="../modules/HOUND.Comms.InformationSystem.html">HOUND.Comms.InformationSystem</a></li>
+  <li><a href="../modules/HOUND.Comms.Controller.html">HOUND.Comms.Controller</a></li>
+  <li><a href="../modules/HOUND.Comms.Notifier.html">HOUND.Comms.Notifier</a></li>
+  <li><a href="../modules/HOUND.ElintWorker.html">HOUND.ElintWorker</a></li>
+  <li><a href="../modules/HOUND.ContactManager.html">HOUND.ContactManager</a></li>
+  <li><a href="../modules/HOUND.Sector.html">HOUND.Sector</a></li>
 </ul>
 <h2>Scripts</h2>
 <ul class="nowrap">
@@ -69,8 +70,8 @@
 
 <div id="content">
 
-<h1>Module <code>HoundContact</code></h1>
-<p>HoundContact
+<h1>Module <code>HOUND.Contact</code></h1>
+<p>HOUND.Contact
  Contact class.</p>
 <p> containing related functions
 </p>
@@ -79,221 +80,268 @@
 <h2><a href="#Functions">Functions</a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#getTextData">getTextData (utmZone, MGRSdigits)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact:getTextData">HOUND.Contact:getTextData (utmZone, MGRSdigits)</a></td>
 	<td class="summary">return Information used in Text messages</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#getTtsData">getTtsData (utmZone, MGRSdigits)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact:getTtsData">HOUND.Contact:getTtsData (utmZone, MGRSdigits)</a></td>
 	<td class="summary">return Information used in TTS messages</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#generateTtsBrief">generateTtsBrief (NATO)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact:generateTtsBrief">HOUND.Contact:generateTtsBrief (NATO)</a></td>
 	<td class="summary">Generate TTS brief for the contact (for ATIS)</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#generateTtsReport">generateTtsReport ([useDMM[, refPos]])</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact:generateTtsReport">HOUND.Contact:generateTtsReport ([useDMM[, refPos]])</a></td>
 	<td class="summary">Generate TTS report for the contact (for controller)</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#generateTextReport">generateTextReport ([useDMM[, refPos]])</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact:generateTextReport">HOUND.Contact:generateTextReport ([useDMM[, refPos]])</a></td>
 	<td class="summary">Generate Text report for the contact (for controller)</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#generateRadioItemText">generateRadioItemText ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact:generateRadioItemText">HOUND.Contact:generateRadioItemText ()</a></td>
 	<td class="summary">generate Text for the Radio menu item</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#generatePopUpReport">generatePopUpReport (isTTS, sectorName)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact:generatePopUpReport">HOUND.Contact:generatePopUpReport (isTTS, sectorName)</a></td>
 	<td class="summary">generate PopUp report</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#generateDeathReport">generateDeathReport (isTTS, sectorName)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact:generateDeathReport">HOUND.Contact:generateDeathReport (isTTS, sectorName)</a></td>
 	<td class="summary">generate Radar dead report</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#generateIntelBrief">generateIntelBrief ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact:generateIntelBrief">HOUND.Contact:generateIntelBrief ()</a></td>
 	<td class="summary">Generate Intel brief Message (for export)</td>
 	</tr>
 </table>
-<h2><a href="#Class_HoundContact">Class HoundContact </a></h2>
+<h2><a href="#Class_HOUND_Contact">Class HOUND.Contact </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#HoundContact:New">HoundContact:New (DCS_Unit, HoundCoalition)</a></td>
-	<td class="summary">create new HoundContact instance</td>
+	<td class="name" nowrap><a href="#HOUND.Contact.New">HOUND.Contact.New (DCS_Unit, HoundCoalition[, ContactId])</a></td>
+	<td class="summary">create new HOUND.Contact instance</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundContact:destroy">HoundContact:destroy ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact:destroy">HOUND.Contact:destroy ()</a></td>
 	<td class="summary">Destructor function</td>
 	</tr>
 </table>
 <h2><a href="#Getters_and_Setters">Getters and Setters </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#getName">getName ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact:getName">HOUND.Contact:getName ()</a></td>
 	<td class="summary">Get contact name</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#getType">getType ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact:getType">HOUND.Contact:getType ()</a></td>
 	<td class="summary">Get contact type name</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#getId">getId ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact:getId">HOUND.Contact:getId ()</a></td>
 	<td class="summary">Get contact UID</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#getTrackId">getTrackId ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact:getGroupName">HOUND.Contact:getGroupName ()</a></td>
+	<td class="summary">Get Contact Group Name</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact:getDcsName">HOUND.Contact:getDcsName ()</a></td>
+	<td class="summary">Get the DCS unit name</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact:getDCSObject">HOUND.Contact:getDCSObject ()</a></td>
+	<td class="summary">Get the underlying DCS Object</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact:getLastSeen">HOUND.Contact:getLastSeen ()</a></td>
+	<td class="summary">Get last seen in seconds</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact:getTrackId">HOUND.Contact:getTrackId ()</a></td>
 	<td class="summary">get Contact Track ID</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#getNatoDesignation">getNatoDesignation ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact:getNatoDesignation">HOUND.Contact:getNatoDesignation ()</a></td>
 	<td class="summary">get NATO designation</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#getPos">getPos ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact:getPos">HOUND.Contact:getPos ()</a></td>
 	<td class="summary">get current extimted position</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#hasPos">hasPos ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact:getElev">HOUND.Contact:getElev ()</a></td>
+	<td class="summary">get current estimated position elevation</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact:getUnit">HOUND.Contact:getUnit ()</a></td>
+	<td class="summary">get Unit instane assoiciated with contact</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact:hasPos">HOUND.Contact:hasPos ()</a></td>
 	<td class="summary">check if contact has estimated position</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#getMaxWeaponsRange">getMaxWeaponsRange ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact:getMaxWeaponsRange">HOUND.Contact:getMaxWeaponsRange ()</a></td>
 	<td class="summary">get max weapons range</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#getTypeAssigned">getTypeAssigned ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact:getTypeAssigned">HOUND.Contact:getTypeAssigned ()</a></td>
 	<td class="summary">get type assinged string</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#isAlive">isAlive ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact:getLife">HOUND.Contact:getLife ()</a></td>
+	<td class="summary">get unit health</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact:isAlive">HOUND.Contact:isAlive ()</a></td>
 	<td class="summary">check if contact DCS Unit is still alive</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#isRecent">isRecent ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact:setDead">HOUND.Contact:setDead ()</a></td>
+	<td class="summary">set internal alive flag to false
+ This is internal function ment to be called on "S_EVENT_DEAD"
+ unit will be changed to Unit.name because DCS will remove the unit at the end of the event.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact:updateDeadDCSObject">HOUND.Contact:updateDeadDCSObject ()</a></td>
+	<td class="summary">update the internal DCS Object
+ Since March 2022, Dead units are converted to staticObject on delayed death</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact:isActive">HOUND.Contact:isActive ()</a></td>
+	<td class="summary">Check if contact is Active</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact:isRecent">HOUND.Contact:isRecent ()</a></td>
 	<td class="summary">check if contact is recent</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#isTimedout">isTimedout ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact:isAccurate">HOUND.Contact:isAccurate ()</a></td>
+	<td class="summary">check if contact position is accurate</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact:isTimedout">HOUND.Contact:isTimedout ()</a></td>
 	<td class="summary">check if contact is timed out</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#getState">getState ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact:getState">HOUND.Contact:getState ()</a></td>
 	<td class="summary">Get current state</td>
 	</tr>
 </table>
 <h2><a href="#Data_Processing">Data Processing </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#CleanTimedout">CleanTimedout ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact:CleanTimedout">HOUND.Contact:CleanTimedout ()</a></td>
 	<td class="summary">Remove stale datapoints</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#countPlatforms">countPlatforms ([skipStatic])</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact:countPlatforms">HOUND.Contact:countPlatforms ([skipStatic])</a></td>
 	<td class="summary">return number of platforms</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#countDatapoints">countDatapoints ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact:countDatapoints">HOUND.Contact:countDatapoints ()</a></td>
 	<td class="summary">returns number of datapoints in contact</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#AddPoint">AddPoint (datapoint)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact:AddPoint">HOUND.Contact:AddPoint (datapoint)</a></td>
 	<td class="summary">Add Datapoint to content</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#triangulatePoints">triangulatePoints (earlyPoint, latePoint)</a></td>
-	<td class="summary">Take two HoundDatapoints and return the location of intersection</td>
+	<td class="name" nowrap><a href="#HOUND.Contact.triangulatePoints">HOUND.Contact.triangulatePoints (earlyPoint, latePoint)</a></td>
+	<td class="summary">Take two HOUND.Datapoints and return the location of intersection</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#getDeltaSubsetPercent">getDeltaSubsetPercent (Table, referencePos, NthPercentile)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact.getDeltaSubsetPercent">HOUND.Contact.getDeltaSubsetPercent (Table, referencePos, NthPercentile)</a></td>
 	<td class="summary">Get a list of Nth elements centerd around a position from table of positions.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#calculateEllipse">calculateEllipse (estimatedPositions[, giftWrapped[, refPos]])</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact.calculateEllipse">HOUND.Contact.calculateEllipse (estimatedPositions[, giftWrapped[, refPos]])</a></td>
 	<td class="summary">Calculate Cotact's Ellipse of uncertenty</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#calculateEllipseErrors">calculateEllipseErrors (uncertenty_ellipse)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact.calculateEllipseErrors">HOUND.Contact.calculateEllipseErrors (uncertenty_ellipse)</a></td>
 	<td class="summary">calculate ellipse errors</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#calculatePos">calculatePos (estimatedPositions[, converge])</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact.calculatePos">HOUND.Contact.calculatePos (estimatedPositions[, converge])</a></td>
 	<td class="summary">Finallize position estimation Contact position</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#calculatePosExtras">calculatePosExtras (pos)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact:calculatePosExtras">HOUND.Contact:calculatePosExtras (pos)</a></td>
 	<td class="summary">calculate additional position data</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#processIntersection">processIntersection (targetTable, point1, point2)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact:processIntersection">HOUND.Contact:processIntersection (targetTable, point1, point2)</a></td>
 	<td class="summary">process the intersection</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#processData">processData ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact:processData">HOUND.Contact:processData ()</a></td>
 	<td class="summary">process data in contact</td>
 	</tr>
 </table>
 <h2><a href="#Marker_managment">Marker managment </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#removeMarkers">removeMarkers ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact:removeMarkers">HOUND.Contact:removeMarkers ()</a></td>
 	<td class="summary">Remove all contact's F10 map markers</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#calculatePoly">calculatePoly (uncertenty_data[, numPoints[, refPos]])</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact.calculatePoly">HOUND.Contact.calculatePoly (uncertenty_data[, numPoints[, refPos]])</a></td>
 	<td class="summary">calculate uncertenty Polygon from data</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#drawAreaMarker">drawAreaMarker (numPoints)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact:drawAreaMarker">HOUND.Contact:drawAreaMarker (numPoints)</a></td>
 	<td class="summary">Draw marker Polygon</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#updateMarker">updateMarker (MarkerType)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact:updateMarker">HOUND.Contact:updateMarker (MarkerType)</a></td>
 	<td class="summary">Update marker positions</td>
 	</tr>
 </table>
 <h2><a href="#Sector_Mangment">Sector Mangment </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#getPrimarySector">getPrimarySector ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact:getPrimarySector">HOUND.Contact:getPrimarySector ()</a></td>
 	<td class="summary">Get primaty sector for contact</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#getSectors">getSectors ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact:getSectors">HOUND.Contact:getSectors ()</a></td>
 	<td class="summary">get sectors contact is threatening</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#isInSector">isInSector (sectorName)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact:isInSector">HOUND.Contact:isInSector (sectorName)</a></td>
 	<td class="summary">check if threatens sector</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#updateDefaultSector">updateDefaultSector ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact:updateDefaultSector">HOUND.Contact:updateDefaultSector ()</a></td>
 	<td class="summary">set correct sector 'default position' sector state</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#updateSector">updateSector (sectorName, inSector, threatsSector)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact:updateSector">HOUND.Contact:updateSector (sectorName, inSector, threatsSector)</a></td>
 	<td class="summary">Update sector data</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#addSector">addSector (sectorName)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact:addSector">HOUND.Contact:addSector (sectorName)</a></td>
 	<td class="summary">add contact to names sector</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#removeSector">removeSector (sectorName)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact:removeSector">HOUND.Contact:removeSector (sectorName)</a></td>
 	<td class="summary">remove contact from named sector</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#isThreatsSector">isThreatsSector (sectorName)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact:isThreatsSector">HOUND.Contact:isThreatsSector (sectorName)</a></td>
 	<td class="summary">check if contact in names sector</td>
 	</tr>
 </table>
 <h2><a href="#Helper_functions">Helper functions </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#useUnitPos">useUnitPos ()</a></td>
-	<td class="summary">Use Unit Position</td>
+	<td class="name" nowrap><a href="#HOUND.Contact:useUnitPos">HOUND.Contact:useUnitPos ()</a></td>
+	<td class="summary">Use DCS Unit Position as contact position</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#export">export ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Contact:export">HOUND.Contact:export ()</a></td>
 	<td class="summary">Generate contact export object</td>
 	</tr>
 </table>
@@ -306,8 +354,8 @@
 
     <dl class="function">
     <dt>
-    <a name = "getTextData"></a>
-    <strong>getTextData (utmZone, MGRSdigits)</strong>
+    <a name = "HOUND.Contact:getTextData"></a>
+    <strong>HOUND.Contact:getTextData (utmZone, MGRSdigits)</strong>
     </dt>
     <dd>
     return Information used in Text messages
@@ -335,8 +383,8 @@
 
 </dd>
     <dt>
-    <a name = "getTtsData"></a>
-    <strong>getTtsData (utmZone, MGRSdigits)</strong>
+    <a name = "HOUND.Contact:getTtsData"></a>
+    <strong>HOUND.Contact:getTtsData (utmZone, MGRSdigits)</strong>
     </dt>
     <dd>
     return Information used in TTS messages
@@ -364,8 +412,8 @@
 
 </dd>
     <dt>
-    <a name = "generateTtsBrief"></a>
-    <strong>generateTtsBrief (NATO)</strong>
+    <a name = "HOUND.Contact:generateTtsBrief"></a>
+    <strong>HOUND.Contact:generateTtsBrief (NATO)</strong>
     </dt>
     <dd>
     Generate TTS brief for the contact (for ATIS)
@@ -389,8 +437,8 @@
 
 </dd>
     <dt>
-    <a name = "generateTtsReport"></a>
-    <strong>generateTtsReport ([useDMM[, refPos]])</strong>
+    <a name = "HOUND.Contact:generateTtsReport"></a>
+    <strong>HOUND.Contact:generateTtsReport ([useDMM[, refPos]])</strong>
     </dt>
     <dd>
     Generate TTS report for the contact (for controller)
@@ -419,8 +467,8 @@
 
 </dd>
     <dt>
-    <a name = "generateTextReport"></a>
-    <strong>generateTextReport ([useDMM[, refPos]])</strong>
+    <a name = "HOUND.Contact:generateTextReport"></a>
+    <strong>HOUND.Contact:generateTextReport ([useDMM[, refPos]])</strong>
     </dt>
     <dd>
     Generate Text report for the contact (for controller)
@@ -449,8 +497,8 @@
 
 </dd>
     <dt>
-    <a name = "generateRadioItemText"></a>
-    <strong>generateRadioItemText ()</strong>
+    <a name = "HOUND.Contact:generateRadioItemText"></a>
+    <strong>HOUND.Contact:generateRadioItemText ()</strong>
     </dt>
     <dd>
     generate Text for the Radio menu item
@@ -468,8 +516,8 @@
 
 </dd>
     <dt>
-    <a name = "generatePopUpReport"></a>
-    <strong>generatePopUpReport (isTTS, sectorName)</strong>
+    <a name = "HOUND.Contact:generatePopUpReport"></a>
+    <strong>HOUND.Contact:generatePopUpReport (isTTS, sectorName)</strong>
     </dt>
     <dd>
     generate PopUp report
@@ -496,8 +544,8 @@
 
 </dd>
     <dt>
-    <a name = "generateDeathReport"></a>
-    <strong>generateDeathReport (isTTS, sectorName)</strong>
+    <a name = "HOUND.Contact:generateDeathReport"></a>
+    <strong>HOUND.Contact:generateDeathReport (isTTS, sectorName)</strong>
     </dt>
     <dd>
     generate Radar dead report
@@ -524,8 +572,8 @@
 
 </dd>
     <dt>
-    <a name = "generateIntelBrief"></a>
-    <strong>generateIntelBrief ()</strong>
+    <a name = "HOUND.Contact:generateIntelBrief"></a>
+    <strong>HOUND.Contact:generateIntelBrief ()</strong>
     </dt>
     <dd>
     Generate Intel brief Message (for export)
@@ -543,19 +591,19 @@
 
 </dd>
 </dl>
-    <h2 class="section-header has-description"><a name="Class_HoundContact"></a>Class HoundContact </h2>
+    <h2 class="section-header has-description"><a name="Class_HOUND_Contact"></a>Class HOUND.Contact </h2>
 
           <div class="section-description">
-          HoundContact decleration
+          HOUND.Contact decleration
  Contact class.  containing related functions
           </div>
     <dl class="function">
     <dt>
-    <a name = "HoundContact:New"></a>
-    <strong>HoundContact:New (DCS_Unit, HoundCoalition)</strong>
+    <a name = "HOUND.Contact.New"></a>
+    <strong>HOUND.Contact.New (DCS_Unit, HoundCoalition[, ContactId])</strong>
     </dt>
     <dd>
-    create new HoundContact instance
+    create new HOUND.Contact instance
 
 
     <h3>Parameters:</h3>
@@ -566,12 +614,16 @@
         <li><span class="parameter">HoundCoalition</span>
          coalition Id of Hound Instace
         </li>
+        <li><span class="parameter">ContactId</span>
+         specify uid for the contact. if not present Unit ID will be used
+         (<em>optional</em>)
+        </li>
     </ul>
 
     <h3>Returns:</h3>
     <ol>
 
-        HoundContact
+        HOUND.Contact instance
     </ol>
 
 
@@ -579,8 +631,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundContact:destroy"></a>
-    <strong>HoundContact:destroy ()</strong>
+    <a name = "HOUND.Contact:destroy"></a>
+    <strong>HOUND.Contact:destroy ()</strong>
     </dt>
     <dd>
     Destructor function
@@ -597,8 +649,8 @@
 
     <dl class="function">
     <dt>
-    <a name = "getName"></a>
-    <strong>getName ()</strong>
+    <a name = "HOUND.Contact:getName"></a>
+    <strong>HOUND.Contact:getName ()</strong>
     </dt>
     <dd>
     Get contact name
@@ -616,8 +668,8 @@
 
 </dd>
     <dt>
-    <a name = "getType"></a>
-    <strong>getType ()</strong>
+    <a name = "HOUND.Contact:getType"></a>
+    <strong>HOUND.Contact:getType ()</strong>
     </dt>
     <dd>
     Get contact type name
@@ -635,8 +687,8 @@
 
 </dd>
     <dt>
-    <a name = "getId"></a>
-    <strong>getId ()</strong>
+    <a name = "HOUND.Contact:getId"></a>
+    <strong>HOUND.Contact:getId ()</strong>
     </dt>
     <dd>
     Get contact UID
@@ -654,8 +706,84 @@
 
 </dd>
     <dt>
-    <a name = "getTrackId"></a>
-    <strong>getTrackId ()</strong>
+    <a name = "HOUND.Contact:getGroupName"></a>
+    <strong>HOUND.Contact:getGroupName ()</strong>
+    </dt>
+    <dd>
+    Get Contact Group Name
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        String
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact:getDcsName"></a>
+    <strong>HOUND.Contact:getDcsName ()</strong>
+    </dt>
+    <dd>
+    Get the DCS unit name
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        String
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact:getDCSObject"></a>
+    <strong>HOUND.Contact:getDCSObject ()</strong>
+    </dt>
+    <dd>
+    Get the underlying DCS Object
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        DCS Unit or DCS staticObject
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact:getLastSeen"></a>
+    <strong>HOUND.Contact:getLastSeen ()</strong>
+    </dt>
+    <dd>
+    Get last seen in seconds
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        number in seconds since contact was last seen
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact:getTrackId"></a>
+    <strong>HOUND.Contact:getTrackId ()</strong>
     </dt>
     <dd>
     get Contact Track ID
@@ -673,8 +801,8 @@
 
 </dd>
     <dt>
-    <a name = "getNatoDesignation"></a>
-    <strong>getNatoDesignation ()</strong>
+    <a name = "HOUND.Contact:getNatoDesignation"></a>
+    <strong>HOUND.Contact:getNatoDesignation ()</strong>
     </dt>
     <dd>
     get NATO designation
@@ -692,64 +820,136 @@
 
 </dd>
     <dt>
-    <a name = "getPos"></a>
-    <strong>getPos ()</strong>
+    <a name = "HOUND.Contact:getPos"></a>
+    <strong>HOUND.Contact:getPos ()</strong>
     </dt>
     <dd>
     get current extimted position
 
 
 
+    <h3>Returns:</h3>
+    <ol>
+
+        DCS point - estimated position
+    </ol>
 
 
 
 
 </dd>
     <dt>
-    <a name = "hasPos"></a>
-    <strong>hasPos ()</strong>
+    <a name = "HOUND.Contact:getElev"></a>
+    <strong>HOUND.Contact:getElev ()</strong>
+    </dt>
+    <dd>
+    get current estimated position elevation
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Integer Elevation in ft.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact:getUnit"></a>
+    <strong>HOUND.Contact:getUnit ()</strong>
+    </dt>
+    <dd>
+    get Unit instane assoiciated with contact
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Unit object
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact:hasPos"></a>
+    <strong>HOUND.Contact:hasPos ()</strong>
     </dt>
     <dd>
     check if contact has estimated position
 
 
 
+    <h3>Returns:</h3>
+    <ol>
+
+        Bool True if contact has estimated position
+    </ol>
 
 
 
 
 </dd>
     <dt>
-    <a name = "getMaxWeaponsRange"></a>
-    <strong>getMaxWeaponsRange ()</strong>
+    <a name = "HOUND.Contact:getMaxWeaponsRange"></a>
+    <strong>HOUND.Contact:getMaxWeaponsRange ()</strong>
     </dt>
     <dd>
     get max weapons range
 
 
 
+    <h3>Returns:</h3>
+    <ol>
+
+        Number max weapon range of contact
+    </ol>
 
 
 
 
 </dd>
     <dt>
-    <a name = "getTypeAssigned"></a>
-    <strong>getTypeAssigned ()</strong>
+    <a name = "HOUND.Contact:getTypeAssigned"></a>
+    <strong>HOUND.Contact:getTypeAssigned ()</strong>
     </dt>
     <dd>
     get type assinged string
 
 
 
+    <h3>Returns:</h3>
+    <ol>
+
+        string
+    </ol>
 
 
 
 
 </dd>
     <dt>
-    <a name = "isAlive"></a>
-    <strong>isAlive ()</strong>
+    <a name = "HOUND.Contact:getLife"></a>
+    <strong>HOUND.Contact:getLife ()</strong>
+    </dt>
+    <dd>
+    get unit health
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact:isAlive"></a>
+    <strong>HOUND.Contact:isAlive ()</strong>
     </dt>
     <dd>
     check if contact DCS Unit is still alive
@@ -758,10 +958,8 @@
 
     <h3>Returns:</h3>
     <ol>
-        <li>
-        State (bool)</li>
-        <li>
-        Boolean</li>
+
+        Boolean
     </ol>
 
 
@@ -769,8 +967,58 @@
 
 </dd>
     <dt>
-    <a name = "isRecent"></a>
-    <strong>isRecent ()</strong>
+    <a name = "HOUND.Contact:setDead"></a>
+    <strong>HOUND.Contact:setDead ()</strong>
+    </dt>
+    <dd>
+    set internal alive flag to false
+ This is internal function ment to be called on "S_EVENT_DEAD"
+ unit will be changed to Unit.name because DCS will remove the unit at the end of the event.
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact:updateDeadDCSObject"></a>
+    <strong>HOUND.Contact:updateDeadDCSObject ()</strong>
+    </dt>
+    <dd>
+    update the internal DCS Object
+ Since March 2022, Dead units are converted to staticObject on delayed death
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact:isActive"></a>
+    <strong>HOUND.Contact:isActive ()</strong>
+    </dt>
+    <dd>
+    Check if contact is Active
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Bool True if seen in the last 15 seconds
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact:isRecent"></a>
+    <strong>HOUND.Contact:isRecent ()</strong>
     </dt>
     <dd>
     check if contact is recent
@@ -780,7 +1028,7 @@
     <h3>Returns:</h3>
     <ol>
 
-        Bool True if seen in the 2 minutes
+        Bool True if seen in the last 2 minutes
     </ol>
 
 
@@ -788,8 +1036,27 @@
 
 </dd>
     <dt>
-    <a name = "isTimedout"></a>
-    <strong>isTimedout ()</strong>
+    <a name = "HOUND.Contact:isAccurate"></a>
+    <strong>HOUND.Contact:isAccurate ()</strong>
+    </dt>
+    <dd>
+    check if contact position is accurate
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Bool - True target is pre briefed
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact:isTimedout"></a>
+    <strong>HOUND.Contact:isTimedout ()</strong>
     </dt>
     <dd>
     check if contact is timed out
@@ -807,8 +1074,8 @@
 
 </dd>
     <dt>
-    <a name = "getState"></a>
-    <strong>getState ()</strong>
+    <a name = "HOUND.Contact:getState"></a>
+    <strong>HOUND.Contact:getState ()</strong>
     </dt>
     <dd>
     Get current state
@@ -818,14 +1085,10 @@
     <h3>Returns:</h3>
     <ol>
 
-        Contact state
+        Contact state in <a href="../modules/HOUND.html#EVENTS">HOUND.EVENTS</a>
     </ol>
 
 
-    <h3>See also:</h3>
-    <ul>
-         <a href="../modules/HOUND.html#EVENTS">HOUND.EVENTS</a>
-    </ul>
 
 
 </dd>
@@ -834,8 +1097,8 @@
 
     <dl class="function">
     <dt>
-    <a name = "CleanTimedout"></a>
-    <strong>CleanTimedout ()</strong>
+    <a name = "HOUND.Contact:CleanTimedout"></a>
+    <strong>HOUND.Contact:CleanTimedout ()</strong>
     </dt>
     <dd>
     Remove stale datapoints
@@ -848,8 +1111,8 @@
 
 </dd>
     <dt>
-    <a name = "countPlatforms"></a>
-    <strong>countPlatforms ([skipStatic])</strong>
+    <a name = "HOUND.Contact:countPlatforms"></a>
+    <strong>HOUND.Contact:countPlatforms ([skipStatic])</strong>
     </dt>
     <dd>
     return number of platforms
@@ -874,8 +1137,8 @@
 
 </dd>
     <dt>
-    <a name = "countDatapoints"></a>
-    <strong>countDatapoints ()</strong>
+    <a name = "HOUND.Contact:countDatapoints"></a>
+    <strong>HOUND.Contact:countDatapoints ()</strong>
     </dt>
     <dd>
     returns number of datapoints in contact
@@ -893,8 +1156,8 @@
 
 </dd>
     <dt>
-    <a name = "AddPoint"></a>
-    <strong>AddPoint (datapoint)</strong>
+    <a name = "HOUND.Contact:AddPoint"></a>
+    <strong>HOUND.Contact:AddPoint (datapoint)</strong>
     </dt>
     <dd>
     Add Datapoint to content
@@ -903,7 +1166,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">datapoint</span>
-         HoundDatapoint
+         <a href="../modules/HOUND.Datapoint.html#">HOUND.Datapoint</a>
         </li>
     </ul>
 
@@ -913,20 +1176,20 @@
 
 </dd>
     <dt>
-    <a name = "triangulatePoints"></a>
-    <strong>triangulatePoints (earlyPoint, latePoint)</strong>
+    <a name = "HOUND.Contact.triangulatePoints"></a>
+    <strong>HOUND.Contact.triangulatePoints (earlyPoint, latePoint)</strong>
     </dt>
     <dd>
-    Take two HoundDatapoints and return the location of intersection
+    Take two HOUND.Datapoints and return the location of intersection
 
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">earlyPoint</span>
-         HoundDatapoint
+         <a href="../modules/HOUND.Datapoint.html#">HOUND.Datapoint</a>
         </li>
         <li><span class="parameter">latePoint</span>
-         HoundDatapoint
+         <a href="../modules/HOUND.Datapoint.html#">HOUND.Datapoint</a>
         </li>
     </ul>
 
@@ -941,8 +1204,8 @@
 
 </dd>
     <dt>
-    <a name = "getDeltaSubsetPercent"></a>
-    <strong>getDeltaSubsetPercent (Table, referencePos, NthPercentile)</strong>
+    <a name = "HOUND.Contact.getDeltaSubsetPercent"></a>
+    <strong>HOUND.Contact.getDeltaSubsetPercent (Table, referencePos, NthPercentile)</strong>
     </dt>
     <dd>
     Get a list of Nth elements centerd around a position from table of positions.
@@ -972,8 +1235,8 @@
 
 </dd>
     <dt>
-    <a name = "calculateEllipse"></a>
-    <strong>calculateEllipse (estimatedPositions[, giftWrapped[, refPos]])</strong>
+    <a name = "HOUND.Contact.calculateEllipse"></a>
+    <strong>HOUND.Contact.calculateEllipse (estimatedPositions[, giftWrapped[, refPos]])</strong>
     </dt>
     <dd>
     Calculate Cotact's Ellipse of uncertenty
@@ -1005,8 +1268,8 @@
 
 </dd>
     <dt>
-    <a name = "calculateEllipseErrors"></a>
-    <strong>calculateEllipseErrors (uncertenty_ellipse)</strong>
+    <a name = "HOUND.Contact.calculateEllipseErrors"></a>
+    <strong>HOUND.Contact.calculateEllipseErrors (uncertenty_ellipse)</strong>
     </dt>
     <dd>
     calculate ellipse errors
@@ -1025,8 +1288,8 @@
 
 </dd>
     <dt>
-    <a name = "calculatePos"></a>
-    <strong>calculatePos (estimatedPositions[, converge])</strong>
+    <a name = "HOUND.Contact.calculatePos"></a>
+    <strong>HOUND.Contact.calculatePos (estimatedPositions[, converge])</strong>
     </dt>
     <dd>
     Finallize position estimation Contact position
@@ -1054,8 +1317,8 @@
 
 </dd>
     <dt>
-    <a name = "calculatePosExtras"></a>
-    <strong>calculatePosExtras (pos)</strong>
+    <a name = "HOUND.Contact:calculatePosExtras"></a>
+    <strong>HOUND.Contact:calculatePosExtras (pos)</strong>
     </dt>
     <dd>
     calculate additional position data
@@ -1079,8 +1342,8 @@
 
 </dd>
     <dt>
-    <a name = "processIntersection"></a>
-    <strong>processIntersection (targetTable, point1, point2)</strong>
+    <a name = "HOUND.Contact:processIntersection"></a>
+    <strong>HOUND.Contact:processIntersection (targetTable, point1, point2)</strong>
     </dt>
     <dd>
     process the intersection
@@ -1092,10 +1355,10 @@
          where should the result be stored
         </li>
         <li><span class="parameter">point1</span>
-         HoundDatapoint Instance no.1
+         <a href="../modules/HOUND.Datapoint.html#">HOUND.Datapoint</a> Instance no.1
         </li>
         <li><span class="parameter">point2</span>
-         HoundDatapoint Instance no.2
+         <a href="../modules/HOUND.Datapoint.html#">HOUND.Datapoint</a> Instance no.2
         </li>
     </ul>
 
@@ -1105,8 +1368,8 @@
 
 </dd>
     <dt>
-    <a name = "processData"></a>
-    <strong>processData ()</strong>
+    <a name = "HOUND.Contact:processData"></a>
+    <strong>HOUND.Contact:processData ()</strong>
     </dt>
     <dd>
     process data in contact
@@ -1116,14 +1379,10 @@
     <h3>Returns:</h3>
     <ol>
 
-        HoundEvent
+        HoundEvent id (<a href="../modules/HOUND.html#EVENTS">HOUND.EVENTS</a>)
     </ol>
 
 
-    <h3>See also:</h3>
-    <ul>
-         <a href="../modules/HOUND.html#EVENTS">HOUND.EVENTS</a>
-    </ul>
 
 
 </dd>
@@ -1132,8 +1391,8 @@
 
     <dl class="function">
     <dt>
-    <a name = "removeMarkers"></a>
-    <strong>removeMarkers ()</strong>
+    <a name = "HOUND.Contact:removeMarkers"></a>
+    <strong>HOUND.Contact:removeMarkers ()</strong>
     </dt>
     <dd>
     Remove all contact's F10 map markers
@@ -1146,8 +1405,8 @@
 
 </dd>
     <dt>
-    <a name = "calculatePoly"></a>
-    <strong>calculatePoly (uncertenty_data[, numPoints[, refPos]])</strong>
+    <a name = "HOUND.Contact.calculatePoly"></a>
+    <strong>HOUND.Contact.calculatePoly (uncertenty_data[, numPoints[, refPos]])</strong>
     </dt>
     <dd>
     calculate uncertenty Polygon from data
@@ -1179,8 +1438,8 @@
 
 </dd>
     <dt>
-    <a name = "drawAreaMarker"></a>
-    <strong>drawAreaMarker (numPoints)</strong>
+    <a name = "HOUND.Contact:drawAreaMarker"></a>
+    <strong>HOUND.Contact:drawAreaMarker (numPoints)</strong>
     </dt>
     <dd>
     Draw marker Polygon
@@ -1200,8 +1459,8 @@
 
 </dd>
     <dt>
-    <a name = "updateMarker"></a>
-    <strong>updateMarker (MarkerType)</strong>
+    <a name = "HOUND.Contact:updateMarker"></a>
+    <strong>HOUND.Contact:updateMarker (MarkerType)</strong>
     </dt>
     <dd>
     Update marker positions
@@ -1224,8 +1483,8 @@
 
     <dl class="function">
     <dt>
-    <a name = "getPrimarySector"></a>
-    <strong>getPrimarySector ()</strong>
+    <a name = "HOUND.Contact:getPrimarySector"></a>
+    <strong>HOUND.Contact:getPrimarySector ()</strong>
     </dt>
     <dd>
     Get primaty sector for contact
@@ -1243,8 +1502,8 @@
 
 </dd>
     <dt>
-    <a name = "getSectors"></a>
-    <strong>getSectors ()</strong>
+    <a name = "HOUND.Contact:getSectors"></a>
+    <strong>HOUND.Contact:getSectors ()</strong>
     </dt>
     <dd>
     get sectors contact is threatening
@@ -1262,8 +1521,8 @@
 
 </dd>
     <dt>
-    <a name = "isInSector"></a>
-    <strong>isInSector (sectorName)</strong>
+    <a name = "HOUND.Contact:isInSector"></a>
+    <strong>HOUND.Contact:isInSector (sectorName)</strong>
     </dt>
     <dd>
     check if threatens sector
@@ -1287,8 +1546,8 @@
 
 </dd>
     <dt>
-    <a name = "updateDefaultSector"></a>
-    <strong>updateDefaultSector ()</strong>
+    <a name = "HOUND.Contact:updateDefaultSector"></a>
+    <strong>HOUND.Contact:updateDefaultSector ()</strong>
     </dt>
     <dd>
     set correct sector 'default position' sector state
@@ -1301,8 +1560,8 @@
 
 </dd>
     <dt>
-    <a name = "updateSector"></a>
-    <strong>updateSector (sectorName, inSector, threatsSector)</strong>
+    <a name = "HOUND.Contact:updateSector"></a>
+    <strong>HOUND.Contact:updateSector (sectorName, inSector, threatsSector)</strong>
     </dt>
     <dd>
     Update sector data
@@ -1330,8 +1589,8 @@
 
 </dd>
     <dt>
-    <a name = "addSector"></a>
-    <strong>addSector (sectorName)</strong>
+    <a name = "HOUND.Contact:addSector"></a>
+    <strong>HOUND.Contact:addSector (sectorName)</strong>
     </dt>
     <dd>
     add contact to names sector
@@ -1351,8 +1610,8 @@
 
 </dd>
     <dt>
-    <a name = "removeSector"></a>
-    <strong>removeSector (sectorName)</strong>
+    <a name = "HOUND.Contact:removeSector"></a>
+    <strong>HOUND.Contact:removeSector (sectorName)</strong>
     </dt>
     <dd>
     remove contact from named sector
@@ -1372,8 +1631,8 @@
 
 </dd>
     <dt>
-    <a name = "isThreatsSector"></a>
-    <strong>isThreatsSector (sectorName)</strong>
+    <a name = "HOUND.Contact:isThreatsSector"></a>
+    <strong>HOUND.Contact:isThreatsSector (sectorName)</strong>
     </dt>
     <dd>
     check if contact in names sector
@@ -1402,11 +1661,11 @@
 
     <dl class="function">
     <dt>
-    <a name = "useUnitPos"></a>
-    <strong>useUnitPos ()</strong>
+    <a name = "HOUND.Contact:useUnitPos"></a>
+    <strong>HOUND.Contact:useUnitPos ()</strong>
     </dt>
     <dd>
-    Use Unit Position
+    Use DCS Unit Position as contact position
 
 
 
@@ -1416,8 +1675,8 @@
 
 </dd>
     <dt>
-    <a name = "export"></a>
-    <strong>export ()</strong>
+    <a name = "HOUND.Contact:export"></a>
+    <strong>HOUND.Contact:export ()</strong>
     </dt>
     <dd>
     Generate contact export object
@@ -1441,7 +1700,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2022-03-21 14:49:47 </i>
+<i style="float:right;">Last updated 2022-06-12 13:47:44 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

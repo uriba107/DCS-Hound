@@ -1,30 +1,30 @@
---- HoundLogger
+--- HOUND.Logger
 -- Hound logging function - Based on VEAF work
 -- @local
--- @module HoundLogger
+-- @module HOUND.Logger
 do
     local l_env = env
 
     --- Hound Logger decleration
-    HoundLogger = {
+    HOUND.Logger = {
         level = 3
     }
-    HoundLogger.__index = HoundLogger
+    HOUND.Logger.__index = HOUND.Logger
 
-    HoundLogger.LEVEL = {
+    HOUND.Logger.LEVEL = {
         ["error"]=1,
         ["warning"]=2,
         ["info"]=3,
         ["debug"]=4,
         ["trace"]=5,
     }
-    -- HoundLogger.StopWatch = {
+    -- HOUND.Logger.StopWatch = {
     --     name=nil,
     --     starttime = nil
     -- }
-    -- HoundLogger.StopWatch.__index = HoundLogger.StopWatch
+    -- HOUND.Logger.StopWatch.__index = HOUND.Logger.StopWatch
 
-    -- function HoundLogger.StopWatch:Start(name)
+    -- function HOUND.Logger.StopWatch:Start(name)
     --     if not HOUND.DEBUG then return self end
     --     if os == nil then return self end
     --     if name ~= nil and type(name) == "string" then
@@ -34,7 +34,7 @@ do
     --     return self
     -- end
 
-    -- function HoundLogger.StopWatch:Stop()
+    -- function HOUND.Logger.StopWatch:Stop()
     --     if not HOUND.DEBUG then return nil end
     --     if os == nil then return nil end
     --     local stoptime = os.clock()
@@ -43,16 +43,16 @@ do
     --         str = str .. self.name .. " - "
     --     end
     --     str = str .. stoptime - self.starttime .." ms"
-    --     HoundLogger.debug(str)
+    --     HOUND.Logger.debug(str)
     -- end
 
-    function HoundLogger.setBaseLevel(level)
-        if setContainsValue(HoundLogger.LEVEL,level) then
-            HoundLogger.level = level
+    function HOUND.Logger.setBaseLevel(level)
+        if setContainsValue(HOUND.Logger.LEVEL,level) then
+            HOUND.Logger.level = level
         end
     end
 
-    function HoundLogger.formatText(text, ...)
+    function HOUND.Logger.formatText(text, ...)
         if not text then
             return ""
         end
@@ -85,21 +85,21 @@ do
         end
     end
 
-    function HoundLogger.print(level, text)
-        -- local texts = HoundLogger.splitText(text)
+    function HOUND.Logger.print(level, text)
+        -- local texts = HOUND.Logger.splitText(text)
         local texts = {text}
         local levelChar = 'E'
         local logFunction = l_env.error
-        if level == HoundLogger.LEVEL["warning"] then
+        if level == HOUND.Logger.LEVEL["warning"] then
             levelChar = 'W'
             logFunction = l_env.warning
-        elseif level == HoundLogger.LEVEL["info"] then
+        elseif level == HOUND.Logger.LEVEL["info"] then
             levelChar = 'I'
             logFunction = l_env.info
-        elseif level == HoundLogger.LEVEL["debug"] then
+        elseif level == HOUND.Logger.LEVEL["debug"] then
             levelChar = 'D'
             logFunction = l_env.info
-        elseif level == HoundLogger.LEVEL["trace"] then
+        elseif level == HOUND.Logger.LEVEL["trace"] then
             levelChar = 'T'
             logFunction = l_env.info
         end
@@ -112,42 +112,50 @@ do
         end
     end
 
-    function HoundLogger.error(text, ...)
-        if HoundLogger.level >= 1 then
-            text = HoundLogger.formatText(text, unpack(arg))
-            HoundLogger.print(1, text)
+    function HOUND.Logger.error(text, ...)
+        if HOUND.Logger.level >= 1 then
+            text = HOUND.Logger.formatText(text, unpack(arg))
+            HOUND.Logger.print(1, text)
         end
     end
 
-    function HoundLogger.warn(text, ...)
-        if HoundLogger.level >= 2 then
-            text = HoundLogger.formatText(text, unpack(arg))
-            HoundLogger.print(2, text)
+    function HOUND.Logger.warn(text, ...)
+        if HOUND.Logger.level >= 2 then
+            text = HOUND.Logger.formatText(text, unpack(arg))
+            HOUND.Logger.print(2, text)
         end
     end
 
-    function HoundLogger.info(text, ...)
-        if HoundLogger.level >= 3 then
-            text = HoundLogger.formatText(text, unpack(arg))
-            HoundLogger.print(3, text)
+    function HOUND.Logger.info(text, ...)
+        if HOUND.Logger.level >= 3 then
+            text = HOUND.Logger.formatText(text, unpack(arg))
+            HOUND.Logger.print(3, text)
         end
     end
 
-    function HoundLogger.debug(text, ...)
-        if HoundLogger.level >= 4 then
-            text = HoundLogger.formatText(text, unpack(arg))
-            HoundLogger.print(4, text)
+    function HOUND.Logger.debug(text, ...)
+        if HOUND.Logger.level >= 4 then
+            text = HOUND.Logger.formatText(text, unpack(arg))
+            HOUND.Logger.print(4, text)
         end
     end
 
-    function HoundLogger.trace(text, ...)
-        if HoundLogger.level >= 5 then
-            text = HoundLogger.formatText(text, unpack(arg))
-            HoundLogger.print(5, text)
+    function HOUND.Logger.trace(text, ...)
+        if HOUND.Logger.level >= 5 then
+            text = HOUND.Logger.formatText(text, unpack(arg))
+            HOUND.Logger.print(5, text)
         end
+    end
+
+    function HOUND.Logger.onScreenDebug(text,time)
+        if type(text) ~= "string" then return end
+        if type(time) ~= "number" then
+            time = 15
+        end
+        trigger.action.outText(text,math.ceil(time))
     end
 
     if HOUND.DEBUG then
-        HoundLogger.setBaseLevel(HoundLogger.LEVEL.trace)
+        HOUND.Logger.setBaseLevel(HOUND.Logger.LEVEL.trace)
     end
 end

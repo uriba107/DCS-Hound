@@ -40,6 +40,7 @@
 <li><a href="#ATIS_managment">ATIS managment </a></li>
 <li><a href="#Notifier_managment">Notifier managment </a></li>
 <li><a href="#Instance_Internal_functions">Instance Internal functions </a></li>
+<li><a href="#Exports">Exports </a></li>
 </ul>
 
 
@@ -91,6 +92,10 @@
 	<td class="summary">set coalition for Hound Instance (Internal)</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#onScreenDebug">onScreenDebug (value)</a></td>
+	<td class="summary">set onScreenDebug</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#enableMarkers">enableMarkers (markerType)</a></td>
 	<td class="summary">enable Markers for Hound Instance (default)</td>
 	</tr>
@@ -105,6 +110,14 @@
 	<tr>
 	<td class="name" nowrap><a href="#setTimerInterval">setTimerInterval (setIntervalName, setValue)</a></td>
 	<td class="summary">set intervals</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#enablePlatformPosErrors">enablePlatformPosErrors ()</a></td>
+	<td class="summary">enable platforms INS position errors</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#disablePlatformPosErrors">disablePlatformPosErrors ()</a></td>
+	<td class="summary">disable platforms INS position errors</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#getBDA">getBDA ()</a></td>
@@ -167,8 +180,24 @@
 <h2><a href="#Contact_managment">Contact managment </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#countContacts">countContacts ()</a></td>
+	<td class="name" nowrap><a href="#countContacts">countContacts ([sectorName])</a></td>
 	<td class="summary">count contacts</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#countActiveContacts">countActiveContacts ([sectorName])</a></td>
+	<td class="summary">count Active contacts</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#countPreBriefedContacts">countPreBriefedContacts ([sectorName])</a></td>
+	<td class="summary">count preBriefed contacts</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#preBriefedContact">preBriefedContact (DCS_Object_Name)</a></td>
+	<td class="summary">set/create a pre Briefed contacts</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#markDeadContact">markDeadContact (radarUnit)</a></td>
+	<td class="summary">Mark Radar as dead</td>
 	</tr>
 </table>
 <h2><a href="#Sector_managment">Sector managment </a></h2>
@@ -194,8 +223,12 @@
 	<td class="summary">get all sectors</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#countSectors">countSectors ([element])</a></td>
+	<td class="summary">return number of sectors</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#getSector">getSector (sectorName)</a></td>
-	<td class="summary">return HoundSector instance</td>
+	<td class="summary">return HOUND.Sector instance</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#enableText">enableText ([sectorName])</a></td>
@@ -355,6 +388,9 @@
 	<td class="name" nowrap><a href="#isRunning">isRunning ()</a></td>
 	<td class="summary">is Instance on</td>
 	</tr>
+</table>
+<h2><a href="#Exports">Exports </a></h2>
+<table class="function_list">
 	<tr>
 	<td class="name" nowrap><a href="#getContacts">getContacts ()</a></td>
 	<td class="summary">get an exported list of all contacts tracked by the instance</td>
@@ -362,11 +398,12 @@
 	<tr>
 	<td class="name" nowrap><a href="#dumpIntelBrief">dumpIntelBrief ([filename])</a></td>
 	<td class="summary">dump Intel Brief to csv
- will dump intel summery to CSV</td>
+ will dump intel summery to CSV in the DCS saved games folder
+ requires desanitization of lfs and io modules</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#preBriefedContact">preBriefedContact (DCS_Object_Name)</a></td>
-	<td class="summary">set/create a pre Briefed contacts</td>
+	<td class="name" nowrap><a href="#printDebugging">printDebugging ()</a></td>
+	<td class="summary">return Debugging information</td>
 	</tr>
 </table>
 
@@ -481,6 +518,31 @@
 
 </dd>
     <dt>
+    <a name = "onScreenDebug"></a>
+    <strong>onScreenDebug (value)</strong>
+    </dt>
+    <dd>
+    set onScreenDebug
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">value</span>
+         Bool
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Bool True if chaned
+    </ol>
+
+
+
+
+</dd>
+    <dt>
     <a name = "enableMarkers"></a>
     <strong>enableMarkers (markerType)</strong>
     </dt>
@@ -575,6 +637,44 @@
     <ol>
 
         Bool True if changed
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "enablePlatformPosErrors"></a>
+    <strong>enablePlatformPosErrors ()</strong>
+    </dt>
+    <dd>
+    enable platforms INS position errors
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Bool if settings was updated
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "disablePlatformPosErrors"></a>
+    <strong>disablePlatformPosErrors ()</strong>
+    </dt>
+    <dd>
+    disable platforms INS position errors
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Bool if settings was updated
     </ol>
 
 
@@ -872,18 +972,117 @@
     <dl class="function">
     <dt>
     <a name = "countContacts"></a>
-    <strong>countContacts ()</strong>
+    <strong>countContacts ([sectorName])</strong>
     </dt>
     <dd>
     count contacts
 
 
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">sectorName</span>
+         String name or sector to filter by
+         (<em>optional</em>)
+        </li>
+    </ul>
 
     <h3>Returns:</h3>
     <ol>
 
         Int number of contacts currently tracked
     </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "countActiveContacts"></a>
+    <strong>countActiveContacts ([sectorName])</strong>
+    </dt>
+    <dd>
+    count Active contacts
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">sectorName</span>
+         String name or sector to filter by
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Int number of contacts currently Transmitting
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "countPreBriefedContacts"></a>
+    <strong>countPreBriefedContacts ([sectorName])</strong>
+    </dt>
+    <dd>
+    count preBriefed contacts
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">sectorName</span>
+         String name or sector to filter by
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Int number of contacts currently in PB status
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "preBriefedContact"></a>
+    <strong>preBriefedContact (DCS_Object_Name)</strong>
+    </dt>
+    <dd>
+    set/create a pre Briefed contacts
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">DCS_Object_Name</span>
+         name of DCS Unit or Group to add
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "markDeadContact"></a>
+    <strong>markDeadContact (radarUnit)</strong>
+    </dt>
+    <dd>
+    Mark Radar as dead
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">radarUnit</span>
+         DCS Unit, DCS Group or Unit/Group name to mark as dead
+        </li>
+    </ul>
+
 
 
 
@@ -998,7 +1197,7 @@
     <ul>
         <li><span class="parameter">element</span>
             <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         list only sectors with specified element. Valid options are "controller", "atis" and "notifier"
+         list only sectors with specified element. Valid options are "controller", "atis", "notifier" and "zone"
          (<em>optional</em>)
         </li>
     </ul>
@@ -1025,7 +1224,7 @@
     <ul>
         <li><span class="parameter">element</span>
             <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         list only sectors with specified element. Valid options are "controller", "atis" and "notifier"
+         list only sectors with specified element. Valid options are "controller", "atis", "notifier" and "zone"
          (<em>optional</em>)
         </li>
     </ul>
@@ -1033,7 +1232,34 @@
     <h3>Returns:</h3>
     <ol>
 
-        list of HoundSector instances
+        list of HOUND.Sector instances
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "countSectors"></a>
+    <strong>countSectors ([element])</strong>
+    </dt>
+    <dd>
+    return number of sectors
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">element</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         count only sectors with specified element ("controller"/"atis"/"notifier"/"zone")
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Int. number of sectors
     </ol>
 
 
@@ -1045,7 +1271,7 @@
     <strong>getSector (sectorName)</strong>
     </dt>
     <dd>
-    return HoundSector instance
+    return HOUND.Sector instance
 
 
     <h3>Parameters:</h3>
@@ -1056,6 +1282,11 @@
         </li>
     </ul>
 
+    <h3>Returns:</h3>
+    <ol>
+
+        HOUND.Sector
+    </ol>
 
 
 
@@ -1946,6 +2177,10 @@
 
 
 </dd>
+</dl>
+    <h2 class="section-header "><a name="Exports"></a>Exports </h2>
+
+    <dl class="function">
     <dt>
     <a name = "getContacts"></a>
     <strong>getContacts ()</strong>
@@ -1971,13 +2206,14 @@
     </dt>
     <dd>
     dump Intel Brief to csv
- will dump intel summery to CSV
+ will dump intel summery to CSV in the DCS saved games folder
+ requires desanitization of lfs and io modules
 
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">filename</span>
-         filename to write to. will write to saved games
+         target filename. (default: hound_contacts_%d.csv)
          (<em>optional</em>)
         </li>
     </ul>
@@ -1988,20 +2224,19 @@
 
 </dd>
     <dt>
-    <a name = "preBriefedContact"></a>
-    <strong>preBriefedContact (DCS_Object_Name)</strong>
+    <a name = "printDebugging"></a>
+    <strong>printDebugging ()</strong>
     </dt>
     <dd>
-    set/create a pre Briefed contacts
+    return Debugging information
 
 
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">DCS_Object_Name</span>
-         name of DCS Unit or Group to add
-        </li>
-    </ul>
 
+    <h3>Returns:</h3>
+    <ol>
+
+        string
+    </ol>
 
 
 
@@ -2014,7 +2249,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2022-03-21 14:49:46 </i>
+<i style="float:right;">Last updated 2022-06-12 13:47:41 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

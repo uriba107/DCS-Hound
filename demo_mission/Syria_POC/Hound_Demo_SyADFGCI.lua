@@ -13,6 +13,8 @@ do
 
     Elint_blue:addPlatform("ELINT_C130_south")
     Elint_blue:addPlatform("ELINT_C130_north")
+    Elint_blue:addPlatform("ELINT_TURKEY")
+
 
     -- sectors
     Elint_blue:addSector("Damascus",10)
@@ -97,15 +99,48 @@ do
 end
 
 do
-    FakeEventHandler = {}
-    function FakeEventHandler:onHoundEvent(event)
+    HoundEventHandler = {}
+    function HoundEventHandler:onHoundEvent(event)
         if event.coalition == coalition.side.BLUE then
             if event.id == HOUND.EVENTS.RADAR_DETECTED then
                 local contact = event.initiator
-                trigger.action.outTextForCoalition(event.coalition,"Let's pretend a SEAD flight was fragged to strike " .. contact:getName(),10)
+                trigger.action.outTextForCoalition(event.coalition,"Fragging a SEAD flight to strike " .. contact:getName(),10)
+                local grp = contact:getUnit():getGroup()
+                if not grp then return end
+                -- select SEAD flight
+                local pos = contact:getPos()
+                local seadFlights = {'SEAD_NORTH','SEAD_WEST','SEAD_SOUTH'}
+                table.sort(seadFlights,
+                            function (f1,f2) 
+                                local p1 = Group.getByName(f1):getUnit(1):getPoint()
+                                local p2 = Group.getByName(f2):getUnit(1):getPoint()
+                                return mist.utils.get2DDist(pos,p1) < mist.utils.get2DDist(pos,p2)
+                            end)
+                -- initilize mission
+                local mooseGroup = GROUP:FindByName(contact:getUnit():getGroup():getName())
+                local mission = AUFTRAG:NewSEAD(mooseGroup, 20000)
+                local sector = Elint_blue:getSector(contact:getPrimarySector())
+                env.info(tostring(sector:hasController()))
+                local controllerFreq = nil
+                if sector:hasController() then
+                    controllerFreq = string.split(sector:getControllerFreq()[1]," ")
+                    if controllerFreq[2] == "FM" then controllerFreq[3] = 1 else controllerFreq[3] = 0 end
+                    mission:SetRadio(tonumber(controllerFreq[1]),controllerFreq[3])
+                end
+                local seadStrike = SPAWN:NewWithAlias(seadFlights[1],"SEAD ".. contact:getName()):OnSpawnGroup( 
+                    function( SeadGroup )
+                        local fg=FLIGHTGROUP:New(SeadGroup)
+                        fg:AddMission(mission)
+                    end
+                  )
+                if controllerFreq then
+                    seadStrike:InitRadioFrequency(controllerFreq[1])
+                    seadStrike:InitRadioModulation(controllerFreq[2])
+                end
+                seadStrike:Spawn()
             end
         end
     end
 
-    HOUND.addEventHandler(FakeEventHandler)
+    HOUND.addEventHandler(HoundEventHandler)
 end

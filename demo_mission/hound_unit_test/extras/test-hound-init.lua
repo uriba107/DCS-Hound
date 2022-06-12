@@ -1,14 +1,14 @@
 do
-    TestHoundFunctionalInit = {}
+    TestHoundFunctional = {}
 
-    function TestHoundFunctionalInit:setUp()
+    function TestHoundFunctional:setUp()
         collectgarbage("collect")
     end
 
-    function TestHoundFunctionalInit:tearDown()
+    function TestHoundFunctional:tearDown()
         collectgarbage("collect")
     end
-    function TestHoundFunctionalInit:Test_01_init_00_unitSetup()
+    function TestHoundFunctional:Test_01_init_00_unitSetup()
         local tor_golf = Group.getByName("TOR_SAIPAN")
         lu.assertIsTable(tor_golf)
         lu.assertEquals(tor_golf:getSize(),1)
@@ -64,13 +64,13 @@ do
         control:setOption(20,false) -- ENGAGE_AIR_WEAPONS, false
     end
 
-    function TestHoundFunctionalInit:Test_01_init_01_BadInit()
+    function TestHoundFunctional:Test_01_init_01_BadInit()
         lu.assertIsNil(self.houndBlue)
         self.houndBlue = HoundElint:create()
         lu.assertIsNil(self.houndBlue)
     end
 
-    function TestHoundFunctionalInit:Test_01_init_02_BlueInit()
+    function TestHoundFunctional:Test_01_init_02_BlueInit()
         -- Test blue init
         lu.assertIsNil(self.houndBlue)
         self.houndBlue = HoundElint:create(coalition.side.BLUE)
@@ -81,7 +81,7 @@ do
         lu.assertIsFalse(self.houndBlue:setCoalition(coalition.side.RED))
     end
 
-    function TestHoundFunctionalInit:Test_01_init_03_RedInit()
+    function TestHoundFunctional:Test_01_init_03_RedInit()
         -- Test Red init
         lu.assertIsNil(self.houndRed)
         self.houndRed = HoundElint:create(coalition.side.RED)
@@ -89,21 +89,21 @@ do
         lu.assertEquals(self.houndRed:getId(),2)
     end
 
-    function TestHoundFunctionalInit:Test_01_init_04_ConfigSingelton()
+    function TestHoundFunctional:Test_01_init_04_ConfigSingelton()
          -- make sure setting singletons are different between instances
         lu.assertNotEquals(self.houndBlue.settings,self.houndRed.settings)
         -- make sure setting singelton is same in in same instance
-        lu.assertIs(self.houndBlue.settings,self.houndBlue.contacts._settings)
+        lu.assertIs(self.houndBlue.settings,self.houndBlue.contacts.settings)
         lu.assertIsTrue(self.houndBlue:setMarkerType(HOUND.MARKER.CIRCLE))
         -- direct check of change
         lu.assertEquals(self.houndBlue.settings.preferences.markerType,HOUND.MARKER.CIRCLE)
         -- check again that configs are the same
-        lu.assertEquals(self.houndBlue.settings,self.houndBlue.contacts._settings)
+        lu.assertEquals(self.houndBlue.settings,self.houndBlue.contacts.settings)
         -- check via internal function on inheritance
-        lu.assertEquals(self.houndBlue.contacts._settings:getMarkerType(),HOUND.MARKER.CIRCLE)
+        lu.assertEquals(self.houndBlue.contacts.settings:getMarkerType(),HOUND.MARKER.CIRCLE)
     end
 
-    function TestHoundFunctionalInit:Test_01_init_05_HoundStartup()
+    function TestHoundFunctional:Test_01_init_05_HoundStartup()
         -- make sure system is not running and no platforms are present
         lu.assertEquals(self.houndBlue:getId(),1)
         lu.assertIsFalse(self.houndBlue:isRunning())
@@ -112,7 +112,7 @@ do
         lu.assertIsTrue(self.houndBlue:isRunning())
     end
 
-    function TestHoundFunctionalInit:Test_01_init_06_PlatformMgmt()
+    function TestHoundFunctional:Test_01_init_06_PlatformMgmt()
         -- Verify initial state
         lu.assertIsTrue(self.houndBlue:isRunning())
         lu.assertEquals(self.houndBlue:countPlatforms(),0)
@@ -129,7 +129,7 @@ do
         lu.assertEquals(self.houndBlue:listPlatforms(),{})
     end
 
-    function TestHoundFunctionalInit:Test_01_init_06_destroy()
+    function TestHoundFunctional:Test_01_init_06_destroy()
         lu.assertIsTable(self.houndBlue)
         lu.assertIsTable(self.houndRed)
 

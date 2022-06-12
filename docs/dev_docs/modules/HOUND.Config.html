@@ -33,28 +33,29 @@
 <h2>Contents</h2>
 <ul>
 <li><a href="#Functions">Functions</a></li>
-<li><a href="#HoundConfig">HoundConfig</a></li>
-<li><a href="#HoundConfig_instance">HoundConfig.instance</a></li>
+<li><a href="#HOUND_Config">HOUND.Config</a></li>
+<li><a href="#HOUND_Config_instance">HOUND.Config.instance</a></li>
 </ul>
 
 
 <h2>Modules</h2>
 <ul class="nowrap">
   <li><a href="../modules/HOUND.html">HOUND</a></li>
-  <li><a href="../modules/HoundLogger.html">HoundLogger</a></li>
-  <li><a href="../modules/HoundDB.html">HoundDB</a></li>
-  <li><strong>HoundConfig</strong></li>
-  <li><a href="../modules/HoundUtils.html">HoundUtils</a></li>
-  <li><a href="../modules/HoundEventHandler.html">HoundEventHandler</a></li>
-  <li><a href="../modules/HoundEstimator.html">HoundEstimator</a></li>
-  <li><a href="../modules/HoundDatapoint.html">HoundDatapoint</a></li>
-  <li><a href="../modules/HoundContact.html">HoundContact</a></li>
-  <li><a href="../modules/HoundCommsManager.html">HoundCommsManager</a></li>
-  <li><a href="../modules/HoundInformationSystem.html">HoundInformationSystem</a></li>
-  <li><a href="../modules/HoundController.html">HoundController</a></li>
-  <li><a href="../modules/HoundElintWorker.html">HoundElintWorker</a></li>
-  <li><a href="../modules/HoundContactManager.html">HoundContactManager</a></li>
-  <li><a href="../modules/HoundSector.html">HoundSector</a></li>
+  <li><a href="../modules/HOUND.Logger.html">HOUND.Logger</a></li>
+  <li><a href="../modules/HOUND.DB.html">HOUND.DB</a></li>
+  <li><strong>HOUND.Config</strong></li>
+  <li><a href="../modules/HOUND.Utils.html">HOUND.Utils</a></li>
+  <li><a href="../modules/HOUND.EventHandler.html">HOUND.EventHandler</a></li>
+  <li><a href="../modules/HOUND.Estimator.html">HOUND.Estimator</a></li>
+  <li><a href="../modules/HOUND.Datapoint.html">HOUND.Datapoint</a></li>
+  <li><a href="../modules/HOUND.Contact.html">HOUND.Contact</a></li>
+  <li><a href="../modules/HOUND.Comms.Manager.html">HOUND.Comms.Manager</a></li>
+  <li><a href="../modules/HOUND.Comms.InformationSystem.html">HOUND.Comms.InformationSystem</a></li>
+  <li><a href="../modules/HOUND.Comms.Controller.html">HOUND.Comms.Controller</a></li>
+  <li><a href="../modules/HOUND.Comms.Notifier.html">HOUND.Comms.Notifier</a></li>
+  <li><a href="../modules/HOUND.ElintWorker.html">HOUND.ElintWorker</a></li>
+  <li><a href="../modules/HOUND.ContactManager.html">HOUND.ContactManager</a></li>
+  <li><a href="../modules/HOUND.Sector.html">HOUND.Sector</a></li>
 </ul>
 <h2>Scripts</h2>
 <ul class="nowrap">
@@ -65,8 +66,8 @@
 
 <div id="content">
 
-<h1>Module <code>HoundConfig</code></h1>
-<p>HoundConfig
+<h1>Module <code>HOUND.Config</code></h1>
+<p>HOUND.Config
  Hound config singleton</p>
 <p></p>
 
@@ -81,15 +82,19 @@
 	<td class="name" nowrap><a href="#instance.setUseNATOCallsigns">instance.setUseNATOCallsigns (self, value)</a></td>
 	<td class="summary">NATO callsign setter</td>
 	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#instance.setOnScreenDebug">instance.setOnScreenDebug (self, value)</a></td>
+	<td class="summary">On screen Debug output setter</td>
+	</tr>
 </table>
-<h2><a href="#HoundConfig">HoundConfig</a></h2>
+<h2><a href="#HOUND_Config">HOUND.Config</a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#get">get (HoundInstanceId)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Config.get">HOUND.Config.get (HoundInstanceId)</a></td>
 	<td class="summary">return config for specific Hound instance</td>
 	</tr>
 </table>
-<h2><a href="#HoundConfig_instance">HoundConfig.instance</a></h2>
+<h2><a href="#HOUND_Config_instance">HOUND.Config.instance</a></h2>
 <table class="function_list">
 	<tr>
 	<td class="name" nowrap><a href="#instance.getId">instance.getId (self)</a></td>
@@ -162,6 +167,10 @@
 	<tr>
 	<td class="name" nowrap><a href="#instance.setHardcore">instance.setHardcore (self, value)</a></td>
 	<td class="summary">Platform Hardcore mode setter</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#instance.getOnScreenDebug">instance.getOnScreenDebug (self)</a></td>
+	<td class="summary">On screen Debug Output getter</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#instance.getRadioMenu">instance.getRadioMenu (self)</a></td>
@@ -248,13 +257,42 @@
 
 
 </dd>
+    <dt>
+    <a name = "instance.setOnScreenDebug"></a>
+    <strong>instance.setOnScreenDebug (self, value)</strong>
+    </dt>
+    <dd>
+    On screen Debug output setter
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+         config instance
+        </li>
+        <li><span class="parameter">value</span>
+            <span class="types"><span class="type">bool</span></span>
+         set this value
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Bool True if change was made
+    </ol>
+
+
+
+
+</dd>
 </dl>
-    <h2 class="section-header "><a name="HoundConfig"></a>HoundConfig</h2>
+    <h2 class="section-header "><a name="HOUND_Config"></a>HOUND.Config</h2>
 
     <dl class="function">
     <dt>
-    <a name = "get"></a>
-    <strong>get (HoundInstanceId)</strong>
+    <a name = "HOUND.Config.get"></a>
+    <strong>HOUND.Config.get (HoundInstanceId)</strong>
     </dt>
     <dd>
     return config for specific Hound instance
@@ -278,7 +316,7 @@
 
 </dd>
 </dl>
-    <h2 class="section-header "><a name="HoundConfig_instance"></a>HoundConfig.instance</h2>
+    <h2 class="section-header "><a name="HOUND_Config_instance"></a>HOUND.Config.instance</h2>
 
     <dl class="function">
     <dt>
@@ -676,7 +714,7 @@
     <h3>Returns:</h3>
     <ol>
 
-        Int desired error in meters
+        Bool True if platform position error is used
     </ol>
 
 
@@ -697,8 +735,8 @@
          config instance
         </li>
         <li><span class="parameter">value</span>
-            <span class="types"><span class="type">int</span></span>
-         set error radius in meters
+            <span class="types"><span class="type">bool</span></span>
+         true if you want to use platform position error
         </li>
     </ul>
 
@@ -767,6 +805,31 @@
 
 </dd>
     <dt>
+    <a name = "instance.getOnScreenDebug"></a>
+    <strong>instance.getOnScreenDebug (self)</strong>
+    </dt>
+    <dd>
+    On screen Debug Output getter
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+         config instance
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Bool true if Debug output will be used
+    </ol>
+
+
+
+
+</dd>
+    <dt>
     <a name = "instance.getRadioMenu"></a>
     <strong>instance.getRadioMenu (self)</strong>
     </dt>
@@ -803,7 +866,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">self</span>
-         HoundConfig instance
+         HOUND.Config instance
         </li>
     </ul>
 
@@ -854,7 +917,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">self</span>
-         HoundConfig instance
+         HOUND.Config instance
         </li>
         <li><span class="parameter">parent</span>
          desired parent menu
@@ -866,9 +929,9 @@
 
     <h3>Usage:</h3>
     <ul>
-        <pre class="example"><span class="keyword">local</span> servicesMenu =missionCommands.addSubMenuForCoalition(
+        <pre class="example"><span class="keyword">local</span> servicesMenu = missionCommands.addSubMenuForCoalition(
          coalition.side.BLUE, <span class="string">'AWACS, Tankers and ELINT..'</span>)
-HoundConfig:setRadioMenuParent(servicesMenu)
+HOUND.Config:setRadioMenuParent(servicesMenu)
 </pre>
     </ul>
 
@@ -880,7 +943,7 @@ HoundConfig:setRadioMenuParent(servicesMenu)
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2022-03-21 14:49:47 </i>
+<i style="float:right;">Last updated 2022-06-12 13:47:44 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

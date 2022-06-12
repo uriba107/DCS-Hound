@@ -34,9 +34,10 @@
 <ul>
 <li><a href="#Tables">Tables</a></li>
 <li><a href="#General_functions">General functions </a></li>
+<li><a href="#Value_mapping_Functions">Value mapping Functions </a></li>
 <li><a href="#Geo_Function">Geo Function </a></li>
 <li><a href="#Marker_Functions">Marker Functions </a></li>
-<li><a href="#HoundUtils_Marker_instance">HoundUtils.Marker.instance</a></li>
+<li><a href="#HOUND_Utils_Marker_instance">HOUND.Utils.Marker.instance</a></li>
 <li><a href="#TTS_Functions">TTS Functions </a></li>
 <li><a href="#Text_Functions">Text Functions </a></li>
 <li><a href="#Elint_functions">Elint functions </a></li>
@@ -45,26 +46,28 @@
 <li><a href="#Polygon_functions">Polygon functions </a></li>
 <li><a href="#Clustering_algorithems__for_future_use_">Clustering algorithems (for future use) </a></li>
 <li><a href="#Sort_Functions">Sort Functions </a></li>
+<li><a href="#Filter_Functions">Filter Functions </a></li>
 </ul>
 
 
 <h2>Modules</h2>
 <ul class="nowrap">
   <li><a href="../modules/HOUND.html">HOUND</a></li>
-  <li><a href="../modules/HoundLogger.html">HoundLogger</a></li>
-  <li><a href="../modules/HoundDB.html">HoundDB</a></li>
-  <li><a href="../modules/HoundConfig.html">HoundConfig</a></li>
-  <li><strong>HoundUtils</strong></li>
-  <li><a href="../modules/HoundEventHandler.html">HoundEventHandler</a></li>
-  <li><a href="../modules/HoundEstimator.html">HoundEstimator</a></li>
-  <li><a href="../modules/HoundDatapoint.html">HoundDatapoint</a></li>
-  <li><a href="../modules/HoundContact.html">HoundContact</a></li>
-  <li><a href="../modules/HoundCommsManager.html">HoundCommsManager</a></li>
-  <li><a href="../modules/HoundInformationSystem.html">HoundInformationSystem</a></li>
-  <li><a href="../modules/HoundController.html">HoundController</a></li>
-  <li><a href="../modules/HoundElintWorker.html">HoundElintWorker</a></li>
-  <li><a href="../modules/HoundContactManager.html">HoundContactManager</a></li>
-  <li><a href="../modules/HoundSector.html">HoundSector</a></li>
+  <li><a href="../modules/HOUND.Logger.html">HOUND.Logger</a></li>
+  <li><a href="../modules/HOUND.DB.html">HOUND.DB</a></li>
+  <li><a href="../modules/HOUND.Config.html">HOUND.Config</a></li>
+  <li><strong>HOUND.Utils</strong></li>
+  <li><a href="../modules/HOUND.EventHandler.html">HOUND.EventHandler</a></li>
+  <li><a href="../modules/HOUND.Estimator.html">HOUND.Estimator</a></li>
+  <li><a href="../modules/HOUND.Datapoint.html">HOUND.Datapoint</a></li>
+  <li><a href="../modules/HOUND.Contact.html">HOUND.Contact</a></li>
+  <li><a href="../modules/HOUND.Comms.Manager.html">HOUND.Comms.Manager</a></li>
+  <li><a href="../modules/HOUND.Comms.InformationSystem.html">HOUND.Comms.InformationSystem</a></li>
+  <li><a href="../modules/HOUND.Comms.Controller.html">HOUND.Comms.Controller</a></li>
+  <li><a href="../modules/HOUND.Comms.Notifier.html">HOUND.Comms.Notifier</a></li>
+  <li><a href="../modules/HOUND.ElintWorker.html">HOUND.ElintWorker</a></li>
+  <li><a href="../modules/HOUND.ContactManager.html">HOUND.ContactManager</a></li>
+  <li><a href="../modules/HOUND.Sector.html">HOUND.Sector</a></li>
 </ul>
 <h2>Scripts</h2>
 <ul class="nowrap">
@@ -75,8 +78,8 @@
 
 <div id="content">
 
-<h1>Module <code>HoundUtils</code></h1>
-<p>HoundUtils
+<h1>Module <code>HOUND.Utils</code></h1>
+<p>HOUND.Utils
  This class holds generic function used by all of Hound Components</p>
 <p></p>
 
@@ -84,155 +87,166 @@
 <h2><a href="#Tables">Tables</a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils">HoundUtils</a></td>
-	<td class="summary">HoundUtils decleration</td>
+	<td class="name" nowrap><a href="#HOUND.Utils">HOUND.Utils</a></td>
+	<td class="summary">HOUND.Utils decleration</td>
 	</tr>
 </table>
 <h2><a href="#General_functions">General functions </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#getHoundId">getHoundId ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.getHoundId">HOUND.Utils.getHoundId ()</a></td>
 	<td class="summary">get next Hound Instance Id</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#getMarkId">getMarkId ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.getMarkId">HOUND.Utils.getMarkId ()</a></td>
 	<td class="summary">Get next Markpoint Id (Depricated)</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#setInitialMarkId">setInitialMarkId (startId)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.setInitialMarkId">HOUND.Utils.setInitialMarkId (startId)</a></td>
 	<td class="summary">Set New initial marker Id (DEPRICATED)</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#absTimeDelta">absTimeDelta (t0[, t1])</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.absTimeDelta">HOUND.Utils.absTimeDelta (t0[, t1])</a></td>
 	<td class="summary">Get time delta between two timestemps</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#angleDeltaRad">angleDeltaRad (rad1, rad2)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.angleDeltaRad">HOUND.Utils.angleDeltaRad (rad1, rad2)</a></td>
 	<td class="summary">return difference in radias between two angles (bearings)</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#AzimuthAverage">AzimuthAverage (azimuths)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.AzimuthAverage">HOUND.Utils.AzimuthAverage (azimuths)</a></td>
 	<td class="summary">return avarage azimuth</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#PointClusterTilt">PointClusterTilt (points[, MagNorth[, refPos]])</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.PointClusterTilt">HOUND.Utils.PointClusterTilt (points[, MagNorth[, refPos]])</a></td>
 	<td class="summary">return the tilt of a point cluster</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#RandomAngle">RandomAngle ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.RandomAngle">HOUND.Utils.RandomAngle ()</a></td>
 	<td class="summary">returns a random angle</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#getSamMaxRange">getSamMaxRange (DCS_Unit)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.getSamMaxRange">HOUND.Utils.getSamMaxRange (DCS_Unit)</a></td>
 	<td class="summary">return maximum weapon range in the group of DCS Unit</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#getRadarDetectionRange">getRadarDetectionRange (DCS_Unit)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.getRadarDetectionRange">HOUND.Utils.getRadarDetectionRange (DCS_Unit)</a></td>
 	<td class="summary">return Radar detection Range for provided unit</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#getRoundedElevationFt">getRoundedElevationFt (elev)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.getRoundedElevationFt">HOUND.Utils.getRoundedElevationFt (elev[, resolution])</a></td>
 	<td class="summary">return ground elevation rouded to 50 feet</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#roundToNearest">roundToNearest (input, nearest)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.roundToNearest">HOUND.Utils.roundToNearest (input, nearest)</a></td>
 	<td class="summary">return rounted number nearest a set interval</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#getNormalAngularError">getNormalAngularError (variance)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.getNormalAngularError">HOUND.Utils.getNormalAngularError (variance)</a></td>
 	<td class="summary">get normal distribution angular error.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#getControllerResponse">getControllerResponse ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.getControllerResponse">HOUND.Utils.getControllerResponse ()</a></td>
 	<td class="summary">get random controller snarky remark</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#getCoalitionString">getCoalitionString (coalitionID)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.getCoalitionString">HOUND.Utils.getCoalitionString (coalitionID)</a></td>
 	<td class="summary">get coalition string</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#getHemispheres">getHemispheres (lat, lon, fullText)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.getHemispheres">HOUND.Utils.getHemispheres (lat, lon, fullText)</a></td>
 	<td class="summary">returns hemisphere information for LatLon</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#getReportId">getReportId ([ReportId])</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.getReportId">HOUND.Utils.getReportId ([ReportId])</a></td>
 	<td class="summary">get "ATIS" report ID
  returns next Phonetic report ID.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#DecToDMS">DecToDMS (cood)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.DecToDMS">HOUND.Utils.DecToDMS (cood)</a></td>
 	<td class="summary">Convert Decimal Degrees to DMS (D.DD to DMS)</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#getBR">getBR (src, dst)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.getBR">HOUND.Utils.getBR (src, dst)</a></td>
 	<td class="summary">retrun Bearing (magnetic) and range between two points</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#getFormationCallsign">getFormationCallsign (player[, flightMember])</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.getFormationCallsign">HOUND.Utils.getFormationCallsign (player[, flightMember])</a></td>
 	<td class="summary">Get group callsign from unit</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#getHoundCallsign">getHoundCallsign ([namePool])</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.getHoundCallsign">HOUND.Utils.getHoundCallsign ([namePool])</a></td>
 	<td class="summary">get Callsign</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#isDMM">isDMM (DCS_Unit)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.isDMM">HOUND.Utils.isDMM (DCS_Unit)</a></td>
 	<td class="summary">Unit use DMM</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Mapping.linear">HoundUtils.Mapping.linear (input, in_min, in_max, out_min, out_max[, clamp])</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.hasPayload">HOUND.Utils.hasPayload (DCS_Unit, payloadName)</a></td>
+	<td class="summary">does unit has payload (placeholder)</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.hasTask">HOUND.Utils.hasTask (DCS_Unit, taskName)</a></td>
+	<td class="summary">does unit has task (placeholder)</td>
+	</tr>
+</table>
+<h2><a href="#Value_mapping_Functions">Value mapping Functions </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Mapping.linear">HOUND.Utils.Mapping.linear (input, in_min, in_max, out_min, out_max[, clamp])</a></td>
 	<td class="summary">map input to range (Arduino implementation)</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Mapping.nonLinear">HoundUtils.Mapping.nonLinear (value, in_min, in_max[, out_min[, out_max[, sensitivity[, curve_type]]]])</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Mapping.nonLinear">HOUND.Utils.Mapping.nonLinear (value, in_min, in_max[, out_min[, out_max[, sensitivity[, curve_type]]]])</a></td>
 	<td class="summary">Map values on a curve</td>
 	</tr>
 </table>
 <h2><a href="#Geo_Function">Geo Function </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Geo.checkLOS">HoundUtils.Geo.checkLOS (pos0, pos1)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Geo.checkLOS">HOUND.Utils.Geo.checkLOS (pos0, pos1)</a></td>
 	<td class="summary">Return if the is LOS between two DCS points
  checks both radar horizon (round earth) and DCS terrain LOS</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Geo.EarthLOS">HoundUtils.Geo.EarthLOS (h0[, h1])</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Geo.EarthLOS">HOUND.Utils.Geo.EarthLOS (h0[, h1])</a></td>
 	<td class="summary">Returns maximum horizon distance given heigh above the earth of two points
  if only one observer hight is provided, result would be maximum view distance to Sea Level</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Geo.isDcsPoint">HoundUtils.Geo.isDcsPoint (point)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Geo.isDcsPoint">HOUND.Utils.Geo.isDcsPoint (point)</a></td>
 	<td class="summary">check if point is DCS point</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Geo.getProjectedIP">HoundUtils.Geo.getProjectedIP (p0, az, el)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Geo.getProjectedIP">HOUND.Utils.Geo.getProjectedIP (p0, az, el)</a></td>
 	<td class="summary">Returns Projected line impact point with Terrain</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Geo.setPointHeight">HoundUtils.Geo.setPointHeight (point)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Geo.setPointHeight">HOUND.Utils.Geo.setPointHeight (point)</a></td>
 	<td class="summary">Ensure Inpoint DCS point has Elevation</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Geo.setHeight">HoundUtils.Geo.setHeight (point)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Geo.setHeight">HOUND.Utils.Geo.setHeight (point)</a></td>
 	<td class="summary">Ensure input point or point table all have valid Elevation</td>
 	</tr>
 </table>
 <h2><a href="#Marker_Functions">Marker Functions </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Marker.getId">HoundUtils.Marker.getId ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Marker.getId">HOUND.Utils.Marker.getId ()</a></td>
 	<td class="summary">Get next Markpoint Id</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Marker.setInitialId">HoundUtils.Marker.setInitialId (startId)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Marker.setInitialId">HOUND.Utils.Marker.setInitialId (startId)</a></td>
 	<td class="summary">Set New initial marker Id</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Marker.create">HoundUtils.Marker.create ([args])</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Marker.create">HOUND.Utils.Marker.create ([args])</a></td>
 	<td class="summary">create Marker entity</td>
 	</tr>
 </table>
-<h2><a href="#HoundUtils_Marker_instance">HoundUtils.Marker.instance</a></h2>
+<h2><a href="#HOUND_Utils_Marker_instance">HOUND.Utils.Marker.instance</a></h2>
 <table class="function_list">
 	<tr>
 	<td class="name" nowrap><a href="#instance.setPos">instance.setPos (self, pos)</a></td>
@@ -255,6 +269,10 @@
 	<td class="summary">update markpoint line color</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#instance.isDrawn">instance.isDrawn (self)</a></td>
+	<td class="summary">Check if marpoint is drawn</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#instance.remove">instance.remove (self)</a></td>
 	<td class="summary">remove markpoint</td>
 	</tr>
@@ -274,102 +292,85 @@
 <h2><a href="#TTS_Functions">TTS Functions </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.TTS.Transmit">HoundUtils.TTS.Transmit (msg, coalitionID, args[, transmitterPos])</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.TTS.Transmit">HOUND.Utils.TTS.Transmit (msg, coalitionID, args[, transmitterPos])</a></td>
 	<td class="summary">Transmit message using STTS (private)</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.TTS.getTtsTime">HoundUtils.TTS.getTtsTime ([timestamp])</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.TTS.getTtsTime">HOUND.Utils.TTS.getTtsTime ([timestamp])</a></td>
 	<td class="summary">returns current DCS time in military time string for TTS</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.TTS.getVerbalConfidenceLevel">HoundUtils.TTS.getVerbalConfidenceLevel (confidenceRadius)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.TTS.getVerbalConfidenceLevel">HOUND.Utils.TTS.getVerbalConfidenceLevel (confidenceRadius)</a></td>
 	<td class="summary">return verbal accuracy description
  in 500 meters interval</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.TTS.getVerbalContactAge">HoundUtils.TTS.getVerbalContactAge (timestamp[, isSimple[, NATO]])</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.TTS.getVerbalContactAge">HOUND.Utils.TTS.getVerbalContactAge (timestamp[, isSimple[, NATO]])</a></td>
 	<td class="summary">Get Verbal description of contact age
  has multiple "modes of operation"</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.TTS.getVerbalLL">HoundUtils.TTS.getVerbalLL (lat, lon[, minDec])</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.TTS.getVerbalLL">HOUND.Utils.TTS.getVerbalLL (lat, lon[, minDec])</a></td>
 	<td class="summary">convert LL to TTS string</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.TTS.toPhonetic">HoundUtils.TTS.toPhonetic (str)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.TTS.toPhonetic">HOUND.Utils.TTS.toPhonetic (str)</a></td>
 	<td class="summary">Convert string to phonetic text</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.TTS.getReadTime">HoundUtils.TTS.getReadTime (length[, speed[, isGoogle]])</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.TTS.getReadTime">HOUND.Utils.TTS.getReadTime (length[, speed[, isGoogle]])</a></td>
 	<td class="summary">get estimated message read time
  returns estimated time in seconds STTS will need to read a message</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.TTS.simplfyDistance">HoundUtils.TTS.simplfyDistance (distanceM)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.TTS.simplfyDistance">HOUND.Utils.TTS.simplfyDistance (distanceM)</a></td>
 	<td class="summary">simplify distance</td>
 	</tr>
 </table>
 <h2><a href="#Text_Functions">Text Functions </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Text.getLL">HoundUtils.Text.getLL (lat, lon[, minDec])</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Text.getLL">HOUND.Utils.Text.getLL (lat, lon[, minDec])</a></td>
 	<td class="summary">convert LL to displayable string</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Text.getTime">HoundUtils.Text.getTime ([timestamp])</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Text.getTime">HOUND.Utils.Text.getTime ([timestamp])</a></td>
 	<td class="summary">Text Function - returns current DCS time in military time format string</td>
 	</tr>
 </table>
 <h2><a href="#Elint_functions">Elint functions </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Elint.getDefraction">HoundUtils.Elint.getDefraction (band, antenna_size)</a></td>
-	<td class="summary">Get defraction
- for band and effective antenna size return angular resolution</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Elint.getApertureSize">HoundUtils.Elint.getApertureSize (DCS_Unit)</a></td>
-	<td class="summary">get Effective Aperture size for unit</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Elint.getEmitterBand">HoundUtils.Elint.getEmitterBand (DCS_Unit)</a></td>
-	<td class="summary">Get emitter Band</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Elint.getSensorPrecision">HoundUtils.Elint.getSensorPrecision (platform, emitterBand)</a></td>
-	<td class="summary">Elint Function - Get sensor precision</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Elint.generateAngularError">HoundUtils.Elint.generateAngularError (variance)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Elint.generateAngularError">HOUND.Utils.Elint.generateAngularError (variance)</a></td>
 	<td class="summary">Elint Function - Generate angular error</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Elint.getAzimuth">HoundUtils.Elint.getAzimuth (src, dst, sensorPrecision)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Elint.getAzimuth">HOUND.Utils.Elint.getAzimuth (src, dst, sensorPrecision)</a></td>
 	<td class="summary">Get Azimuth (and elevation) between two points</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Elint.getActiveRadars">HoundUtils.Elint.getActiveRadars (instanceCoalition)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Elint.getActiveRadars">HOUND.Utils.Elint.getActiveRadars (instanceCoalition)</a></td>
 	<td class="summary">Get currently transmitting Ground and Ship radars that are not in the Hound Instance coalition</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Elint.getRwrContacts">HoundUtils.Elint.getRwrContacts (platform)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Elint.getRwrContacts">HOUND.Utils.Elint.getRwrContacts (platform)</a></td>
 	<td class="summary">Get RWR contacts for platfom</td>
 	</tr>
 </table>
 <h2><a href="#Vector_functions">Vector functions </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Vector.getUnitVector">HoundUtils.Vector.getUnitVector (Theta[, Phi])</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Vector.getUnitVector">HOUND.Utils.Vector.getUnitVector (Theta[, Phi])</a></td>
 	<td class="summary">get UnitVector</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Vector.getRandomVec2">HoundUtils.Vector.getRandomVec2 (variance)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Vector.getRandomVec2">HOUND.Utils.Vector.getRandomVec2 (variance)</a></td>
 	<td class="summary">Get random 2D vector
  use Box–Muller transform to randomize errors on 2D vector
  https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform}</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Vector.getRandomVec3">HoundUtils.Vector.getRandomVec3 (variance)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Vector.getRandomVec3">HOUND.Utils.Vector.getRandomVec3 (variance)</a></td>
 	<td class="summary">Get random 3d vector
  use Box–Muller transform to randomize errors on 3D vector
  https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform}</td>
@@ -378,11 +379,11 @@
 <h2><a href="#Zone_functions">Zone functions </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Zone.listDrawnZones">HoundUtils.Zone.listDrawnZones ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Zone.listDrawnZones">HOUND.Utils.Zone.listDrawnZones ()</a></td>
 	<td class="summary">List all Useable zones from drawings.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Zone.getDrawnZone">HoundUtils.Zone.getDrawnZone (zoneName)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Zone.getDrawnZone">HOUND.Utils.Zone.getDrawnZone (zoneName)</a></td>
 	<td class="summary">Get zone from drawing\
  (supported types are freeForm Polygon, rectangle and Oval)</td>
 	</tr>
@@ -390,58 +391,58 @@
 <h2><a href="#Polygon_functions">Polygon functions </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Polygon.threatOnSector">HoundUtils.Polygon.threatOnSector (polygon, point, radius)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Polygon.threatOnSector">HOUND.Utils.Polygon.threatOnSector (polygon, point, radius)</a></td>
 	<td class="summary">Check if polygon is under threat of SAM</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Polygon.filterPointsByPolygon">HoundUtils.Polygon.filterPointsByPolygon (points, polygon)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Polygon.filterPointsByPolygon">HOUND.Utils.Polygon.filterPointsByPolygon (points, polygon)</a></td>
 	<td class="summary">Filter out points not in polygon</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Polygon.clipPolygons">HoundUtils.Polygon.clipPolygons (subjectPolygon, clipPolygon)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Polygon.clipPolygons">HOUND.Utils.Polygon.clipPolygons (subjectPolygon, clipPolygon)</a></td>
 	<td class="summary">calculate cliping of polygons
  <a href="https://rosettacode.org/wiki/Sutherland-Hodgman_polygon_clipping#Lua">Sutherland-Hodgman polygon clipping</a></td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Polygon.giftWrap">HoundUtils.Polygon.giftWrap (points)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Polygon.giftWrap">HOUND.Utils.Polygon.giftWrap (points)</a></td>
 	<td class="summary">Gift wrapping algorithem
  Returns the convex hull (using <a href="http://en.wikipedia.org/wiki/Gift_wrapping_algorithm">Jarvis' Gift wrapping algorithm</a>).</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Polygon.circumcirclePoints">HoundUtils.Polygon.circumcirclePoints (points)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Polygon.circumcirclePoints">HOUND.Utils.Polygon.circumcirclePoints (points)</a></td>
 	<td class="summary">calculate Smallest circle around point cloud
  Welzel algorithm for <a href="https://en.wikipedia.org/wiki/Smallest-circle_problem">Smallest-circle problem</a>
  Implementation taken from <a href="https://github.com/rowanwins/smallest-enclosing-circle/blob/master/src/main.js">github/rowins</a></td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Polygon.getArea">HoundUtils.Polygon.getArea (polygon)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Polygon.getArea">HOUND.Utils.Polygon.getArea (polygon)</a></td>
 	<td class="summary">return the area of a convex polygon</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Polygon.clipOrHull">HoundUtils.Polygon.clipOrHull (polyA, polyB)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Polygon.clipOrHull">HOUND.Utils.Polygon.clipOrHull (polyA, polyB)</a></td>
 	<td class="summary">clip or hull two polygons</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Polygon.azMinMax">HoundUtils.Polygon.azMinMax (poly, refPos)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Polygon.azMinMax">HOUND.Utils.Polygon.azMinMax (poly, refPos)</a></td>
 	<td class="summary">find min/max azimuth</td>
 	</tr>
 </table>
 <h2><a href="#Clustering_algorithems__for_future_use_">Clustering algorithems (for future use) </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Cluster.gaussianKernel">HoundUtils.Cluster.gaussianKernel (value, bandwidth)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Cluster.gaussianKernel">HOUND.Utils.Cluster.gaussianKernel (value, bandwidth)</a></td>
 	<td class="summary">Get gaussian weight</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Cluster.stdDev">HoundUtils.Cluster.stdDev ()</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Cluster.stdDev">HOUND.Utils.Cluster.stdDev ()</a></td>
 	<td class="summary">Calculate running std dev</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Cluster.weightedMean">HoundUtils.Cluster.weightedMean (origPoints[, initPos[, threashold[, maxIttr]]])</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Cluster.weightedMean">HOUND.Utils.Cluster.weightedMean (origPoints[, initPos[, threashold[, maxIttr]]])</a></td>
 	<td class="summary">find the weighted mean of a points cluster (meanShift)</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Cluster.kmeans">HoundUtils.Cluster.kmeans (data, nclusters, init)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Cluster.kmeans">HOUND.Utils.Cluster.kmeans (data, nclusters, init)</a></td>
 	<td class="summary">K-means++ algorithm
  <a href=https://rosettacode.org/wiki/K-means%2B%2B_clustering#Lua>Source of implementation</a></td>
 	</tr>
@@ -458,20 +459,38 @@
 <h2><a href="#Sort_Functions">Sort Functions </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Sort.ContactsByRange">HoundUtils.Sort.ContactsByRange (a, b)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Sort.ContactsByRange">HOUND.Utils.Sort.ContactsByRange (a, b)</a></td>
 	<td class="summary">Sort contacts by engament range</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Sort.ContactsById">HoundUtils.Sort.ContactsById (a, b)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Sort.ContactsById">HOUND.Utils.Sort.ContactsById (a, b)</a></td>
 	<td class="summary">Sort contacts by ID</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Sort.sectorsByPriorityLowFirst">HoundUtils.Sort.sectorsByPriorityLowFirst (a, b)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Sort.sectorsByPriorityLowFirst">HOUND.Utils.Sort.sectorsByPriorityLowFirst (a, b)</a></td>
 	<td class="summary">sort sectors by priority (low first)</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HoundUtils.Sort.sectorsByPriorityLowLast">HoundUtils.Sort.sectorsByPriorityLowLast (a, b)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Sort.sectorsByPriorityLowLast">HOUND.Utils.Sort.sectorsByPriorityLowLast (a, b)</a></td>
 	<td class="summary">sort sectors by priority (Low last)</td>
+	</tr>
+</table>
+<h2><a href="#Filter_Functions">Filter Functions </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Filter.groupsByPrefix">HOUND.Utils.Filter.groupsByPrefix (prefix)</a></td>
+	<td class="summary">get Groups by prefix
+ Implementation taken from Skynet-IADS</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Filter.unitsByPrefix">HOUND.Utils.Filter.unitsByPrefix (prefix)</a></td>
+	<td class="summary">get Units by prefix
+ Implementation taken from Skynet-IADS</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Filter.staticObjectsByPrefix">HOUND.Utils.Filter.staticObjectsByPrefix (prefix)</a></td>
+	<td class="summary">get StatcObjects by prefix
+ Implementation taken from Skynet-IADS</td>
 	</tr>
 </table>
 
@@ -483,11 +502,11 @@
 
     <dl class="function">
     <dt>
-    <a name = "HoundUtils"></a>
-    <strong>HoundUtils</strong>
+    <a name = "HOUND.Utils"></a>
+    <strong>HOUND.Utils</strong>
     </dt>
     <dd>
-    HoundUtils decleration
+    HOUND.Utils decleration
 
 
     <h3>Fields:</h3>
@@ -510,6 +529,9 @@
         <li><span class="parameter">Sort</span>
          Sort funtions
         </li>
+        <li><span class="parameter">Filter</span>
+         Filter functions
+        </li>
         <li><span class="parameter">ReportId</span>
          intrnal ATIS numerator
         </li>
@@ -531,8 +553,8 @@
 
     <dl class="function">
     <dt>
-    <a name = "getHoundId"></a>
-    <strong>getHoundId ()</strong>
+    <a name = "HOUND.Utils.getHoundId"></a>
+    <strong>HOUND.Utils.getHoundId ()</strong>
     </dt>
     <dd>
     get next Hound Instance Id
@@ -550,8 +572,8 @@
 
 </dd>
     <dt>
-    <a name = "getMarkId"></a>
-    <strong>getMarkId ()</strong>
+    <a name = "HOUND.Utils.getMarkId"></a>
+    <strong>HOUND.Utils.getMarkId ()</strong>
     </dt>
     <dd>
     Get next Markpoint Id (Depricated)
@@ -567,14 +589,14 @@
 
     <h3>See also:</h3>
     <ul>
-         <a href="../modules/HoundUtils.html#HoundUtils.Marker.getId">HoundUtils.Marker.getId</a>
+         <a href="../modules/HOUND.Utils.html#HOUND.Utils.Marker.getId">HOUND.Utils.Marker.getId</a>
     </ul>
 
 
 </dd>
     <dt>
-    <a name = "setInitialMarkId"></a>
-    <strong>setInitialMarkId (startId)</strong>
+    <a name = "HOUND.Utils.setInitialMarkId"></a>
+    <strong>HOUND.Utils.setInitialMarkId (startId)</strong>
     </dt>
     <dd>
     Set New initial marker Id (DEPRICATED)
@@ -596,14 +618,14 @@
 
     <h3>See also:</h3>
     <ul>
-         <a href="../modules/HoundUtils.html#HoundUtils.Marker.setInitialId">HoundUtils.Marker.setInitialId</a>
+         <a href="../modules/HOUND.Utils.html#HOUND.Utils.Marker.setInitialId">HOUND.Utils.Marker.setInitialId</a>
     </ul>
 
 
 </dd>
     <dt>
-    <a name = "absTimeDelta"></a>
-    <strong>absTimeDelta (t0[, t1])</strong>
+    <a name = "HOUND.Utils.absTimeDelta"></a>
+    <strong>HOUND.Utils.absTimeDelta (t0[, t1])</strong>
     </dt>
     <dd>
     Get time delta between two timestemps
@@ -630,13 +652,13 @@
 
     <h3>Usage:</h3>
     <ul>
-        <pre class="example">HoundUtils.absTimeDelta(&lt;<span class="number">10</span>s ago&gt;,now) ==&gt; <span class="number">10</span></pre>
+        <pre class="example">HOUND.Utils.absTimeDelta(&lt;<span class="number">10</span>s ago&gt;,now) ==&gt; <span class="number">10</span></pre>
     </ul>
 
 </dd>
     <dt>
-    <a name = "angleDeltaRad"></a>
-    <strong>angleDeltaRad (rad1, rad2)</strong>
+    <a name = "HOUND.Utils.angleDeltaRad"></a>
+    <strong>HOUND.Utils.angleDeltaRad (rad1, rad2)</strong>
     </dt>
     <dd>
     return difference in radias between two angles (bearings)
@@ -663,8 +685,8 @@
 
 </dd>
     <dt>
-    <a name = "AzimuthAverage"></a>
-    <strong>AzimuthAverage (azimuths)</strong>
+    <a name = "HOUND.Utils.AzimuthAverage"></a>
+    <strong>HOUND.Utils.AzimuthAverage (azimuths)</strong>
     </dt>
     <dd>
     return avarage azimuth
@@ -688,8 +710,8 @@
 
 </dd>
     <dt>
-    <a name = "PointClusterTilt"></a>
-    <strong>PointClusterTilt (points[, MagNorth[, refPos]])</strong>
+    <a name = "HOUND.Utils.PointClusterTilt"></a>
+    <strong>HOUND.Utils.PointClusterTilt (points[, MagNorth[, refPos]])</strong>
     </dt>
     <dd>
     return the tilt of a point cluster
@@ -721,8 +743,8 @@
 
 </dd>
     <dt>
-    <a name = "RandomAngle"></a>
-    <strong>RandomAngle ()</strong>
+    <a name = "HOUND.Utils.RandomAngle"></a>
+    <strong>HOUND.Utils.RandomAngle ()</strong>
     </dt>
     <dd>
     returns a random angle
@@ -740,8 +762,8 @@
 
 </dd>
     <dt>
-    <a name = "getSamMaxRange"></a>
-    <strong>getSamMaxRange (DCS_Unit)</strong>
+    <a name = "HOUND.Utils.getSamMaxRange"></a>
+    <strong>HOUND.Utils.getSamMaxRange (DCS_Unit)</strong>
     </dt>
     <dd>
     return maximum weapon range in the group of DCS Unit
@@ -765,8 +787,8 @@
 
 </dd>
     <dt>
-    <a name = "getRadarDetectionRange"></a>
-    <strong>getRadarDetectionRange (DCS_Unit)</strong>
+    <a name = "HOUND.Utils.getRadarDetectionRange"></a>
+    <strong>HOUND.Utils.getRadarDetectionRange (DCS_Unit)</strong>
     </dt>
     <dd>
     return Radar detection Range for provided unit
@@ -790,8 +812,8 @@
 
 </dd>
     <dt>
-    <a name = "getRoundedElevationFt"></a>
-    <strong>getRoundedElevationFt (elev)</strong>
+    <a name = "HOUND.Utils.getRoundedElevationFt"></a>
+    <strong>HOUND.Utils.getRoundedElevationFt (elev[, resolution])</strong>
     </dt>
     <dd>
     return ground elevation rouded to 50 feet
@@ -801,6 +823,10 @@
     <ul>
         <li><span class="parameter">elev</span>
          Height in meters
+        </li>
+        <li><span class="parameter">resolution</span>
+         round to the nerest increment. default is 50
+         (<em>optional</em>)
         </li>
     </ul>
 
@@ -815,8 +841,8 @@
 
 </dd>
     <dt>
-    <a name = "roundToNearest"></a>
-    <strong>roundToNearest (input, nearest)</strong>
+    <a name = "HOUND.Utils.roundToNearest"></a>
+    <strong>HOUND.Utils.roundToNearest (input, nearest)</strong>
     </dt>
     <dd>
     return rounted number nearest a set interval
@@ -843,8 +869,8 @@
 
 </dd>
     <dt>
-    <a name = "getNormalAngularError"></a>
-    <strong>getNormalAngularError (variance)</strong>
+    <a name = "HOUND.Utils.getNormalAngularError"></a>
+    <strong>HOUND.Utils.getNormalAngularError (variance)</strong>
     </dt>
     <dd>
     get normal distribution angular error.
@@ -869,8 +895,8 @@
 
 </dd>
     <dt>
-    <a name = "getControllerResponse"></a>
-    <strong>getControllerResponse ()</strong>
+    <a name = "HOUND.Utils.getControllerResponse"></a>
+    <strong>HOUND.Utils.getControllerResponse ()</strong>
     </dt>
     <dd>
     get random controller snarky remark
@@ -888,8 +914,8 @@
 
 </dd>
     <dt>
-    <a name = "getCoalitionString"></a>
-    <strong>getCoalitionString (coalitionID)</strong>
+    <a name = "HOUND.Utils.getCoalitionString"></a>
+    <strong>HOUND.Utils.getCoalitionString (coalitionID)</strong>
     </dt>
     <dd>
     get coalition string
@@ -913,8 +939,8 @@
 
 </dd>
     <dt>
-    <a name = "getHemispheres"></a>
-    <strong>getHemispheres (lat, lon, fullText)</strong>
+    <a name = "HOUND.Utils.getHemispheres"></a>
+    <strong>HOUND.Utils.getHemispheres (lat, lon, fullText)</strong>
     </dt>
     <dd>
     returns hemisphere information for LatLon
@@ -944,8 +970,8 @@
 
 </dd>
     <dt>
-    <a name = "getReportId"></a>
-    <strong>getReportId ([ReportId])</strong>
+    <a name = "HOUND.Utils.getReportId"></a>
+    <strong>HOUND.Utils.getReportId ([ReportId])</strong>
     </dt>
     <dd>
     get "ATIS" report ID
@@ -974,8 +1000,8 @@
 
 </dd>
     <dt>
-    <a name = "DecToDMS"></a>
-    <strong>DecToDMS (cood)</strong>
+    <a name = "HOUND.Utils.DecToDMS"></a>
+    <strong>HOUND.Utils.DecToDMS (cood)</strong>
     </dt>
     <dd>
     Convert Decimal Degrees to DMS (D.DD to DMS)
@@ -1004,8 +1030,8 @@
 
 </dd>
     <dt>
-    <a name = "getBR"></a>
-    <strong>getBR (src, dst)</strong>
+    <a name = "HOUND.Utils.getBR"></a>
+    <strong>HOUND.Utils.getBR (src, dst)</strong>
     </dt>
     <dd>
     retrun Bearing (magnetic) and range between two points
@@ -1032,8 +1058,8 @@
 
 </dd>
     <dt>
-    <a name = "getFormationCallsign"></a>
-    <strong>getFormationCallsign (player[, flightMember])</strong>
+    <a name = "HOUND.Utils.getFormationCallsign"></a>
+    <strong>HOUND.Utils.getFormationCallsign (player[, flightMember])</strong>
     </dt>
     <dd>
     Get group callsign from unit
@@ -1061,8 +1087,8 @@
 
 </dd>
     <dt>
-    <a name = "getHoundCallsign"></a>
-    <strong>getHoundCallsign ([namePool])</strong>
+    <a name = "HOUND.Utils.getHoundCallsign"></a>
+    <strong>HOUND.Utils.getHoundCallsign ([namePool])</strong>
     </dt>
     <dd>
     get Callsign
@@ -1087,8 +1113,8 @@
 
 </dd>
     <dt>
-    <a name = "isDMM"></a>
-    <strong>isDMM (DCS_Unit)</strong>
+    <a name = "HOUND.Utils.isDMM"></a>
+    <strong>HOUND.Utils.isDMM (DCS_Unit)</strong>
     </dt>
     <dd>
     Unit use DMM
@@ -1107,8 +1133,68 @@
 
 </dd>
     <dt>
-    <a name = "HoundUtils.Mapping.linear"></a>
-    <strong>HoundUtils.Mapping.linear (input, in_min, in_max, out_min, out_max[, clamp])</strong>
+    <a name = "HOUND.Utils.hasPayload"></a>
+    <strong>HOUND.Utils.hasPayload (DCS_Unit, payloadName)</strong>
+    </dt>
+    <dd>
+    does unit has payload (placeholder)
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">DCS_Unit</span>
+         DCS unit
+        </li>
+        <li><span class="parameter">payloadName</span>
+         Name of payload
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Bool always true
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.hasTask"></a>
+    <strong>HOUND.Utils.hasTask (DCS_Unit, taskName)</strong>
+    </dt>
+    <dd>
+    does unit has task (placeholder)
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">DCS_Unit</span>
+         DCS unit
+        </li>
+        <li><span class="parameter">taskName</span>
+         Name of task
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Bool always true
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Value_mapping_Functions"></a>Value mapping Functions </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HOUND.Utils.Mapping.linear"></a>
+    <strong>HOUND.Utils.Mapping.linear (input, in_min, in_max, out_min, out_max[, clamp])</strong>
     </dt>
     <dd>
     map input to range (Arduino implementation)
@@ -1147,14 +1233,14 @@
 
     <h3>Usage:</h3>
     <ul>
-        <pre class="example">HoundUtils.Mapping.linear(<span class="number">10</span>,<span class="number">0</span>,<span class="number">10</span>,<span class="number">0</span>,<span class="number">100</span>) = <span class="number">100</span>
-  HoundUtils.Mapping.linear(<span class="number">0.5</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">100</span>) = <span class="number">50</span></pre>
+        <pre class="example">HOUND.Utils.Mapping.linear(<span class="number">10</span>,<span class="number">0</span>,<span class="number">10</span>,<span class="number">0</span>,<span class="number">100</span>) = <span class="number">100</span>
+  HOUND.Utils.Mapping.linear(<span class="number">0.5</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">100</span>) = <span class="number">50</span></pre>
     </ul>
 
 </dd>
     <dt>
-    <a name = "HoundUtils.Mapping.nonLinear"></a>
-    <strong>HoundUtils.Mapping.nonLinear (value, in_min, in_max[, out_min[, out_max[, sensitivity[, curve_type]]]])</strong>
+    <a name = "HOUND.Utils.Mapping.nonLinear"></a>
+    <strong>HOUND.Utils.Mapping.nonLinear (value, in_min, in_max[, out_min[, out_max[, sensitivity[, curve_type]]]])</strong>
     </dt>
     <dd>
     Map values on a curve
@@ -1199,8 +1285,8 @@
 
     <dl class="function">
     <dt>
-    <a name = "HoundUtils.Geo.checkLOS"></a>
-    <strong>HoundUtils.Geo.checkLOS (pos0, pos1)</strong>
+    <a name = "HOUND.Utils.Geo.checkLOS"></a>
+    <strong>HOUND.Utils.Geo.checkLOS (pos0, pos1)</strong>
     </dt>
     <dd>
     Return if the is LOS between two DCS points
@@ -1228,8 +1314,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundUtils.Geo.EarthLOS"></a>
-    <strong>HoundUtils.Geo.EarthLOS (h0[, h1])</strong>
+    <a name = "HOUND.Utils.Geo.EarthLOS"></a>
+    <strong>HOUND.Utils.Geo.EarthLOS (h0[, h1])</strong>
     </dt>
     <dd>
     Returns maximum horizon distance given heigh above the earth of two points
@@ -1258,8 +1344,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundUtils.Geo.isDcsPoint"></a>
-    <strong>HoundUtils.Geo.isDcsPoint (point)</strong>
+    <a name = "HOUND.Utils.Geo.isDcsPoint"></a>
+    <strong>HOUND.Utils.Geo.isDcsPoint (point)</strong>
     </dt>
     <dd>
     check if point is DCS point
@@ -1283,8 +1369,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundUtils.Geo.getProjectedIP"></a>
-    <strong>HoundUtils.Geo.getProjectedIP (p0, az, el)</strong>
+    <a name = "HOUND.Utils.Geo.getProjectedIP"></a>
+    <strong>HOUND.Utils.Geo.getProjectedIP (p0, az, el)</strong>
     </dt>
     <dd>
     Returns Projected line impact point with Terrain
@@ -1314,8 +1400,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundUtils.Geo.setPointHeight"></a>
-    <strong>HoundUtils.Geo.setPointHeight (point)</strong>
+    <a name = "HOUND.Utils.Geo.setPointHeight"></a>
+    <strong>HOUND.Utils.Geo.setPointHeight (point)</strong>
     </dt>
     <dd>
     Ensure Inpoint DCS point has Elevation
@@ -1339,8 +1425,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundUtils.Geo.setHeight"></a>
-    <strong>HoundUtils.Geo.setHeight (point)</strong>
+    <a name = "HOUND.Utils.Geo.setHeight"></a>
+    <strong>HOUND.Utils.Geo.setHeight (point)</strong>
     </dt>
     <dd>
     Ensure input point or point table all have valid Elevation
@@ -1368,8 +1454,8 @@
 
     <dl class="function">
     <dt>
-    <a name = "HoundUtils.Marker.getId"></a>
-    <strong>HoundUtils.Marker.getId ()</strong>
+    <a name = "HOUND.Utils.Marker.getId"></a>
+    <strong>HOUND.Utils.Marker.getId ()</strong>
     </dt>
     <dd>
     Get next Markpoint Id
@@ -1387,8 +1473,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundUtils.Marker.setInitialId"></a>
-    <strong>HoundUtils.Marker.setInitialId (startId)</strong>
+    <a name = "HOUND.Utils.Marker.setInitialId"></a>
+    <strong>HOUND.Utils.Marker.setInitialId (startId)</strong>
     </dt>
     <dd>
     Set New initial marker Id
@@ -1412,8 +1498,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundUtils.Marker.create"></a>
-    <strong>HoundUtils.Marker.create ([args])</strong>
+    <a name = "HOUND.Utils.Marker.create"></a>
+    <strong>HOUND.Utils.Marker.create ([args])</strong>
     </dt>
     <dd>
     create Marker entity
@@ -1438,7 +1524,7 @@
 
 </dd>
 </dl>
-    <h2 class="section-header "><a name="HoundUtils_Marker_instance"></a>HoundUtils.Marker.instance</h2>
+    <h2 class="section-header "><a name="HOUND_Utils_Marker_instance"></a>HOUND.Utils.Marker.instance</h2>
 
     <dl class="function">
     <dt>
@@ -1557,6 +1643,31 @@
 
 </dd>
     <dt>
+    <a name = "instance.isDrawn"></a>
+    <strong>instance.isDrawn (self)</strong>
+    </dt>
+    <dd>
+    Check if marpoint is drawn
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+         Hound Marker instance
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Bool - True if marker is drawn
+    </ol>
+
+
+
+
+</dd>
+    <dt>
     <a name = "instance.remove"></a>
     <strong>instance.remove (self)</strong>
     </dt>
@@ -1650,8 +1761,8 @@
 
     <dl class="function">
     <dt>
-    <a name = "HoundUtils.TTS.Transmit"></a>
-    <strong>HoundUtils.TTS.Transmit (msg, coalitionID, args[, transmitterPos])</strong>
+    <a name = "HOUND.Utils.TTS.Transmit"></a>
+    <strong>HOUND.Utils.TTS.Transmit (msg, coalitionID, args[, transmitterPos])</strong>
     </dt>
     <dd>
     Transmit message using STTS (private)
@@ -1685,8 +1796,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundUtils.TTS.getTtsTime"></a>
-    <strong>HoundUtils.TTS.getTtsTime ([timestamp])</strong>
+    <a name = "HOUND.Utils.TTS.getTtsTime"></a>
+    <strong>HOUND.Utils.TTS.getTtsTime ([timestamp])</strong>
     </dt>
     <dd>
     returns current DCS time in military time string for TTS
@@ -1711,8 +1822,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundUtils.TTS.getVerbalConfidenceLevel"></a>
-    <strong>HoundUtils.TTS.getVerbalConfidenceLevel (confidenceRadius)</strong>
+    <a name = "HOUND.Utils.TTS.getVerbalConfidenceLevel"></a>
+    <strong>HOUND.Utils.TTS.getVerbalConfidenceLevel (confidenceRadius)</strong>
     </dt>
     <dd>
     return verbal accuracy description
@@ -1737,8 +1848,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundUtils.TTS.getVerbalContactAge"></a>
-    <strong>HoundUtils.TTS.getVerbalContactAge (timestamp[, isSimple[, NATO]])</strong>
+    <a name = "HOUND.Utils.TTS.getVerbalContactAge"></a>
+    <strong>HOUND.Utils.TTS.getVerbalContactAge (timestamp[, isSimple[, NATO]])</strong>
     </dt>
     <dd>
     Get Verbal description of contact age
@@ -1771,8 +1882,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundUtils.TTS.getVerbalLL"></a>
-    <strong>HoundUtils.TTS.getVerbalLL (lat, lon[, minDec])</strong>
+    <a name = "HOUND.Utils.TTS.getVerbalLL"></a>
+    <strong>HOUND.Utils.TTS.getVerbalLL (lat, lon[, minDec])</strong>
     </dt>
     <dd>
     convert LL to TTS string
@@ -1804,8 +1915,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundUtils.TTS.toPhonetic"></a>
-    <strong>HoundUtils.TTS.toPhonetic (str)</strong>
+    <a name = "HOUND.Utils.TTS.toPhonetic"></a>
+    <strong>HOUND.Utils.TTS.toPhonetic (str)</strong>
     </dt>
     <dd>
     Convert string to phonetic text
@@ -1828,13 +1939,13 @@
 
     <h3>Usage:</h3>
     <ul>
-        <pre class="example">HoundUtils.TTS.toPhonetic(<span class="string">"B29"</span>) will <span class="keyword">return</span> <span class="string">"Bravo Two Niner"</span></pre>
+        <pre class="example">HOUND.Utils.TTS.toPhonetic(<span class="string">"B29"</span>) will <span class="keyword">return</span> <span class="string">"Bravo Two Niner"</span></pre>
     </ul>
 
 </dd>
     <dt>
-    <a name = "HoundUtils.TTS.getReadTime"></a>
-    <strong>HoundUtils.TTS.getReadTime (length[, speed[, isGoogle]])</strong>
+    <a name = "HOUND.Utils.TTS.getReadTime"></a>
+    <strong>HOUND.Utils.TTS.getReadTime (length[, speed[, isGoogle]])</strong>
     </dt>
     <dd>
     get estimated message read time
@@ -1867,8 +1978,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundUtils.TTS.simplfyDistance"></a>
-    <strong>HoundUtils.TTS.simplfyDistance (distanceM)</strong>
+    <a name = "HOUND.Utils.TTS.simplfyDistance"></a>
+    <strong>HOUND.Utils.TTS.simplfyDistance (distanceM)</strong>
     </dt>
     <dd>
     simplify distance
@@ -1898,8 +2009,8 @@
 
     <dl class="function">
     <dt>
-    <a name = "HoundUtils.Text.getLL"></a>
-    <strong>HoundUtils.Text.getLL (lat, lon[, minDec])</strong>
+    <a name = "HOUND.Utils.Text.getLL"></a>
+    <strong>HOUND.Utils.Text.getLL (lat, lon[, minDec])</strong>
     </dt>
     <dd>
     convert LL to displayable string
@@ -1931,8 +2042,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundUtils.Text.getTime"></a>
-    <strong>HoundUtils.Text.getTime ([timestamp])</strong>
+    <a name = "HOUND.Utils.Text.getTime"></a>
+    <strong>HOUND.Utils.Text.getTime ([timestamp])</strong>
     </dt>
     <dd>
     Text Function - returns current DCS time in military time format string
@@ -1961,115 +2072,8 @@
 
     <dl class="function">
     <dt>
-    <a name = "HoundUtils.Elint.getDefraction"></a>
-    <strong>HoundUtils.Elint.getDefraction (band, antenna_size)</strong>
-    </dt>
-    <dd>
-    Get defraction
- for band and effective antenna size return angular resolution
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">band</span>
-         Radar transmission band (A-L) as defined in HoundDB
-        </li>
-        <li><span class="parameter">antenna_size</span>
-         Effective antenna size for platform as defined in HoundDB
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        angular resolution in Radians for Band Antenna combo
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HoundUtils.Elint.getApertureSize"></a>
-    <strong>HoundUtils.Elint.getApertureSize (DCS_Unit)</strong>
-    </dt>
-    <dd>
-    get Effective Aperture size for unit
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">DCS_Unit</span>
-         Unit requested (used as platform)
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        Effective aperture size in meters
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HoundUtils.Elint.getEmitterBand"></a>
-    <strong>HoundUtils.Elint.getEmitterBand (DCS_Unit)</strong>
-    </dt>
-    <dd>
-    Get emitter Band
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">DCS_Unit</span>
-         Radar unit
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        Char radar band
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HoundUtils.Elint.getSensorPrecision"></a>
-    <strong>HoundUtils.Elint.getSensorPrecision (platform, emitterBand)</strong>
-    </dt>
-    <dd>
-    Elint Function - Get sensor precision
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">platform</span>
-         Instance of DCS Unit which is the detecting platform
-        </li>
-        <li><span class="parameter">emitterBand</span>
-         Radar Band (frequency) of radar (A-L)
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        angular resolution in Radians of platform against specific Radar frequency
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HoundUtils.Elint.generateAngularError"></a>
-    <strong>HoundUtils.Elint.generateAngularError (variance)</strong>
+    <a name = "HOUND.Utils.Elint.generateAngularError"></a>
+    <strong>HOUND.Utils.Elint.generateAngularError (variance)</strong>
     </dt>
     <dd>
     Elint Function - Generate angular error
@@ -2093,8 +2097,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundUtils.Elint.getAzimuth"></a>
-    <strong>HoundUtils.Elint.getAzimuth (src, dst, sensorPrecision)</strong>
+    <a name = "HOUND.Utils.Elint.getAzimuth"></a>
+    <strong>HOUND.Utils.Elint.getAzimuth (src, dst, sensorPrecision)</strong>
     </dt>
     <dd>
     Get Azimuth (and elevation) between two points
@@ -2109,7 +2113,7 @@
          position of the destination (i.e emitting radar)
         </li>
         <li><span class="parameter">sensorPrecision</span>
-         angular resolution (in rad) of platform against radar <a href="../modules/HoundUtils.html#HoundUtils.Elint.getSensorPrecision">HoundUtils.Elint.getSensorPrecision</a>
+         angular resolution (in rad) of platform against radar
         </li>
     </ul>
 
@@ -2126,8 +2130,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundUtils.Elint.getActiveRadars"></a>
-    <strong>HoundUtils.Elint.getActiveRadars (instanceCoalition)</strong>
+    <a name = "HOUND.Utils.Elint.getActiveRadars"></a>
+    <strong>HOUND.Utils.Elint.getActiveRadars (instanceCoalition)</strong>
     </dt>
     <dd>
     Get currently transmitting Ground and Ship radars that are not in the Hound Instance coalition
@@ -2151,8 +2155,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundUtils.Elint.getRwrContacts"></a>
-    <strong>HoundUtils.Elint.getRwrContacts (platform)</strong>
+    <a name = "HOUND.Utils.Elint.getRwrContacts"></a>
+    <strong>HOUND.Utils.Elint.getRwrContacts (platform)</strong>
     </dt>
     <dd>
     Get RWR contacts for platfom
@@ -2180,8 +2184,8 @@
 
     <dl class="function">
     <dt>
-    <a name = "HoundUtils.Vector.getUnitVector"></a>
-    <strong>HoundUtils.Vector.getUnitVector (Theta[, Phi])</strong>
+    <a name = "HOUND.Utils.Vector.getUnitVector"></a>
+    <strong>HOUND.Utils.Vector.getUnitVector (Theta[, Phi])</strong>
     </dt>
     <dd>
     get UnitVector
@@ -2209,8 +2213,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundUtils.Vector.getRandomVec2"></a>
-    <strong>HoundUtils.Vector.getRandomVec2 (variance)</strong>
+    <a name = "HOUND.Utils.Vector.getRandomVec2"></a>
+    <strong>HOUND.Utils.Vector.getRandomVec2 (variance)</strong>
     </dt>
     <dd>
     Get random 2D vector
@@ -2236,8 +2240,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundUtils.Vector.getRandomVec3"></a>
-    <strong>HoundUtils.Vector.getRandomVec3 (variance)</strong>
+    <a name = "HOUND.Utils.Vector.getRandomVec3"></a>
+    <strong>HOUND.Utils.Vector.getRandomVec3 (variance)</strong>
     </dt>
     <dd>
     Get random 3d vector
@@ -2267,8 +2271,8 @@
 
     <dl class="function">
     <dt>
-    <a name = "HoundUtils.Zone.listDrawnZones"></a>
-    <strong>HoundUtils.Zone.listDrawnZones ()</strong>
+    <a name = "HOUND.Utils.Zone.listDrawnZones"></a>
+    <strong>HOUND.Utils.Zone.listDrawnZones ()</strong>
     </dt>
     <dd>
     List all Useable zones from drawings.
@@ -2287,8 +2291,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundUtils.Zone.getDrawnZone"></a>
-    <strong>HoundUtils.Zone.getDrawnZone (zoneName)</strong>
+    <a name = "HOUND.Utils.Zone.getDrawnZone"></a>
+    <strong>HOUND.Utils.Zone.getDrawnZone (zoneName)</strong>
     </dt>
     <dd>
     Get zone from drawing\
@@ -2317,8 +2321,8 @@
 
     <dl class="function">
     <dt>
-    <a name = "HoundUtils.Polygon.threatOnSector"></a>
-    <strong>HoundUtils.Polygon.threatOnSector (polygon, point, radius)</strong>
+    <a name = "HOUND.Utils.Polygon.threatOnSector"></a>
+    <strong>HOUND.Utils.Polygon.threatOnSector (polygon, point, radius)</strong>
     </dt>
     <dd>
     Check if polygon is under threat of SAM
@@ -2350,8 +2354,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundUtils.Polygon.filterPointsByPolygon"></a>
-    <strong>HoundUtils.Polygon.filterPointsByPolygon (points, polygon)</strong>
+    <a name = "HOUND.Utils.Polygon.filterPointsByPolygon"></a>
+    <strong>HOUND.Utils.Polygon.filterPointsByPolygon (points, polygon)</strong>
     </dt>
     <dd>
     Filter out points not in polygon
@@ -2378,8 +2382,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundUtils.Polygon.clipPolygons"></a>
-    <strong>HoundUtils.Polygon.clipPolygons (subjectPolygon, clipPolygon)</strong>
+    <a name = "HOUND.Utils.Polygon.clipPolygons"></a>
+    <strong>HOUND.Utils.Polygon.clipPolygons (subjectPolygon, clipPolygon)</strong>
     </dt>
     <dd>
     calculate cliping of polygons
@@ -2407,8 +2411,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundUtils.Polygon.giftWrap"></a>
-    <strong>HoundUtils.Polygon.giftWrap (points)</strong>
+    <a name = "HOUND.Utils.Polygon.giftWrap"></a>
+    <strong>HOUND.Utils.Polygon.giftWrap (points)</strong>
     </dt>
     <dd>
     Gift wrapping algorithem
@@ -2433,8 +2437,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundUtils.Polygon.circumcirclePoints"></a>
-    <strong>HoundUtils.Polygon.circumcirclePoints (points)</strong>
+    <a name = "HOUND.Utils.Polygon.circumcirclePoints"></a>
+    <strong>HOUND.Utils.Polygon.circumcirclePoints (points)</strong>
     </dt>
     <dd>
     calculate Smallest circle around point cloud
@@ -2460,8 +2464,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundUtils.Polygon.getArea"></a>
-    <strong>HoundUtils.Polygon.getArea (polygon)</strong>
+    <a name = "HOUND.Utils.Polygon.getArea"></a>
+    <strong>HOUND.Utils.Polygon.getArea (polygon)</strong>
     </dt>
     <dd>
     return the area of a convex polygon
@@ -2485,8 +2489,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundUtils.Polygon.clipOrHull"></a>
-    <strong>HoundUtils.Polygon.clipOrHull (polyA, polyB)</strong>
+    <a name = "HOUND.Utils.Polygon.clipOrHull"></a>
+    <strong>HOUND.Utils.Polygon.clipOrHull (polyA, polyB)</strong>
     </dt>
     <dd>
     clip or hull two polygons
@@ -2513,8 +2517,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundUtils.Polygon.azMinMax"></a>
-    <strong>HoundUtils.Polygon.azMinMax (poly, refPos)</strong>
+    <a name = "HOUND.Utils.Polygon.azMinMax"></a>
+    <strong>HOUND.Utils.Polygon.azMinMax (poly, refPos)</strong>
     </dt>
     <dd>
     find min/max azimuth
@@ -2549,8 +2553,8 @@
 
     <dl class="function">
     <dt>
-    <a name = "HoundUtils.Cluster.gaussianKernel"></a>
-    <strong>HoundUtils.Cluster.gaussianKernel (value, bandwidth)</strong>
+    <a name = "HOUND.Utils.Cluster.gaussianKernel"></a>
+    <strong>HOUND.Utils.Cluster.gaussianKernel (value, bandwidth)</strong>
     </dt>
     <dd>
     Get gaussian weight
@@ -2572,8 +2576,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundUtils.Cluster.stdDev"></a>
-    <strong>HoundUtils.Cluster.stdDev ()</strong>
+    <a name = "HOUND.Utils.Cluster.stdDev"></a>
+    <strong>HOUND.Utils.Cluster.stdDev ()</strong>
     </dt>
     <dd>
     Calculate running std dev
@@ -2592,8 +2596,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundUtils.Cluster.weightedMean"></a>
-    <strong>HoundUtils.Cluster.weightedMean (origPoints[, initPos[, threashold[, maxIttr]]])</strong>
+    <a name = "HOUND.Utils.Cluster.weightedMean"></a>
+    <strong>HOUND.Utils.Cluster.weightedMean (origPoints[, initPos[, threashold[, maxIttr]]])</strong>
     </dt>
     <dd>
     find the weighted mean of a points cluster (meanShift)
@@ -2629,8 +2633,8 @@
 
 </dd>
     <dt>
-    <a name = "HoundUtils.Cluster.kmeans"></a>
-    <strong>HoundUtils.Cluster.kmeans (data, nclusters, init)</strong>
+    <a name = "HOUND.Utils.Cluster.kmeans"></a>
+    <strong>HOUND.Utils.Cluster.kmeans (data, nclusters, init)</strong>
     </dt>
     <dd>
     K-means++ algorithm
@@ -2674,7 +2678,7 @@
 
     <ul>
         <li><span class="parameter">contacts</span>
-         list of HoundContact instances to evaluate
+         list of HOUND.Contact instances to evaluate
         </li>
     </ul>
 
@@ -2694,7 +2698,7 @@
 
     <ul>
         <li><span class="parameter">contacts</span>
-         list of HoundContact instances to cluster
+         list of HOUND.Contact instances to cluster
         </li>
         <li><span class="parameter">iterations</span>
          maximum nuber of itteratoins to run
@@ -2712,8 +2716,8 @@
 
     <dl class="function">
     <dt>
-    <a name = "HoundUtils.Sort.ContactsByRange"></a>
-    <strong>HoundUtils.Sort.ContactsByRange (a, b)</strong>
+    <a name = "HOUND.Utils.Sort.ContactsByRange"></a>
+    <strong>HOUND.Utils.Sort.ContactsByRange (a, b)</strong>
     </dt>
     <dd>
     Sort contacts by engament range
@@ -2722,10 +2726,10 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">a</span>
-         HoundContact instance
+         <a href="../modules/HOUND.Contact.html#">HOUND.Contact</a> instance
         </li>
         <li><span class="parameter">b</span>
-         HoundContact Instance
+         <a href="../modules/HOUND.Contact.html#">HOUND.Contact</a> Instance
         </li>
     </ul>
 
@@ -2739,13 +2743,13 @@
 
     <h3>Usage:</h3>
     <ul>
-        <pre class="example"><span class="global">table</span>.sort(unSorted,HoundUtils.Sort.ContactsByRange)</pre>
+        <pre class="example"><span class="global">table</span>.sort(unSorted,HOUND.Utils.Sort.ContactsByRange)</pre>
     </ul>
 
 </dd>
     <dt>
-    <a name = "HoundUtils.Sort.ContactsById"></a>
-    <strong>HoundUtils.Sort.ContactsById (a, b)</strong>
+    <a name = "HOUND.Utils.Sort.ContactsById"></a>
+    <strong>HOUND.Utils.Sort.ContactsById (a, b)</strong>
     </dt>
     <dd>
     Sort contacts by ID
@@ -2754,10 +2758,10 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">a</span>
-         HoundContact instance
+         <a href="../modules/HOUND.Contact.html#">HOUND.Contact</a> instance
         </li>
         <li><span class="parameter">b</span>
-         HoundContact Instance
+         <a href="../modules/HOUND.Contact.html#">HOUND.Contact</a> Instance
         </li>
     </ul>
 
@@ -2771,13 +2775,13 @@
 
     <h3>Usage:</h3>
     <ul>
-        <pre class="example"><span class="global">table</span>.sort(unSorted,HoundUtils.Sort.ContactsById)</pre>
+        <pre class="example"><span class="global">table</span>.sort(unSorted,HOUND.Utils.Sort.ContactsById)</pre>
     </ul>
 
 </dd>
     <dt>
-    <a name = "HoundUtils.Sort.sectorsByPriorityLowFirst"></a>
-    <strong>HoundUtils.Sort.sectorsByPriorityLowFirst (a, b)</strong>
+    <a name = "HOUND.Utils.Sort.sectorsByPriorityLowFirst"></a>
+    <strong>HOUND.Utils.Sort.sectorsByPriorityLowFirst (a, b)</strong>
     </dt>
     <dd>
     sort sectors by priority (low first)
@@ -2786,10 +2790,10 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">a</span>
-         HoundSector instance
+         <a href="../modules/HOUND.Sector.html#">HOUND.Sector</a> instance
         </li>
         <li><span class="parameter">b</span>
-         HoundSector Instance
+         <a href="../modules/HOUND.Sector.html#">HOUND.Sector</a> Instance
         </li>
     </ul>
 
@@ -2803,13 +2807,13 @@
 
     <h3>Usage:</h3>
     <ul>
-        <pre class="example"><span class="global">table</span>.sort(unSorted,HoundUtils.Sort.sectorsByPriorityLowFirst)</pre>
+        <pre class="example"><span class="global">table</span>.sort(unSorted,HOUND.Utils.Sort.sectorsByPriorityLowFirst)</pre>
     </ul>
 
 </dd>
     <dt>
-    <a name = "HoundUtils.Sort.sectorsByPriorityLowLast"></a>
-    <strong>HoundUtils.Sort.sectorsByPriorityLowLast (a, b)</strong>
+    <a name = "HOUND.Utils.Sort.sectorsByPriorityLowLast"></a>
+    <strong>HOUND.Utils.Sort.sectorsByPriorityLowLast (a, b)</strong>
     </dt>
     <dd>
     sort sectors by priority (Low last)
@@ -2818,10 +2822,10 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">a</span>
-         HoundSector instance
+         <a href="../modules/HOUND.Sector.html#">HOUND.Sector</a> instance
         </li>
         <li><span class="parameter">b</span>
-         HoundSector Instance
+         <a href="../modules/HOUND.Sector.html#">HOUND.Sector</a> Instance
         </li>
     </ul>
 
@@ -2835,8 +2839,90 @@
 
     <h3>Usage:</h3>
     <ul>
-        <pre class="example"><span class="global">table</span>.sort(unSorted,HoundUtils.Sort.sectorsByPriorityLowLast)</pre>
+        <pre class="example"><span class="global">table</span>.sort(unSorted,HOUND.Utils.Sort.sectorsByPriorityLowLast)</pre>
     </ul>
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Filter_Functions"></a>Filter Functions </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HOUND.Utils.Filter.groupsByPrefix"></a>
+    <strong>HOUND.Utils.Filter.groupsByPrefix (prefix)</strong>
+    </dt>
+    <dd>
+    get Groups by prefix
+ Implementation taken from Skynet-IADS
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">prefix</span>
+         string
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table of DCS groups indexed by group name
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.Filter.unitsByPrefix"></a>
+    <strong>HOUND.Utils.Filter.unitsByPrefix (prefix)</strong>
+    </dt>
+    <dd>
+    get Units by prefix
+ Implementation taken from Skynet-IADS
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">prefix</span>
+         string
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table of DCS Units indexed by Unit name
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.Filter.staticObjectsByPrefix"></a>
+    <strong>HOUND.Utils.Filter.staticObjectsByPrefix (prefix)</strong>
+    </dt>
+    <dd>
+    get StatcObjects by prefix
+ Implementation taken from Skynet-IADS
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">prefix</span>
+         string
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table of DCS StaticObjects indexed by object name
+    </ol>
+
+
+
 
 </dd>
 </dl>
@@ -2846,7 +2932,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2022-03-21 14:49:47 </i>
+<i style="float:right;">Last updated 2022-06-12 13:47:44 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

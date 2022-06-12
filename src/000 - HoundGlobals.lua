@@ -8,6 +8,12 @@ do
     if STTS ~= nil then
         STTS.DIRECTORY = "C:\\Program Files\\DCS-SimpleRadio-Standalone"
     end
+
+    -- randomize the randomness.
+    math.random()
+    for i=1,math.random(2,5) do
+        math.random(math.random(math.floor(math.random()*300),300),math.random(math.floor(math.random()*10000),10000))
+    end
 end
 
 do
@@ -24,13 +30,13 @@ do
     -- @field EXTENDED_INFO Hound will add more in depth uncertenty info to controller messages (default is true)
     -- @field FORCE_MANAGE_MARKERS Force Hound to use internal counter for markIds (default is false).
     HOUND = {
-        VERSION = "0.2.2-TRUNK",
+        VERSION = "0.3.0-TRUNK",
         DEBUG = true,
         ELLIPSE_PERCENTILE = 0.6,
         DATAPOINTS_NUM = 30,
         DATAPOINTS_INTERVAL = 30,
         CONTACT_TIMEOUT = 900,
-        MGRS_PRECISION = 3,
+        MGRS_PRECISION = 5,
         EXTENDED_INFO = true,
         MIST_VERSION = tonumber(table.concat({mist.majorVersion,mist.minorVersion},".")),
         FORCE_MANAGE_MARKERS = false
@@ -126,15 +132,17 @@ do
     -- @param handler handler to register
     -- @see HOUND.EVENTS
     function HOUND.addEventHandler(handler)
-        HoundEventHandler.addEventHandler(handler)
+        HOUND.EventHandler.addEventHandler(handler)
     end
 
     --- deregister event handler (global)
     -- @param handler handler to remove
     -- @see HOUND.EVENTS
     function HOUND.removeEventHandler(handler)
-        HoundEventHandler.removeEventHandler(handler)
+        HOUND.EventHandler.removeEventHandler(handler)
     end
+
+    HOUND.Comms = {}
 
     --- helper code for class inheritance
     -- @local
@@ -169,7 +177,6 @@ do
         -- Return true if the caller is an instance of theClass
         function new_class:isa( theClass )
             local b_isa = false
-
             local cur_class = new_class
 
             while ( nil ~= cur_class ) and ( false == b_isa ) do
@@ -179,10 +186,8 @@ do
                     cur_class = cur_class:superClass()
                 end
             end
-
             return b_isa
         end
-
         return new_class
     end
 

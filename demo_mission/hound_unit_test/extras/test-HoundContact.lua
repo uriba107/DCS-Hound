@@ -3,7 +3,7 @@ do
     TestHoundContact = {}
 
     function TestHoundContact:setUp()
-        self.contact = HoundContact.New(Unit.getByName("TOR_SAIPAN-1"),coalition.side.BLUE)
+        self.contact = HOUND.Contact.New(Unit.getByName("TOR_SAIPAN-1"),coalition.side.BLUE)
         lu.assertNotNil(self.contact)
         lu.assertIsTable(self.contact)
 
@@ -33,11 +33,11 @@ do
         local p2 = platform2:getPosition().p
         local err = 0
 
-        lu.assertIsTrue(HoundUtils.Geo.checkLOS(p1, tgtPos))
-        lu.assertIsTrue(HoundUtils.Geo.checkLOS(p2, tgtPos))
+        lu.assertIsTrue(HOUND.Utils.Geo.checkLOS(p1, tgtPos))
+        lu.assertIsTrue(HOUND.Utils.Geo.checkLOS(p2, tgtPos))
 
-        local az1,el1 = HoundUtils.Elint.getAzimuth( p1, tgtPos, err )
-        local az2,el2 = HoundUtils.Elint.getAzimuth( p2, tgtPos, err )
+        local az1,el1 = HOUND.Utils.Elint.getAzimuth( p1, tgtPos, err )
+        local az2,el2 = HOUND.Utils.Elint.getAzimuth( p2, tgtPos, err )
 
         -- will change based on test time
         -- lu.assertAlmostEquals(az1,,0.0001)
@@ -45,8 +45,8 @@ do
         -- lu.assertAlmostEquals(az2,,0.0001)
         -- lu.assertAlmostEquals(el2,,0.0001)
 
-        local d1 = HoundDatapoint.New(platform1,p1, az1, el1, timer.getAbsTime(),err,false)
-        local d2 = HoundDatapoint.New(platform2,p2, az2, el2, timer.getAbsTime(),err,false)
+        local d1 = HOUND.Datapoint.New(platform1,p1, az1, el1, timer.getAbsTime(),err,false)
+        local d2 = HOUND.Datapoint.New(platform2,p2, az2, el2, timer.getAbsTime(),err,false)
 
         self.contact:AddPoint(d1)
         self.contact:AddPoint(d2)
@@ -55,14 +55,14 @@ do
 
         lu.assertEquals(contactState,HOUND.EVENTS.RADAR_DETECTED)
 
-        lu.assertAlmostEquals(tgtPos.x,d1.estimatedPos.x,0.5)
-        lu.assertAlmostEquals(tgtPos.z,d1.estimatedPos.z,0.5)
+        lu.assertAlmostEquals(tgtPos.x,d1.estimatedPos.x,0.75)
+        lu.assertAlmostEquals(tgtPos.z,d1.estimatedPos.z,0.75)
 
-        lu.assertAlmostEquals(tgtPos.x,d2.estimatedPos.x,0.5)
-        lu.assertAlmostEquals(tgtPos.z,d2.estimatedPos.z,0.5)
+        lu.assertAlmostEquals(tgtPos.x,d2.estimatedPos.x,0.75)
+        lu.assertAlmostEquals(tgtPos.z,d2.estimatedPos.z,0.75)
 
-        lu.assertAlmostEquals(tgtPos.x,self.contact:getPos().x,0.5)
-        lu.assertAlmostEquals(tgtPos.z,self.contact:getPos().z,0.5)
+        lu.assertAlmostEquals(tgtPos.x,self.contact:getPos().x,0.75)
+        lu.assertAlmostEquals(tgtPos.z,self.contact:getPos().z,0.75)
         -- lu.assertItemsEquals(tgtPos,d1.estimatedPos)
         -- lu.assertItemsEquals(tgtPos,d2.estimatedPos)
         -- lu.assertItemsEquals(tgtPos,self.contact:getPos())
@@ -80,14 +80,14 @@ do
         local p1 = platform1:getPosition().p
         local p2 = platform2:getPosition().p
 
-        local err = HoundUtils.Elint.getSensorPrecision(platform1,HoundUtils.Elint.getEmitterBand(emitter))
-        lu.assertEquals(err,0.0017131)
+        local err = HOUND.DB.getSensorPrecision(platform1,HOUND.DB.getEmitterBand(emitter))
+        lu.assertEquals(err,0.002141375)
 
-        local az1,el1 = HoundUtils.Elint.getAzimuth( p1, tgtPos, err )
-        local az2,el2 = HoundUtils.Elint.getAzimuth( p2, tgtPos, err )
+        local az1,el1 = HOUND.Utils.Elint.getAzimuth( p1, tgtPos, err )
+        local az2,el2 = HOUND.Utils.Elint.getAzimuth( p2, tgtPos, err )
 
-        local d1 = HoundDatapoint.New(platform1,p1, az1, el1, timer.getAbsTime(),err,false)
-        local d2 = HoundDatapoint.New(platform2,p2, az2, el2, timer.getAbsTime(),err,false)
+        local d1 = HOUND.Datapoint.New(platform1,p1, az1, el1, timer.getAbsTime(),err,false)
+        local d2 = HOUND.Datapoint.New(platform2,p2, az2, el2, timer.getAbsTime(),err,false)
 
         self.contact:AddPoint(d1)
         self.contact:AddPoint(d2)
@@ -104,9 +104,9 @@ do
         lu.assertIsTable(d1.posPolygon["2D"])
         lu.assertIsTable(d2.posPolygon["2D"])
 
-        local clipPoly = HoundUtils.Polygon.clipPolygons(d1.posPolygon["2D"],d2.posPolygon["2D"])
-        clipPoly = HoundUtils.Polygon.clipPolygons(clipPoly,d1.posPolygon["3D"]) or clipPoly
-        clipPoly = HoundUtils.Polygon.clipPolygons(clipPoly,d2.posPolygon["3D"]) or clipPoly
+        local clipPoly = HOUND.Utils.Polygon.clipPolygons(d1.posPolygon["2D"],d2.posPolygon["2D"])
+        clipPoly = HOUND.Utils.Polygon.clipPolygons(clipPoly,d1.posPolygon["3D"]) or clipPoly
+        clipPoly = HOUND.Utils.Polygon.clipPolygons(clipPoly,d2.posPolygon["3D"]) or clipPoly
         lu.assertIsTable(clipPoly)
         -- mist.marker.add({pos=clipPoly,markType="freeform"})
         lu.assertIsTrue(mist.pointInPolygon(tgtPos,clipPoly))

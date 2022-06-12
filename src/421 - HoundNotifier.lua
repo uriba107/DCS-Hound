@@ -1,20 +1,20 @@
---- Hound Notifier
--- @module HoundController
-
+--- Hound Notifier (extends HOUND.Comms.Manager)
+-- @module HOUND.Comms.Notifier
+-- @see HOUND.Comms.Manager
 do
-    --- Hound Notifier (extends HoundCommsManager )
-    -- @see HoundCommsManager
-    HoundNotifier = {}
-    HoundNotifier = inheritsFrom(HoundCommsManager)
+    --- Hound Notifier (extends HOUND.Comms.Manager)
+    -- @see HOUND.Comms.Manager
+    HOUND.Comms.Notifier = {}
+    HOUND.Comms.Notifier = inheritsFrom(HOUND.Comms.Manager)
 
     --- Hound Notifier Create
     -- @string sector name of parent sector
     -- @param houndConfig HoundConfig instance
     -- @tab[opt] settings table containing comms instance settings
-    -- @return HoundNotifier Instance
-    function HoundNotifier:create(sector,houndConfig,settings)
+    -- @return HOUND.Comms.Notifier Instance
+    function HOUND.Comms.Notifier:create(sector,houndConfig,settings)
         local instance = self:superClass():create(sector,houndConfig,settings)
-        setmetatable(instance, self)
+        setmetatable(instance, HOUND.Comms.Notifier)
         self.__index = self
 
         instance.settings.freq = "243.000,121.500"

@@ -50,11 +50,12 @@ do
     end
 
     function runTest.delayedTesting1m()
-        lu.LuaUnit.run('--pattern', '03_base')
+        assert(loadfile(currentDir..'demo_mission\\hound_unit_test\\extras\\test-hound-delayed.lua'))()
+        lu.LuaUnit.run('--pattern', '1mDelay')
     end
 
     function runTest.delayedTesting5m()
-        lu.LuaUnit.run('--pattern', '04_base')
+        lu.LuaUnit.run('--pattern', '5mDelay')
     end
 
     UserSpaceLogging("Starting Modules Testing")

@@ -77,6 +77,7 @@ function lint_compiled {
 }
 
 function compile {
+    set -e
     highlight "Compile script"
     echo "-- Hound ELINT system for DCS" > ${TARGET_FILE}
     # echo 'env.info("[Hound] - start loading (".. HOUND.VERSION..")")' >> ${TARGET_FILE}
@@ -89,7 +90,7 @@ function compile {
     # remove dev stuff
     highlight "cleaning Dev comments"
     sed -E ${SED_ARGS} '/StopWatch|:Stop()/d' ${TARGET_FILE}
-    sed ${SED_ARGS} '/HoundLogger.trace("/d' ${TARGET_FILE}
+    sed ${SED_ARGS} '/HOUND.Logger.trace("/d' ${TARGET_FILE}
 
     # disable logging
     sed ${SED_ARGS} "s/DEBUG = true/DEBUG = false/" ${TARGET_FILE}
@@ -98,7 +99,7 @@ function compile {
     sed ${SED_ARGS} '/^[[:space:]]*--/d' ${TARGET_FILE}
     sed ${SED_ARGS} '$!N;/^[[:space:]]*$/{$q;D;};P;D;' ${TARGET_FILE}
 
-    GIT_BRANCH="-$(git branch --show-current | sed 's/[^a-zA-Z 0-9]/\\&/g')"
+    GIT_BRANCH="-$(git branch --show-current | sed 's/[^a-zA-Z 0-9]/\\&/g')-$(date +%Y%m%d)"
     if [ ${GIT_BRANCH} == "-main" ]; 
        then GIT_BRANCH="";
     fi
@@ -110,8 +111,7 @@ function compile {
     if [ -f  ${TARGET_FILE}.orig ]; then
     rm -f ${TARGET_FILE}.orig
     fi
-
-    # basic lint
+    set +e
 } 
 
 function print_includes {
@@ -121,6 +121,7 @@ function print_includes {
 }
 
 function update_mission {
+    set -e
     SCRIPT_PATH="l10n/DEFAULT"
     MISSION_PATH=${1:-"demo_mission"}
     MISSION_FILE=${2:-"HoundElint_demo"}
@@ -135,6 +136,7 @@ function update_mission {
 
     cd ${MISSION_PATH}
     /usr/bin/zip -ur ${MISSION_FILE}.miz ${SCRIPT_PATH}
+    set +e
     until [ -d "./include" ]; do
         cd ..
     done

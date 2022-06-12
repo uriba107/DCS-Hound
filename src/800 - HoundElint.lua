@@ -17,14 +17,14 @@ do
     -- @return HoundElint Instance
     function HoundElint:create(platformName)
         if not platformName then
-            HoundLogger.error("Failed to initialize Hound instace. Please provide coalition")
+            HOUND.Logger.error("Failed to initialize Hound instace. Please provide coalition")
             return
         end
         local elint = {}
         setmetatable(elint, HoundElint)
-        elint.settings = HoundConfig.get()
+        elint.settings = HOUND.Config.get()
         elint.HoundId = elint.settings:getId()
-        elint.contacts = HoundContactManager.get(elint.HoundId)
+        elint.contacts = HOUND.ContactManager.get(elint.HoundId)
         elint.elintTaskID = nil
         elint.radioAdminMenu = nil
         elint.coalitionId = nil
@@ -40,8 +40,9 @@ do
         end
 
         elint.sectors = {
-            default = HoundSector.create(elint.HoundId,"default",nil,100)
+            default = HOUND.Sector.create(elint.HoundId,"default",nil,100)
         }
+        elint:defaultEventHandler()
         return elint
     end
 
@@ -49,6 +50,8 @@ do
     -- initiates cleanup
     function HoundElint:destroy()
         self:systemOff(false)
+        self:defaultEventHandler(false)
+
         for name,sector in pairs(self.sectors) do
             self.sectors[name] = sector:destroy()
         end
@@ -79,6 +82,13 @@ do
             return self.settings:setCoalition(side)
         end
         return false
+    end
+
+    --- set onScreenDebug
+    -- @param value Bool
+    -- @return Bool True if chaned
+    function HoundElint:onScreenDebug(value)
+        return self.settings:setOnScreenDebug(value)
     end
 
     --- Platforms managment
@@ -114,9 +124,92 @@ do
     -- @section contacts
 
     --- count contacts
+    -- @param[opt] sectorName String name or sector to filter by
     -- @return Int number of contacts currently tracked
-    function HoundElint:countContacts()
-        return self.contacts:countContacts()
+    function HoundElint:countContacts(sectorName)
+        return self.contacts:countContacts(sectorName)
+    end
+
+    --- count Active contacts
+    -- @param[opt] sectorName String name or sector to filter by
+    -- @return Int number of contacts currently Transmitting
+    function HoundElint:countActiveContacts(sectorName)
+        local activeContactCount = 0
+        local contacts =  self.contacts:getContacts(sectorName)
+        for _,contact in pairs(contacts) do
+            if contact:isActive() then
+                activeContactCount = activeContactCount +1
+            end
+        end
+        return activeContactCount
+    end
+
+    --- count preBriefed contacts
+    -- @param[opt] sectorName String name or sector to filter by
+    -- @return Int number of contacts currently in PB status
+    function HoundElint:countPreBriefedContacts(sectorName)
+        local pbContactCount = 0
+        local contacts =  self.contacts:getContacts(sectorName)
+        for _,contact in pairs(contacts) do
+            if contact:isAccurate() then
+                pbContactCount = pbContactCount +1
+            end
+        end
+        return pbContactCount
+    end
+
+    --- set/create a pre Briefed contacts
+    -- @param DCS_Object_Name name of DCS Unit or Group to add
+    function HoundElint:preBriefedContact(DCS_Object_Name)
+        if type(DCS_Object_Name) ~= "string" then return end
+        local units = {}
+        local obj = Group.getByName(DCS_Object_Name) or Unit.getByName(DCS_Object_Name)
+        if obj and obj.getUnits then
+            units = obj:getUnits()
+        elseif obj and obj.getGroup then
+            table.insert(units,obj)
+        end
+        if not obj then
+            HOUND.Logger.info("Cannot pre-brief " .. DCS_Object_Name .. ": object does not exist.")
+            return
+        end
+        for _,unit in pairs(units) do
+            if unit:getCoalition() ~= self.settings:getCoalition() and unit:isExist() and setContains(HOUND.DB.Radars,unit:getTypeName()) then
+                self.contacts:setPreBriefedContact(unit)
+            end
+        end
+    end
+
+    --- Mark Radar as dead
+    -- @param radarUnit DCS Unit, DCS Group or Unit/Group name to mark as dead
+    function HoundElint:markDeadContact(radarUnit)
+        local units={}
+        local obj = radarUnit
+        if type(radarUnit) == "string" then
+            obj = Group.getByName(radarUnit) or Unit.getByName(radarUnit)
+        end
+        if obj and obj.getUnits then
+            units = obj:getUnits()
+            for _,unit in pairs(units) do
+                unit = unit:getName()
+            end
+        elseif obj and obj.getGroup then
+            table.insert(units,obj:getName())
+        end
+        if not obj then
+            if type(radarUnit) == "string" then
+                table.insert(units,radarUnit)
+            else
+                HOUND.Logger.info("Cannot mark as dead: object does not exist.")
+                return
+            end
+        end
+        for _,unit in pairs(units) do
+            if self.contacts:isContact(unit) then
+                self.contacts:setDead(unit)
+            end
+        end
+
     end
 
     --- Sector managment
@@ -130,12 +223,15 @@ do
     function HoundElint:addSector(sectorName,sectorSettings,priority)
         if type(sectorName) ~= "string" then return false end
         if string.lower(sectorName) == "default" or string.lower(sectorName) == "all" then
-            HoundLogger.info(sectorName.. " is a reserved sector name")
+            HOUND.Logger.info(sectorName.. " is a reserved sector name")
             return nil
         end
         priority = priority or 50
         if not self.sectors[sectorName] then
-            self.sectors[sectorName] = HoundSector.create(self.settings:getId(),sectorName,sectorSettings,priority)
+            self.sectors[sectorName] = HOUND.Sector.create(self.settings:getId(),sectorName,sectorSettings,priority)
+            if self.settings:getOnScreenDebug() then
+                HOUND.Logger.onScreenDebug("Sector " .. sectorName  .. " was added to Hound instance ".. self:getId(),10)
+            end
             return self.sectors[sectorName]
         end
 
@@ -148,6 +244,9 @@ do
     function HoundElint:removeSector(sectorName)
         if sectorName == nil then return false end
         self.sectors[sectorName] = self.sectors[sectorName]:destroy()
+        if self.settings:getOnScreenDebug() then
+            HOUND.Logger.onScreenDebug("Sector " .. sectorName .. " was removed from Hound instance ".. self:getId(),10)
+        end
         return true
     end
 
@@ -178,7 +277,7 @@ do
     end
 
     --- list all sectors
-    -- @string[opt] element list only sectors with specified element. Valid options are "controller", "atis" and "notifier"
+    -- @string[opt] element list only sectors with specified element. Valid options are "controller", "atis", "notifier" and "zone"
     -- @return list of sector names
     function HoundElint:listSectors(element)
         local sectors = {}
@@ -194,6 +293,9 @@ do
                 if string.lower(element) == "notifier" then
                     addToList=sector:hasNotifier()
                 end
+                if string.lower(element) == "zone" then
+                    addToList=sector:hasZone()
+                end
             end
 
             if addToList then
@@ -204,8 +306,8 @@ do
     end
 
     --- get all sectors
-    -- @string[opt] element list only sectors with specified element. Valid options are "controller", "atis" and "notifier"
-    -- @return list of HoundSector instances
+    -- @string[opt] element list only sectors with specified element. Valid options are "controller", "atis", "notifier" and "zone"
+    -- @return list of HOUND.Sector instances
     function HoundElint:getSectors(element)
         local sectors = {}
         for _,sector in pairs(self.sectors) do
@@ -220,6 +322,9 @@ do
                 if string.lower(element) == "notifier" then
                     addToList=sector:hasNotifier()
                 end
+                if string.lower(element) == "zone" then
+                    addToList=sector:hasZone()
+                end
             end
 
             if addToList then
@@ -229,8 +334,16 @@ do
         return sectors
     end
 
-    --- return HoundSector instance
+    --- return number of sectors
+    -- @string[opt] element count only sectors with specified element ("controller"/"atis"/"notifier"/"zone")
+    -- @return Int. number of sectors
+    function HoundElint:countSectors(element)
+        return Length(self:listSectors(element))
+    end
+
+    --- return HOUND.Sector instance
     -- @string sectorName Name of wanted sector
+    -- @return HOUND.Sector
     function HoundElint:getSector(sectorName)
         if setContains(self.sectors,sectorName) then
             return self.sectors[sectorName]
@@ -763,7 +876,7 @@ do
     -- @local
     function HoundElint:updateSectorMembership()
         local sectors = self:getSectors()
-        table.sort(sectors,HoundUtils.Sort.sectorsByPriorityLowFirst)
+        table.sort(sectors,HOUND.Utils.Sort.sectorsByPriorityLowFirst)
         for _,contact in ipairs(self.contacts:listAll()) do
             for _,sector in pairs(sectors) do
                 sector:updateSectorMembership(contact)
@@ -811,6 +924,19 @@ do
         end
         return false
     end
+
+    --- enable platforms INS position errors
+    -- @return Bool if settings was updated
+    function HoundElint:enablePlatformPosErrors()
+        return self.settings:setPosErr(true)
+    end
+
+    --- disable platforms INS position errors
+    -- @return Bool if settings was updated
+    function HoundElint:disablePlatformPosErrors()
+        return self.settings:setPosErr(false)
+    end
+
     --- get current BDA setting state
     -- @return Bool current state
     function HoundElint:getBDA()
@@ -897,13 +1023,13 @@ do
             local doMenus = false
             local doMarkers = false
             if self.timingCounters.lastProcess then
-                doProcess = ((HoundUtils.absTimeDelta(self.timingCounters.lastProcess,runTime)/self.settings.intervals.process) > 0.99)
+                doProcess = ((HOUND.Utils.absTimeDelta(self.timingCounters.lastProcess,runTime)/self.settings.intervals.process) > 0.99)
             end
             if self.timingCounters.lastMenus then
-                doMenus = ((HoundUtils.absTimeDelta(self.timingCounters.lastMenus,runTime)/self.settings.intervals.menus) > 0.99)
+                doMenus = ((HOUND.Utils.absTimeDelta(self.timingCounters.lastMenus,runTime)/self.settings.intervals.menus) > 0.99)
             end
             if self.timingCounters.lastMarkers then
-                doMarkers = ((HoundUtils.absTimeDelta(self.timingCounters.lastMarkers,runTime)/self.settings.intervals.markers) > 0.99)
+                doMarkers = ((HOUND.Utils.absTimeDelta(self.timingCounters.lastMarkers,runTime)/self.settings.intervals.markers) > 0.99)
             end
 
             if doProcess then
@@ -933,6 +1059,9 @@ do
                 slowLoop:Stop()
             end
         end
+        if self.settings:getOnScreenDebug() then
+            HOUND.Logger.onScreenDebug(self:printDebugging(),self.settings.intervals.scan*0.75)
+        end
         timeCycle:Stop()
         return nextRun
     end
@@ -940,8 +1069,8 @@ do
     --- Purge the root radio menu
     -- @local
     function HoundElint:purgeRadioMenu()
-        for _,sectorName in pairs(self.sectors) do
-            self.sectors[sectorName]:removeRadioMenu()
+        for _,sector in pairs(self:getSectors()) do
+            sector:removeRadioMenu()
         end
         self.settings:removeRadioMenu()
     end
@@ -953,7 +1082,7 @@ do
             return
         end
         local sectors = self:getSectors()
-        table.sort(sectors,HoundUtils.Sort.sectorsByPriorityLowLast)
+        table.sort(sectors,HOUND.Utils.Sort.sectorsByPriorityLowLast)
         for _,sector in pairs(sectors) do
             sector:populateRadioMenu()
         end
@@ -977,7 +1106,7 @@ do
     -- @bool[opt] notify if True a text notification will be printed in 3d world
     function HoundElint:systemOn(notify)
         if self.settings:getCoalition() == nil then
-            HoundLogger.warn("failed to start. no coalition found.")
+            HOUND.Logger.warn("failed to start. no coalition found.")
             return false
         end
         self:systemOff(false)
@@ -987,24 +1116,34 @@ do
             trigger.action.outTextForCoalition(self.settings:getCoalition(),
                                            "Hound ELINT system is now Operating", 10)
         end
-        self:defaultEventHandler()
+        -- self:defaultEventHandler()
         env.info("Hound is now on")
-        HoundEventHandler.publishEvent({id=HOUND.EVENTS.HOUND_ENABLED, houndId = self.settings:getId(), coalition = self.settings:getCoalition()})
+        HOUND.EventHandler.publishEvent({
+            id = HOUND.EVENTS.HOUND_ENABLED,
+            houndId = self.settings:getId(),
+            coalition = self.settings:getCoalition()
+        })
         return true
     end
 
     --- Turn Hound system off
     -- @bool[opt] notify if True a text notification will be printed in 3d world
     function HoundElint:systemOff(notify)
-        self:defaultEventHandler(false)
+        -- self:defaultEventHandler(false)
         if self.elintTaskID ~= nil then
             timer.removeFunction(self.elintTaskID)
         end
+        self:purgeRadioMenu()
         if notify == nil or notify then
             trigger.action.outTextForCoalition(self.settings:getCoalition(),
                                            "Hound ELINT system is now Offline", 10)
         end
         env.info("Hound is now off")
+        HOUND.EventHandler.publishEvent({
+            id = HOUND.EVENTS.HOUND_DISABLED,
+            houndId = self.settings:getId(),
+            coalition = self.settings:getCoalition()
+        })
         return true
     end
 
@@ -1013,6 +1152,9 @@ do
     function HoundElint:isRunning()
         return (self.elintTaskID ~= nil)
     end
+
+    --- Exports
+    -- @section export
 
     --- get an exported list of all contacts tracked by the instance
     -- @return table of all contact tracked for integration with external tools
@@ -1040,16 +1182,20 @@ do
     end
 
     --- dump Intel Brief to csv
-    -- will dump intel summery to CSV
-    -- @param[opt] filename filename to write to. will write to saved games
+    -- will dump intel summery to CSV in the DCS saved games folder
+    -- requires desanitization of lfs and io modules
+    -- @param[opt] filename target filename. (default: hound_contacts_%d.csv)
     function HoundElint:dumpIntelBrief(filename)
-        if lfs == nil or io == nil then return end
-        if not filename then
-            filename = string.format("hound_contacts_%d.csv",self.settings:getId())
+        if lfs == nil or io == nil then
+            HOUND.Logger.info("cannot write CSV. please desanitize lfs and io")
+            return
         end
-        local currentGameTime = HoundUtils.Text.getTime()
+        if not filename then
+            filename = string.format("hound_contacts_%d.csv",self:getId())
+        end
+        local currentGameTime = HOUND.Utils.Text.getTime()
         local csvFile = io.open(lfs.writedir() .. filename, "w+")
-        csvFile:write("TrackId,NatoDesignation,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accuracy,lastSeen,ReportGenerated\n")
+        csvFile:write("TrackId,NatoDesignation,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accuracy,lastSeen,DCStype,DCSunit,DCSgroup,ReportGenerated\n")
         csvFile:flush()
         for _,emitter in pairs(self.contacts:listAllbyRange()) do
             local entry = emitter:generateIntelBrief()
@@ -1061,21 +1207,15 @@ do
         csvFile:close()
     end
 
-    --- set/create a pre Briefed contacts
-    -- @param DCS_Object_Name name of DCS Unit or Group to add
-    function HoundElint:preBriefedContact(DCS_Object_Name)
-        local units = {}
-        local obj = Group.getByName(DCS_Object_Name) or Unit.getByName(DCS_Object_Name)
-        if obj and obj.getUnits then
-            units = obj:getUnits()
-        elseif obj and obj.getGroup then
-            table.insert(units,obj)
-        end
-        for _,unit in pairs(units) do
-            if unit:getCoalition() ~= self.settings:getCoalition() and unit:isExist() and setContains(HoundDB.Sam,unit:getTypeName()) then
-                self.contacts:setPreBriefedContact(unit)
-            end
-        end
+    --- return Debugging information
+    -- @return string
+    function HoundElint:printDebugging()
+        local debugMsg = "Hound instace " .. self:getId() .. " (".. HOUND.Utils.getCoalitionString(self:getCoalition()) .. ")\n"
+        debugMsg = debugMsg .. "-----------------------------\n"
+        debugMsg = debugMsg .. "Platforms: " .. self:countPlatforms() .. " | sectors: " .. self:countSectors()
+        debugMsg = debugMsg .. " (Z:"..self:countSectors("zone").." ,C:"..self:countSectors("controller").." ,A: " .. self:countSectors("atis") .. " ,N:"..self:countSectors("notifier") ..") | "
+        debugMsg = debugMsg .. "Contacts: ".. self:countContacts() .. " (A:" .. self:countActiveContacts() .. " ,PB:" .. self:countPreBriefedContacts() .. ")"
+        return debugMsg
     end
 
     --- EventHandler functions
@@ -1085,28 +1225,28 @@ do
     -- @param houndEvent incoming event
     -- @local
     function HoundElint:onHoundEvent(houndEvent)
+        if houndEvent.houndId ~= self.settings:getId() then return end
         if houndEvent.id == HOUND.EVENTS.HOUND_DISABLED then return end
-        if houndEvent.houndId ~= self.settings:getId() then
-            return
-        end
+
         local sectors = self:getSectors()
-        table.sort(sectors,HoundUtils.Sort.sectorsByPriorityLowFirst)
+        table.sort(sectors,HOUND.Utils.Sort.sectorsByPriorityLowFirst)
 
         if houndEvent.id == HOUND.EVENTS.RADAR_DETECTED then
-            HoundLogger.trace("Detected HoundElintEvent")
-
             for _,sector in pairs(sectors) do
-                -- HoundLogger.trace("check loop - "..sector:getName().."("..sector:getPriority()..")")
                 sector:updateSectorMembership(houndEvent.initiator)
             end
-            for _,sector in pairs(sectors) do
-                sector:notifyNewEmitter(houndEvent.initiator)
+            if self:isRunning() then
+                for _,sector in pairs(sectors) do
+                    sector:notifyNewEmitter(houndEvent.initiator)
+                end
             end
         end
 
-        if houndEvent.id == HOUND.EVENTS.RADAR_DESTROYED and self.settings:getBDA() then
-            for _,sector in pairs(sectors) do
-                sector:notifyDeadEmitter(houndEvent.initiator)
+        if houndEvent.id == HOUND.EVENTS.RADAR_DESTROYED then
+            if self:isRunning() then
+                for _,sector in pairs(sectors) do
+                    sector:notifyDeadEmitter(houndEvent.initiator)
+                end
             end
         end
     end
@@ -1115,11 +1255,32 @@ do
     -- @param DcsEvent incoming dcs event
     -- @local
     function HoundElint:onEvent(DcsEvent)
+        if not DcsEvent.initiator or type(DcsEvent.initiator) ~= "table" then return end
+        if type(DcsEvent.initiator.getCoalition) ~= "function" then return end
+
+        if DcsEvent.id == world.event.S_EVENT_DEAD
+            and DcsEvent.initiator:getCoalition() ~= self.settings:getCoalition()
+            and self:getBDA()
+            then
+                return self:markDeadContact(DcsEvent.initiator)
+        end
+
+        if not self:isRunning() then return end
+
         if DcsEvent.id == world.event.S_EVENT_BIRTH
             and DcsEvent.initiator:getCoalition() == self.settings:getCoalition()
+            and DcsEvent.initiator:getPlayerName() ~= nil
             and setContains(mist.DBs.humansByName,DcsEvent.initiator:getName())
-            then
-                self:populateRadioMenu()
+            then return self:populateRadioMenu()
+        end
+
+        if (DcsEvent.id == world.event.S_EVENT_PLAYER_LEAVE_UNIT
+            or DcsEvent.id == world.event.S_EVENT_PILOT_DEAD
+            or DcsEvent.id == world.event.S_EVENT_EJECTION)
+            and DcsEvent.initiator:getCoalition() == self.settings:getCoalition()
+            and type(DcsEvent.initiator.getName) == "function"
+            and setContains(mist.DBs.humansByName,DcsEvent.initiator:getName())
+                then return self:populateRadioMenu()
         end
     end
 
@@ -1128,11 +1289,11 @@ do
     -- @local
     function HoundElint:defaultEventHandler(remove)
         if remove == false then
-            HoundEventHandler.removeInternalEventHandler(self)
+            HOUND.EventHandler.removeInternalEventHandler(self)
             world.removeEventHandler(self)
             return
         end
-        HoundEventHandler.addInternalEventHandler(self)
+        HOUND.EventHandler.addInternalEventHandler(self)
         world.addEventHandler(self)
     end
 end

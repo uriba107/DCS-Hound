@@ -1,38 +1,40 @@
---- HoundUtils
+--- HOUND.Utils
 -- This class holds generic function used by all of Hound Components
--- @module HoundUtils
+-- @module HOUND.Utils
 do
     local l_mist = mist
     local l_math = math
     local pi_2 = 2*l_math.pi
 
---- HoundUtils decleration
--- @table HoundUtils
+--- HOUND.Utils decleration
+-- @table HOUND.Utils
 -- @field Mapping Extrapulation functions
 -- @field Geo Geographic functions
 -- @field TTS TTS Functions
 -- @field Text Text functions
 -- @field Elint Elint functions
 -- @field Sort Sort funtions
+-- @field Filter Filter functions
 -- @field ReportId intrnal ATIS numerator
 -- @field _MarkId internal markId Counter
 -- @field _HoundId internal HoundId counter
-    HoundUtils = {
+    HOUND.Utils = {
         Mapping = {},
-        Geo = {},
-        Marker = {},
-        TTS = {},
-        Text = {},
-        Elint = {},
-        Vector={},
-        Zone={},
-        Polygon={},
-        Cluster={},
-        Sort = {},
+        Geo     = {},
+        Marker  = {},
+        TTS     = {},
+        Text    = {},
+        Elint   = {},
+        Vector  = {},
+        Zone    = {},
+        Polygon = {},
+        Cluster = {},
+        Sort    = {},
+        Filter  = {},
         ReportId = nil,
         _HoundId = 0
     }
-    HoundUtils.__index = HoundUtils
+    HOUND.Utils.__index = HOUND.Utils
 
     --- General functions
     -- @section general
@@ -40,27 +42,27 @@ do
     --- get next Hound Instance Id
     -- @return #number Next HoundId
 
-    function HoundUtils.getHoundId()
-        HoundUtils._HoundId = HoundUtils._HoundId + 1
-        return HoundUtils._HoundId
+    function HOUND.Utils.getHoundId()
+        HOUND.Utils._HoundId = HOUND.Utils._HoundId + 1
+        return HOUND.Utils._HoundId
     end
 
     --- Get next Markpoint Id (Depricated)
-    -- @see HoundUtils.Marker.getId
+    -- @see HOUND.Utils.Marker.getId
     -- @local
     -- return the next available MarkId
     -- @return Next MarkId
-    function HoundUtils.getMarkId()
-        return HoundUtils.Marker.getId()
+    function HOUND.Utils.getMarkId()
+        return HOUND.Utils.Marker.getId()
     end
 
     --- Set New initial marker Id (DEPRICATED)
-    -- @see HoundUtils.Marker.setInitialId
+    -- @see HOUND.Utils.Marker.setInitialId
     -- @local
     -- @param startId Number to start counting from
     -- @return Bool True if initial ID was updated
-    function HoundUtils.setInitialMarkId(startId)
-        return HoundUtils.Marker.setInitialId(startId)
+    function HOUND.Utils.setInitialMarkId(startId)
+        return HOUND.Utils.Marker.setInitialId(startId)
     end
 
     --[[
@@ -71,9 +73,9 @@ do
     -- @param t0 time to test (in number of seconds)
     -- @param[opt] t1 time in number of seconds. if not provided, will use current DCS mission time
     -- @return time delta between t0 and t1
-    -- @usage HoundUtils.absTimeDelta(<10s ago>,now) ==> 10
+    -- @usage HOUND.Utils.absTimeDelta(<10s ago>,now) ==> 10
 
-    function HoundUtils.absTimeDelta(t0, t1)
+    function HOUND.Utils.absTimeDelta(t0, t1)
         if t1 == nil then t1 = timer.getAbsTime() end
         return t1 - t0
     end
@@ -83,7 +85,7 @@ do
     -- @param rad2 angle in radians
     -- @return angle difference between rad1 and rad2 (between pi and -pi)
 
-    function HoundUtils.angleDeltaRad(rad1,rad2)
+    function HOUND.Utils.angleDeltaRad(rad1,rad2)
         if not rad1 or not rad2 then return end
         -- return l_math.abs(l_math.abs(rad1-l_math.pi)-l_math.abs(rad2-l_math.pi))
         return l_math.pi - l_math.abs(l_math.pi - l_math.abs(rad1-rad2) % pi_2)
@@ -93,7 +95,7 @@ do
     -- @param azimuths a list of azimuths in radians
     -- @return the avarage azimuth of the list provided in radians (between 0 and 2*pi)
 
-    function HoundUtils.AzimuthAverage(azimuths)
+    function HOUND.Utils.AzimuthAverage(azimuths)
         -- TODO: fix this function. Circular mean has errors, bad ones..
         if not azimuths or Length(azimuths) == 0 then return nil end
 
@@ -104,7 +106,6 @@ do
             sumCos = sumCos + l_math.cos(azimuths[i])
         end
         return (l_math.atan2(sumSin,sumCos) + pi_2) % pi_2
-
     end
 
     --- return the tilt of a point cluster
@@ -112,7 +113,7 @@ do
     -- @param[opt] MagNorth (Bool) if true value will include north var correction
     -- @param[opt] refPos a DCS point that will be the reference for azimuth
     -- @return azimuth in radians (between 0 and pi)
-    function HoundUtils.PointClusterTilt(points,MagNorth,refPos)
+    function HOUND.Utils.PointClusterTilt(points,MagNorth,refPos)
         if not points or type(points) ~= "table" then return end
         if not refPos then
             refPos = l_mist.getAvgPoint(points)
@@ -140,7 +141,7 @@ do
     --- returns a random angle
     -- @return random angle in radians between 0 and 2*pi
 
-    function HoundUtils.RandomAngle()
+    function HOUND.Utils.RandomAngle()
         -- actuallu a map
         return l_math.random() * 2 * l_math.pi
     end
@@ -149,7 +150,7 @@ do
     -- @param DCS_Unit DCS unit - in Hound context unit with emitting radar
     -- @return maximum weapon range in meters of the DCS Group the emitter is part of
 
-    function HoundUtils.getSamMaxRange(DCS_Unit)
+    function HOUND.Utils.getSamMaxRange(DCS_Unit)
         local maxRng = 0
         if DCS_Unit ~= nil then
             local units = DCS_Unit:getGroup():getUnits()
@@ -171,7 +172,7 @@ do
     -- @param DCS_Unit DCS Unit with radars sensor
     -- @return Unit radar detection range agains airborne targers in meters
 
-    function HoundUtils.getRadarDetectionRange(DCS_Unit)
+    function HOUND.Utils.getRadarDetectionRange(DCS_Unit)
         -- TODO: fix for ships
         local detectionRange = 0
         local unit_sensors = DCS_Unit:getSensors()
@@ -192,10 +193,14 @@ do
 
     --- return ground elevation rouded to 50 feet
     -- @param elev Height in meters
+    -- @param[opt] resolution round to the nerest increment. default is 50
     -- @return elevation converted to feet, rounded to the nearest 50 ft
 
-    function HoundUtils.getRoundedElevationFt(elev)
-        return HoundUtils.roundToNearest(l_mist.utils.metersToFeet(elev),50)
+    function HOUND.Utils.getRoundedElevationFt(elev,resolution)
+        if not resolution then
+            resolution = 50
+        end
+        return HOUND.Utils.roundToNearest(l_mist.utils.metersToFeet(elev),resolution)
     end
 
     --- return rounted number nearest a set interval
@@ -203,7 +208,7 @@ do
     -- @param nearest numeric value of the step to round input to (e.g 10,50,500)
     -- @return input number rounded to the nearest interval provided.(e.g 3244 -> 3250)
 
-    function HoundUtils.roundToNearest(input,nearest)
+    function HOUND.Utils.roundToNearest(input,nearest)
         return l_mist.utils.round(input/nearest) * nearest
     end
 
@@ -212,7 +217,7 @@ do
     -- @param variance error margin requester (in radians)
     -- @return table {el,az}, contining error in Azimuth and elevation in radians
 
-    function HoundUtils.getNormalAngularError(variance)
+    function HOUND.Utils.getNormalAngularError(variance)
         -- https://en.m.wikipedia.org/wiki/Box%E2%80%93Muller_transform
         local stddev = variance /2
         local Magnitude = l_math.sqrt(-2 * l_math.log(l_math.random())) * stddev
@@ -228,7 +233,7 @@ do
 
     --- get random controller snarky remark
     -- @return random response string from pool
-    function HoundUtils.getControllerResponse()
+    function HOUND.Utils.getControllerResponse()
         local response = {
             " ",
             "Good Luck!",
@@ -243,7 +248,7 @@ do
     -- @param coalitionID integer of DCS coalition id
     -- @return string name of coalition
 
-    function HoundUtils.getCoalitionString(coalitionID)
+    function HOUND.Utils.getCoalitionString(coalitionID)
         local coalitionStr = "RED"
         if coalitionID == coalition.side.BLUE then
             coalitionStr = "BLUE"
@@ -259,7 +264,7 @@ do
     -- @param fullText (bool) determin if function should return "E" or "East"
     -- @return (table) {NS=string,EW=string} return hemisphere strings
 
-    function HoundUtils.getHemispheres(lat,lon,fullText)
+    function HOUND.Utils.getHemispheres(lat,lon,fullText)
         local hemi = {
             NS = "North",
             EW = "East"
@@ -280,12 +285,12 @@ do
     -- @return (string) phonetic ID ("Alpha","Bravo", "charlie"...)
     -- @return (Char) letter of ReportId ('A','B','C','D')
 
-    function HoundUtils.getReportId(ReportId)
+    function HOUND.Utils.getReportId(ReportId)
         local returnId
         if ReportId ~= nil then
             returnId =  string.byte(ReportId)
         else
-            returnId = HoundUtils.ReportId
+            returnId = HOUND.Utils.ReportId
         end
         if returnId == nil or returnId == string.byte('Z') then
             returnId = string.byte('A')
@@ -293,10 +298,10 @@ do
             returnId = returnId + 1
         end
         if not ReportId then
-            HoundUtils.ReportId = returnId
+            HOUND.Utils.ReportId = returnId
         end
 
-        return HoundDB.PHONETICS[string.char(returnId)],string.char(returnId)
+        return HOUND.DB.PHONETICS[string.char(returnId)],string.char(returnId)
     end
 
     --- Convert Decimal Degrees to DMS (D.DD to DMS)
@@ -308,7 +313,7 @@ do
     --   mDec = Decimal minutes
     -- }
 
-    function HoundUtils.DecToDMS(cood)
+    function HOUND.Utils.DecToDMS(cood)
         local deg = l_math.floor(cood)
         if cood < 0 then
             deg = l_math.ceil(cood)
@@ -331,7 +336,7 @@ do
     -- @param dst (DCS pos) Position of destination
     -- @return (table) {br = bearing(float), brStr=bearing(string, 3 chars rounded, e.g "044"), rng = Range in NM}
 
-    function HoundUtils.getBR(src,dst)
+    function HOUND.Utils.getBR(src,dst)
         if not src or not dst then return end
         local BR = {}
         local dir = l_mist.utils.getDir(l_mist.vec.sub(dst,src),src) -- pass src to get magvar included
@@ -347,7 +352,7 @@ do
     -- @param player mist.DB entry to get formation callsign for
     -- @param[opt] flightMember if True. value returned will be the full callsign (i.e "Uzi 1 1" rather then the default "Uzi 1")
     -- @return Formation callsign string
-    function HoundUtils.getFormationCallsign(player,flightMember)
+    function HOUND.Utils.getFormationCallsign(player,flightMember)
         local callsign = ""
         if type(player) ~= "table" then return callsign end
         callsign = string.gsub(player.callsign.name,"[%d%s]","") .. " " .. player.callsign[2]
@@ -392,14 +397,14 @@ do
     --- get Callsign
     -- @param[opt] namePool string "GENERIC" or "NATO"
     -- @return string random callsign from pool
-    function HoundUtils.getHoundCallsign(namePool)
-        local SelectedPool = HoundDB.CALLSIGNS[namePool] or HoundDB.CALLSIGNS.GENERIC
+    function HOUND.Utils.getHoundCallsign(namePool)
+        local SelectedPool = HOUND.DB.CALLSIGNS[namePool] or HOUND.DB.CALLSIGNS.GENERIC
         return SelectedPool[l_math.random(1, Length(SelectedPool))]
     end
 
     --- Unit use DMM
     -- @param DCS_Unit DCS Unit or typeName string
-    function HoundUtils.isDMM(DCS_Unit)
+    function HOUND.Utils.isDMM(DCS_Unit)
         if not DCS_Unit then return false end
         local typeName = nil
         if type(DCS_Unit) == "string" then
@@ -408,10 +413,30 @@ do
         if type(DCS_Unit) == "Table" and DCS_Unit.getTypeName then
             typeName = DCS_Unit:getTypeName()
         end
-        return setContains(HoundDB.useDecMin,typeName)
+        return setContains(HOUND.DB.useDecMin,typeName)
     end
 
-    HoundUtils.Mapping.CURVES = {
+    --- does unit has payload (placeholder)
+    -- @param DCS_Unit DCS unit
+    -- @param payloadName Name of payload
+    -- @return Bool always true
+    function HOUND.Utils.hasPayload(DCS_Unit,payloadName)
+        -- TODO: add implementation
+        return true
+    end
+
+    --- does unit has task (placeholder)
+    -- @param DCS_Unit DCS unit
+    -- @param taskName Name of task
+    -- @return Bool always true
+    function HOUND.Utils.hasTask(DCS_Unit,taskName)
+        -- TODO: add implementation
+        return true
+    end
+
+    --- Value mapping Functions
+    -- @section Mapping
+    HOUND.Utils.Mapping.CURVES = {
         RETAIL = 0,
         WINDOWS = 1,
         HERRA9 = 2,
@@ -430,9 +455,9 @@ do
     -- @param out_max Maximum allowable output value
     -- @param[opt] clamp Bool if true values will be clipped at range specified
     -- @return calculated mapped value
-    -- @usage HoundUtils.Mapping.linear(10,0,10,0,100) = 100
-    --  HoundUtils.Mapping.linear(0.5,0,1,0,100) = 50
-    function HoundUtils.Mapping.linear(input, in_min, in_max, out_min, out_max,clamp)
+    -- @usage HOUND.Utils.Mapping.linear(10,0,10,0,100) = 100
+    --  HOUND.Utils.Mapping.linear(0.5,0,1,0,100) = 50
+    function HOUND.Utils.Mapping.linear(input, in_min, in_max, out_min, out_max,clamp)
         local mapValue = (input - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
         if clamp then
             if out_min < out_max then
@@ -452,14 +477,14 @@ do
     -- @param[opt] out_max Maximum output value (1 if not specified)
     -- @param[opt] sensitivity requested sensitivity (0-9, default 9 is leased curved)
     -- @param[opt] curve_type requested curve profile (0-6, 0 is default)
-    function HoundUtils.Mapping.nonLinear(value,in_min,in_max,out_min,out_max,sensitivity,curve_type)
+    function HOUND.Utils.Mapping.nonLinear(value,in_min,in_max,out_min,out_max,sensitivity,curve_type)
         -- https://github.com/achilleas-k/fs2open.github.com/blob/joystick_curves/joy_curve_notes/new_curves.md
 
         if type(sensitivity) ~= "number" then
             sensitivity = 9
         end
         sensitivity=l_math.min(0,l_math.max(9,sensitivity))
-        local relativePos = HoundUtils.Mapping.linear(value,in_min,in_max,0,1)
+        local relativePos = HOUND.Utils.Mapping.linear(value,in_min,in_max,0,1)
         -- retail curve (default)
         -- f(I) = I*(s/9)+(I^5)*(9-s)/9
         local mappedIn = relativePos*(sensitivity/9)+(relativePos^5)*(9-sensitivity)/9
@@ -491,7 +516,7 @@ do
         end
 
         if type(out_min) == "number" and type(out_max) == "number" then
-            return HoundUtils.Mapping.linear(mappedIn,0,1,out_min,out_max)
+            return HOUND.Utils.Mapping.linear(mappedIn,0,1,out_min,out_max)
         end
         return mappedIn
     end
@@ -505,10 +530,10 @@ do
     -- @param pos1 (DCS pos)
     -- @return (bool) true if both units have LOS between them
 
-    function HoundUtils.Geo.checkLOS(pos0,pos1)
+    function HOUND.Utils.Geo.checkLOS(pos0,pos1)
         if not pos0 or not pos1 then return false end
         local dist = l_mist.utils.get2DDist(pos0,pos1)
-        local radarHorizon = HoundUtils.Geo.EarthLOS(pos0.y,pos1.y)
+        local radarHorizon = HOUND.Utils.Geo.EarthLOS(pos0.y,pos1.y)
         return (dist <= radarHorizon*1.025 and land.isVisible(pos0,pos1))
     end
 
@@ -518,7 +543,7 @@ do
     -- @param[opt] h1 height of observer 2 in meters
     -- @return distance maximum LOS distance in meters
 
-    function HoundUtils.Geo.EarthLOS(h0,h1)
+    function HOUND.Utils.Geo.EarthLOS(h0,h1)
         if not h0 then return 0 end
         local Re = 6367444 -- Radius of earth in M (avarage radius of WGS84)
         local d0 = l_math.sqrt(h0^2+2*Re*h0)
@@ -530,7 +555,7 @@ do
     ---  check if point is DCS point
     -- @param point DCS point candidate
     -- @return Bool True if is valid point
-    function HoundUtils.Geo.isDcsPoint(point)
+    function HOUND.Utils.Geo.isDcsPoint(point)
         if type(point) ~= "table" then return false end
         return (type(point.x) == "number") and (type(point.z) == "number")
     end
@@ -540,12 +565,12 @@ do
     -- @param az Azimuth from Position (radians)
     -- @param el Elevation angle from position (radians)
     -- @return DCS point of intersection with ground
-    function HoundUtils.Geo.getProjectedIP(p0,az,el)
-        if not HoundUtils.Geo.isDcsPoint(p0) or type(az) ~= "number" or type(el) ~= "number" then return end
-        local maxSlant = HoundUtils.Geo.EarthLOS(p0.y)*1.2
+    function HOUND.Utils.Geo.getProjectedIP(p0,az,el)
+        if not HOUND.Utils.Geo.isDcsPoint(p0) or type(az) ~= "number" or type(el) ~= "number" then return end
+        local maxSlant = HOUND.Utils.Geo.EarthLOS(p0.y)*1.2
         -- local maxSlant = (p0.y/l_math.abs(l_math.sin(el)))+100
 
-        local unitVector = HoundUtils.Vector.getUnitVector(az,el)
+        local unitVector = HOUND.Utils.Vector.getUnitVector(az,el)
         return land.getIP(p0, unitVector , maxSlant )
     end
 
@@ -553,8 +578,8 @@ do
     -- @local
     -- @param point DCS point
     -- @return Point but with elevation
-    function HoundUtils.Geo.setPointHeight(point)
-        if HoundUtils.Geo.isDcsPoint(point) and type(point.y) ~= "number" then
+    function HOUND.Utils.Geo.setPointHeight(point)
+        if HOUND.Utils.Geo.isDcsPoint(point) and type(point.y) ~= "number" then
             point.y = land.getHeight({x=point.x,y=point.z})
         end
         return point
@@ -563,13 +588,13 @@ do
     --- Ensure input point or point table all have valid Elevation
     -- @param point DCS point
     -- @return same as input, but with elevation. will return original value if is not DCS point
-    function HoundUtils.Geo.setHeight(point)
+    function HOUND.Utils.Geo.setHeight(point)
         if type(point) == "table" then
-            if HoundUtils.Geo.isDcsPoint(point) then
-                return HoundUtils.Geo.setPointHeight(point)
+            if HOUND.Utils.Geo.isDcsPoint(point) then
+                return HOUND.Utils.Geo.setPointHeight(point)
             end
             for _,pt in pairs(point) do
-                pt = HoundUtils.Geo.setPointHeight(pt)
+                pt = HOUND.Utils.Geo.setPointHeight(pt)
             end
         end
         return point
@@ -577,8 +602,8 @@ do
 
     --- Marker Functions
     -- @section Markers
-    HoundUtils.Marker._MarkId = 9999
-    HoundUtils.Marker.Type = {
+    HOUND.Utils.Marker._MarkId = 9999
+    HOUND.Utils.Marker.Type = {
         NONE = 0,
         POINT = 1,
         CIRCLE = 2,
@@ -589,60 +614,60 @@ do
     -- @local
     -- return the next available MarkId
     -- @return Next MarkId
-    function HoundUtils.Marker.getId()
+    function HOUND.Utils.Marker.getId()
         if HOUND.FORCE_MANAGE_MARKERS then
-            HoundUtils.Marker._MarkId = HoundUtils.Marker._MarkId + 1
+            HOUND.Utils.Marker._MarkId = HOUND.Utils.Marker._MarkId + 1
         elseif UTILS and UTILS.GetMarkID then
-            HoundUtils.Marker._MarkId = UTILS.GetMarkID()
+            HOUND.Utils.Marker._MarkId = UTILS.GetMarkID()
         elseif HOUND.MIST_VERSION >= 4.5 then
-            HoundUtils.Marker._MarkId = l_mist.marker.getNextId()
+            HOUND.Utils.Marker._MarkId = l_mist.marker.getNextId()
         else
-            HoundUtils.Marker._MarkId = HoundUtils.Marker._MarkId + 1
+            HOUND.Utils.Marker._MarkId = HOUND.Utils.Marker._MarkId + 1
         end
-        return HoundUtils.Marker._MarkId
+        return HOUND.Utils.Marker._MarkId
     end
 
     --- Set New initial marker Id
     -- @local
     -- @param startId Number to start counting from
     -- @return Bool True if initial ID was updated
-    function HoundUtils.Marker.setInitialId(startId)
+    function HOUND.Utils.Marker.setInitialId(startId)
         if type(startId) ~= "number" then
-            HoundLogger.error("Failed to set Initial marker Id. Value provided was not a number")
+            HOUND.Logger.error("Failed to set Initial marker Id. Value provided was not a number")
             return false
         end
-        if HoundUtils.Marker._MarkID ~= 0 then
-            HoundLogger.error("Initial MarkId not updated because markers have already been drawn")
+        if HOUND.Utils.Marker._MarkID ~= 0 then
+            HOUND.Logger.error("Initial MarkId not updated because markers have already been drawn")
             return false
         end
-        HoundUtils.Marker._MarkId = startId
+        HOUND.Utils.Marker._MarkId = startId
         return true
     end
 
     --- create Marker entity
     -- @local
-    -- @function HoundUtils.Marker.create
+    -- @function HOUND.Utils.Marker.create
     -- @param[opt] args parameters of markpoint
     -- @return Hound Marker Instance
 
-    function HoundUtils.Marker.create(args)
+    function HOUND.Utils.Marker.create(args)
         local instance = {}
         instance.id = -1
-        instance.type = HoundUtils.Marker.Type.NONE
+        instance.type = HOUND.Utils.Marker.Type.NONE
 
         --- update markpoint position
-        -- @within HoundUtils.Marker.instance
+        -- @within HOUND.Utils.Marker.instance
         -- @param self Hound Marker instance
         -- @param pos position of marker (only single point is supported)
         instance.setPos = function(self,pos)
-            if self.type == HoundUtils.Marker.Type.FREEFORM then return end
-            if HoundUtils.Geo.isDcsPoint(pos) then
+            if self.type == HOUND.Utils.Marker.Type.FREEFORM then return end
+            if HOUND.Utils.Geo.isDcsPoint(pos) then
                 trigger.action.setMarkupPositionStart(self.id,pos)
             end
         end
 
         --- update markpoint text
-        -- @within HoundUtils.Marker.instance
+        -- @within HOUND.Utils.Marker.instance
         -- @param self Hound Marker instance
         -- @param text new text for marker
         instance.setText = function(self,text)
@@ -652,51 +677,59 @@ do
         end
 
         --- update markpoint radius
-        -- @within HoundUtils.Marker.instance
+        -- @within HOUND.Utils.Marker.instance
         -- @param self Hound Marker instance
         -- @param radius new radius of markpoint (only circle type marks are supported)
         instance.setRadius = function(self,radius)
-            if type(radius) == "number" and self.type == HoundUtils.Marker.Type.CIRCLE and self.id > 0 then
+            if type(radius) == "number" and self.type == HOUND.Utils.Marker.Type.CIRCLE and self.id > 0 then
                 trigger.action.setMarkupRadius(self.id,radius)
             end
         end
 
         --- update markpoint fill color
-        -- @within HoundUtils.Marker.instance
+        -- @within HOUND.Utils.Marker.instance
         -- @param self Hound Marker instance
         -- @param color new fill color of marker
         instance.setFillColor = function(self,color)
-            if self.id > 0 and self.type ~= HoundUtils.Marker.Type.FREEFORM and type(color) == "table" then
+            if self.id > 0 and self.type ~= HOUND.Utils.Marker.Type.FREEFORM and type(color) == "table" then
                 trigger.action.setMarkupColorFill(self.id,color)
             end
         end
 
         --- update markpoint line color
-        -- @within HoundUtils.Marker.instance
+        -- @within HOUND.Utils.Marker.instance
         -- @param self Hound Marker instance
         -- @param color new fill color of marker
         instance.setLineColor = function(self,color)
-            if self.id > 0 and self.type ~= HoundUtils.Marker.Type.FREEFORM and type(color) == "table" then
+            if self.id > 0 and self.type ~= HOUND.Utils.Marker.Type.FREEFORM and type(color) == "table" then
                 trigger.action.setMarkupColor(self.id,color)
             end
         end
 
+        --- Check if marpoint is drawn
+        -- @within HOUND.Utils.Marker.instance
+        -- @param self Hound Marker instance
+        -- @return Bool - True if marker is drawn
+        instance.isDrawn = function(self)
+            return (self.id > 0)
+        end
+
         --- remove markpoint
-        -- @within HoundUtils.Marker.instance
+        -- @within HOUND.Utils.Marker.instance
         -- @param self Hound Marker instance
         instance.remove = function(self)
-            if type(self.id) == "number" then
+            if self.id > 0 then
                 trigger.action.removeMark(self.id)
                 if self.id % 500 == 0 then
                     collectgarbage("collect")
                 end
                 self.id = -1
-                self.type = HoundUtils.Marker.Type.NONE
+                self.type = HOUND.Utils.Marker.Type.NONE
             end
         end
 
         --- create new point (internal)
-        -- @within HoundUtils.Marker.instance
+        -- @within HOUND.Utils.Marker.instance
         -- @local
         -- @param self Hound Marker instance
         -- @param args full args array
@@ -708,36 +741,36 @@ do
             local lineColor = args.lineColor
             local fillColor = args.fillColor
             -- if type(fillColor) ~= "table" or type(lineColor) ~= "table" or type(text) ~= "string" then return false end
-            self.id = HoundUtils.Marker.getId()
+            self.id = HOUND.Utils.Marker.getId()
 
-            if HoundUtils.Geo.isDcsPoint(pos) then
-                self.type = HoundUtils.Marker.Type.POINT
+            if HOUND.Utils.Geo.isDcsPoint(pos) then
+                self.type = HOUND.Utils.Marker.Type.POINT
                 trigger.action.markToCoalition(self.id, text, pos, coalition,true)
                 return true
             end
 
-            if Length(pos) == 2 and HoundUtils.Geo.isDcsPoint(pos.p) and type(pos.r) == "number" then
-                self.type = HoundUtils.Marker.Type.CIRCLE
+            if Length(pos) == 2 and HOUND.Utils.Geo.isDcsPoint(pos.p) and type(pos.r) == "number" then
+                self.type = HOUND.Utils.Marker.Type.CIRCLE
                 trigger.action.circleToAll(coalition,self.id, pos.p,pos.r,lineColor,fillColor,2,true)
                 return true
             end
 
             if Length(pos) == 4 then
-                self.type = HoundUtils.Marker.Type.FREEFORM
+                self.type = HOUND.Utils.Marker.Type.FREEFORM
                 trigger.action.markupToAll(6,coalition,self.id,
                     pos[1], pos[2], pos[3], pos[4],
                     lineColor,fillColor,2,true)
 
             end
             if Length(pos) == 8 then
-                self.type = HoundUtils.Marker.Type.FREEFORM
+                self.type = HOUND.Utils.Marker.Type.FREEFORM
                 trigger.action.markupToAll(7,coalition,self.id,
                     pos[1], pos[2], pos[3], pos[4],
                     pos[5], pos[6], pos[7], pos[8],
                     lineColor,fillColor,2,true)
             end
             if Length(pos) == 16 then
-                self.type = HoundUtils.Marker.Type.FREEFORM
+                self.type = HOUND.Utils.Marker.Type.FREEFORM
                 trigger.action.markupToAll(7,coalition,self.id,
                     pos[1], pos[2], pos[3], pos[4],
                     pos[5], pos[6], pos[7], pos[8],
@@ -748,7 +781,7 @@ do
         end
 
         --- replace markpoint (internal)
-        -- @within HoundUtils.Marker.instance
+        -- @within HOUND.Utils.Marker.instance
         -- @local
         -- @param self Hound Marker instance
         -- @param args full args array
@@ -758,7 +791,7 @@ do
         end
 
         --- update markpoint
-        -- @within HoundUtils.Marker.instance
+        -- @within HOUND.Utils.Marker.instance
         -- @param self Hound Marker instance
         -- @param args full args array
         instance.update = function(self,args)
@@ -766,22 +799,22 @@ do
             if self.id < 0 then
                 return self:_new(args)
             end
-            -- if self.id > 0 and self.type == HoundUtils.Marker.Type.FREEFORM then
-            if self.id > 0 and self.type ~= HoundUtils.Marker.Type.NONE then
+            -- if self.id > 0 and self.type == HOUND.Utils.Marker.Type.FREEFORM then
+            if self.id > 0 and self.type ~= HOUND.Utils.Marker.Type.NONE then
                     return self:_replace(args)
             end
             -- Update still does not work in MP for DC 2.7 leaving this for the future :(
             -- if self.id > 0 then
             --     if args.pos then
             --         local pos = args.pos
-            --         if HoundUtils.Geo.isDcsPoint(pos) then
+            --         if HOUND.Utils.Geo.isDcsPoint(pos) then
             --             self:setPos(pos)
             --         end
-            --         if Length(pos) == 2 and type(pos.r) == "number" and HoundUtils.Geo.isDcsPoint(pos.p) then
+            --         if Length(pos) == 2 and type(pos.r) == "number" and HOUND.Utils.Geo.isDcsPoint(pos.p) then
             --             self:setPos(pos.p)
             --             self:setRadius(pos.r)
             --         end
-            --         if type(pos) == "table" and Length(pos) > 2 and HoundUtils.Geo.isDcsPoint(pos[1]) then
+            --         if type(pos) == "table" and Length(pos) > 2 and HOUND.Utils.Geo.isDcsPoint(pos[1]) then
             --             return self:_replace(args)
             --         end
             --     end
@@ -813,7 +846,7 @@ do
     -- @param[opt] transmitterPos DCS Position point for transmitter
     -- @return STTS.TextToSpeech return value recived from STTS, currently estimated speechTime
 
-    function HoundUtils.TTS.Transmit(msg,coalitionID,args,transmitterPos)
+    function HOUND.Utils.TTS.Transmit(msg,coalitionID,args,transmitterPos)
 
         if STTS == nil then return end
         if msg == nil then return end
@@ -833,14 +866,14 @@ do
     -- @param[opt] timestamp DCS time in seconds (timer.getAbsTime()) - if not arg provided will return for current game time
     -- @return timeString e.g. "14 30 local", "08 hundred local"
 
-    function HoundUtils.TTS.getTtsTime(timestamp)
+    function HOUND.Utils.TTS.getTtsTime(timestamp)
         if timestamp == nil then timestamp = timer.getAbsTime() end
         local DHMS = l_mist.time.getDHMS(timestamp)
         local hours = DHMS.h
         local minutes = DHMS.m
         -- local seconds = DHMS.s
         if hours == 0 then
-            hours = HoundDB.PHONETICS["0"]
+            hours = HOUND.DB.PHONETICS["0"]
         else
             hours = string.format("%02d",hours)
         end
@@ -859,7 +892,7 @@ do
     -- @param confidenceRadius meters
     -- @return (string) Description of accuracy e.g "Very High","High","Low"...
 
-    function HoundUtils.TTS.getVerbalConfidenceLevel(confidenceRadius)
+    function HOUND.Utils.TTS.getVerbalConfidenceLevel(confidenceRadius)
         if confidenceRadius == 0.1 then return "Precise" end
 
         local score={
@@ -884,8 +917,8 @@ do
     -- @param[opt] NATO (bool) requires isSimple=true, will return only "Active" or "Awake" as per NATO Lowdown
     -- @return string of time passed based on selected flags.
 
-    function HoundUtils.TTS.getVerbalContactAge(timestamp,isSimple,NATO)
-        local ageSeconds = HoundUtils.absTimeDelta(timestamp,timer.getAbsTime())
+    function HOUND.Utils.TTS.getVerbalContactAge(timestamp,isSimple,NATO)
+        local ageSeconds = HOUND.Utils.absTimeDelta(timestamp,timer.getAbsTime())
 
         if isSimple then
             if NATO then
@@ -911,8 +944,8 @@ do
     -- @param[opt] padDeg (Bool) if true degrees will be zero padded. (32 -> 032 )
     -- @return TTS ready stings. e.g "32 degrees, 15 mintes, 6 seconds", "32 degrees, 15.100 seconds"
 
-    function HoundUtils.TTS.DecToDMS(cood,minDec,padDeg)
-        local DMS = HoundUtils.DecToDMS(cood)
+    function HOUND.Utils.TTS.DecToDMS(cood,minDec,padDeg)
+        local DMS = HOUND.Utils.DecToDMS(cood)
         local strTab = {
             l_math.abs(DMS.d) .. " degrees",
             string.format("%02d",DMS.m) .. " minutes",
@@ -923,7 +956,7 @@ do
         end
         if minDec == true then
             strTab[2] = string.format("%02d",DMS.m)
-            strTab[3] = HoundUtils.TTS.toPhonetic( "." .. string.format("%03d",DMS.sDec)) .. " minutes"
+            strTab[3] = HOUND.Utils.TTS.toPhonetic( "." .. string.format("%03d",DMS.sDec)) .. " minutes"
         end
         -- return degStr .. ", " .. minStr .. ", " .. secStr
         return table.concat(strTab,", ")
@@ -936,22 +969,22 @@ do
     -- @return LL string.
     -- eg. "North, 33 degrees, 15 minutes, 12 seconds, East, 42 degrees, 10 minutes, 45 seconds "
 
-    function HoundUtils.TTS.getVerbalLL(lat,lon,minDec)
+    function HOUND.Utils.TTS.getVerbalLL(lat,lon,minDec)
         minDec = minDec or false
-        local hemi = HoundUtils.getHemispheres(lat,lon,true)
-        return hemi.NS .. ", " .. HoundUtils.TTS.DecToDMS(lat,minDec)  ..  ", " .. hemi.EW .. ", " .. HoundUtils.TTS.DecToDMS(lon,minDec,true)
+        local hemi = HOUND.Utils.getHemispheres(lat,lon,true)
+        return hemi.NS .. ", " .. HOUND.Utils.TTS.DecToDMS(lat,minDec)  ..  ", " .. hemi.EW .. ", " .. HOUND.Utils.TTS.DecToDMS(lon,minDec,true)
     end
 
     --- Convert string to phonetic text
     -- @param str String to convert
     -- @return string broken up to phonetics
-    -- @usage HoundUtils.TTS.toPhonetic("B29") will return "Bravo Two Niner"
+    -- @usage HOUND.Utils.TTS.toPhonetic("B29") will return "Bravo Two Niner"
 
-    function HoundUtils.TTS.toPhonetic(str)
+    function HOUND.Utils.TTS.toPhonetic(str)
         local retval = ""
-        str = string.upper(str)
+        str = string.upper(tostring(str))
         for i=1, string.len(str) do
-            retval = retval .. HoundDB.PHONETICS[string.sub(str, i, i)] .. " "
+            retval = retval .. HOUND.DB.PHONETICS[string.sub(str, i, i)] .. " "
         end
         return retval:match( "^%s*(.-)%s*$" ) -- return and strip trailing whitespaces
     end
@@ -963,7 +996,7 @@ do
     -- @param[opt] isGoogle Bool, if true calculation will be done for GoogleTTS engine
     -- @return estimated message read time in seconds
 
-    function HoundUtils.TTS.getReadTime(length,speed,isGoogle)
+    function HOUND.Utils.TTS.getReadTime(length,speed,isGoogle)
         -- Assumptions for time calc: 100 Words per min, avarage of 5 letters for english word
         -- so 5 chars * 100wpm = 500 characters per min = 8.3 chars per second
         -- so lengh of msg / 8.3 = number of seconds needed to read it. rounded down to 8 chars per sec
@@ -1002,11 +1035,11 @@ do
     -- below 1km function will return number in meters
     -- eg. 140m => 150m, 520m => 500m, 4539m => 4.5km
 
-    function HoundUtils.TTS.simplfyDistance(distanceM)
+    function HOUND.Utils.TTS.simplfyDistance(distanceM)
         local distanceUnit = "meters"
-        local distance = HoundUtils.roundToNearest(distanceM,50) or 0
+        local distance = HOUND.Utils.roundToNearest(distanceM,50) or 0
         if distance >= 1000 then
-            distance = string.format("%.1f",tostring(HoundUtils.roundToNearest(distanceM,100)/1000))
+            distance = string.format("%.1f",tostring(HOUND.Utils.roundToNearest(distanceM,100)/1000))
             distanceUnit = "kilometers"
         end
         return distance .. " " .. distanceUnit
@@ -1021,10 +1054,10 @@ do
     -- @param[opt] minDec (bool) if true, function will return LL in DM.M format
     -- @return LL string.
     -- eg. "N33°15'12" E42°10'45"" or  "N33°15.200' E42°10.750'"
-    function HoundUtils.Text.getLL(lat,lon,minDec)
-        local hemi = HoundUtils.getHemispheres(lat,lon)
-        lat = HoundUtils.DecToDMS(lat)
-        lon = HoundUtils.DecToDMS(lon)
+    function HOUND.Utils.Text.getLL(lat,lon,minDec)
+        local hemi = HOUND.Utils.getHemispheres(lat,lon)
+        lat = HOUND.Utils.DecToDMS(lat)
+        lon = HOUND.Utils.DecToDMS(lon)
         if minDec == true then
             return hemi.NS .. l_math.abs(lat.d) .. "°" .. string.format("%.3f",lat.mDec) .. "'" ..  " " ..  hemi.EW  .. l_math.abs(lon.d) .. "°" .. string.format("%.3f",lon.mDec) .. "'"
         end
@@ -1034,7 +1067,7 @@ do
     --- Text Function - returns current DCS time in military time format string
     -- @param[opt] timestamp DCS time in seconds (timer.getAbsTime()) - Optional, if not arg provided will return for current game time
     -- @return time in human radable format e.g. "1430", "0812"
-    function HoundUtils.Text.getTime(timestamp)
+    function HOUND.Utils.Text.getTime(timestamp)
         if timestamp == nil then timestamp = timer.getAbsTime() end
         local DHMS = l_mist.time.getDHMS(timestamp)
         return string.format("%02d",DHMS.h)  .. string.format("%02d",DHMS.m)
@@ -1043,70 +1076,12 @@ do
     --- Elint functions
     -- @section elint
 
-    --- Get defraction
-    -- for band and effective antenna size return angular resolution
-    -- @local
-    -- @param band Radar transmission band (A-L) as defined in HoundDB
-    -- @param antenna_size Effective antenna size for platform as defined in HoundDB
-    -- @return angular resolution in Radians for Band Antenna combo
-
-    function HoundUtils.Elint.getDefraction(band,antenna_size)
-        if band == nil or antenna_size == nil or antenna_size == 0 then return l_math.rad(30) end
-        return HoundDB.Bands[band]/antenna_size
-    end
-
-    --- get Effective Aperture size for unit
-    -- @local
-    -- @param DCS_Unit Unit requested (used as platform)
-    -- @return Effective aperture size in meters
-    function HoundUtils.Elint.getApertureSize(DCS_Unit)
-        if type(DCS_Unit) ~= "table" or not DCS_Unit.getTypeName or not DCS_Unit.getCategory then return 0 end
-        local mainCategory = DCS_Unit:getCategory()
-        local typeName = DCS_Unit:getTypeName()
-        if setContains(HoundDB.Platform,mainCategory) then
-            if setContains(HoundDB.Platform[mainCategory],typeName) then
-                return HoundDB.Platform[mainCategory][typeName].antenna.size *  HoundDB.Platform[mainCategory][typeName].antenna.factor
-            end
-        end
-        return 0
-    end
-
-    --- Get emitter Band
-    -- @local
-    -- @param DCS_Unit Radar unit
-    -- @return Char radar band
-    function HoundUtils.Elint.getEmitterBand(DCS_Unit)
-        if type(DCS_Unit) ~= "table" or not DCS_Unit.getTypeName then return 'C' end
-        local typeName = DCS_Unit:getTypeName()
-        if setContains(HoundDB.Sam,typeName) then
-            return HoundDB.Sam[typeName].Band
-        end
-        return 'C'
-    end
-
-    --- Elint Function - Get sensor precision
-    -- @param platform Instance of DCS Unit which is the detecting platform
-    -- @param emitterBand Radar Band (frequency) of radar (A-L)
-    -- @return angular resolution in Radians of platform against specific Radar frequency
-    function HoundUtils.Elint.getSensorPrecision(platform,emitterBand)
-        return  HoundUtils.Elint.getDefraction(emitterBand,HoundUtils.Elint.getApertureSize(platform)) or l_math.rad(20.0) -- precision
-    end
-
     --- Elint Function - Generate angular error
     -- @param variance amount of variance in gausian random function
     -- @return table {az,el} error in radians per element
 
-    function HoundUtils.Elint.generateAngularError(variance)
-        -- local stddev = variance /2
-        -- local Magnitude = l_math.sqrt(-2 * l_math.log(l_math.random())) * stddev
-        -- local Theta = 2* math.pi * l_math.random()
-
-        -- -- from radius and angle you can get the point on the circles
-        -- local epsilon = {
-        --     az = Magnitude * l_math.cos(Theta),
-        --     el = Magnitude * l_math.sin(Theta)
-        -- }
-        local vec2 = HoundUtils.Vector.getRandomVec2(variance)
+    function HOUND.Utils.Elint.generateAngularError(variance)
+        local vec2 = HOUND.Utils.Vector.getRandomVec2(variance)
         local epsilon = {
             az = vec2.x,
             el = vec2.z
@@ -1117,13 +1092,13 @@ do
     --- Get Azimuth (and elevation) between two points
     -- @param src position of the source (i.e Hound platform)
     -- @param dst position of the destination (i.e emitting radar)
-    -- @param sensorPrecision angular resolution (in rad) of platform against radar @{HoundUtils.Elint.getSensorPrecision}
+    -- @param sensorPrecision angular resolution (in rad) of platform against radar
     -- @return Azimuth (radians) from source to destination (0 to 2*pi)
     -- @return elevation angle (radians) from source to destination (-pi to pi)
 
-    function HoundUtils.Elint.getAzimuth(src, dst, sensorPrecision)
+    function HOUND.Utils.Elint.getAzimuth(src, dst, sensorPrecision)
         -- local pi_2 = 2*l_math.pi
-        local AngularErr = HoundUtils.Elint.generateAngularError(sensorPrecision)
+        local AngularErr = HOUND.Utils.Elint.generateAngularError(sensorPrecision)
 
         local vec = l_mist.vec.sub(dst, src)
         local az = l_math.atan2(vec.z,vec.x) + AngularErr.az
@@ -1143,7 +1118,7 @@ do
     -- @param instanceCoalition CoalitionID for current Hound Instance
     -- @return Table of all currently transmitting Ground and Ship radars that are not in the Hound Instance coalition
 
-    function HoundUtils.Elint.getActiveRadars(instanceCoalition)
+    function HOUND.Utils.Elint.getActiveRadars(instanceCoalition)
         if instanceCoalition == nil then return end
         local Radars = {}
 
@@ -1170,7 +1145,7 @@ do
     --- Get RWR contacts for platfom
     -- @param platform DCS Unit of platform
     -- @return Table of all currently transmitting Ground and Ship radars that RWR detected by supplied platform
-    function HoundUtils.Elint.getRwrContacts(platform)
+    function HOUND.Utils.Elint.getRwrContacts(platform)
         local radars = {}
         local platformCoalition = platform:getCoalition()
         if not platform:hasSensors(Unit.SensorType.RWR) then return radars end
@@ -1190,7 +1165,7 @@ do
     -- @param Theta azimuth in radians
     -- @param[opt] Phi elevation in radians
     -- @return Unit vector {x,y,z}
-    function HoundUtils.Vector.getUnitVector(Theta,Phi)
+    function HOUND.Utils.Vector.getUnitVector(Theta,Phi)
         if not Theta then
             return {x=0,y=0,z=0}
         end
@@ -1200,25 +1175,6 @@ do
                 z = l_math.cos(Phi)*l_math.sin(Theta),
                 y = l_math.sin(Phi)
             }
-        -- local unitVector = {
-        --     x = l_math.cos(Theta),
-        --     z = l_math.sin(Theta),
-        --     y = 0
-        -- }
-
-        -- if Phi ~= nil then
-        --     unitVector.x = unitVector.x * l_math.cos(Phi)
-        --     unitVector.z = unitVector.z * l_math.cos(Phi)
-        --     unitVector.y = l_math.sin(Phi)
-        --     -- unitVector = {
-        --     --     x = l_math.cos(Phi)*l_math.cos(Theta),
-        --     --     z = l_math.cos(Phi)*l_math.sin(Theta),
-        --     --     y = l_math.sin(Phi)
-        --     -- }
-        -- end
-        -- if Theta ~= nil and Phi == nil then
-
-        -- end
         return unitVector
     end
 
@@ -1227,13 +1183,12 @@ do
     -- https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform}
     -- @param variance amount of variance in gausian random function
     -- @return DCS standard {x,z,y} vector
-    function HoundUtils.Vector.getRandomVec2(variance)
+    function HOUND.Utils.Vector.getRandomVec2(variance)
         if variance == 0 then return {x=0,y=0,z=0} end
         local stddev = variance /2
         local Magnitude = l_math.sqrt(-2 * l_math.log(l_math.random())) * stddev
-        local Theta = 2* math.pi * l_math.random()
-
-        local epsilon = HoundUtils.Vector.getUnitVector(Theta)
+        local Theta = pi_2 * l_math.random()
+        local epsilon = HOUND.Utils.Vector.getUnitVector(Theta)
         for axis,value in pairs(epsilon) do
             epsilon[axis] = value * Magnitude
         end
@@ -1245,15 +1200,15 @@ do
     -- https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform}
     -- @param variance amount of variance in gausian random function
     -- @return DCS standard {x,z,y} vector
-    function HoundUtils.Vector.getRandomVec3(variance)
+    function HOUND.Utils.Vector.getRandomVec3(variance)
         if variance == 0 then return {x=0,y=0,z=0} end
         local stddev = variance /2
         local Magnitude = l_math.sqrt(-2 * l_math.log(l_math.random())) * stddev
-        local Theta = 2* math.pi * l_math.random()
-        local Phi = 2* math.pi * l_math.random()
+        local Theta = pi_2 * l_math.random()
+        local Phi = pi_2 * l_math.random()
 
         -- from radius and angle you can get the point on the circles
-        local epsilon = HoundUtils.Vector.getUnitVector(Theta,Phi)
+        local epsilon = HOUND.Utils.Vector.getUnitVector(Theta,Phi)
         for axis,value in pairs(epsilon) do
             epsilon[axis] = value * Magnitude
         end
@@ -1266,7 +1221,7 @@ do
     --- List all Useable zones from drawings.
     -- (supported types are freeForm Polygon, rectangle and Oval)
     -- @return list of strings
-    function HoundUtils.Zone.listDrawnZones()
+    function HOUND.Utils.Zone.listDrawnZones()
         local zoneNames = {}
         local base = _G.env.mission
         if not base or not base.drawings or not base.drawings.layers then return zoneNames end
@@ -1286,7 +1241,7 @@ do
     -- (supported types are freeForm Polygon, rectangle and Oval)
     -- @param zoneName
     -- @return table of points
-    function HoundUtils.Zone.getDrawnZone(zoneName)
+    function HOUND.Utils.Zone.getDrawnZone(zoneName)
         if type(zoneName) ~= "string" then return nil end
         if not _G.env.mission.drawings or not _G.env.mission.drawings.layers then return nil end
         for _,drawLayer in pairs(_G.env.mission.drawings.layers) do
@@ -1347,19 +1302,17 @@ do
     --- Polygon functions
     -- @section Polygon
 
-
-
     --- Check if polygon is under threat of SAM
     -- @param polygon Table of point reprasenting a polygon
     -- @param point DCS position (x,z)
     -- @param radius Radius in Meters around point to test
     -- @return Bool True if point is in polygon
     -- @return Bool True if radius around point intersects polygon
-    function HoundUtils.Polygon.threatOnSector(polygon,point, radius)
-        if type(polygon) ~= "table" or Length(polygon) < 3 or not HoundUtils.Geo.isDcsPoint(l_mist.utils.makeVec3(polygon[1])) then
+    function HOUND.Utils.Polygon.threatOnSector(polygon,point, radius)
+        if type(polygon) ~= "table" or Length(polygon) < 3 or not HOUND.Utils.Geo.isDcsPoint(l_mist.utils.makeVec3(polygon[1])) then
             return
         end
-        if not HoundUtils.Geo.isDcsPoint(point) then
+        if not HOUND.Utils.Geo.isDcsPoint(point) then
             return
         end
         local inPolygon = l_mist.pointInPolygon(point,polygon)
@@ -1377,7 +1330,7 @@ do
     -- @param points Points to filter
     -- @param polygon - enclosing polygon to filter by
     -- @return points from original set which are inside polygon.
-    function HoundUtils.Polygon.filterPointsByPolygon(points,polygon)
+    function HOUND.Utils.Polygon.filterPointsByPolygon(points,polygon)
         local filteredPoints = {}
         if type(points) ~= "table" or type(polygon) ~= "table" then return filteredPoints end
 
@@ -1394,7 +1347,7 @@ do
     -- @param  subjectPolygon List of points of first polygon
     -- @param  clipPolygon list of points of second polygon
     -- @return List of points of the clipped polygon or nil if not clipping found
-    function HoundUtils.Polygon.clipPolygons(subjectPolygon, clipPolygon)
+    function HOUND.Utils.Polygon.clipPolygons(subjectPolygon, clipPolygon)
         local function inside (p, cp1, cp2)
             return (cp2.x-cp1.x)*(p.z-cp1.z) > (cp2.z-cp1.z)*(p.x-cp1.x)
         end
@@ -1441,7 +1394,7 @@ do
     -- Returns the convex hull (using <a href="http://en.wikipedia.org/wiki/Gift_wrapping_algorithm">Jarvis' Gift wrapping algorithm</a>).
     -- @param points array of DCS points ({x=&ltvalue&gt,z=&ltvalue&gt})
     -- @return the convex hull as an array of points
-    function HoundUtils.Polygon.giftWrap(points)
+    function HOUND.Utils.Polygon.giftWrap(points)
         -- Calculates the signed area
         local function signedArea(p, q, r)
             local cross = (q.z - p.z) * (r.x - q.x)
@@ -1488,15 +1441,13 @@ do
     -- Implementation taken from <a href="https://github.com/rowanwins/smallest-enclosing-circle/blob/master/src/main.js">github/rowins</a>
     -- @param points Table containing cloud points
     -- @return Circle {x=&ltCenter X&gt,z=&ltCenter Z&gt, y=&ltLand height at XZ&gt,r=&ltradius in meters&gt}
-    function HoundUtils.Polygon.circumcirclePoints(points)
+    function HOUND.Utils.Polygon.circumcirclePoints(points)
         local function calcCircle(p1,p2,p3)
             local cx,cz, r
-            if HoundUtils.Geo.isDcsPoint(p1) and not p2 and not p3 then
-                -- env.info("returning single point " .. mist.utils.tableShow(p1))
+            if HOUND.Utils.Geo.isDcsPoint(p1) and not p2 and not p3 then
                 return {x = p1.x, z = p1.z,r = 0}
             end
-            if HoundUtils.Geo.isDcsPoint(p1) and HoundUtils.Geo.isDcsPoint(p2) and not p3 then
-                -- env.info("returning two point circle")
+            if HOUND.Utils.Geo.isDcsPoint(p1) and HOUND.Utils.Geo.isDcsPoint(p2) and not p3 then
                 cx = 0.5 * (p1.x + p2.x)
                 cz = 0.5 * (p1.z + p2.z)
             else
@@ -1530,9 +1481,6 @@ do
         end
 
         local function mec(pts,n,boundary,b)
-            -- env.info(mist.utils.tableShow(pts).. " " .. n)
-            -- env.info(mist.utils.tableShow(boundary).. " " .. b)
-            -- env.info("====")
             local circle
             if b == 3 then
                 circle = calcCircle(boundary[1],boundary[2],boundary[3])
@@ -1557,7 +1505,7 @@ do
     --- return the area of a convex polygon
     -- @param polygon list of DCS points
     -- @return area of polygon
-    function HoundUtils.Polygon.getArea(polygon)
+    function HOUND.Utils.Polygon.getArea(polygon)
         if not polygon or type(polygon) ~= "table" or Length(polygon) < 2 then return 0 end
         local a,b = 0,0
         for i=1,Length(polygon)-1 do
@@ -1573,18 +1521,18 @@ do
     -- @param polyA polygon
     -- @param polyB polygon
     -- @return Polygon which is clip or convexHull of the two input polygons
-    function HoundUtils.Polygon.clipOrHull(polyA,polyB)
+    function HOUND.Utils.Polygon.clipOrHull(polyA,polyB)
         -- make sure polyA is always the larger one
-        if HoundUtils.Polygon.getArea(polyA) < HoundUtils.Polygon.getArea(polyB) then
+        if HOUND.Utils.Polygon.getArea(polyA) < HOUND.Utils.Polygon.getArea(polyB) then
             polyA,polyB = polyB,polyA
         end
-        local polygon = HoundUtils.Polygon.clipPolygons(polyA,polyB)
+        local polygon = HOUND.Utils.Polygon.clipPolygons(polyA,polyB)
         if Polygon == nil then
             local points = l_mist.utils.deepCopy(polyA)
             for _,point in pairs(polyB) do
                 table.insert(points,l_mist.utils.deepCopy(point))
             end
-            polygon = HoundUtils.Polygon.giftWrap(points)
+            polygon = HOUND.Utils.Polygon.giftWrap(points)
         end
         return polygon
     end
@@ -1595,8 +1543,8 @@ do
     -- @return deltaMinMax delta angle between the two extream points
     -- @return minAz (rad)
     -- @return maxAz (rad)
-    function HoundUtils.Polygon.azMinMax(poly,refPos)
-        if not HoundUtils.Geo.isDcsPoint(refPos) or type(poly) ~= "table" or Length(poly) < 2 or l_mist.pointInPolygon(refPos,poly) then
+    function HOUND.Utils.Polygon.azMinMax(poly,refPos)
+        if not HOUND.Utils.Geo.isDcsPoint(refPos) or type(poly) ~= "table" or Length(poly) < 2 or l_mist.pointInPolygon(refPos,poly) then
             return
         end
 
@@ -1608,7 +1556,7 @@ do
         table.sort(points,function (a,b) return (a.refAz+pi_2) < (b.refAz+pi_2) end)
         local leftMost = table.remove(points,1)
         local rightMost = table.remove(points)
-        return HoundUtils.angleDeltaRad(leftMost.refAz,rightMost.refAz),(leftMost),(rightMost)
+        return HOUND.Utils.angleDeltaRad(leftMost.refAz,rightMost.refAz),(leftMost),(rightMost)
     end
     --- Clustering algorithems (for future use)
     -- @section Clusters
@@ -1616,14 +1564,14 @@ do
     --- Get gaussian weight
     -- @param value input to evaluate
     -- @param bandwidth Standard diviation for weight calculation
-    function HoundUtils.Cluster.gaussianKernel(value,bandwidth)
+    function HOUND.Utils.Cluster.gaussianKernel(value,bandwidth)
         return (1/(bandwidth*l_math.sqrt(2*l_math.pi))) * l_math.exp(-0.5*((value / bandwidth))^2)
     end
 
     --- Calculate running std dev
     -- @return std calc instance
     -- https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford's_online_algorithm
-    function HoundUtils.Cluster.stdDev()
+    function HOUND.Utils.Cluster.stdDev()
         local instance = {}
         instance.count = 0
         instance.mean = 0
@@ -1653,18 +1601,18 @@ do
     -- @param[opt] maxIttr Max itterations from converging solution (default 100)
     -- @return DCS point of the cluster weighted mean
 
-    function HoundUtils.Cluster.weightedMean(origPoints,initPos,threashold,maxIttr)
-        if type(origPoints) ~= "table" or not HoundUtils.Geo.isDcsPoint(origPoints[1]) then return end
-        local points = HoundUtils.Geo.setHeight(l_mist.utils.deepCopy(origPoints))
+    function HOUND.Utils.Cluster.weightedMean(origPoints,initPos,threashold,maxIttr)
+        if type(origPoints) ~= "table" or not HOUND.Utils.Geo.isDcsPoint(origPoints[1]) then return end
+        local points = HOUND.Utils.Geo.setHeight(l_mist.utils.deepCopy(origPoints))
 
         local current_mean = initPos
         if type(current_mean) == "boolean" and current_mean then
             current_mean = points[l_math.random(Length(points))]
         end
-        if not HoundUtils.Geo.isDcsPoint(current_mean) then
+        if not HOUND.Utils.Geo.isDcsPoint(current_mean) then
             current_mean = l_mist.getAvgPoint(origPoints)
         end
-        if not HoundUtils.Geo.isDcsPoint(current_mean) then return end
+        if not HOUND.Utils.Geo.isDcsPoint(current_mean) then return end
         threashold = threashold or 1
         maxIttr = maxIttr or 100
         local last_mean
@@ -1693,7 +1641,7 @@ do
             ittr = ittr + 1
             converged = l_mist.utils.get2DDist(last_mean,current_mean) < threashold or ittr == maxIttr
         end
-        HoundUtils.Geo.setHeight(current_mean)
+        HOUND.Utils.Geo.setHeight(current_mean)
         return l_mist.utils.deepCopy(current_mean)
     end
 
@@ -1705,7 +1653,7 @@ do
     -- @return centers (table)
     -- @return cluster (table)
     -- @return J loss value
-    function HoundUtils.Cluster.kmeans(data, nclusters, init)
+    function HOUND.Utils.Cluster.kmeans(data, nclusters, init)
         -- K-means Clustering
         --
         assert(nclusters > 0)
@@ -1820,14 +1768,14 @@ do
           end
           -- print("    update centers: ", J())
         until updated == false
-        HoundUtils.Geo.setHeight(centers)
+        HOUND.Utils.Geo.setHeight(centers)
         return centers, cluster, J()
       end
 
     --- convert contacts to centroieds for meanShift
-    -- @param contacts list of HoundContact instances to evaluate
-    -- @return list of centrods where centroid = {p=&ltDCS pos&gt,r=&ltradius&gt,members={&ltHoundContact&gt}}
-    -- function HoundUtils.Cluster.getCentroids(contacts)
+    -- @param contacts list of HOUND.Contact instances to evaluate
+    -- @return list of centrods where centroid = {p=&ltDCS pos&gt,r=&ltradius&gt,members={&ltHOUND.Contact&gt}}
+    -- function HOUND.Utils.Cluster.getCentroids(contacts)
     --     local centroids = {}
     --     -- populate centroids with all emitters
     --     for _,contact in ipairs(contacts) do
@@ -1844,10 +1792,10 @@ do
 
     --- Mean-shift algorithem to group radars to sites
     -- http://www.chioka.in/meanshift-algorithm-for-the-rest-of-us-python/
-    -- @param contacts list of HoundContact instances to cluster
+    -- @param contacts list of HOUND.Contact instances to cluster
     -- @param[opt] iterations maximum nuber of itteratoins to run
-    -- @return List of centroieds {p=&ltDCS position&gt,r=&ltuncertenty radius&gt,members={&ltlist of HoundContacts&gt}}
-    -- function HoundUtils.Cluster.meanShift(contacts,iterations)
+    -- @return List of centroieds {p=&ltDCS position&gt,r=&ltuncertenty radius&gt,members={&ltlist of HOUND.Contacts&gt}}
+    -- function HOUND.Utils.Cluster.meanShift(contacts,iterations)
     --     local kernel_bandwidth = 1000
 
     --     -- Helper functions
@@ -1949,16 +1897,19 @@ do
     -- @section Sort
 
     --- Sort contacts by engament range
-    -- @param a HoundContact instance
-    -- @param b HoundContact Instance
+    -- @param a @{HOUND.Contact} instance
+    -- @param b @{HOUND.Contact} Instance
     -- @return Bool
-    -- @usage table.sort(unSorted,HoundUtils.Sort.ContactsByRange)
-    function HoundUtils.Sort.ContactsByRange(a,b)
+    -- @usage table.sort(unSorted,HOUND.Utils.Sort.ContactsByRange)
+    function HOUND.Utils.Sort.ContactsByRange(a,b)
         if a.isEWR ~= b.isEWR then
           return b.isEWR and not a.isEWR
         end
         if a.maxWeaponsRange ~= b.maxWeaponsRange then
             return a.maxWeaponsRange > b.maxWeaponsRange
+        end
+        if a.detectionRange ~= b.detectionRange then
+            return a.detectionRange > b.detectionRange
         end
         if a.typeAssigned ~= b.typeAssigned then
             return table.concat(a.typeAssigned) < table.concat(b.typeAssigned)
@@ -1973,11 +1924,11 @@ do
     end
 
     --- Sort contacts by ID
-    -- @param a HoundContact instance
-    -- @param b HoundContact Instance
+    -- @param a @{HOUND.Contact} instance
+    -- @param b @{HOUND.Contact} Instance
     -- @return Bool
-    -- @usage table.sort(unSorted,HoundUtils.Sort.ContactsById)
-    function HoundUtils.Sort.ContactsById(a,b)
+    -- @usage table.sort(unSorted,HOUND.Utils.Sort.ContactsById)
+    function HOUND.Utils.Sort.ContactsById(a,b)
         if  a.uid ~= b.uid then
             return a.uid < b.uid
         end
@@ -1985,20 +1936,79 @@ do
     end
 
     --- sort sectors by priority (low first)
-    -- @param a HoundSector instance
-    -- @param b HoundSector Instance
+    -- @param a @{HOUND.Sector} instance
+    -- @param b @{HOUND.Sector} Instance
     -- @return Bool
-    -- @usage table.sort(unSorted,HoundUtils.Sort.sectorsByPriorityLowFirst)
-    function HoundUtils.Sort.sectorsByPriorityLowFirst(a,b)
+    -- @usage table.sort(unSorted,HOUND.Utils.Sort.sectorsByPriorityLowFirst)
+    function HOUND.Utils.Sort.sectorsByPriorityLowFirst(a,b)
         return a:getPriority() > b:getPriority()
     end
 
     --- sort sectors by priority (Low last)
-    -- @param a HoundSector instance
-    -- @param b HoundSector Instance
+    -- @param a @{HOUND.Sector} instance
+    -- @param b @{HOUND.Sector} Instance
     -- @return Bool
-    -- @usage table.sort(unSorted,HoundUtils.Sort.sectorsByPriorityLowLast)
-    function HoundUtils.Sort.sectorsByPriorityLowLast(a,b)
+    -- @usage table.sort(unSorted,HOUND.Utils.Sort.sectorsByPriorityLowLast)
+    function HOUND.Utils.Sort.sectorsByPriorityLowLast(a,b)
         return a:getPriority() < b:getPriority()
+    end
+
+    --- Filter Functions
+    -- @section Filter
+
+    --- get Groups by prefix
+    -- Implementation taken from Skynet-IADS
+    -- @param prefix string
+    -- @return table of DCS groups indexed by group name
+    function HOUND.Utils.Filter.groupsByPrefix(prefix)
+        if type(prefix) ~= "string" then return {} end
+        local groups = {}
+        for groupName, groupData in pairs(l_mist.DBs.groupsByName) do
+            local pos = string.find(groupName, prefix, 1, true)
+            if pos and pos == 1 then
+                --mist returns groups, units and, StaticObjects
+                local dcsObject = Group.getByName(groupName)
+                if dcsObject then
+                    groups[groupName] = dcsObject
+                end
+            end
+        end
+        return groups
+    end
+
+    --- get Units by prefix
+    -- Implementation taken from Skynet-IADS
+    -- @param prefix string
+    -- @return table of DCS Units indexed by Unit name
+    function HOUND.Utils.Filter.unitsByPrefix(prefix)
+        if type(prefix) ~= "string" then return {} end
+        local units = {}
+        for unitName, unit in pairs(l_mist.DBs.unitsByName) do
+            local pos = string.find(unitName, prefix, 1, true)
+            --somehow the MIST unit db contains StaticObject, we check to see we only add Units
+            local dcsUnit = Unit.getByName(unitName)
+            if pos and pos == 1 and dcsUnit then
+                units[unitName] = dcsUnit
+            end
+        end
+        return units
+    end
+
+    --- get StatcObjects by prefix
+    -- Implementation taken from Skynet-IADS
+    -- @param prefix string
+    -- @return table of DCS StaticObjects indexed by object name
+    function HOUND.Utils.Filter.staticObjectsByPrefix(prefix)
+        if type(prefix) ~= "string" then return {} end
+        local objects = {}
+        for objectName, unit in pairs(l_mist.DBs.unitsByName) do
+            local pos = string.find(objectName, prefix, 1, true)
+            --somehow the MIST unit db contains StaticObject, we check to see we only add Units
+            local dcsObject = StaticObject.getByName(objectName)
+            if pos and pos == 1 and dcsObject then
+                objects[objectName] = dcsObject
+            end
+        end
+        return objects
     end
 end
