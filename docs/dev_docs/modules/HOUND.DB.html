@@ -33,6 +33,7 @@
 <h2>Contents</h2>
 <ul>
 <li><a href="#Tables">Tables</a></li>
+<li><a href="#DB_functions">DB functions </a></li>
 </ul>
 
 
@@ -94,6 +95,38 @@
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.DB.CALLSIGNS">HOUND.DB.CALLSIGNS</a></td>
 	<td class="summary">Hound callsigns</td>
+	</tr>
+</table>
+<h2><a href="#DB_functions">DB functions </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.DB.getRadarData">HOUND.DB.getRadarData (typeName)</a></td>
+	<td class="summary">Get radar object Data</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.DB.isValidPlatform">HOUND.DB.isValidPlatform (candidate)</a></td>
+	<td class="summary">check if canidate Object is a valid platform</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.DB.getPlatformData">HOUND.DB.getPlatformData (DCS_Unit)</a></td>
+	<td class="summary">Get Platform data</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.DB.getDefraction">HOUND.DB.getDefraction (band, antenna_size)</a></td>
+	<td class="summary">Get defraction
+ for band and effective antenna size return angular resolution</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.DB.getApertureSize">HOUND.DB.getApertureSize (DCS_Unit)</a></td>
+	<td class="summary">get Effective Aperture size for unit</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.DB.getEmitterBand">HOUND.DB.getEmitterBand (DCS_Unit)</a></td>
+	<td class="summary">Get emitter Band</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.DB.getSensorPrecision">HOUND.DB.getSensorPrecision (platform, emitterBand)</a></td>
+	<td class="summary">Elint Function - Get sensor precision</td>
 	</tr>
 </table>
 
@@ -267,13 +300,199 @@
 
 </dd>
 </dl>
+    <h2 class="section-header "><a name="DB_functions"></a>DB functions </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HOUND.DB.getRadarData"></a>
+    <strong>HOUND.DB.getRadarData (typeName)</strong>
+    </dt>
+    <dd>
+    Get radar object Data
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">typeName</span>
+         DCS Tye name
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Radar information table
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.DB.isValidPlatform"></a>
+    <strong>HOUND.DB.isValidPlatform (candidate)</strong>
+    </dt>
+    <dd>
+    check if canidate Object is a valid platform
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">candidate</span>
+         DCS Object (Unit or Static Object)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Bool. True if object is valid platform
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.DB.getPlatformData"></a>
+    <strong>HOUND.DB.getPlatformData (DCS_Unit)</strong>
+    </dt>
+    <dd>
+    Get Platform data
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">DCS_Unit</span>
+         platform unit
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        platform data
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.DB.getDefraction"></a>
+    <strong>HOUND.DB.getDefraction (band, antenna_size)</strong>
+    </dt>
+    <dd>
+    Get defraction
+ for band and effective antenna size return angular resolution
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">band</span>
+         Radar transmission band (A-L) as defined in HOUND.DB
+        </li>
+        <li><span class="parameter">antenna_size</span>
+         Effective antenna size for platform as defined in HOUND.DB
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        angular resolution in Radians for Band Antenna combo
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.DB.getApertureSize"></a>
+    <strong>HOUND.DB.getApertureSize (DCS_Unit)</strong>
+    </dt>
+    <dd>
+    get Effective Aperture size for unit
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">DCS_Unit</span>
+         Unit requested (used as platform)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Effective aperture size in meters
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.DB.getEmitterBand"></a>
+    <strong>HOUND.DB.getEmitterBand (DCS_Unit)</strong>
+    </dt>
+    <dd>
+    Get emitter Band
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">DCS_Unit</span>
+         Radar unit
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Char radar band
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.DB.getSensorPrecision"></a>
+    <strong>HOUND.DB.getSensorPrecision (platform, emitterBand)</strong>
+    </dt>
+    <dd>
+    Elint Function - Get sensor precision
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">platform</span>
+         Instance of DCS Unit which is the detecting platform
+        </li>
+        <li><span class="parameter">emitterBand</span>
+         Radar Band (frequency) of radar (A-L)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        angular resolution in Radians of platform against specific Radar frequency
+    </ol>
+
+
+
+
+</dd>
+</dl>
 
 
 </div> <!-- id="content" -->
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2022-05-21 23:51:09 </i>
+<i style="float:right;">Last updated 2022-06-12 13:47:44 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

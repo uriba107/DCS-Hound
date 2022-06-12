@@ -52,7 +52,7 @@ platforms = {
         }
 
 def genBandTable():
-    print("HOUND.DBs.Bands = {")
+    print("HOUND.DB.Bands = {")
     for band in sorted(bands):
         bands[band]["wavelength"] = (299792458.0/bands[band]["Freq"])
         print("    [\"%s\"] = %f,"%(band,bands[band]["wavelength"]))
@@ -96,3 +96,5 @@ print("\n=== Other stuff ===")
 showRes("H",getAntennaSize(14.9,"C"))
 showRes("C",1.6)
 showRes("C",0.22*3.2)
+showRes("F",0.5)
+showRes("F",0.75)

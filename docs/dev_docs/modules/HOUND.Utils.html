@@ -54,7 +54,7 @@
 <ul class="nowrap">
   <li><a href="../modules/HOUND.html">HOUND</a></li>
   <li><a href="../modules/HOUND.Logger.html">HOUND.Logger</a></li>
-  <li><a href="../modules/HOUND.DBs.html">HOUND.DBs</a></li>
+  <li><a href="../modules/HOUND.DB.html">HOUND.DB</a></li>
   <li><a href="../modules/HOUND.Config.html">HOUND.Config</a></li>
   <li><strong>HOUND.Utils</strong></li>
   <li><a href="../modules/HOUND.EventHandler.html">HOUND.EventHandler</a></li>
@@ -341,23 +341,6 @@
 <h2><a href="#Elint_functions">Elint functions </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.Elint.getDefraction">HOUND.Utils.Elint.getDefraction (band, antenna_size)</a></td>
-	<td class="summary">Get defraction
- for band and effective antenna size return angular resolution</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.Elint.getApertureSize">HOUND.Utils.Elint.getApertureSize (DCS_Unit)</a></td>
-	<td class="summary">get Effective Aperture size for unit</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.Elint.getEmitterBand">HOUND.Utils.Elint.getEmitterBand (DCS_Unit)</a></td>
-	<td class="summary">Get emitter Band</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.Elint.getSensorPrecision">HOUND.Utils.Elint.getSensorPrecision (platform, emitterBand)</a></td>
-	<td class="summary">Elint Function - Get sensor precision</td>
-	</tr>
-	<tr>
 	<td class="name" nowrap><a href="#HOUND.Utils.Elint.generateAngularError">HOUND.Utils.Elint.generateAngularError (variance)</a></td>
 	<td class="summary">Elint Function - Generate angular error</td>
 	</tr>
@@ -372,10 +355,6 @@
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Utils.Elint.getRwrContacts">HOUND.Utils.Elint.getRwrContacts (platform)</a></td>
 	<td class="summary">Get RWR contacts for platfom</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.Elint.isValidPlatform">HOUND.Utils.Elint.isValidPlatform (candidate)</a></td>
-	<td class="summary">check if canidate Object is a valid platform</td>
 	</tr>
 </table>
 <h2><a href="#Vector_functions">Vector functions </a></h2>
@@ -2093,113 +2072,6 @@
 
     <dl class="function">
     <dt>
-    <a name = "HOUND.Utils.Elint.getDefraction"></a>
-    <strong>HOUND.Utils.Elint.getDefraction (band, antenna_size)</strong>
-    </dt>
-    <dd>
-    Get defraction
- for band and effective antenna size return angular resolution
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">band</span>
-         Radar transmission band (A-L) as defined in HOUND.DBs
-        </li>
-        <li><span class="parameter">antenna_size</span>
-         Effective antenna size for platform as defined in HOUND.DBs
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        angular resolution in Radians for Band Antenna combo
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Utils.Elint.getApertureSize"></a>
-    <strong>HOUND.Utils.Elint.getApertureSize (DCS_Unit)</strong>
-    </dt>
-    <dd>
-    get Effective Aperture size for unit
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">DCS_Unit</span>
-         Unit requested (used as platform)
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        Effective aperture size in meters
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Utils.Elint.getEmitterBand"></a>
-    <strong>HOUND.Utils.Elint.getEmitterBand (DCS_Unit)</strong>
-    </dt>
-    <dd>
-    Get emitter Band
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">DCS_Unit</span>
-         Radar unit
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        Char radar band
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Utils.Elint.getSensorPrecision"></a>
-    <strong>HOUND.Utils.Elint.getSensorPrecision (platform, emitterBand)</strong>
-    </dt>
-    <dd>
-    Elint Function - Get sensor precision
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">platform</span>
-         Instance of DCS Unit which is the detecting platform
-        </li>
-        <li><span class="parameter">emitterBand</span>
-         Radar Band (frequency) of radar (A-L)
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        angular resolution in Radians of platform against specific Radar frequency
-    </ol>
-
-
-
-
-</dd>
-    <dt>
     <a name = "HOUND.Utils.Elint.generateAngularError"></a>
     <strong>HOUND.Utils.Elint.generateAngularError (variance)</strong>
     </dt>
@@ -2241,7 +2113,7 @@
          position of the destination (i.e emitting radar)
         </li>
         <li><span class="parameter">sensorPrecision</span>
-         angular resolution (in rad) of platform against radar <a href="../modules/HOUND.Utils.html#HOUND.Utils.Elint.getSensorPrecision">HOUND.Utils.Elint.getSensorPrecision</a>
+         angular resolution (in rad) of platform against radar
         </li>
     </ul>
 
@@ -2301,31 +2173,6 @@
     <ol>
 
         Table of all currently transmitting Ground and Ship radars that RWR detected by supplied platform
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Utils.Elint.isValidPlatform"></a>
-    <strong>HOUND.Utils.Elint.isValidPlatform (candidate)</strong>
-    </dt>
-    <dd>
-    check if canidate Object is a valid platform
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">candidate</span>
-         DCS Object (Unit or Static Object)
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        Bool. True if object is valid platform
     </ol>
 
 
@@ -3085,7 +2932,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2022-05-21 23:51:09 </i>
+<i style="float:right;">Last updated 2022-06-12 13:47:44 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>
