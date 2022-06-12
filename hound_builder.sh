@@ -100,7 +100,7 @@ function compile {
     sed ${SED_ARGS} '$!N;/^[[:space:]]*$/{$q;D;};P;D;' ${TARGET_FILE}
 
     GIT_BRANCH="-$(git branch --show-current | sed 's/[^a-zA-Z 0-9]/\\&/g')-$(date +%Y%m%d)"
-    if [ ${GIT_BRANCH} == "-main" ]; 
+    if [ ${GIT_BRANCH} == "-main-$(date +%Y%m%d)" ]; 
        then GIT_BRANCH="";
     fi
     sed ${SED_ARGS} "s/-TRUNK/""${GIT_BRANCH}""/" ${TARGET_FILE}
