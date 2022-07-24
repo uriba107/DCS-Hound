@@ -12,7 +12,7 @@ end
 
 do
     HOUND = {
-        VERSION = "0.3.0",
+        VERSION = "0.3.1-develop-20220724",
         DEBUG = false,
         ELLIPSE_PERCENTILE = 0.6,
         DATAPOINTS_NUM = 30,
@@ -526,6 +526,13 @@ do
             ['Band'] = 'G',
             ['Primary'] = true
         },
+        ['SON_9'] = {
+            ['Name'] = "Fire Can",
+            ['Assigned'] = {"AAA"},
+            ['Role'] = {"TR"},
+            ['Band'] = 'E',
+            ['Primary'] = true
+        },
         ['Silkworm_SR'] = {
             ['Name'] = "Silkworm",
             ['Assigned'] = {"Silkworm"},
@@ -895,6 +902,48 @@ do
             ['Assigned'] = {"Naval"},
             ['Role'] = {"Naval"},
             ['Band'] = 'E',
+            ['Primary'] = true
+        },
+        ['hms_invincible'] = {
+            ['Name'] = "Invincible",
+            ['Assigned'] = {"Naval"},
+            ['Role'] = {"Naval"},
+            ['Band'] = 'E',
+            ['Primary'] = true
+        },
+        ['leander-gun-achilles'] = {
+            ['Name'] = "Leander",
+            ['Assigned'] = {"Naval"},
+            ['Role'] = {"Naval"},
+            ['Band'] = 'F',
+            ['Primary'] = true
+        },
+        ['leander-gun-andromeda'] = {
+            ['Name'] = "Leander",
+            ['Assigned'] = {"Naval"},
+            ['Role'] = {"Naval"},
+            ['Band'] = 'F',
+            ['Primary'] = true
+        },
+        ['leander-gun-ariadne'] = {
+            ['Name'] = "Leander",
+            ['Assigned'] = {"Naval"},
+            ['Role'] = {"Naval"},
+            ['Band'] = 'F',
+            ['Primary'] = true
+        },
+        ['leander-gun-condell'] = {
+            ['Name'] = "Condell",
+            ['Assigned'] = {"Naval"},
+            ['Role'] = {"Naval"},
+            ['Band'] = 'K',
+            ['Primary'] = true
+        },
+        ['leander-gun-lynch'] = {
+            ['Name'] = "Condell",
+            ['Assigned'] = {"Naval"},
+            ['Role'] = {"Naval"},
+            ['Band'] = 'K',
             ['Primary'] = true
         }
     }
@@ -6648,4 +6697,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.3.0 - Compiled on 2022-06-12 11:23
+-- Hound version 0.3.1-develop-20220724 - Compiled on 2022-07-24 11:31

@@ -267,6 +267,13 @@ do
             ['Band'] = 'G',
             ['Primary'] = true
         },
+        ['SON_9'] = {
+            ['Name'] = "Fire Can",
+            ['Assigned'] = {"AAA"},
+            ['Role'] = {"TR"},
+            ['Band'] = 'E',
+            ['Primary'] = true
+        },
         -- non AA radars
         ['Silkworm_SR'] = {
             ['Name'] = "Silkworm",
@@ -641,6 +648,49 @@ do
             ['Assigned'] = {"Naval"},
             ['Role'] = {"Naval"},
             ['Band'] = 'E',
+            ['Primary'] = true
+        },
+    -- South Atlantic naval assets
+        ['hms_invincible'] = {
+            ['Name'] = "Invincible",
+            ['Assigned'] = {"Naval"},
+            ['Role'] = {"Naval"},
+            ['Band'] = 'E',
+            ['Primary'] = true
+        },
+        ['leander-gun-achilles'] = {
+            ['Name'] = "Leander",
+            ['Assigned'] = {"Naval"},
+            ['Role'] = {"Naval"},
+            ['Band'] = 'F',
+            ['Primary'] = true
+        },
+        ['leander-gun-andromeda'] = {
+            ['Name'] = "Leander",
+            ['Assigned'] = {"Naval"},
+            ['Role'] = {"Naval"},
+            ['Band'] = 'F',
+            ['Primary'] = true
+        },
+        ['leander-gun-ariadne'] = {
+            ['Name'] = "Leander",
+            ['Assigned'] = {"Naval"},
+            ['Role'] = {"Naval"},
+            ['Band'] = 'F',
+            ['Primary'] = true
+        },
+        ['leander-gun-condell'] = {
+            ['Name'] = "Condell",
+            ['Assigned'] = {"Naval"},
+            ['Role'] = {"Naval"},
+            ['Band'] = 'K',
+            ['Primary'] = true
+        },
+        ['leander-gun-lynch'] = {
+            ['Name'] = "Condell",
+            ['Assigned'] = {"Naval"},
+            ['Role'] = {"Naval"},
+            ['Band'] = 'K',
             ['Primary'] = true
         }
     }
