@@ -619,7 +619,7 @@ do
             HOUND.Utils.Marker._MarkId = HOUND.Utils.Marker._MarkId + 1
         elseif UTILS and UTILS.GetMarkID then
             HOUND.Utils.Marker._MarkId = UTILS.GetMarkID()
-         elseif HOUND.MIST_VERSION >= 4.6 or (HOUND.MIST_VERSION == 4.5 and l_mist.build => 106 ) then
+         elseif HOUND.MIST_VERSION >= 4.6 or (HOUND.MIST_VERSION == 4.5 and l_mist.build >= 106 ) then
             HOUND.Utils.Marker._MarkId = l_mist.marker.getNextId()
         else
             HOUND.Utils.Marker._MarkId = HOUND.Utils.Marker._MarkId + 1
