@@ -1269,6 +1269,7 @@ do
 
         if DcsEvent.id == world.event.S_EVENT_BIRTH
             and DcsEvent.initiator:getCoalition() == self.settings:getCoalition()
+            and DcsEvent.initiator.getPlayerName ~= nil
             and DcsEvent.initiator:getPlayerName() ~= nil
             and setContains(mist.DBs.humansByName,DcsEvent.initiator:getName())
             then return self:populateRadioMenu()
