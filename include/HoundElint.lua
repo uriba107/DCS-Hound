@@ -12,7 +12,7 @@ end
 
 do
     HOUND = {
-        VERSION = "0.3.2",
+        VERSION = "0.3.2-develop-20220820",
         DEBUG = false,
         ELLIPSE_PERCENTILE = 0.6,
         DATAPOINTS_NUM = 30,
@@ -3262,7 +3262,7 @@ do
             HOUND.Logger.error("something is wrong with the object for " .. self.DCSunitName)
             self:updateDeadDCSObject()
         end
-        if type(self.unit) == "table" and self.unit.getLife then
+        if self.unit and type(self.unit) == "table" and self.unit:isExist() then
             return self.unit:getLife()
         end
         return 0
@@ -3277,7 +3277,7 @@ do
     end
 
     function HOUND.Contact:updateDeadDCSObject()
-        self.unit = Unit.getByName(self.DCSunitName) or Object.getByName(self.DCSunitName)
+        self.unit = Unit.getByName(self.DCSunitName) or StaticObject.getByName(self.DCSunitName)
         if not self.unit then
             self.unit = self.DCSunitName
         end
@@ -6668,6 +6668,7 @@ do
 
         if DcsEvent.id == world.event.S_EVENT_BIRTH
             and DcsEvent.initiator:getCoalition() == self.settings:getCoalition()
+            and DcsEvent.initiator.getPlayerName ~= nil
             and DcsEvent.initiator:getPlayerName() ~= nil
             and setContains(mist.DBs.humansByName,DcsEvent.initiator:getName())
             then return self:populateRadioMenu()
@@ -6697,4 +6698,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.3.2 - Compiled on 2022-08-02 17:14
+-- Hound version 0.3.2-develop-20220820 - Compiled on 2022-08-19 23:00
