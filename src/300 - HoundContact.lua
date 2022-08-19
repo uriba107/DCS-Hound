@@ -196,7 +196,7 @@ do
             HOUND.Logger.error("something is wrong with the object for " .. self.DCSunitName)
             self:updateDeadDCSObject()
         end
-        if type(self.unit) == "table" and self.unit.getLife then
+        if self.unit and type(self.unit) == "table" and self.unit:isExist() then
             return self.unit:getLife()
         end
         return 0
@@ -218,7 +218,7 @@ do
     --- update the internal DCS Object
     -- Since March 2022, Dead units are converted to staticObject on delayed death
     function HOUND.Contact:updateDeadDCSObject()
-        self.unit = Unit.getByName(self.DCSunitName) or Object.getByName(self.DCSunitName)
+        self.unit = Unit.getByName(self.DCSunitName) or StaticObject.getByName(self.DCSunitName)
         if not self.unit then
             self.unit = self.DCSunitName
         end
