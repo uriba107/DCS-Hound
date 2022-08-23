@@ -412,7 +412,7 @@ do
         },
         ['S-300VM 9S19M2 sr'] = {
             ['Name'] = 'High Screen M',
-            ['Assigned'] = "SA-23",
+            ['Assigned'] = {"SA-23"},
             ['Role'] = {"SR"},
             ['Band'] = 'C',
             ['Primary'] = false

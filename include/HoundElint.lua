@@ -12,7 +12,7 @@ end
 
 do
     HOUND = {
-        VERSION = "0.3.2-develop-20220820",
+        VERSION = "0.3.2-develop-20220823",
         DEBUG = false,
         ELLIPSE_PERCENTILE = 0.6,
         DATAPOINTS_NUM = 30,
@@ -668,7 +668,7 @@ do
         },
         ['S-300VM 9S19M2 sr'] = {
             ['Name'] = 'High Screen M',
-            ['Assigned'] = "SA-23",
+            ['Assigned'] = {"SA-23"},
             ['Role'] = {"SR"},
             ['Band'] = 'C',
             ['Primary'] = false
@@ -6698,4 +6698,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.3.2-develop-20220820 - Compiled on 2022-08-19 23:00
+-- Hound version 0.3.2-develop-20220823 - Compiled on 2022-08-23 08:01
