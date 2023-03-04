@@ -1000,6 +1000,16 @@ do
         return retval or false
     end
 
+    -- Override mission editor callsigns for player slots with bespoke callsigns
+    -- @param callsignOverrideTable ex. { Devil = Bengal, Enfield = Victory } -- replaces ME callsigns with bespoke callsigns for TTS. Keys must correspond to mission editor callsigns or they will have no effect
+    -- @returns nil
+    function HoundElint:setCustomFormationCallsignOverrides(callsignOverrideTable)
+        if not type(callsignOverrideTable) == 'table' or type(callsignOverrideTable) == 'nil' then
+            env.error('HOUND.Utils.setCustomFormationCallsignOverrides: first parameter must be a table')
+        end
+        HOUND.Utils.customFormationCallsignOverrides = callsignOverrideTable
+    end
+
     -------------------------------
 
     --- Instance Internal functions

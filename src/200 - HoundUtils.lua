@@ -389,7 +389,21 @@ do
                     callsign = callsign .. " " .. num
                 end
             end
+            if HOUND.Utils.customFormationCallsignOverrides and type(HOUND.Utils.customFormationCallsignOverrides) == 'table' then
+                for vanillaCallsign, overrideCallsign in pairs(HOUND.Utils.customFormationCallsignOverrides) do
+                    if callsign:match(vanillaCallsign) then
+                        callsign = callsign:gsub(vanillaCallsign, overrideCallsign)
+                    end
+                end
+            end
             return string.upper(callsign:match( "^%s*(.-)%s*$" ))
+        end
+        if HOUND.Utils.customFormationCallsignOverrides and type(HOUND.Utils.customFormationCallsignOverrides) == 'table' then
+            for vanillaCallsign, overrideCallsign in pairs(HOUND.Utils.customFormationCallsignOverrides) do
+                if callsign:match(vanillaCallsign) then
+                    callsign = callsign:gsub(vanillaCallsign, overrideCallsign)
+                end
+            end
         end
         return string.upper(callsign:match( "^%s*(.-)%s*$" ))
     end
