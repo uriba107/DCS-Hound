@@ -59,7 +59,7 @@ do
         -- SAM radars --
         ['p-19 s-125 sr'] = {
             ['Name'] = "Flat Face",
-            ['Assigned'] = {"SA-2","SA-3"},
+            ['Assigned'] = {"SA-2","SA-3","SA-5"},
             ['Role'] = {"SR"},
             ['Band'] = 'C',
             ['Primary'] = false
@@ -70,6 +70,13 @@ do
             ['Role'] = {"TR"},
             ['Band'] = 'G',
             ['Primary'] = true
+        },
+        ['RD_75'] = {
+            ['Name'] = "Amazonka",
+            ['Assigned'] = {"SA-2"},
+            ['Role'] = {"RF"},
+            ['Band'] = 'G',
+            ['Primary'] = false
         },
         ['snr s-125 tr'] = {
             ['Name'] = "Low Blow",
@@ -692,7 +699,15 @@ do
             ['Role'] = {"Naval"},
             ['Band'] = 'K',
             ['Primary'] = true
-        }
+        },
+        -- None Combat vessels
+        ['BDK-775'] = {
+            ['Name'] = "Ropucha",
+            ['Assigned'] = {"Naval"},
+            ['Role'] = {"Naval"},
+            ['Band'] = 'E',
+            ['Primary'] = true
+        },
     }
 
     --- Enums for Phonetic AlphaBet
@@ -796,7 +811,11 @@ do
             ['A-50'] = {antenna = {size = 9, factor = 0.5},ins_error=0},
             ['An-26B'] = {antenna = {size = 26, factor = 1},ins_error=100},
             ['C-47'] = {antenna = {size = 12, factor = 1},ins_error=100},
-            ['EA_6B'] = {antenna = {size = 9, factor = 1},ins_error=0}, -- VSN EA-6B
+            ['P3C_Orion'] = {antenna = {size = 25, factor = 1},ins_error=0}, -- MAM P-3C_Orion
+            ['CLP_P8'] = {antenna = {size = 35, factor = 1},ins_error=0}, -- CLP P-8A posidon
+            ['CLP_TU214R'] = {antenna = {size = 40, factor = 1},ins_error=0}, -- CLP TU-214R
+            ['EA_6B'] = {antenna = {size = 9, factor = 1},ins_error=0}, --VSN EA-6B
+            ['EA-18G'] = {antenna = {size = 14, factor = 1},ins_error=0}, --CJS EF-18G
             ['Su-25T'] = {antenna = {size = 3.5, factor = 1}, require = {CLSID='{Fantasmagoria}'},ins_error=50},
             ['AJS37'] = {antenna = {size = 4.5, factor = 1}, require = {CLSID='{U22A}'},ins_error=50},
             ['F-16C_50'] = {antenna = {size = 1.45, factor = 1},require = {CLSID='{AN_ASQ_213}'},ins_error=0},
@@ -809,7 +828,6 @@ do
             ['Mirage-F1CR'] = {antenna = {size = 4, factor = 1}, require = {CLSID='{ASTAC_POD}'},ins_error=0}, -- AI only (FAF)
             ['Mirage-F1EQ'] = {antenna = {size = 3.7, factor = 1}, require = {CLSID='{TMV_018_Syrel_POD}'},ins_error=50}, -- AI only (Iraq)
             ['Mirage-F1EDA'] = {antenna = {size = 3.7, factor = 1}, require = {CLSID='{TMV_018_Syrel_POD}'},ins_error=50}, -- AI only (Qatar)
-
         }
     }
 
