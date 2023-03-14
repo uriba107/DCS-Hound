@@ -4,6 +4,7 @@
 do
     local l_mist = mist
     local l_math = math
+    local l_grpc = GRPC
     local pi_2 = 2*l_math.pi
 
 --- HOUND.Utils decleration
@@ -350,14 +351,27 @@ do
 
     --- Get group callsign from unit
     -- @param player mist.DB entry to get formation callsign for
+    -- @param[opt] override callsign substitution table
     -- @param[opt] flightMember if True. value returned will be the full callsign (i.e "Uzi 1 1" rather then the default "Uzi 1")
     -- @return Formation callsign string
-    function HOUND.Utils.getFormationCallsign(player,flightMember)
+    function HOUND.Utils.getFormationCallsign(player,override,flightMember)
         local callsign = ""
         if type(player) ~= "table" then return callsign end
-        callsign = string.gsub(player.callsign.name,"[%d%s]","") .. " " .. player.callsign[2]
+        if type(flightMember) == "table" and override == nil then
+            override,flightMember = flightMember,override
+        end
+        local formationCallsign = string.gsub(player.callsign.name,"[%d%s]","")
+
+        callsign =  formationCallsign .. " " .. player.callsign[2]
         if flightMember then
             callsign = callsign .. " " .. player.callsign[3]
+        end
+
+        if type(override) == "table" then
+            if setContains(override,formationCallsign) then
+                callsign = callsign:gsub(formationCallsign,override[formationCallsign])
+                return string.upper(callsign:match( "^%s*(.-)%s*$" ))
+            end
         end
 
         local DCS_Unit = Unit.getByName(player.unitName)
@@ -839,6 +853,45 @@ do
     --- TTS Functions
     -- @section TTS
 
+    --- Check if TTS agent is available (private)
+    -- @return Bool true if TTS is available
+    function HOUND.Utils.TTS.isAvailable()
+        if STTS ~= nil then
+            -- do checks for STTS for now KISS
+            return true
+        end
+        if l_grpc ~= nil and type(l_grpc.tts) == "function" then
+            -- do checks for DCS-gRPC for now KISS
+            return true
+        end
+        return false
+    end
+
+    --- Return default Modulation based on frequency
+    -- @param freq The frequency in Mhz, Hz or table of frequencies
+    -- @return Modulation string "AM" or "FM"
+    function HOUND.Utils.TTS.getdefaultModulation(freq)
+        if not freq then return "AM" end
+        if tonumber(freq) ~= nil then
+            freq = tonumber(freq)
+            if freq < 90 or (freq > 1000000 and freq < (90 * 1000000)) then
+                return "FM"
+            else
+                return "AM"
+            end
+        end
+        if type(freq) == "string" then
+            freq = string.split(freq,",")
+        end
+        if type(freq) == "table" then
+            local retval = {}
+            for _,frequency in ipairs(freq) do
+                table.insert(retval,HOUND.Utils.TTS.getdefaultModulation(tonumber(frequency)))
+            end
+            return table.concat(retval,",")
+        end
+        return "AM"
+    end
     --- Transmit message using STTS (private)
     -- @param msg The message to transmit
     -- @param coalitionID Coalition to recive transmission
@@ -848,18 +901,124 @@ do
 
     function HOUND.Utils.TTS.Transmit(msg,coalitionID,args,transmitterPos)
 
-        if STTS == nil then return end
+        if not HOUND.Utils.TTS.isAvailable() then return end
         if msg == nil then return end
         if coalitionID == nil then return end
 
         if args.freq == nil then return end
-        args.modulation = args.modulation or "AM"
+        args.modulation = args.modulation or HOUND.Utils.TTS.getdefaultModulation(args.freq)
+
         args.volume = args.volume or "1.0"
         args.name = args.name or "Hound"
         args.gender = args.gender or "female"
         args.culture = args.culture or "en-US"
 
-        return STTS.TextToSpeech(msg,args.freq,args.modulation,args.volume,args.name,coalitionID,transmitterPos,args.speed,args.gender,args.culture,args.voice,args.googleTTS)
+        if STTS ~= nil then
+            return STTS.TextToSpeech(msg,args.freq,args.modulation,args.volume,args.name,coalitionID,transmitterPos,args.speed,args.gender,args.culture,args.voice,args.googleTTS)
+        end
+
+        if l_grpc ~= nil and type(l_grpc.tts) == "function" then
+            -- HOUND.Logger.debug("gRPC TTS message")
+            return HOUND.Utils.TTS.TransmitGRPC(msg,coalitionID,args,transmitterPos)
+        end
+    end
+
+    --- Transmit message using gRPC.tts (private)
+    -- @param msg The message to transmit
+    -- @param coalitionID Coalition to recive transmission
+    -- @param args STTS settings in hash table (minimum required is {freq=})
+    -- @param[opt] transmitterPos DCS Position point for transmitter
+    -- @return currently estimated speechTime
+    function HOUND.Utils.TTS.TransmitGRPC(msg,coalitionID,args,transmitterPos)
+        local VOLUME = {"default","x-slow", "slow", "medium", "fast", "x-fast"}
+        local ssml_msg = msg
+
+        local grpc_ttsArgs = {
+            srsClientName = args.name,
+            coalition = HOUND.Utils.getCoalitionString(coalitionID):lower(),
+        }
+        if type(transmitterPos) == "table" then
+            grpc_ttsArgs.position = {}
+            grpc_ttsArgs.position.lat, grpc_ttsArgs.position.lon, grpc_ttsArgs.position.alt = coord.LOtoLL( transmitterPos )
+        end
+        if type(args.provider) == "table" then
+            grpc_ttsArgs.provider = args.provider
+        end
+
+        local readSpeed = 1.0
+        if args.speed ~= 0 then
+            if args.speed > 10 then
+                readSpeed = HOUND.Utils.Mapping.linear(args.speed,50,250,0.5,2.5,true)
+            else
+
+                if args.speed > 0 then
+                    -- 250% = 10
+                    readSpeed = HOUND.Utils.Mapping.linear(args.speed,0,10,1.0,2.5,true)
+                else
+                    -- 50% = -10
+                    readSpeed = HOUND.Utils.Mapping.linear(args.speed,-10,0,0.5,1.0,true)
+                end
+            end
+        end
+
+        local ssml_prosody = ""
+        if readSpeed ~= 1.0  then
+            ssml_prosody = ssml_prosody .. " rate='"..readSpeed.."'"
+        end
+
+        if args.volume ~= 1.0 then
+            local volume = ""
+
+            if setContainsValue(VOLUME,args.volume) then
+                volume = args.volume
+            end
+
+            if type(args.volume)=="number" then
+                if args.volume ~= 0 then
+                    volume = (args.volume*100)-100 .. "%"
+                    if args.volume > 1 then
+                        volume = "+" .. volume
+                    end
+                else
+                    volume = "slient"
+                end
+            end
+
+            if string.len(volume) > 0 then
+                ssml_prosody = ssml_prosody .. " volume='"..volume.."'"
+            end
+        end
+        if string.len(ssml_prosody) > 0 then
+            ssml_msg = table.concat({"<prosody",ssml_prosody,">",ssml_msg,"</prosody>"},"")
+        end
+
+        local ssml_voice = ""
+        if args.voice then
+            ssml_voice = ssml_voice.." name='"..args.voice.."'"
+        else
+            if args.gender then
+                ssml_voice = ssml_voice.." gender='"..args.gender.."'"
+            end
+            if args.culture then
+                ssml_voice = ssml_voice.." language='"..args.culture.."'"
+            end
+        end
+
+        if string.len(ssml_voice) > 0 then
+            ssml_msg = table.concat({"<voice",ssml_voice,">",ssml_msg,"</voice>"},"")
+        end
+
+        -- HOUND.Logger.debug(ssml_msg)
+
+        local freqs = string.split(args.freq,",")
+
+        for _,freq in ipairs(freqs) do
+            -- HOUND.Logger.debug("transmitting on "..freq)
+
+            freq = math.ceil(freq * 1000000)
+            l_grpc.tts(ssml_msg, freq, grpc_ttsArgs)
+        end
+        return HOUND.Utils.TTS.getReadTime(msg) / readSpeed -- read speed > 1.0 is fast
     end
 
     --- returns current DCS time in military time string for TTS
@@ -1604,6 +1763,7 @@ do
     function HOUND.Utils.Cluster.weightedMean(origPoints,initPos,threashold,maxIttr)
         if type(origPoints) ~= "table" or not HOUND.Utils.Geo.isDcsPoint(origPoints[1]) then return end
         local points = HOUND.Utils.Geo.setHeight(l_mist.utils.deepCopy(origPoints))
+        if Length(points) == 1 then return l_mist.utils.deepCopy(points[1]) end
 
         local current_mean = initPos
         if type(current_mean) == "boolean" and current_mean then

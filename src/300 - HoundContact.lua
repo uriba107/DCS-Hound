@@ -498,7 +498,7 @@ do
     --- calculate additional position data
     -- @param pos basic position table to be filled with extended data
     -- @return pos input object, but with more data
-    function HOUND.Contact:calculatePosExtras(pos)
+    function HOUND.Contact:calculateExtrasPosData(pos)
         if type(pos.p) == "table" and HOUND.Utils.Geo.isDcsPoint(pos.p) then
             local bullsPos = coalition.getMainRefPoint(self._platformCoalition)
             pos.LL = {}
@@ -603,14 +603,13 @@ do
         if Length(estimatePositions) > 2 or (Length(estimatePositions) > 0 and staticPlatformsOnly) then
             self.pos.p = HOUND.Utils.Cluster.weightedMean(estimatePositions)
             self.uncertenty_data = self.calculateEllipse(estimatePositions,false,self.pos.p)
-
             if type(staticClipPolygon2D) == "table" and ( staticPlatformsOnly) then
                 self.uncertenty_data = self.calculateEllipse(staticClipPolygon2D,true,self.pos.p)
             end
 
             self.uncertenty_data.az = l_mist.utils.round(l_math.deg((self.uncertenty_data.theta+l_mist.getNorthCorrection(self.pos.p)+pi_2)%pi_2))
 
-            self:calculatePosExtras(self.pos)
+            self:calculateExtrasPosData(self.pos)
 
             if self.state == HOUND.EVENTS.RADAR_ASLEEP then
                 self.state = HOUND.EVENTS.SITE_ALIVE
@@ -628,7 +627,7 @@ do
 
         if newContact and self.pos.p ~= nil and self.isEWR == false then
             self.state = HOUND.EVENTS.RADAR_DETECTED
-            self:calculatePosExtras(self.pos)
+            self:calculateExtrasPosData(self.pos)
         end
 
         return self.state
@@ -858,7 +857,7 @@ do
         self.preBriefed = true
 
         self.pos.p = unitPos.p
-        self:calculatePosExtras(self.pos)
+        self:calculateExtrasPosData(self.pos)
 
         self.uncertenty_data = {}
         self.uncertenty_data.major = 0.1

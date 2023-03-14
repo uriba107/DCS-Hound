@@ -30,7 +30,6 @@ do
 
         CommsManager.settings = {
             freq = 250.000,
-            modulation = "AM",
             volume = "1.0",
             name = "Hound",
             speed = 0,
@@ -45,7 +44,7 @@ do
             enabletext = false
         }
 
-        if not STTS then
+        if not HOUND.Utils.TTS.isAvailable() then
             CommsManager.preferences.enabletts = false
         end
 
@@ -147,7 +146,7 @@ do
 
     --- enable text messages
     function HOUND.Comms.Manager:enableTTS()
-        if STTS ~= nil then
+        if HOUND.Utils.TTS.isAvailable() then
             self:setSettings("enableTTS",true)
         end
     end
@@ -230,7 +229,7 @@ do
         local retval = {}
 
         for i,freq in ipairs(freqs) do
-            local str = string.format("%.3f",tonumber(freq)) .. " " .. (mod[i] or "AM")
+            local str = string.format("%.3f",tonumber(freq)) .. " " .. (mod[i] or HOUND.Utils.TTS.getdefaultModulation(freq))
             table.insert(retval,str)
         end
         return retval
@@ -327,7 +326,7 @@ do
             return timer.getTime() + 10
         end
 
-        if gSelf.enabled and STTS ~= nil and msgObj.tts ~= nil and gSelf.preferences.enabletts then
+        if gSelf.enabled and HOUND.Utils.TTS.isAvailable() and msgObj.tts ~= nil and gSelf.preferences.enabletts then
             HOUND.Utils.TTS.Transmit(msgObj.tts,msgObj.coalition,gSelf.settings,transmitterPos)
             readTime = HOUND.Utils.TTS.getReadTime(msgObj.tts,gSelf.settings.speed)
             -- env.info("TTS msg: " .. msgObj.tts)

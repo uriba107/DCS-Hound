@@ -962,7 +962,7 @@ do
         if gSelf.comms.controller:isEnabled() then
             msgObj.tts = contact:generateTtsReport(useDMM)
             if requester ~= nil then
-                msgObj.tts = HOUND.Utils.getFormationCallsign(requester) .. ", " .. gSelf.callsign .. ", " ..
+                msgObj.tts = HOUND.Utils.getFormationCallsign(requester,gSelf._hSettings:getCallsignOverride()) .. ", " .. gSelf.callsign .. ", " ..
                                  msgObj.tts
             end
             if gSelf.comms.controller:getSettings("enableText") == true then
@@ -978,7 +978,7 @@ do
     function HOUND.Sector:TransmitCheckInAck(player)
         if not player then return end
         local msgObj = {priority = 1,coalition = self._hSettings:getCoalition(), gid = player.groupId}
-        local msg = HOUND.Utils.getFormationCallsign(player) .. ", " .. self.callsign .. ", Roger. "
+        local msg = HOUND.Utils.getFormationCallsign(player,self._hSettings:getCallsignOverride()) .. ", " .. self.callsign .. ", Roger. "
         if self:countContacts() > 0 then
             msg = msg .. "Tasking is available."
         else
@@ -997,7 +997,7 @@ do
     function HOUND.Sector:TransmitCheckOutAck(player)
         if not player then return end
         local msgObj = {priority = 1,coalition = self._hSettings:getCoalition(), gid = player.groupId}
-        local msg = HOUND.Utils.getFormationCallsign(player) .. ", " .. self.callsign .. ", copy checking out. "
+        local msg = HOUND.Utils.getFormationCallsign(player,self._hSettings:getCallsignOverride()) .. ", " .. self.callsign .. ", copy checking out. "
         msgObj.tts = msg .. "Frequency change approved."
         msgObj.txt = msg
         if self.comms.controller:isEnabled() then
