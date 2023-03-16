@@ -698,6 +698,10 @@ do
         local alpha = HOUND.Utils.Mapping.linear(l_math.floor(HOUND.Utils.absTimeDelta(self.last_seen)),0,HOUND.CONTACT_TIMEOUT,0.2,0.05,true)
         local fillColor = {0,0,0,alpha}
         local lineColor = {0,0,0,0.30}
+        local lineType = 2
+        if (HOUND.Utils.absTimeDelta(self.last_seen) < 15) then
+            lineType = 1
+        end
         if self._platformCoalition == coalition.side.BLUE then
             fillColor[1] = 1
             lineColor[1] = 1
@@ -711,7 +715,8 @@ do
         local markArgs = {
             fillColor = fillColor,
             lineColor = lineColor,
-            coalition = self._platformCoalition
+            coalition = self._platformCoalition,
+            lineType = lineType
         }
         if numPoints == 1 then
             markArgs.pos = {
@@ -734,7 +739,7 @@ do
             pos = self.pos.p,
             coalition = self._platformCoalition
         }
-        if not self:isAccurate() then
+        if not self:isAccurate() and HOUND.USE_LEGACY_MARKERS then
             markerArgs.text = markerArgs.text .. " (" .. self.uncertenty_data.major .. "/" .. self.uncertenty_data.minor .. "@" .. self.uncertenty_data.az .. ")"
         end
         self._markpoints.p:update(markerArgs)

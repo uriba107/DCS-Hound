@@ -39,7 +39,8 @@ do
         MGRS_PRECISION = 5,
         EXTENDED_INFO = true,
         MIST_VERSION = tonumber(table.concat({mist.majorVersion,mist.minorVersion},".")),
-        FORCE_MANAGE_MARKERS = false
+        FORCE_MANAGE_MARKERS = false,
+        USE_LEGACY_MARKERS = true
     }
 
     --- Map Markers ENUM

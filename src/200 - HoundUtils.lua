@@ -620,8 +620,9 @@ do
     HOUND.Utils.Marker.Type = {
         NONE = 0,
         POINT = 1,
-        CIRCLE = 2,
-        FREEFORM = 3
+        TEXT =  2,
+        CIRCLE = 3,
+        FREEFORM = 4
     }
 
     --- Get next Markpoint Id
@@ -686,6 +687,9 @@ do
         -- @param text new text for marker
         instance.setText = function(self,text)
             if type(text) == "string" and self.id > 0 then
+                if self.type == HOUND.Utils.Marker.Type.TEXT then
+                    text = "¤ « " .. text
+                end
                 trigger.action.setMarkupText(self.id,text)
             end
         end
@@ -717,6 +721,16 @@ do
         instance.setLineColor = function(self,color)
             if self.id > 0 and self.type ~= HOUND.Utils.Marker.Type.FREEFORM and type(color) == "table" then
                 trigger.action.setMarkupColor(self.id,color)
+            end
+        end
+
+        --- update markpoint line type
+        -- @within HOUND.Utils.Marker.instance
+        -- @param self Hound Marker instance
+        -- @param lineType new lineType for marker
+        instance.setLineType = function(self,lineType)
+            if self.id > 0 and type(lineType) == "number" and self.type ~= HOUND.Utils.Marker.Type.FREEFORM then
+                trigger.action.setMarkupTypeLine(self.id,lineType)
             end
         end
 
@@ -752,20 +766,27 @@ do
             local coalition = args.coalition
             local pos = args.pos
             local text = args.text
-            local lineColor = args.lineColor
-            local fillColor = args.fillColor
+            local lineColor = args.lineColor or {0,0,0,0.75}
+            local fillColor = args.fillColor or {0,0,0,0}
+            local lineType = args.lineType or 2
+            local fontSize = args.fontSize or 16
             -- if type(fillColor) ~= "table" or type(lineColor) ~= "table" or type(text) ~= "string" then return false end
             self.id = HOUND.Utils.Marker.getId()
 
             if HOUND.Utils.Geo.isDcsPoint(pos) then
-                self.type = HOUND.Utils.Marker.Type.POINT
-                trigger.action.markToCoalition(self.id, text, pos, coalition,true)
+                if HOUND.USE_LEGACY_MARKERS then
+                    self.type = HOUND.Utils.Marker.Type.POINT
+                    trigger.action.markToCoalition(self.id, text, pos, coalition,true)
+                    return true
+                end
+                self.type = HOUND.Utils.Marker.Type.TEXT
+                trigger.action.textToAll(coalition,self.id, pos,lineColor,fillColor,fontSize,true,"¤ « " .. text)
                 return true
             end
 
             if Length(pos) == 2 and HOUND.Utils.Geo.isDcsPoint(pos.p) and type(pos.r) == "number" then
                 self.type = HOUND.Utils.Marker.Type.CIRCLE
-                trigger.action.circleToAll(coalition,self.id, pos.p,pos.r,lineColor,fillColor,2,true)
+                trigger.action.circleToAll(coalition,self.id, pos.p,pos.r,lineColor,fillColor,lineType,true)
                 return true
             end
 
@@ -773,7 +794,7 @@ do
                 self.type = HOUND.Utils.Marker.Type.FREEFORM
                 trigger.action.markupToAll(6,coalition,self.id,
                     pos[1], pos[2], pos[3], pos[4],
-                    lineColor,fillColor,2,true)
+                    lineColor,fillColor,lineType,true)
 
             end
             if Length(pos) == 8 then
@@ -781,7 +802,7 @@ do
                 trigger.action.markupToAll(7,coalition,self.id,
                     pos[1], pos[2], pos[3], pos[4],
                     pos[5], pos[6], pos[7], pos[8],
-                    lineColor,fillColor,2,true)
+                    lineColor,fillColor,lineType,true)
             end
             if Length(pos) == 16 then
                 self.type = HOUND.Utils.Marker.Type.FREEFORM
@@ -790,7 +811,7 @@ do
                     pos[5], pos[6], pos[7], pos[8],
                     pos[9], pos[10], pos[11], pos[12],
                     pos[13], pos[14], pos[15], pos[16],
-                    lineColor,fillColor,2,true)
+                    lineColor,fillColor,lineType,true)
             end
         end
 
@@ -813,35 +834,39 @@ do
             if self.id < 0 then
                 return self:_new(args)
             end
-            -- if self.id > 0 and self.type == HOUND.Utils.Marker.Type.FREEFORM then
-            if self.id > 0 and self.type ~= HOUND.Utils.Marker.Type.NONE then
+            if self.id > 0 and (self.type == HOUND.Utils.Marker.Type.FREEFORM or self.type ==  HOUND.Utils.Marker.Type.POINT)then
+            -- if self.id > 0 and self.type ~= HOUND.Utils.Marker.Type.NONE then
                     return self:_replace(args)
             end
             -- Update still does not work in MP for DC 2.7 leaving this for the future :(
-            -- if self.id > 0 then
-            --     if args.pos then
-            --         local pos = args.pos
-            --         if HOUND.Utils.Geo.isDcsPoint(pos) then
-            --             self:setPos(pos)
-            --         end
-            --         if Length(pos) == 2 and type(pos.r) == "number" and HOUND.Utils.Geo.isDcsPoint(pos.p) then
-            --             self:setPos(pos.p)
-            --             self:setRadius(pos.r)
-            --         end
-            --         if type(pos) == "table" and Length(pos) > 2 and HOUND.Utils.Geo.isDcsPoint(pos[1]) then
-            --             return self:_replace(args)
-            --         end
-            --     end
-            --     if args.text and type(args.text) == "string" then
-            --         self:setText(args.text)
-            --     end
-            --     if type(args.fillColor) == "table" then
-            --         self:setFillColor(args.fillColor)
-            --     end
-            --     if type(args.lineColor) == "table" then
-            --         self:setLineColor(args.lineColor)
-            --     end
-            -- end
+            if self.id > 0 then
+                if args.pos then
+                    local pos = args.pos
+                    if HOUND.Utils.Geo.isDcsPoint(pos) then
+                        self:setPos(pos)
+                    end
+                    if Length(pos) == 2 and type(pos.r) == "number" and HOUND.Utils.Geo.isDcsPoint(pos.p) then
+                        self:setPos(pos.p)
+                        self:setRadius(pos.r)
+                    end
+                    if type(pos) == "table" and Length(pos) > 2 and HOUND.Utils.Geo.isDcsPoint(pos[1]) then
+                        return self:_replace(args)
+                    end
+                end
+                if args.text and type(args.text) == "string" then
+                    self:setText(args.text)
+                end
+                if type(args.fillColor) == "table" then
+                    self:setFillColor(args.fillColor)
+                end
+                if type(args.lineColor) == "table" then
+                    self:setLineColor(args.lineColor)
+                end
+
+                if type(args.lineType) == "number" then
+                    self:setLineType(args.lineType)
+                end
+            end
         end
         -- actual logic for the class
         if type(args) == "table" then

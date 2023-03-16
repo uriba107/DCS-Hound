@@ -32,7 +32,7 @@ do
         }
         instance.preferences = {
             useMarkers = true,
-            markerType = HOUND.MARKER.DIAMOND,
+            markerType = HOUND.MARKER.CIRCLE,
             hardcore = false,
             detectDeadRadars = true,
             NatoBrevity = false,
@@ -286,10 +286,9 @@ do
         -- @within HOUND.Config.instance
         -- @param self config instance
         -- @return table of current callsign overrides
-        instance.getCallsigOverride = function(self)
+        instance.getCallsignOverride = function(self)
             return self.callsignOverride
         end
-
 
         --- Callsign override table setter
         -- @within HOUND.Config.instance
