@@ -881,11 +881,7 @@ do
     --- Check if TTS agent is available (private)
     -- @return Bool true if TTS is available
     function HOUND.Utils.TTS.isAvailable()
-        if STTS ~= nil then
-            -- do checks for STTS for now KISS
-            return true
-        end
-        if l_grpc ~= nil and type(l_grpc.tts) == "function" then
+        if (l_grpc ~= nil and type(l_grpc.tts) == "function") or STTS ~= nil  then
             -- do checks for DCS-gRPC for now KISS
             return true
         end
@@ -925,27 +921,27 @@ do
     -- @return STTS.TextToSpeech return value recived from STTS, currently estimated speechTime
 
     function HOUND.Utils.TTS.Transmit(msg,coalitionID,args,transmitterPos)
-
         if not HOUND.Utils.TTS.isAvailable() then return end
         if msg == nil then return end
         if coalitionID == nil then return end
 
         if args.freq == nil then return end
-        args.modulation = args.modulation or HOUND.Utils.TTS.getdefaultModulation(args.freq)
-
         args.volume = args.volume or "1.0"
         args.name = args.name or "Hound"
-        args.gender = args.gender or "female"
-        args.culture = args.culture or "en-US"
 
-        if STTS ~= nil then
-            return STTS.TextToSpeech(msg,args.freq,args.modulation,args.volume,args.name,coalitionID,transmitterPos,args.speed,args.gender,args.culture,args.voice,args.googleTTS)
-        end
-
-        if l_grpc ~= nil and type(l_grpc.tts) == "function" then
+        if (l_grpc ~= nil and type(l_grpc.tts) == "function") then
             -- HOUND.Logger.debug("gRPC TTS message")
             return HOUND.Utils.TTS.TransmitGRPC(msg,coalitionID,args,transmitterPos)
         end
+
+        if STTS ~= nil then
+            args.modulation = args.modulation or HOUND.Utils.TTS.getdefaultModulation(args.freq)
+            args.gender = args.gender or "female"
+            args.culture = args.culture or "en-US"
+            return STTS.TextToSpeech(msg,args.freq,args.modulation,args.volume,args.name,coalitionID,transmitterPos,args.speed,args.gender,args.culture,args.voice,args.googleTTS)
+        end
+
+
     end
 
     --- Transmit message using gRPC.tts (private)
