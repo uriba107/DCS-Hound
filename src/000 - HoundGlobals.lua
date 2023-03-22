@@ -29,6 +29,8 @@ do
     -- @field MGRS_PRECISION Number of digits in MGRS conversion
     -- @field EXTENDED_INFO Hound will add more in depth uncertenty info to controller messages (default is true)
     -- @field FORCE_MANAGE_MARKERS Force Hound to use internal counter for markIds (default is false).
+    -- @field USE_LEGACY_MARKERS Force Hound to use normal markers for radar positions (default is true)
+    -- @field IGNORE_GRPC_TTS Hound will ignore DCS-gRPC as a TTS engine (default is true)
     HOUND = {
         VERSION = "0.3.4-TRUNK",
         DEBUG = true,
@@ -40,7 +42,8 @@ do
         EXTENDED_INFO = true,
         MIST_VERSION = tonumber(table.concat({mist.majorVersion,mist.minorVersion},".")),
         FORCE_MANAGE_MARKERS = false,
-        USE_LEGACY_MARKERS = true
+        USE_LEGACY_MARKERS = true,
+        IGNORE_GRPC_TTS = true -- grpc currently causes CTD, disabling for now
     }
 
     --- Map Markers ENUM

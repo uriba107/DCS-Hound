@@ -881,8 +881,11 @@ do
     --- Check if TTS agent is available (private)
     -- @return Bool true if TTS is available
     function HOUND.Utils.TTS.isAvailable()
-        if (l_grpc ~= nil and type(l_grpc.tts) == "function") or STTS ~= nil  then
+        if (l_grpc ~= nil and type(l_grpc.tts) == "function" and not HOUND.IGNORE_GRPC_TTS)  then
             -- do checks for DCS-gRPC for now KISS
+            return true
+        end
+        if STTS ~= nil then
             return true
         end
         return false
@@ -928,15 +931,15 @@ do
         if args.freq == nil then return end
         args.volume = args.volume or "1.0"
         args.name = args.name or "Hound"
+        args.gender = args.gender or "female"
 
-        if (l_grpc ~= nil and type(l_grpc.tts) == "function") then
+        if (l_grpc ~= nil and type(l_grpc.tts) == "function" and not HOUND.IGNORE_GRPC_TTS) then
             -- HOUND.Logger.debug("gRPC TTS message")
             return HOUND.Utils.TTS.TransmitGRPC(msg,coalitionID,args,transmitterPos)
         end
 
         if STTS ~= nil then
             args.modulation = args.modulation or HOUND.Utils.TTS.getdefaultModulation(args.freq)
-            args.gender = args.gender or "female"
             args.culture = args.culture or "en-US"
             return STTS.TextToSpeech(msg,args.freq,args.modulation,args.volume,args.name,coalitionID,transmitterPos,args.speed,args.gender,args.culture,args.voice,args.googleTTS)
         end
@@ -1038,6 +1041,7 @@ do
 
             freq = math.ceil(freq * 1000000)
             l_grpc.tts(ssml_msg, freq, grpc_ttsArgs)
+            -- break -- for debugging. only transmit once
         end
         return HOUND.Utils.TTS.getReadTime(msg) / readSpeed -- read speed > 1.0 is fast
     end
