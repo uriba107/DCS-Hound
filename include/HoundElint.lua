@@ -12,7 +12,7 @@ end
 
 do
     HOUND = {
-        VERSION = "0.3.2-develop-20220823",
+        VERSION = "0.3.4-develop-20230328",
         DEBUG = false,
         ELLIPSE_PERCENTILE = 0.6,
         DATAPOINTS_NUM = 30,
@@ -21,7 +21,9 @@ do
         MGRS_PRECISION = 5,
         EXTENDED_INFO = true,
         MIST_VERSION = tonumber(table.concat({mist.majorVersion,mist.minorVersion},".")),
-        FORCE_MANAGE_MARKERS = false
+        FORCE_MANAGE_MARKERS = false,
+        USE_LEGACY_MARKERS = true,
+        IGNORE_GRPC_TTS = true -- grpc currently causes CTD, disabling for now
     }
 
     HOUND.MARKER = {
@@ -284,9 +286,97 @@ end
 do
     HOUND.DB = {}
 
-    local l_mist = mist
-    local l_math = math
+    HOUND.DB.PHONETICS =  {
+        ['A'] = "Alpha",
+        ['B'] = "Bravo",
+        ['C'] = "Charlie",
+        ['D'] = "Delta",
+        ['E'] = "Echo",
+        ['F'] = "Foxtrot",
+        ['G'] = "Golf",
+        ['H'] = "Hotel",
+        ['I'] = "India",
+        ['J'] = "Juliette",
+        ['K'] = "Kilo",
+        ['L'] = "Lima",
+        ['M'] = "Mike",
+        ['N'] = "November",
+        ['O'] = "Oscar",
+        ['P'] = "Papa",
+        ['Q'] = "Quebec",
+        ['R'] = "Romeo",
+        ['S'] = "Sierra",
+        ['T'] = "Tango",
+        ['U'] = "Uniform",
+        ['V'] = "Victor",
+        ['W'] = "Whiskey",
+        ['X'] = "X ray",
+        ['Y'] = "Yankee",
+        ['Z'] = "Zulu",
+        ['1'] = "One",
+        ['2'] = "Two",
+        ['3'] = "Three",
+        ['4'] = "Four",
+        ['5'] = "Five",
+        ['6'] = "Six",
+        ['7'] = "Seven",
+        ['8'] = "Eight",
+        ['9'] = "Niner",
+        ['0'] = "Zero",
+        [' '] = ",",
+        ['.'] = "Decimal"
+    }
 
+    HOUND.DB.useDecMin =  {
+        ['F-16C_blk50'] = true,
+        ['F-16C_50'] = true,
+        ['M-2000C'] = true,
+        ['A-10C'] = true,
+        ['A-10C_2'] = true,
+        ['AH-64D_BLK_II'] = true,
+    }
+
+    HOUND.DB.Bands =  {
+        ['A'] = 1.713100,
+        ['B'] = 0.799447,
+        ['C'] = 0.399723,
+        ['D'] = 0.199862,
+        ['E'] = 0.119917,
+        ['F'] = 0.085655,
+        ['G'] = 0.059958,
+        ['H'] = 0.042827,
+        ['I'] = 0.033310,
+        ['J'] = 0.019986,
+        ['K'] = 0.009993,
+        ['L'] = 0.005996,
+    }
+
+    HOUND.DB.CALLSIGNS = {
+        NATO = {
+            "ABLOW", "ACTON", "AGRAM", "AMINO", "AWOKE", "BARB", "BART", "BAZOO",
+            "BOGUE", "BOOT", "BRAY", "CAMAY", "CAPON", "CASEY", "CHIME", "CHISUM",
+            "COBRA", "COSMO", "CRISP", "DAGDA", "DALLY", "DEVON", "DIVE", "DOZER",
+            "DUPLE", "EXOR", "EXUDE", "EXULT", "FLOSS", "FLOUT", "FLUKY", "FURR",
+            "GENUS", "GOBO", "GOLLY", "GOOFY", "GROUP", "HAKE", "HARMO",
+            "HERMA", "HEXAD", "HOLE", "HURDS", "HYMN", "IOTA", "JOSS", "KELT", "LARVA",
+            "LUMPY", "MAFIA", "MINE", "MORTY", "MURKY", "NEVIN", "NEWLY", "NORTH",
+            "OLIVE", "ORKIN", "PARRY", "PATIO", "PATSY", "PATTY", "PERMA", "PITTS",
+            "POKER", "POOK", "PRIME", "PYTHON", "RAGU", "REMUS", "RINGY", "RITZ",
+            "RIVET", "ROSE", "RULE", "RUNNY", "SAME", "SAVOY", "SCENT",
+            "SCROW", "SEAT", "SLAG", "SLOG", "SNOOP", "SPRY", "STINT", "STOB", "TAKE",
+            "TALLY", "TAPE", "TOLL", "TONUS", "TOPCAT", "TORA", "TOTTY", "TOXIC",
+            "TRIAL", "TRYST", "VALVO", "VEIN", "VELA", "VETCH", "VINE", "VULCAN",
+            "WATT", "WORTH", "ZEPEL", "ZIPPY"
+        },
+        GENERIC = {
+            "VACUUM", "HOOVER", "KIRBY","ROOMBA","DYSON","SHERLOCK","WATSON","GADGET",
+            "HORATIO","CAINE","CHRISTIE","BENSON","GIBBS","COLOMBO","HOLT","DIAZ",
+            "SCULLY","MULDER","MARVIN","MARS","MORNINGSTAR","STEELE","CASTEL","BECKETT",
+            "INDIANA","JONES","LARA","CROFT","VENTURA","SCOOBY","SHAGGY"
+        }
+    }
+end
+do
     HOUND.DB.Radars = {
         ['1L13 EWR'] = {
             ['Name'] = "Box Spring",
@@ -318,7 +408,7 @@ do
         },
         ['p-19 s-125 sr'] = {
             ['Name'] = "Flat Face",
-            ['Assigned'] = {"SA-2","SA-3"},
+            ['Assigned'] = {"SA-2","SA-3","SA-5"},
             ['Role'] = {"SR"},
             ['Band'] = 'C',
             ['Primary'] = false
@@ -329,6 +419,13 @@ do
             ['Role'] = {"TR"},
             ['Band'] = 'G',
             ['Primary'] = true
+        },
+        ['RD_75'] = {
+            ['Name'] = "Amazonka",
+            ['Assigned'] = {"SA-2"},
+            ['Role'] = {"RF"},
+            ['Band'] = 'G',
+            ['Primary'] = false
         },
         ['snr s-125 tr'] = {
             ['Name'] = "Low Blow",
@@ -514,8 +611,8 @@ do
         },
         ['ZSU-23-4 Shilka'] = {
             ['Name'] = "Shilka",
-            ['Assigned'] = {"Shilka"},
-            ['Role'] = {"RF"},
+            ['Assigned'] = {"AAA"},
+            ['Role'] = {"TR"},
             ['Band'] = 'J',
             ['Primary'] = true
         },
@@ -561,190 +658,22 @@ do
             ['Band'] = 'L',
             ['Primary'] = false
         },
-        ['S-300PS 64H6E TRAILER sr'] = {
-            ['Name'] = "Big Bird",
-            ['Assigned'] = {"SA-10"},
-            ['Role'] = {"SR"},
-            ['Band'] = 'C',
-            ['Primary'] = false
-        },
-        ['S-300PS SA-10B 40B6MD MAST sr'] = {
-            ['Name'] = "Clam Shell",
-            ['Assigned'] = {"SA-10"},
-            ['Role'] = {"SR"},
-            ['Band'] = 'I',
-            ['Primary'] = false
-        },
-        ['S-300PS 40B6M MAST tr'] = {
-            ['Name'] = "Flap Lid",
-            ['Assigned'] = {"SA-10"},
-            ['Role'] = {"TR"},
-            ['Band'] = 'J',
-            ['Primary'] = true
-        },
-        ['S-300PS 30H6 TRAILER tr'] = {
-            ['Name'] = "Flap Lid",
-            ['Assigned'] = {"SA-10"},
-            ['Role'] = {"TR"},
-            ['Band'] = 'J',
-            ['Primary'] = true
-        },
-        ['S-300PS 30N6 TRAILER tr'] = {
-            ['Name'] = "Flap Lid",
-            ['Assigned'] = {"SA-10"},
-            ['Role'] = {"TR"},
-            ['Band'] = 'J',
-            ['Primary'] = true
-        },
-        ['S-300PMU1 40B6MD sr'] = {
-            ['Name'] = "Clam Shell",
-            ['Assigned'] = {"SA-10"},
-            ['Role'] = {"SR"},
-            ['Band'] = 'I',
-            ['Primary'] = false
-        },
-        ['S-300PMU1 64N6E sr'] = {
-            ['Name'] = "Big Bird",
-            ['Assigned'] = {"SA-10"},
-            ['Role'] = {"SR"},
-            ['Band'] = 'C',
-            ['Primary'] = false
-        },
-        ['S-300PMU1 30N6E tr'] = {
-            ['Name'] = "Flap Lid",
-            ['Assigned'] = {"SA-10"},
-            ['Role'] = {"TR"},
-            ['Band'] = 'J',
-            ['Primary'] = true
-        },
-        ['S-300PMU1 40B6M tr'] = {
-            ['Name'] = "Grave Stone",
-            ['Assigned'] = {"SA-10"},
-            ['Role'] = {"TR"},
-            ['Band'] = 'J',
-            ['Primary'] = true
-        },
-        ['S-300V 9S15 sr'] = {
-            ['Name'] = 'Bill Board',
-            ['Assigned'] = {"SA-12"},
-            ['Role'] = {"SR"},
-            ['Band'] = 'E',
-            ['Primary'] = false
-        },
-        ['S-300V 9S19 sr'] = {
-            ['Name'] = 'High Screen',
-            ['Assigned'] = {"SA-12"},
-            ['Role'] = {"SR"},
-            ['Band'] = 'C',
-            ['Primary'] = false
-        },
-        ['S-300V 9S32 tr'] = {
-            ['Name'] = 'Grill Pan',
-            ['Assigned'] = {"SA-12"},
-            ['Role'] = {"TR"},
-            ['Band'] = 'J',
-            ['Primary'] = true
-        },
-        ['S-300PMU2 92H6E tr'] = {
-            ['Name'] = 'Grave Stone',
-            ['Assigned'] = {"SA-20"},
-            ['Role'] = {"TR"},
-            ['Band'] = 'I',
-            ['Primary'] = true
-        },
-        ['S-300PMU2 64H6E2 sr'] = {
-            ['Name'] = "Big Bird",
-            ['Assigned'] = {"SA-20"},
-            ['Role'] = {"SR"},
-            ['Band'] = 'C',
-            ['Primary'] = false
-        },
-        ['S-300VM 9S15M2 sr'] = {
-            ['Name'] = 'Bill Board M',
-            ['Assigned'] = {"SA-23"},
-            ['Role'] = {"SR"},
-            ['Band'] = 'E',
-            ['Primary'] = false
-        },
-        ['S-300VM 9S19M2 sr'] = {
-            ['Name'] = 'High Screen M',
-            ['Assigned'] = {"SA-23"},
-            ['Role'] = {"SR"},
-            ['Band'] = 'C',
-            ['Primary'] = false
-        },
-        ['S-300VM 9S32ME tr'] = {
-            ['Name'] = 'Grill Pan M',
-            ['Assigned'] = {"SA-23"},
-            ['Role'] = {"TR"},
-            ['Band'] = 'K',
-            ['Primary'] = true
-        },
-        ['SA-17 Buk M1-2 LN 9A310M1-2'] = {
-            ['Name'] = "Fire Dome M",
-            ['Assigned'] = {"SA-17"},
-            ['Role'] = {"TR"},
-            ['Band'] = 'H',
-            ['Primary'] = false
-        },
-        ['34Ya6E Gazetchik E decoy'] = {
-            ['Name'] = "Flap Lid",
-            ['Assigned'] = {"SA-10"},
-            ['Role'] = {"TR"},
-            ['Band'] = 'J',
-            ['Primary'] = true
-        },
-        ['Fire Can radar'] = {
-            ['Name'] = "Fire Can",
-            ['Assigned'] = {"AAA"},
-            ['Role'] = {"TR"},
-            ['Band'] = 'E',
-            ['Primary'] = true
-        },
-        ['EWR 55G6U NEBO-U'] = {
-            ['Name'] = "Tall Rack",
-            ['Assigned'] = {"EWR"},
-            ['Role'] = {"EWR"},
-            ['Band'] = 'A',
-            ['Primary'] = false
-        },
-        ['EWR P-37 BAR LOCK'] = {
-            ['Name'] = "Bar lock",
-            ['Assigned'] = {"EWR"},
-            ['Role'] = {"SA-5","EWR"},
-            ['Band'] = 'E',
-            ['Primary'] = false
-        },
-        ['EWR 1L119 Nebo-SVU'] = {
-            ['Name'] = "Nebo-SVU",
-            ['Assigned'] = {"EWR"},
-            ['Role'] = {"EWR"},
-            ['Band'] = 'A',
-            ['Primary'] = false
-        },
-        ['EWR Generic radar tower'] = {
-            ['Name'] = "Civilian Radar",
-            ['Assigned'] = {"EWR"},
-            ['Role'] = {"EWR"},
-            ['Band'] = 'C',
-            ['Primary'] = false
-        },
         ['Type_052B'] = {
-            ['Name'] = "Type 052B",
+            ['Name'] = "Type 052B (DD)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {"Naval"},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['Type_052C'] = {
-            ['Name'] = "Type 052C",
+            ['Name'] = "Type 052C (DD)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {"Naval"},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['Type_054A'] = {
-            ['Name'] = "Type 054A",
+            ['Name'] = "Type 054A (DD)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {"Naval"},
             ['Band'] = 'E',
@@ -765,237 +694,194 @@ do
             ['Primary'] = true
         },
         ['USS_Arleigh_Burke_IIa'] = {
-            ['Name'] = "Arleigh Burke",
+            ['Name'] = "Arleigh Burke (DD)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {"Naval"},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['CV_1143_5'] = {
-            ['Name'] = "Kuznetsov",
+            ['Name'] = "Kuznetsov (CV)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {"Naval"},
             ['Band'] = 'F',
             ['Primary'] = true
         },
         ['KUZNECOW'] = {
-            ['Name'] = "Kuznetsov",
+            ['Name'] = "Kuznetsov (CV)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {"Naval"},
             ['Band'] = 'F',
             ['Primary'] = true
         },
         ['Forrestal'] = {
-            ['Name'] = "Forrestal",
+            ['Name'] = "Forrestal (CV)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {"Naval"},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['VINSON'] = {
-            ['Name'] = "Nimitz",
+            ['Name'] = "Nimitz (CV)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {"Naval"},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['CVN_71'] = {
-            ['Name'] = "Nimitz",
+            ['Name'] = "Nimitz (CV)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {"Naval"},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['CVN_72'] = {
-            ['Name'] = "Nimitz",
+            ['Name'] = "Nimitz (CV)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {"Naval"},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['CVN_73'] = {
-            ['Name'] = "Nimitz",
+            ['Name'] = "Nimitz (CV)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {"Naval"},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['Stennis'] = {
-            ['Name'] = "Nimitz",
+            ['Name'] = "Nimitz (CV)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {"Naval"},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['CVN_75'] = {
-            ['Name'] = "Nimitz",
+            ['Name'] = "Nimitz (CV)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {"Naval"},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['La_Combattante_II'] = {
-            ['Name'] = "La Combattante",
+            ['Name'] = "La Combattante (FC)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {"Naval"},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['ALBATROS'] = {
-            ['Name'] = "Grisha",
+            ['Name'] = "Grisha (FC)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {"Naval"},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['MOLNIYA'] = {
-            ['Name'] = "Molniya",
+            ['Name'] = "Molniya (FC)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {"Naval"},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['MOSCOW'] = {
-            ['Name'] = "Moskva",
+            ['Name'] = "Moskva (CG)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {"Naval"},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['NEUSTRASH'] = {
-            ['Name'] = "Neustrashimy",
+            ['Name'] = "Neustrashimy (DD)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {"Naval"},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['PERRY'] = {
-            ['Name'] = "Oliver H. Perry",
+            ['Name'] = "Oliver H. Perry (FF)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {"Naval"},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['PIOTR'] = {
-            ['Name'] = "Kirov",
+            ['Name'] = "Kirov (CG)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {"Naval"},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['REZKY'] = {
-            ['Name'] = "Krivak",
+            ['Name'] = "Krivak (FF)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {"Naval"},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['LHA_Tarawa'] = {
-            ['Name'] = "Tarawa",
+            ['Name'] = "Tarawa (LHA)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {"Naval"},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['TICONDEROG'] = {
-            ['Name'] = "Ticonderoga",
+            ['Name'] = "Ticonderoga (CG)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {"Naval"},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['hms_invincible'] = {
-            ['Name'] = "Invincible",
+            ['Name'] = "Invincible (CV)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {"Naval"},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['leander-gun-achilles'] = {
-            ['Name'] = "Leander",
+            ['Name'] = "Leander (FF)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {"Naval"},
             ['Band'] = 'F',
             ['Primary'] = true
         },
         ['leander-gun-andromeda'] = {
-            ['Name'] = "Leander",
+            ['Name'] = "Leander (FF)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {"Naval"},
             ['Band'] = 'F',
             ['Primary'] = true
         },
         ['leander-gun-ariadne'] = {
-            ['Name'] = "Leander",
+            ['Name'] = "Leander (FF)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {"Naval"},
             ['Band'] = 'F',
             ['Primary'] = true
         },
         ['leander-gun-condell'] = {
-            ['Name'] = "Condell",
+            ['Name'] = "Condell (FF)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {"Naval"},
             ['Band'] = 'K',
             ['Primary'] = true
         },
         ['leander-gun-lynch'] = {
-            ['Name'] = "Condell",
+            ['Name'] = "Condell (FF)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {"Naval"},
             ['Band'] = 'K',
             ['Primary'] = true
-        }
-    }
-
-    HOUND.DB.PHONETICS =  {
-        ['A'] = "Alpha",
-        ['B'] = "Bravo",
-        ['C'] = "Charlie",
-        ['D'] = "Delta",
-        ['E'] = "Echo",
-        ['F'] = "Foxtrot",
-        ['G'] = "Golf",
-        ['H'] = "Hotel",
-        ['I'] = "India",
-        ['J'] = "Juliette",
-        ['K'] = "Kilo",
-        ['L'] = "Lima",
-        ['M'] = "Mike",
-        ['N'] = "November",
-        ['O'] = "Oscar",
-        ['P'] = "Papa",
-        ['Q'] = "Quebec",
-        ['R'] = "Romeo",
-        ['S'] = "Sierra",
-        ['T'] = "Tango",
-        ['U'] = "Uniform",
-        ['V'] = "Victor",
-        ['W'] = "Whiskey",
-        ['X'] = "X ray",
-        ['Y'] = "Yankee",
-        ['Z'] = "Zulu",
-        ['1'] = "One",
-        ['2'] = "Two",
-        ['3'] = "Three",
-        ['4'] = "Four",
-        ['5'] = "Five",
-        ['6'] = "Six",
-        ['7'] = "Seven",
-        ['8'] = "Eight",
-        ['9'] = "Niner",
-        ['0'] = "Zero",
-        [' '] = ",",
-        ['.'] = "Decimal"
-    }
-
-    HOUND.DB.useDecMin =  {
-        ['F-16C_blk50'] = true,
-        ['F-16C_50'] = true,
-        ['M-2000C'] = true,
-        ['A-10C'] = true,
-        ['A-10C_2'] = true,
-        ['AH-64D_BLK_II'] = true,
+        },
+        ['BDK-775'] = {
+            ['Name'] = "Ropucha",
+            ['Assigned'] = {"Naval"},
+            ['Role'] = {"Naval"},
+            ['Band'] = 'E',
+            ['Primary'] = true
+        },
     }
 
     HOUND.DB.Platform =  {
@@ -1011,14 +897,10 @@ do
             ['MIL-26'] = {antenna = {size = 20, factor = 1},ins_error=50},
             ['SH-60B'] = {antenna = {size = 8, factor = 1},ins_error=0},
             ['UH-60A'] = {antenna = {size = 8, factor = 1},ins_error=0},
-            ['UH-60L'] = {antenna = {size = 8, factor = 1},ins_error=0}, -- community UH-69L
             ['Mi-8MT'] = {antenna = {size = 8, factor = 1},ins_error=0},
             ['UH-1H'] = {antenna = {size = 4, factor = 1},ins_error=50},
             ['KA-27'] = {antenna = {size = 4, factor = 1},ins_error=50},
             ['C-130'] = {antenna = {size = 35, factor = 1},ins_error=0},
-            ['Hercules'] = {antenna = {size = 35, factor = 1},ins_error=0}, -- Anubis' C-130J
-            ['EC130'] = {antenna = {size = 35, factor = 1},ins_error=0},  -- Secret Squirrel EC-130
-            ['RC135RJ'] = {antenna = {size = 40, factor = 1},ins_error=0}, -- Secret Squirrel RC-135
             ['C-17A'] = {antenna = {size = 40, factor = 1},ins_error=0}, -- stand-in for RC-135, tuned antenna size to match
             ['S-3B'] = {antenna = {size = 18, factor = 0.8},ins_error=0},
             ['E-3A'] = {antenna = {size = 9, factor = 0.5},ins_error=0},
@@ -1031,7 +913,6 @@ do
             ['A-50'] = {antenna = {size = 9, factor = 0.5},ins_error=0},
             ['An-26B'] = {antenna = {size = 26, factor = 1},ins_error=100},
             ['C-47'] = {antenna = {size = 12, factor = 1},ins_error=100},
-            ['EA_6B'] = {antenna = {size = 9, factor = 1},ins_error=0}, -- VSN EA-6B
             ['Su-25T'] = {antenna = {size = 3.5, factor = 1}, require = {CLSID='{Fantasmagoria}'},ins_error=50},
             ['AJS37'] = {antenna = {size = 4.5, factor = 1}, require = {CLSID='{U22A}'},ins_error=50},
             ['F-16C_50'] = {antenna = {size = 1.45, factor = 1},require = {CLSID='{AN_ASQ_213}'},ins_error=0},
@@ -1043,49 +924,361 @@ do
             ['Mirage-F1CR'] = {antenna = {size = 4, factor = 1}, require = {CLSID='{ASTAC_POD}'},ins_error=0}, -- AI only (FAF)
             ['Mirage-F1EQ'] = {antenna = {size = 3.7, factor = 1}, require = {CLSID='{TMV_018_Syrel_POD}'},ins_error=50}, -- AI only (Iraq)
             ['Mirage-F1EDA'] = {antenna = {size = 3.7, factor = 1}, require = {CLSID='{TMV_018_Syrel_POD}'},ins_error=50}, -- AI only (Qatar)
-
         }
     }
+end--- Hound databases (Units modded)
+do
+    HOUND.DB.Platform[Object.Category.UNIT]['UH-60L'] = {antenna = {size = 8, factor = 1},ins_error=0} -- community UH-69L
+    HOUND.DB.Platform[Object.Category.UNIT]['Hercules'] = {antenna = {size = 35, factor = 1},ins_error=0} -- Anubis' C-130J
+    HOUND.DB.Platform[Object.Category.UNIT]['EC130'] = {antenna = {size = 35, factor = 1},ins_error=0}  -- Secret Squirrel EC-130
+    HOUND.DB.Platform[Object.Category.UNIT]['RC135RJ'] = {antenna = {size = 40, factor = 1},ins_error=0} -- Secret Squirrel RC-135
+    HOUND.DB.Platform[Object.Category.UNIT]['P3C_Orion'] = {antenna = {size = 25, factor = 1},ins_error=0} -- MAM P-3C_Orion
+    HOUND.DB.Platform[Object.Category.UNIT]['CLP_P8'] = {antenna = {size = 35, factor = 1},ins_error=0} -- CLP P-8A posidon
+    HOUND.DB.Platform[Object.Category.UNIT]['CLP_TU214R'] = {antenna = {size = 40, factor = 1},ins_error=0} -- CLP TU-214R
+    HOUND.DB.Platform[Object.Category.UNIT]['EA_6B'] = {antenna = {size = 9, factor = 1},ins_error=0} --VSN EA-6B
+    HOUND.DB.Platform[Object.Category.UNIT]['EA-18G'] = {antenna = {size = 14, factor = 1},ins_error=0} --CJS EF-18G
 
-    HOUND.DB.Bands =  {
-        ['A'] = 1.713100,
-        ['B'] = 0.799447,
-        ['C'] = 0.399723,
-        ['D'] = 0.199862,
-        ['E'] = 0.119917,
-        ['F'] = 0.085655,
-        ['G'] = 0.059958,
-        ['H'] = 0.042827,
-        ['I'] = 0.033310,
-        ['J'] = 0.019986,
-        ['K'] = 0.009993,
-        ['L'] = 0.005996,
-    }
-
-    HOUND.DB.CALLSIGNS = {
-        NATO = {
-            "ABLOW", "ACTON", "AGRAM", "AMINO", "AWOKE", "BARB", "BART", "BAZOO",
-            "BOGUE", "BOOT", "BRAY", "CAMAY", "CAPON", "CASEY", "CHIME", "CHISUM",
-            "COBRA", "COSMO", "CRISP", "DAGDA", "DALLY", "DEVON", "DIVE", "DOZER",
-            "DUPLE", "EXOR", "EXUDE", "EXULT", "FLOSS", "FLOUT", "FLUKY", "FURR",
-            "GENUS", "GOBO", "GOLLY", "GOOFY", "GROUP", "HAKE", "HARMO",
-            "HERMA", "HEXAD", "HOLE", "HURDS", "HYMN", "IOTA", "JOSS", "KELT", "LARVA",
-            "LUMPY", "MAFIA", "MINE", "MORTY", "MURKY", "NEVIN", "NEWLY", "NORTH",
-            "OLIVE", "ORKIN", "PARRY", "PATIO", "PATSY", "PATTY", "PERMA", "PITTS",
-            "POKER", "POOK", "PRIME", "PYTHON", "RAGU", "REMUS", "RINGY", "RITZ",
-            "RIVET", "ROSE", "RULE", "RUNNY", "SAME", "SAVOY", "SCENT",
-            "SCROW", "SEAT", "SLAG", "SLOG", "SNOOP", "SPRY", "STINT", "STOB", "TAKE",
-            "TALLY", "TAPE", "TOLL", "TONUS", "TOPCAT", "TORA", "TOTTY", "TOXIC",
-            "TRIAL", "TRYST", "VALVO", "VEIN", "VELA", "VETCH", "VINE", "VULCAN",
-            "WATT", "WORTH", "ZEPEL", "ZIPPY"
-        },
-        GENERIC = {
-            "VACUUM", "HOOVER", "KIRBY","ROOMBA","DYSON","SHERLOCK","WATSON","GADGET",
-            "HORATIO","CAINE","CHRISTIE","BENSON","GIBBS","COLOMBO","HOLT","DIAZ",
-            "SCULLY","MULDER","MARVIN","MARS","MORNINGSTAR","STEELE","CASTEL","BECKETT",
-            "INDIANA","JONES","LARA","CROFT","VENTURA","SCOOBY","SHAGGY"
+    HOUND.DB.Radars['S-300PS 64H6E TRAILER sr'] = {
+            ['Name'] = "Big Bird",
+            ['Assigned'] = {"SA-10"},
+            ['Role'] = {"SR"},
+            ['Band'] = 'C',
+            ['Primary'] = false
         }
-    }
+    HOUND.DB.Radars['S-300PS SA-10B 40B6MD MAST sr'] = {
+            ['Name'] = "Clam Shell",
+            ['Assigned'] = {"SA-10"},
+            ['Role'] = {"SR"},
+            ['Band'] = 'I',
+            ['Primary'] = false
+        }
+    HOUND.DB.Radars['S-300PS 40B6M MAST tr'] = {
+            ['Name'] = "Flap Lid",
+            ['Assigned'] = {"SA-10"},
+            ['Role'] = {"TR"},
+            ['Band'] = 'J',
+            ['Primary'] = true
+        }
+    HOUND.DB.Radars['S-300PS 30H6 TRAILER tr'] = {
+            ['Name'] = "Flap Lid",
+            ['Assigned'] = {"SA-10"},
+            ['Role'] = {"TR"},
+            ['Band'] = 'J',
+            ['Primary'] = true
+        }
+    HOUND.DB.Radars['S-300PS 30N6 TRAILER tr'] = {
+            ['Name'] = "Flap Lid",
+            ['Assigned'] = {"SA-10"},
+            ['Role'] = {"TR"},
+            ['Band'] = 'J',
+            ['Primary'] = true
+        }
+    HOUND.DB.Radars['S-300PMU1 40B6MD sr'] = {
+            ['Name'] = "Clam Shell",
+            ['Assigned'] = {"SA-10"},
+            ['Role'] = {"SR"},
+            ['Band'] = 'I',
+            ['Primary'] = false
+        }
+    HOUND.DB.Radars['S-300PMU1 64N6E sr'] = {
+            ['Name'] = "Big Bird",
+            ['Assigned'] = {"SA-10"},
+            ['Role'] = {"SR"},
+            ['Band'] = 'C',
+            ['Primary'] = false
+        }
+    HOUND.DB.Radars['S-300PMU1 30N6E tr'] = {
+            ['Name'] = "Flap Lid",
+            ['Assigned'] = {"SA-10"},
+            ['Role'] = {"TR"},
+            ['Band'] = 'J',
+            ['Primary'] = true
+        }
+    HOUND.DB.Radars['S-300PMU1 40B6M tr'] = {
+            ['Name'] = "Grave Stone",
+            ['Assigned'] = {"SA-10"},
+            ['Role'] = {"TR"},
+            ['Band'] = 'J',
+            ['Primary'] = true
+        }
+    HOUND.DB.Radars['S-300V 9S15 sr'] = {
+            ['Name'] = 'Bill Board',
+            ['Assigned'] = {"SA-12"},
+            ['Role'] = {"SR"},
+            ['Band'] = 'E',
+            ['Primary'] = false
+        }
+    HOUND.DB.Radars['S-300V 9S19 sr'] = {
+            ['Name'] = 'High Screen',
+            ['Assigned'] = {"SA-12"},
+            ['Role'] = {"SR"},
+            ['Band'] = 'C',
+            ['Primary'] = false
+        }
+    HOUND.DB.Radars['S-300V 9S32 tr'] = {
+            ['Name'] = 'Grill Pan',
+            ['Assigned'] = {"SA-12"},
+            ['Role'] = {"TR"},
+            ['Band'] = 'J',
+            ['Primary'] = true
+        }
+    HOUND.DB.Radars['S-300PMU2 92H6E tr'] = {
+            ['Name'] = 'Grave Stone',
+            ['Assigned'] = {"SA-20"},
+            ['Role'] = {"TR"},
+            ['Band'] = 'I',
+            ['Primary'] = true
+        }
+    HOUND.DB.Radars['S-300PMU2 64H6E2 sr'] = {
+            ['Name'] = "Big Bird",
+            ['Assigned'] = {"SA-20"},
+            ['Role'] = {"SR"},
+            ['Band'] = 'C',
+            ['Primary'] = false
+        }
+    HOUND.DB.Radars['S-300VM 9S15M2 sr'] = {
+            ['Name'] = 'Bill Board M',
+            ['Assigned'] = {"SA-23"},
+            ['Role'] = {"SR"},
+            ['Band'] = 'E',
+            ['Primary'] = false
+        }
+    HOUND.DB.Radars['S-300VM 9S19M2 sr'] = {
+            ['Name'] = 'High Screen M',
+            ['Assigned'] = {"SA-23"},
+            ['Role'] = {"SR"},
+            ['Band'] = 'C',
+            ['Primary'] = false
+        }
+    HOUND.DB.Radars['S-300VM 9S32ME tr'] = {
+            ['Name'] = 'Grill Pan M',
+            ['Assigned'] = {"SA-23"},
+            ['Role'] = {"TR"},
+            ['Band'] = 'K',
+            ['Primary'] = true
+        }
+    HOUND.DB.Radars['SA-17 Buk M1-2 LN 9A310M1-2'] = {
+            ['Name'] = "Fire Dome M",
+            ['Assigned'] = {"SA-17"},
+            ['Role'] = {"TR"},
+            ['Band'] = 'H',
+            ['Primary'] = false
+        }
+    HOUND.DB.Radars['34Ya6E Gazetchik E decoy'] = {
+            ['Name'] = "Flap Lid",
+            ['Assigned'] = {"SA-10"},
+            ['Role'] = {"TR"},
+            ['Band'] = 'J',
+            ['Primary'] = true
+        }
+    HOUND.DB.Radars['Fire Can radar'] = {
+            ['Name'] = "Fire Can",
+            ['Assigned'] = {"AAA"},
+            ['Role'] = {"TR"},
+            ['Band'] = 'E',
+            ['Primary'] = true
+        }
+    HOUND.DB.Radars['EWR 55G6U NEBO-U'] = {
+            ['Name'] = "Tall Rack",
+            ['Assigned'] = {"EWR"},
+            ['Role'] = {"EWR"},
+            ['Band'] = 'A',
+            ['Primary'] = false
+        }
+    HOUND.DB.Radars['EWR P-37 BAR LOCK'] = {
+            ['Name'] = "Bar lock",
+            ['Assigned'] = {"EWR"},
+            ['Role'] = {"SA-5","EWR"},
+            ['Band'] = 'E',
+            ['Primary'] = false
+        }
+    HOUND.DB.Radars['EWR 1L119 Nebo-SVU'] = {
+            ['Name'] = "Nebo-SVU",
+            ['Assigned'] = {"EWR"},
+            ['Role'] = {"EWR"},
+            ['Band'] = 'A',
+            ['Primary'] = false
+        }
+    HOUND.DB.Radars['EWR Generic radar tower'] = {
+            ['Name'] = "Civilian Radar",
+            ['Assigned'] = {"EWR"},
+            ['Role'] = {"EWR"},
+            ['Band'] = 'C',
+            ['Primary'] = false
+        }
+    HOUND.DB.Radars['PantsirS1'] = {
+            ['Name'] = "Pantsir",
+            ['Assigned'] = {"SA-22"},
+            ['Role'] = {"SR","TR"},
+            ['Band'] = 'F',
+            ['Primary'] = true
+        }
+    HOUND.DB.Radars['PantsirS2'] = {
+            ['Name'] = "Pantsir",
+            ['Assigned'] = {"SA-22"},
+            ['Role'] = {"SR","TR"},
+            ['Band'] = 'F',
+            ['Primary'] = true
+        }
+    HOUND.DB.Radars['Admiral_Kasatonov'] = {
+            ['Name'] = "Gorshkov (FF)",
+            ['Assigned'] = {"Naval"},
+            ['Role'] = {"Naval"},
+            ['Band'] = 'F',
+            ['Primary'] = true
+        }
+    HOUND.DB.Radars['Karakurt_AShM'] = {
+            ['Name'] = "Karakurt (FS)",
+            ['Assigned'] = {"Naval"},
+            ['Role'] = {"Naval"},
+            ['Band'] = 'F',
+            ['Primary'] = true
+        }
+    HOUND.DB.Radars['Karakurt_LACM'] = {
+            ['Name'] = "Karakurt (FS)",
+            ['Assigned'] = {"Naval"},
+            ['Role'] = {"Naval"},
+            ['Band'] = 'F',
+            ['Primary'] = true
+        }
+    HOUND.DB.Radars['MonolitB'] = {
+            ['Name'] = "Monolit B",
+            ['Assigned'] = {"Bastion"},
+            ['Role'] = {"AS"},
+            ['Band'] = 'I',
+            ['Primary'] = true
+        }
+        HOUND.DB.Radars['Arleigh_Burke_Flight_III_AShM'] = {
+            ['Name'] = "Arleigh Burke (DD)",
+            ['Assigned'] = {"Naval"},
+            ['Role'] = {"Naval"},
+            ['Band'] = 'E',
+            ['Primary'] = true
+        }
+    HOUND.DB.Radars['Arleigh_Burke_Flight_III_LACM'] = {
+            ['Name'] = "Arleigh Burke (DD)",
+            ['Assigned'] = {"Naval"},
+            ['Role'] = {"Naval"},
+            ['Band'] = 'E',
+            ['Primary'] = true
+        }
+    HOUND.DB.Radars['Arleigh_Burke_Flight_III_SAM'] = {
+            ['Name'] = "Arleigh Burke (DD)",
+            ['Assigned'] = {"Naval"},
+            ['Role'] = {"Naval"},
+            ['Band'] = 'E',
+            ['Primary'] = true
+        }
+    HOUND.DB.Radars['Ticonderoga_CMP_AShM'] = {
+            ['Name'] = "Ticonderoga (CG)",
+            ['Assigned'] = {"Naval"},
+            ['Role'] = {"Naval"},
+            ['Band'] = 'E',
+            ['Primary'] = true
+        }
+    HOUND.DB.Radars['Ticonderoga_CMP_LACM'] = {
+            ['Name'] = "Ticonderoga (CG)",
+            ['Assigned'] = {"Naval"},
+            ['Role'] = {"Naval"},
+            ['Band'] = 'E',
+            ['Primary'] = true
+        }
+    HOUND.DB.Radars['Ticonderoga_CMP_SAM'] = {
+            ['Name'] = "Ticonderoga (CG)",
+            ['Assigned'] = {"Naval"},
+            ['Role'] = {"Naval"},
+            ['Band'] = 'E',
+            ['Primary'] = true
+        }
+        HOUND.DB.Radars['Type45'] = {
+            ['Name'] = "Type 45 (DD)",
+            ['Assigned'] = {"Naval"},
+            ['Role'] = {"Naval"},
+            ['Band'] = 'E',
+            ['Primary'] = true
+        }
+    HOUND.DB.Radars['HSwMS_Visby'] = {
+            ['Name'] = "Visby (FS)",
+            ['Assigned'] = {"Naval"},
+            ['Role'] = {"Naval"},
+            ['Band'] = 'F',
+            ['Primary'] = true
+        }
+    HOUND.DB.Radars['LvKv9040'] ={
+            ['Name'] = "LvKv9040",
+            ['Assigned'] = {"AAA"},
+            ['Role'] = {"RF"},
+            ['Band'] = 'J',
+            ['Primary'] = true
+        }
+    HOUND.DB.Radars['LvS-103_PM103'] = {
+            ['Name'] = "Patriot",
+            ['Assigned'] = {"Patriot"},
+            ['Role'] = {"SR","TR"},
+            ['Band'] = 'K',
+            ['Primary'] = true
+        }
+    HOUND.DB.Radars['LvS-103_PM103_HX'] = {
+            ['Name'] = "Patriot",
+            ['Assigned'] = {"Patriot"},
+            ['Role'] = {"SR","TR"},
+            ['Band'] = 'K',
+            ['Primary'] = true
+        }
+    HOUND.DB.Radars['RBS-90'] = {
+            ['Name'] = "RBS-90",
+            ['Assigned'] = {"SHORAD"},
+            ['Role'] = {"RF"},
+            ['Band'] = 'J',
+            ['Primary'] = false
+        }
+    HOUND.DB.Radars['BV410_RBS90'] = {
+            ['Name'] = "RBS-90",
+            ['Assigned'] = {"SHORAD"},
+            ['Role'] = {"RF"},
+            ['Band'] = 'J',
+            ['Primary'] = false
+        }
+    HOUND.DB.Radars['UndE23'] = {
+            ['Name'] = "UndE23",
+            ['Assigned'] = {"SHORAD"},
+            ['Role'] = {"SR"},
+            ['Band'] = 'G',
+            ['Primary'] = true
+        }
+    HOUND.DB.Radars['Type055'] = {
+            ['Name'] = "Type 055 (CG)",
+            ['Assigned'] = {"Naval"},
+            ['Role'] = {"Naval"},
+            ['Band'] = 'E',
+            ['Primary'] = true
+        }
+    HOUND.DB.Radars['Type052D'] = {
+            ['Name'] = "Type 052D (DD)",
+            ['Assigned'] = {"Naval"},
+            ['Role'] = {"Naval"},
+            ['Band'] = 'E',
+            ['Primary'] = true
+        }
+    HOUND.DB.Radars['PGL_625'] = {
+            ['Name'] = "PGL-625",
+            ['Assigned'] = {"SHORAD"},
+            ['Role'] = {"SR","TR"},
+            ['Band'] = 'F',
+            ['Primary'] = true
+        }
+    HOUND.DB.Radars['HQ17A'] = {
+            ['Name'] = "HQ-17",
+            ['Assigned'] = {"HQ-17"},
+            ['Role'] = {"SR","TR"},
+            ['Band'] = 'F',
+            ['Primary'] = true
+        }
+
+end--- Hound databases (functions)
+do
+    local l_mist = mist
+    local l_math = math
 
     function HOUND.DB.getRadarData(typeName)
         if not HOUND.DB.Radars[typeName] then return end
@@ -1102,7 +1295,6 @@ do
         local isValid = false
         local mainCategory = candidate:getCategory()
         local type = candidate:getTypeName()
-
         if setContains(HOUND.DB.Platform,mainCategory) then
             if setContains(HOUND.DB.Platform[mainCategory],type) then
                 if HOUND.DB.Platform[mainCategory][type]['require'] then
@@ -1184,7 +1376,7 @@ do
     function HOUND.DB.getSensorPrecision(platform,emitterBand)
         return HOUND.DB.getDefraction(emitterBand,HOUND.DB.getApertureSize(platform)) or l_math.rad(20.0) -- precision
     end
-end
+end--- HOUND.Config
 do
 
     HOUND.Config = {
@@ -1210,7 +1402,7 @@ do
         }
         instance.preferences = {
             useMarkers = true,
-            markerType = HOUND.MARKER.DIAMOND,
+            markerType = HOUND.MARKER.CIRCLE,
             hardcore = false,
             detectDeadRadars = true,
             NatoBrevity = false,
@@ -1221,6 +1413,7 @@ do
         instance.coalitionId = nil
         instance.id = HoundInstanceId
         instance.callsigns = {}
+        instance.callsignOverride = {}
         instance.radioMenu = {
             root = nil,
             parent = nil
@@ -1363,6 +1556,18 @@ do
             return false
         end
 
+        instance.getCallsignOverride = function(self)
+            return self.callsignOverride
+        end
+
+        instance.setCallsignOverride = function(self,value)
+            if type(value) == "table" then
+                self.callsignOverride = value
+                return true
+            end
+            return false
+        end
+
         instance.getRadioMenu = function (self)
             if not self.radioMenu.root then
                 self.radioMenu.root = missionCommands.addSubMenuForCoalition(
@@ -1401,6 +1606,7 @@ end
 do
     local l_mist = mist
     local l_math = math
+    local l_grpc = GRPC
     local pi_2 = 2*l_math.pi
 
     HOUND.Utils = {
@@ -1625,12 +1831,24 @@ do
         return BR
     end
 
-    function HOUND.Utils.getFormationCallsign(player,flightMember)
+    function HOUND.Utils.getFormationCallsign(player,override,flightMember)
         local callsign = ""
         if type(player) ~= "table" then return callsign end
-        callsign = string.gsub(player.callsign.name,"[%d%s]","") .. " " .. player.callsign[2]
+        if type(flightMember) == "table" and override == nil then
+            override,flightMember = flightMember,override
+        end
+        local formationCallsign = string.gsub(player.callsign.name,"[%d%s]","")
+
+        callsign =  formationCallsign .. " " .. player.callsign[2]
         if flightMember then
             callsign = callsign .. " " .. player.callsign[3]
+        end
+
+        if type(override) == "table" then
+            if setContains(override,formationCallsign) then
+                callsign = callsign:gsub(formationCallsign,override[formationCallsign])
+                return string.upper(callsign:match( "^%s*(.-)%s*$" ))
+            end
         end
 
         local DCS_Unit = Unit.getByName(player.unitName)
@@ -1796,8 +2014,9 @@ do
     HOUND.Utils.Marker.Type = {
         NONE = 0,
         POINT = 1,
-        CIRCLE = 2,
-        FREEFORM = 3
+        TEXT =  2,
+        CIRCLE = 3,
+        FREEFORM = 4
     }
 
     function HOUND.Utils.Marker.getId()
@@ -1840,6 +2059,9 @@ do
 
         instance.setText = function(self,text)
             if type(text) == "string" and self.id > 0 then
+                if self.type == HOUND.Utils.Marker.Type.TEXT then
+                    text = "¤ « " .. text
+                end
                 trigger.action.setMarkupText(self.id,text)
             end
         end
@@ -1859,6 +2081,12 @@ do
         instance.setLineColor = function(self,color)
             if self.id > 0 and self.type ~= HOUND.Utils.Marker.Type.FREEFORM and type(color) == "table" then
                 trigger.action.setMarkupColor(self.id,color)
+            end
+        end
+
+        instance.setLineType = function(self,lineType)
+            if self.id > 0 and type(lineType) == "number" and self.type ~= HOUND.Utils.Marker.Type.FREEFORM then
+                trigger.action.setMarkupTypeLine(self.id,lineType)
             end
         end
 
@@ -1882,19 +2110,26 @@ do
             local coalition = args.coalition
             local pos = args.pos
             local text = args.text
-            local lineColor = args.lineColor
-            local fillColor = args.fillColor
+            local lineColor = args.lineColor or {0,0,0,0.75}
+            local fillColor = args.fillColor or {0,0,0,0}
+            local lineType = args.lineType or 2
+            local fontSize = args.fontSize or 16
             self.id = HOUND.Utils.Marker.getId()
 
             if HOUND.Utils.Geo.isDcsPoint(pos) then
-                self.type = HOUND.Utils.Marker.Type.POINT
-                trigger.action.markToCoalition(self.id, text, pos, coalition,true)
+                if HOUND.USE_LEGACY_MARKERS then
+                    self.type = HOUND.Utils.Marker.Type.POINT
+                    trigger.action.markToCoalition(self.id, text, pos, coalition,true)
+                    return true
+                end
+                self.type = HOUND.Utils.Marker.Type.TEXT
+                trigger.action.textToAll(coalition,self.id, pos,lineColor,fillColor,fontSize,true,"¤ « " .. text)
                 return true
             end
 
             if Length(pos) == 2 and HOUND.Utils.Geo.isDcsPoint(pos.p) and type(pos.r) == "number" then
                 self.type = HOUND.Utils.Marker.Type.CIRCLE
-                trigger.action.circleToAll(coalition,self.id, pos.p,pos.r,lineColor,fillColor,2,true)
+                trigger.action.circleToAll(coalition,self.id, pos.p,pos.r,lineColor,fillColor,lineType,true)
                 return true
             end
 
@@ -1902,7 +2137,7 @@ do
                 self.type = HOUND.Utils.Marker.Type.FREEFORM
                 trigger.action.markupToAll(6,coalition,self.id,
                     pos[1], pos[2], pos[3], pos[4],
-                    lineColor,fillColor,2,true)
+                    lineColor,fillColor,lineType,true)
 
             end
             if Length(pos) == 8 then
@@ -1910,7 +2145,7 @@ do
                 trigger.action.markupToAll(7,coalition,self.id,
                     pos[1], pos[2], pos[3], pos[4],
                     pos[5], pos[6], pos[7], pos[8],
-                    lineColor,fillColor,2,true)
+                    lineColor,fillColor,lineType,true)
             end
             if Length(pos) == 16 then
                 self.type = HOUND.Utils.Marker.Type.FREEFORM
@@ -1919,7 +2154,7 @@ do
                     pos[5], pos[6], pos[7], pos[8],
                     pos[9], pos[10], pos[11], pos[12],
                     pos[13], pos[14], pos[15], pos[16],
-                    lineColor,fillColor,2,true)
+                    lineColor,fillColor,lineType,true)
             end
         end
 
@@ -1933,8 +2168,36 @@ do
             if self.id < 0 then
                 return self:_new(args)
             end
-            if self.id > 0 and self.type ~= HOUND.Utils.Marker.Type.NONE then
+            if self.id > 0 and (self.type == HOUND.Utils.Marker.Type.FREEFORM or self.type ==  HOUND.Utils.Marker.Type.POINT)then
                     return self:_replace(args)
+            end
+            if self.id > 0 then
+                if args.pos then
+                    local pos = args.pos
+                    if HOUND.Utils.Geo.isDcsPoint(pos) then
+                        self:setPos(pos)
+                    end
+                    if Length(pos) == 2 and type(pos.r) == "number" and HOUND.Utils.Geo.isDcsPoint(pos.p) then
+                        self:setPos(pos.p)
+                        self:setRadius(pos.r)
+                    end
+                    if type(pos) == "table" and Length(pos) > 2 and HOUND.Utils.Geo.isDcsPoint(pos[1]) then
+                        return self:_replace(args)
+                    end
+                end
+                if args.text and type(args.text) == "string" then
+                    self:setText(args.text)
+                end
+                if type(args.fillColor) == "table" then
+                    self:setFillColor(args.fillColor)
+                end
+                if type(args.lineColor) == "table" then
+                    self:setLineColor(args.lineColor)
+                end
+
+                if type(args.lineType) == "number" then
+                    self:setLineType(args.lineType)
+                end
             end
         end
         if type(args) == "table" then
@@ -1943,20 +2206,146 @@ do
         return instance
     end
 
-    function HOUND.Utils.TTS.Transmit(msg,coalitionID,args,transmitterPos)
+    function HOUND.Utils.TTS.isAvailable()
+        if (l_grpc ~= nil and type(l_grpc.tts) == "function" and not HOUND.IGNORE_GRPC_TTS)  then
+            return true
+        end
+        if STTS ~= nil then
+            return true
+        end
+        return false
+    end
 
-        if STTS == nil then return end
+    function HOUND.Utils.TTS.getdefaultModulation(freq)
+        if not freq then return "AM" end
+        if tonumber(freq) ~= nil then
+            freq = tonumber(freq)
+            if freq < 90 or (freq > 1000000 and freq < (90 * 1000000)) then
+                return "FM"
+            else
+                return "AM"
+            end
+        end
+        if type(freq) == "string" then
+            freq = string.split(freq,",")
+        end
+        if type(freq) == "table" then
+            local retval = {}
+            for _,frequency in ipairs(freq) do
+                table.insert(retval,HOUND.Utils.TTS.getdefaultModulation(tonumber(frequency)))
+            end
+            return table.concat(retval,",")
+        end
+        return "AM"
+    end
+
+    function HOUND.Utils.TTS.Transmit(msg,coalitionID,args,transmitterPos)
+        if not HOUND.Utils.TTS.isAvailable() then return end
         if msg == nil then return end
         if coalitionID == nil then return end
 
         if args.freq == nil then return end
-        args.modulation = args.modulation or "AM"
         args.volume = args.volume or "1.0"
         args.name = args.name or "Hound"
         args.gender = args.gender or "female"
-        args.culture = args.culture or "en-US"
 
-        return STTS.TextToSpeech(msg,args.freq,args.modulation,args.volume,args.name,coalitionID,transmitterPos,args.speed,args.gender,args.culture,args.voice,args.googleTTS)
+        if (l_grpc ~= nil and type(l_grpc.tts) == "function" and not HOUND.IGNORE_GRPC_TTS) then
+            return HOUND.Utils.TTS.TransmitGRPC(msg,coalitionID,args,transmitterPos)
+        end
+
+        if STTS ~= nil then
+            args.modulation = args.modulation or HOUND.Utils.TTS.getdefaultModulation(args.freq)
+            args.culture = args.culture or "en-US"
+            return STTS.TextToSpeech(msg,args.freq,args.modulation,args.volume,args.name,coalitionID,transmitterPos,args.speed,args.gender,args.culture,args.voice,args.googleTTS)
+        end
+
+    end
+
+    function HOUND.Utils.TTS.TransmitGRPC(msg,coalitionID,args,transmitterPos)
+        local VOLUME = {"default","x-slow", "slow", "medium", "fast", "x-fast"}
+        local ssml_msg = msg
+
+        local grpc_ttsArgs = {
+            srsClientName = args.name,
+            coalition = HOUND.Utils.getCoalitionString(coalitionID):lower(),
+        }
+        if type(transmitterPos) == "table" then
+            grpc_ttsArgs.position = {}
+            grpc_ttsArgs.position.lat, grpc_ttsArgs.position.lon, grpc_ttsArgs.position.alt = coord.LOtoLL( transmitterPos )
+        end
+        if type(args.provider) == "table" then
+            grpc_ttsArgs.provider = args.provider
+        end
+
+        local readSpeed = 1.0
+        if args.speed ~= 0 then
+            if args.speed > 10 then
+                readSpeed = HOUND.Utils.Mapping.linear(args.speed,50,250,0.5,2.5,true)
+            else
+
+                if args.speed > 0 then
+                    readSpeed = HOUND.Utils.Mapping.linear(args.speed,0,10,1.0,2.5,true)
+                else
+                    readSpeed = HOUND.Utils.Mapping.linear(args.speed,-10,0,0.5,1.0,true)
+                end
+            end
+        end
+
+        local ssml_prosody = ""
+        if readSpeed ~= 1.0  then
+            ssml_prosody = ssml_prosody .. " rate='"..readSpeed.."'"
+        end
+
+        if args.volume ~= 1.0 then
+            local volume = ""
+
+            if setContainsValue(VOLUME,args.volume) then
+                volume = args.volume
+            end
+
+            if type(args.volume)=="number" then
+                if args.volume ~= 0 then
+                    volume = (args.volume*100)-100 .. "%"
+                    if args.volume > 1 then
+                        volume = "+" .. volume
+                    end
+                else
+                    volume = "slient"
+                end
+            end
+
+            if string.len(volume) > 0 then
+                ssml_prosody = ssml_prosody .. " volume='"..volume.."'"
+            end
+        end
+        if string.len(ssml_prosody) > 0 then
+            ssml_msg = table.concat({"<prosody",ssml_prosody,">",ssml_msg,"</prosody>"},"")
+        end
+
+        local ssml_voice = ""
+        if args.voice then
+            ssml_voice = ssml_voice.." name='"..args.voice.."'"
+        else
+            if args.gender then
+                ssml_voice = ssml_voice.." gender='"..args.gender.."'"
+            end
+            if args.culture then
+                ssml_voice = ssml_voice.." language='"..args.culture.."'"
+            end
+        end
+
+        if string.len(ssml_voice) > 0 then
+            ssml_msg = table.concat({"<voice",ssml_voice,">",ssml_msg,"</voice>"},"")
+        end
+
+        local freqs = string.split(args.freq,",")
+
+        for _,freq in ipairs(freqs) do
+
+            freq = math.ceil(freq * 1000000)
+            l_grpc.tts(ssml_msg, freq, grpc_ttsArgs)
+        end
+        return HOUND.Utils.TTS.getReadTime(msg) / readSpeed -- read speed > 1.0 is fast
     end
 
     function HOUND.Utils.TTS.getTtsTime(timestamp)
@@ -2517,6 +2906,7 @@ do
     function HOUND.Utils.Cluster.weightedMean(origPoints,initPos,threashold,maxIttr)
         if type(origPoints) ~= "table" or not HOUND.Utils.Geo.isDcsPoint(origPoints[1]) then return end
         local points = HOUND.Utils.Geo.setHeight(l_mist.utils.deepCopy(origPoints))
+        if Length(points) == 1 then return l_mist.utils.deepCopy(points[1]) end
 
         local current_mean = initPos
         if type(current_mean) == "boolean" and current_mean then
@@ -3026,7 +3416,7 @@ do
 
     function HOUND.Datapoint.calcPolygons(self)
         if self.platformPrecision == 0 then return nil,nil end
-        local maxSlant = HOUND.Utils.Geo.EarthLOS(self.platformPos.y)*1.2
+        local maxSlant = l_math.min(250000,HOUND.Utils.Geo.EarthLOS(self.platformPos.y)*1.1)
         local poly2D = {}
         table.insert(poly2D,self.platformPos)
         for _,theta in ipairs({((self.az - self.platformPrecision + PI_2) % PI_2),((self.az + self.platformPrecision + PI_2) % PI_2) }) do
@@ -3501,7 +3891,7 @@ do
         return pos
     end
 
-    function HOUND.Contact:calculatePosExtras(pos)
+    function HOUND.Contact:calculateExtrasPosData(pos)
         if type(pos.p) == "table" and HOUND.Utils.Geo.isDcsPoint(pos.p) then
             local bullsPos = coalition.getMainRefPoint(self._platformCoalition)
             pos.LL = {}
@@ -3596,14 +3986,13 @@ do
         if Length(estimatePositions) > 2 or (Length(estimatePositions) > 0 and staticPlatformsOnly) then
             self.pos.p = HOUND.Utils.Cluster.weightedMean(estimatePositions)
             self.uncertenty_data = self.calculateEllipse(estimatePositions,false,self.pos.p)
-
             if type(staticClipPolygon2D) == "table" and ( staticPlatformsOnly) then
                 self.uncertenty_data = self.calculateEllipse(staticClipPolygon2D,true,self.pos.p)
             end
 
             self.uncertenty_data.az = l_mist.utils.round(l_math.deg((self.uncertenty_data.theta+l_mist.getNorthCorrection(self.pos.p)+pi_2)%pi_2))
 
-            self:calculatePosExtras(self.pos)
+            self:calculateExtrasPosData(self.pos)
 
             if self.state == HOUND.EVENTS.RADAR_ASLEEP then
                 self.state = HOUND.EVENTS.SITE_ALIVE
@@ -3621,7 +4010,7 @@ do
 
         if newContact and self.pos.p ~= nil and self.isEWR == false then
             self.state = HOUND.EVENTS.RADAR_DETECTED
-            self:calculatePosExtras(self.pos)
+            self:calculateExtrasPosData(self.pos)
         end
 
         return self.state
@@ -3675,6 +4064,10 @@ do
         local alpha = HOUND.Utils.Mapping.linear(l_math.floor(HOUND.Utils.absTimeDelta(self.last_seen)),0,HOUND.CONTACT_TIMEOUT,0.2,0.05,true)
         local fillColor = {0,0,0,alpha}
         local lineColor = {0,0,0,0.30}
+        local lineType = 2
+        if (HOUND.Utils.absTimeDelta(self.last_seen) < 15) then
+            lineType = 1
+        end
         if self._platformCoalition == coalition.side.BLUE then
             fillColor[1] = 1
             lineColor[1] = 1
@@ -3688,7 +4081,8 @@ do
         local markArgs = {
             fillColor = fillColor,
             lineColor = lineColor,
-            coalition = self._platformCoalition
+            coalition = self._platformCoalition,
+            lineType = lineType
         }
         if numPoints == 1 then
             markArgs.pos = {
@@ -3709,7 +4103,7 @@ do
             pos = self.pos.p,
             coalition = self._platformCoalition
         }
-        if not self:isAccurate() then
+        if not self:isAccurate() and HOUND.USE_LEGACY_MARKERS then
             markerArgs.text = markerArgs.text .. " (" .. self.uncertenty_data.major .. "/" .. self.uncertenty_data.minor .. "@" .. self.uncertenty_data.az .. ")"
         end
         self._markpoints.p:update(markerArgs)
@@ -3804,7 +4198,7 @@ do
         self.preBriefed = true
 
         self.pos.p = unitPos.p
-        self:calculatePosExtras(self.pos)
+        self:calculateExtrasPosData(self.pos)
 
         self.uncertenty_data = {}
         self.uncertenty_data.major = 0.1
@@ -4067,7 +4461,6 @@ do
 
         CommsManager.settings = {
             freq = 250.000,
-            modulation = "AM",
             volume = "1.0",
             name = "Hound",
             speed = 0,
@@ -4082,7 +4475,7 @@ do
             enabletext = false
         }
 
-        if not STTS then
+        if not HOUND.Utils.TTS.isAvailable() then
             CommsManager.preferences.enabletts = false
         end
 
@@ -4152,7 +4545,7 @@ do
     end
 
     function HOUND.Comms.Manager:enableTTS()
-        if STTS ~= nil then
+        if HOUND.Utils.TTS.isAvailable() then
             self:setSettings("enableTTS",true)
         end
     end
@@ -4221,7 +4614,7 @@ do
         local retval = {}
 
         for i,freq in ipairs(freqs) do
-            local str = string.format("%.3f",tonumber(freq)) .. " " .. (mod[i] or "AM")
+            local str = string.format("%.3f",tonumber(freq)) .. " " .. (mod[i] or HOUND.Utils.TTS.getdefaultModulation(freq))
             table.insert(retval,str)
         end
         return retval
@@ -4298,7 +4691,7 @@ do
             return timer.getTime() + 10
         end
 
-        if gSelf.enabled and STTS ~= nil and msgObj.tts ~= nil and gSelf.preferences.enabletts then
+        if gSelf.enabled and HOUND.Utils.TTS.isAvailable() and msgObj.tts ~= nil and gSelf.preferences.enabletts then
             HOUND.Utils.TTS.Transmit(msgObj.tts,msgObj.coalition,gSelf.settings,transmitterPos)
             readTime = HOUND.Utils.TTS.getReadTime(msgObj.tts,gSelf.settings.speed)
         end
@@ -5638,7 +6031,7 @@ do
         if gSelf.comms.controller:isEnabled() then
             msgObj.tts = contact:generateTtsReport(useDMM)
             if requester ~= nil then
-                msgObj.tts = HOUND.Utils.getFormationCallsign(requester) .. ", " .. gSelf.callsign .. ", " ..
+                msgObj.tts = HOUND.Utils.getFormationCallsign(requester,gSelf._hSettings:getCallsignOverride()) .. ", " .. gSelf.callsign .. ", " ..
                                  msgObj.tts
             end
             if gSelf.comms.controller:getSettings("enableText") == true then
@@ -5651,7 +6044,7 @@ do
     function HOUND.Sector:TransmitCheckInAck(player)
         if not player then return end
         local msgObj = {priority = 1,coalition = self._hSettings:getCoalition(), gid = player.groupId}
-        local msg = HOUND.Utils.getFormationCallsign(player) .. ", " .. self.callsign .. ", Roger. "
+        local msg = HOUND.Utils.getFormationCallsign(player,self._hSettings:getCallsignOverride()) .. ", " .. self.callsign .. ", Roger. "
         if self:countContacts() > 0 then
             msg = msg .. "Tasking is available."
         else
@@ -5667,7 +6060,7 @@ do
     function HOUND.Sector:TransmitCheckOutAck(player)
         if not player then return end
         local msgObj = {priority = 1,coalition = self._hSettings:getCoalition(), gid = player.groupId}
-        local msg = HOUND.Utils.getFormationCallsign(player) .. ", " .. self.callsign .. ", copy checking out. "
+        local msg = HOUND.Utils.getFormationCallsign(player,self._hSettings:getCallsignOverride()) .. ", " .. self.callsign .. ", copy checking out. "
         msgObj.tts = msg .. "Frequency change approved."
         msgObj.txt = msg
         if self.comms.controller:isEnabled() then
@@ -6408,6 +6801,14 @@ do
         return self.settings:setPosErr(false)
     end
 
+    function HoundElint:getCallsignOverride()
+        return self.settings:getCallsignOverride()
+    end
+
+    function HoundElint:setCallsignOverride(overrides)
+        return self.settings:setCallsignOverride(overrides)
+    end
+
     function HoundElint:getBDA()
         return self.settings:getBDA()
     end
@@ -6698,4 +7099,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.3.2-develop-20220823 - Compiled on 2022-08-23 08:01
+-- Hound version 0.3.4-develop-20230328 - Compiled on 2023-03-28 10:16
