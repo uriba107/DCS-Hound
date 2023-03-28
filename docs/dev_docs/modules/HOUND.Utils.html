@@ -171,7 +171,7 @@
 	<td class="summary">retrun Bearing (magnetic) and range between two points</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.getFormationCallsign">HOUND.Utils.getFormationCallsign (player[, flightMember])</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.getFormationCallsign">HOUND.Utils.getFormationCallsign (player[, override[, flightMember]])</a></td>
 	<td class="summary">Get group callsign from unit</td>
 	</tr>
 	<tr>
@@ -269,6 +269,10 @@
 	<td class="summary">update markpoint line color</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#instance.setLineType">instance.setLineType (self, lineType)</a></td>
+	<td class="summary">update markpoint line type</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#instance.isDrawn">instance.isDrawn (self)</a></td>
 	<td class="summary">Check if marpoint is drawn</td>
 	</tr>
@@ -292,8 +296,20 @@
 <h2><a href="#TTS_Functions">TTS Functions </a></h2>
 <table class="function_list">
 	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.TTS.isAvailable">HOUND.Utils.TTS.isAvailable ()</a></td>
+	<td class="summary">Check if TTS agent is available (private)</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.TTS.getdefaultModulation">HOUND.Utils.TTS.getdefaultModulation (freq)</a></td>
+	<td class="summary">Return default Modulation based on frequency</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#HOUND.Utils.TTS.Transmit">HOUND.Utils.TTS.Transmit (msg, coalitionID, args[, transmitterPos])</a></td>
 	<td class="summary">Transmit message using STTS (private)</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.TTS.TransmitGRPC">HOUND.Utils.TTS.TransmitGRPC (msg, coalitionID, args[, transmitterPos])</a></td>
+	<td class="summary">Transmit message using gRPC.tts (private)</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Utils.TTS.getTtsTime">HOUND.Utils.TTS.getTtsTime ([timestamp])</a></td>
@@ -1059,7 +1075,7 @@
 </dd>
     <dt>
     <a name = "HOUND.Utils.getFormationCallsign"></a>
-    <strong>HOUND.Utils.getFormationCallsign (player[, flightMember])</strong>
+    <strong>HOUND.Utils.getFormationCallsign (player[, override[, flightMember]])</strong>
     </dt>
     <dd>
     Get group callsign from unit
@@ -1069,6 +1085,10 @@
     <ul>
         <li><span class="parameter">player</span>
          mist.DB entry to get formation callsign for
+        </li>
+        <li><span class="parameter">override</span>
+         callsign substitution table
+         (<em>optional</em>)
         </li>
         <li><span class="parameter">flightMember</span>
          if True. value returned will be the full callsign (i.e "Uzi 1 1" rather then the default "Uzi 1")
@@ -1643,6 +1663,29 @@
 
 </dd>
     <dt>
+    <a name = "instance.setLineType"></a>
+    <strong>instance.setLineType (self, lineType)</strong>
+    </dt>
+    <dd>
+    update markpoint line type
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+         Hound Marker instance
+        </li>
+        <li><span class="parameter">lineType</span>
+         new lineType for marker
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
     <a name = "instance.isDrawn"></a>
     <strong>instance.isDrawn (self)</strong>
     </dt>
@@ -1761,6 +1804,50 @@
 
     <dl class="function">
     <dt>
+    <a name = "HOUND.Utils.TTS.isAvailable"></a>
+    <strong>HOUND.Utils.TTS.isAvailable ()</strong>
+    </dt>
+    <dd>
+    Check if TTS agent is available (private)
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Bool true if TTS is available
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.TTS.getdefaultModulation"></a>
+    <strong>HOUND.Utils.TTS.getdefaultModulation (freq)</strong>
+    </dt>
+    <dd>
+    Return default Modulation based on frequency
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">freq</span>
+         The frequency in Mhz, Hz or table of frequencies
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Modulation string "AM" or "FM"
+    </ol>
+
+
+
+
+</dd>
+    <dt>
     <a name = "HOUND.Utils.TTS.Transmit"></a>
     <strong>HOUND.Utils.TTS.Transmit (msg, coalitionID, args[, transmitterPos])</strong>
     </dt>
@@ -1789,6 +1876,41 @@
     <ol>
 
         STTS.TextToSpeech return value recived from STTS, currently estimated speechTime
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.TTS.TransmitGRPC"></a>
+    <strong>HOUND.Utils.TTS.TransmitGRPC (msg, coalitionID, args[, transmitterPos])</strong>
+    </dt>
+    <dd>
+    Transmit message using gRPC.tts (private)
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">msg</span>
+         The message to transmit
+        </li>
+        <li><span class="parameter">coalitionID</span>
+         Coalition to recive transmission
+        </li>
+        <li><span class="parameter">args</span>
+         STTS settings in hash table (minimum required is {freq=})
+        </li>
+        <li><span class="parameter">transmitterPos</span>
+         DCS Position point for transmitter
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        currently estimated speechTime
     </ol>
 
 
@@ -2932,7 +3054,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2022-06-12 14:16:06 </i>
+<i style="float:right;">Last updated 2023-03-28 13:16:49 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

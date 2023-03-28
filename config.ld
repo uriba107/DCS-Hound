@@ -5,6 +5,9 @@ file = {'src'}
 file.exclude = {
 'src/010 - HoundLogger.lua',
 'src/100 - HoundDBs.lua',
+'src/101 - HoundDBs_UnitDcs.lua',
+'src/102 - HoundDBs_UnitMods.lua',
+'src/103 - HoundDBs_func.lua',
 'src/110 - HoundConfig.lua',
 'src/200 - HoundUtils.lua',
 'src/210 - HoundEventHandler.lua',

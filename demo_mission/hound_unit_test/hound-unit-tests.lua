@@ -1,5 +1,5 @@
 do
-    local currentDir = "F:\\Dropbox\\uri\\Dropbox\\DCS\\Mission Building\\HoundElint\\"
+    local currentDir = "E:\\Dropbox\\uri\\Dropbox\\DCS\\Mission Building\\HoundElint\\"
     -- assert(loadfile(currentDir..'include\\DCS-SimpleTextToSpeech.lua'))()
 
     function UserSpaceLogging(msg)

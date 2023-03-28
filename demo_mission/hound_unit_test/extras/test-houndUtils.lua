@@ -98,6 +98,16 @@ do
     end
 
     function TestHoundUtils:TestTTS()
+        -- HOUND.Utils.TTS.getdefaultModulation
+        lu.assertEquals(HOUND.Utils.TTS.getdefaultModulation(251),"AM")
+        lu.assertEquals(HOUND.Utils.TTS.getdefaultModulation("251.5"),"AM")
+        lu.assertEquals(HOUND.Utils.TTS.getdefaultModulation(35),"FM")
+        lu.assertEquals(HOUND.Utils.TTS.getdefaultModulation("35.5"),"FM")
+        lu.assertEquals(HOUND.Utils.TTS.getdefaultModulation(35.5*1000000),"FM")
+        lu.assertEquals(HOUND.Utils.TTS.getdefaultModulation(355*1000000),"AM")
+        lu.assertEquals(HOUND.Utils.TTS.getdefaultModulation("251,35.4"),"AM,FM")
+        lu.assertEquals(HOUND.Utils.TTS.getdefaultModulation("35.5,2,250,bad"),"FM,FM,AM,AM")
+
         -- HOUND.Utils.TTS.toPhonetic
         lu.assertEquals(HOUND.Utils.TTS.toPhonetic("test"),"Tango Echo Sierra Tango")
         lu.assertEquals(HOUND.Utils.TTS.toPhonetic("brooklin 99"),"Bravo Romeo Oscar Oscar Kilo Lima India November , Niner Niner")

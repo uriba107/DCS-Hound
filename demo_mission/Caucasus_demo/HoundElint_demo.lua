@@ -2,7 +2,7 @@ do
     if STTS ~= nil then
         STTS.DIRECTORY = "C:\\Program Files\\DCS-SimpleRadio-Standalone"
     end
-    HOUND.USE_KALMAN = true
+    HOUND.USE_LEGACY_MARKS = false
 
 end
 
@@ -26,7 +26,7 @@ do
     }
     atis_args = {
         freq = 251.500,
-        NATO = false
+        NATO = false,
     }
 
     Elint_blue:configureController(tts_args)
@@ -36,14 +36,18 @@ do
     Elint_blue:enableText()
     Elint_blue:enableAtis()
     -- Elint_blue:disableBDA()
-    -- Elint_blue:setMarkerType(HOUND.MARKER.NONE)
+    -- Elint_blue:setMarkerType(HOUND.MARKER.DIAMOND)
 
     Elint_blue:addSector("Fake")
     Elint_blue:setZone("Fake")
     -- Elint_blue:onScreenDebug(true)
     -- Elint_blue:enablePlatformPosErrors()
 
+    local callsignOverride = {
+        Uzi = "Tulip"
+    }
 
+    Elint_blue:setCallsignOverride(callsignOverride)
 end
 
 do
@@ -109,6 +113,25 @@ do
     function testing.markPB(unit)
         Elint_blue:preBriefedContact(unit)
     end
+    function testing.changeVolume(hound,entity,volume)
+        if type(entity) ~= "String" and type(volume) ~= "number" then return end
+        if entity:lower() == "atis" then
+            if type(hound.configureAtis) == "function" then
+                hound:configureAtis({volume = volume})
+            end
+        end
+        if entity:lower() == "controller" then
+            if type(hound.configureController) == "function" then
+                hound:configureController({volume = volume})
+            end
+        end
+    end
+    function testing.increaseAtisVolume(hound)
+        testing.changeVolume(hound,"atis",1.5)
+    end
+    function testing.decreaseAtisVolume(hound)
+        testing.changeVolume(hound,"atis",0.6)
+    end
 
     function testing.toggleGroup(groupName)
         local grp = Group.getByName(groupName)
@@ -145,6 +168,16 @@ do
             end
         end
     end
+    
+        
+        function testing.GRPCtts(msg)
+            local ssml = msg or "balh  blah"
+            local frequency = 250*1000000
+            local options = {
+                srsClientName = "DCS-gRPC"
+            }
+            GRPC.tts(ssml, frequency, options)
+        end
 
     testing.Menu = missionCommands.addSubMenu("Hound Testing")
     missionCommands.addCommand("Poke Radar",testing.Menu,testing.boom,Unit.getByName("PB-test-3"))
@@ -159,15 +192,20 @@ do
     -- missionCommands.addCommand("Add transmitter",testing.Menu,testing.addTransmitter,{houndCommsInstance=Elint_blue.controller,unit_name="Migariya_Elint"})
     -- missionCommands.addCommand("Destroy transmitter",testing.Menu,Unit.destroy,	Unit.getByName("Migariya_Elint"))
     -- missionCommands.addCommand("Remove transmitter",testing.Menu,testing.removeTransmitter,Elint_blue.controller)
-    missionCommands.addCommand("Get Contacts",testing.Menu,testing.getContacts,Elint_blue)
-    missionCommands.addCommand("Add test Marker",testing.Menu,testing.AddMarker)
-    missionCommands.addCommand("Toggle marker Counter",testing.Menu,testing.toggleMarkers)
-    missionCommands.addCommand("unit data",testing.Menu,testing.GrpData,'Elint')
+    -- missionCommands.addCommand("Get Contacts",testing.Menu,testing.getContacts,Elint_blue)
+    -- missionCommands.addCommand("Add test Marker",testing.Menu,testing.AddMarker)
+    -- missionCommands.addCommand("Toggle marker Counter",testing.Menu,testing.toggleMarkers)
+    -- missionCommands.addCommand("unit data",testing.Menu,testing.GrpData,'Elint')
+    -- missionCommands.addCommand("test gRPC",testing.Menu,testing.GRPCtts,'testing 1,2,3...')
+    -- missionCommands.addCommand("atis volume down",testing.Menu,testing.decreaseAtisVolume,Elint_blue)
+    -- missionCommands.addCommand("atis volume up",testing.Menu,testing.increaseAtisVolume,Elint_blue)
+
+
 end
 
 do
-    -- local valid = mist.getCurrentGroupData('KC135_no_task')
-    -- local invalid = mist.getCurrentGroupData('KC135_tanker')
+    -- local valid = mist.getGroupRoute('KC135_no_task')
+    -- local invalid = mist.getGroupRoute('KC135_tanker')
 
     -- env.info("Valid tasks:\n")
     -- env.info(mist.utils.tableShow(valid)) -- ['tasks']))
@@ -177,11 +215,12 @@ do
 
     -- for k,v in pairs(valid) do
     --     env.info("valid - " .. k)
+    --     env.info(mist.utils.tableShow(v))
     -- end
     -- env.info("Valid waypoints:\n")
-    -- env.info(mist.utils.tableShow(valid['route']['points']))
+    -- env.info(mist.utils.tableShow(valid["units"][1]))
     -- env.info("invalid waypoints:\n")
-    -- env.info(mist.utils.tableShow(invalid['route']['points']))
+    -- env.info(mist.utils.tableShow(invalid["units"][1]))
 
     -- for _,data in pairs({valid,invalid}) do
     --     if type(data) == "table" and type(data['tasks']) == "table" then
@@ -194,6 +233,16 @@ do
     -- local invalidController = Unit.getByName('KC135_tanker'):getController()
     -- env.info(mist.utils.tableShow(invalidController))
 
+
+    -- env.info(Unit.getByName('P8'):getTypeName())
+    -- env.info(Unit.getByName('P3'):getTypeName())
+ 
+    -- for grpName,grp in pairs( HOUND.Utils.Filter.groupsByPrefix("F-1")) do
+    --     env.info(grpName.." | "..grp:getUnit(1):getTypeName())
+    -- end
+    -- for grpName,grp in pairs( HOUND.Utils.Filter.groupsByPrefix("S-3")) do
+    --     env.info(grpName.." | "..grp:getUnit(1):getTypeName())
+    -- end
     -- mist.debug.dump_G('hound_post_rename_G.lua')
     -- mist.debug.dumpDBs()
 end
