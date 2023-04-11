@@ -12,7 +12,7 @@ end
 
 do
     HOUND = {
-        VERSION = "0.3.4-develop-20230328",
+        VERSION = "0.3.4-develop-20230411",
         DEBUG = false,
         ELLIPSE_PERCENTILE = 0.6,
         DATAPOINTS_NUM = 30,
@@ -23,7 +23,7 @@ do
         MIST_VERSION = tonumber(table.concat({mist.majorVersion,mist.minorVersion},".")),
         FORCE_MANAGE_MARKERS = false,
         USE_LEGACY_MARKERS = true,
-        IGNORE_GRPC_TTS = true -- grpc currently causes CTD, disabling for now
+        PREFER_GRPC_TTS = false -- disabled for now. will require fix planned for gRPC 0.7.2 to function correctly.
     }
 
     HOUND.MARKER = {
@@ -917,7 +917,6 @@ do
             ['AJS37'] = {antenna = {size = 4.5, factor = 1}, require = {CLSID='{U22A}'},ins_error=50},
             ['F-16C_50'] = {antenna = {size = 1.45, factor = 1},require = {CLSID='{AN_ASQ_213}'},ins_error=0},
             ['JF-17'] = {antenna = {size = 3.25, factor = 1}, require = {CLSID='{DIS_SPJ_POD}'},ins_error=0},
-            ['Mirage-F1CE'] = {antenna = {size = 3.7, factor = 1}, require = {CLSID='{TMV_018_Syrel_POD}'},ins_error=100}, -- temporary for intial release, CE had not INS, therefor could do ELINT.
             ['Mirage-F1EE'] = {antenna = {size = 3.7, factor = 1}, require = {CLSID='{TMV_018_Syrel_POD}'},ins_error=50}, -- does not reflect features in actual released product
             ['Mirage-F1M-CE'] = {antenna = {size = 3.7, factor = 1}, require = {CLSID='{TMV_018_Syrel_POD}'},ins_error=0}, -- does not reflect features in actual released product
             ['Mirage-F1M-EE'] = {antenna = {size = 3.7, factor = 1}, require = {CLSID='{TMV_018_Syrel_POD}'},ins_error=0}, -- does not reflect features in actual released product
@@ -2207,7 +2206,7 @@ do
     end
 
     function HOUND.Utils.TTS.isAvailable()
-        if (l_grpc ~= nil and type(l_grpc.tts) == "function" and not HOUND.IGNORE_GRPC_TTS)  then
+        if (l_grpc ~= nil and type(l_grpc.tts) == "function" and HOUND.PREFER_GRPC_TTS)  then
             return true
         end
         if STTS ~= nil then
@@ -2249,7 +2248,7 @@ do
         args.name = args.name or "Hound"
         args.gender = args.gender or "female"
 
-        if (l_grpc ~= nil and type(l_grpc.tts) == "function" and not HOUND.IGNORE_GRPC_TTS) then
+        if (l_grpc ~= nil and type(l_grpc.tts) == "function" and HOUND.PREFER_GRPC_TTS) then
             return HOUND.Utils.TTS.TransmitGRPC(msg,coalitionID,args,transmitterPos)
         end
 
@@ -7099,4 +7098,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.3.4-develop-20230328 - Compiled on 2023-03-28 10:16
+-- Hound version 0.3.4-develop-20230411 - Compiled on 2023-04-11 20:35

@@ -881,7 +881,7 @@ do
     --- Check if TTS agent is available (private)
     -- @return Bool true if TTS is available
     function HOUND.Utils.TTS.isAvailable()
-        if (l_grpc ~= nil and type(l_grpc.tts) == "function" and not HOUND.IGNORE_GRPC_TTS)  then
+        if (l_grpc ~= nil and type(l_grpc.tts) == "function" and HOUND.PREFER_GRPC_TTS)  then
             -- do checks for DCS-gRPC for now KISS
             return true
         end
@@ -933,7 +933,7 @@ do
         args.name = args.name or "Hound"
         args.gender = args.gender or "female"
 
-        if (l_grpc ~= nil and type(l_grpc.tts) == "function" and not HOUND.IGNORE_GRPC_TTS) then
+        if (l_grpc ~= nil and type(l_grpc.tts) == "function" and HOUND.PREFER_GRPC_TTS) then
             -- HOUND.Logger.debug("gRPC TTS message")
             return HOUND.Utils.TTS.TransmitGRPC(msg,coalitionID,args,transmitterPos)
         end

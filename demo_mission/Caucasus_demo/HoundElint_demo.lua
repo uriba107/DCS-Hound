@@ -168,16 +168,28 @@ do
             end
         end
     end
-    
-        
-        function testing.GRPCtts(msg)
-            local ssml = msg or "balh  blah"
-            local frequency = 250*1000000
-            local options = {
-                srsClientName = "DCS-gRPC"
-            }
-            GRPC.tts(ssml, frequency, options)
+
+    function testing.UnitDrawArgs(unitName)
+        local unit = Unit.getByName(unitName)
+        local args = {}
+        for i=1,1100 do
+            local v = unit:getDrawArgumentValue(i)
+            if v ~= nil and v ~= 0 then
+                args[i] = v
+            end
         end
+        env.info(mist.utils.tableShow(args))
+
+    end
+
+    function testing.GRPCtts(msg)
+        local ssml = msg or "balh  blah"
+        local frequency = 250*1000000
+        local options = {
+            srsClientName = "DCS-gRPC"
+        }
+        GRPC.tts(ssml, frequency, options)
+    end
 
     testing.Menu = missionCommands.addSubMenu("Hound Testing")
     missionCommands.addCommand("Poke Radar",testing.Menu,testing.boom,Unit.getByName("PB-test-3"))
@@ -199,6 +211,8 @@ do
     -- missionCommands.addCommand("test gRPC",testing.Menu,testing.GRPCtts,'testing 1,2,3...')
     -- missionCommands.addCommand("atis volume down",testing.Menu,testing.decreaseAtisVolume,Elint_blue)
     -- missionCommands.addCommand("atis volume up",testing.Menu,testing.increaseAtisVolume,Elint_blue)
+    -- missionCommands.addCommand("unit data",testing.Menu,testing.GrpData,'Elint')
+    -- missionCommands.addCommand("unit data",testing.Menu,testing.UnitDrawArgs,'EMPTY_VIPER')
 
 
 end
@@ -245,4 +259,5 @@ do
     -- end
     -- mist.debug.dump_G('hound_post_rename_G.lua')
     -- mist.debug.dumpDBs()
+
 end

@@ -88,13 +88,13 @@ do
 
     -- faking Satellite intel, add all enemy IADS EW radars as prebriefed.
     env.info("importing Skynet IADS EWRs")
-    for _,ewRadar in pairs(redIADS:getEarlyWarningRadars()) do
+    for ewRadarName,ewRadar in pairs(HOUND.Utils.Filter.unitsByPrefix('EWR')) do
 
-        local ewRadarName = nil
-        if type(ewRadar.getDCSName) == "function" then
-            ewRadarName = ewRadar:getDCSName()
-        end
-        if ewRadarName then
+        -- local ewRadarName = nil
+        -- if type(ewRadar.getDCSName) == "function" then
+        --     ewRadarName = ewRadar:getDCSName()
+        -- end
+        if ewRadar:isExist() then
             Elint_blue:preBriefedContact(ewRadarName)
         end
     end
