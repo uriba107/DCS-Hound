@@ -105,9 +105,10 @@ if upgrading from Hound 0.1 please see [Breaking changes](#breaking-changes)
 # Adding Hound to a Mission
 ### Required external scripts
 [MIST (by mrSkortch)](https://github.com/mrSkortch/MissionScriptingTools/releases/latest)  
+
 Optional scripts - required for TTS (only one of them is required, based on your preference)
-[DCS-SimpleTextToSpeech (by ciribob)](https://github.com/ciribob/DCS-SimpleTextToSpeech)
 [DCS-gRPC](https://github.com/DCS-gRPC/rust-server)
+[DCS-SimpleTextToSpeech (by ciribob)](https://github.com/ciribob/DCS-SimpleTextToSpeech)
 
 `For installation of STTS or DCS-gRPC please consult project of choice repo. Both require you to modify "DCS World/Scripts/MissionScripting.lua"
 `  
@@ -249,7 +250,7 @@ you can mark Unit or Group, only valid Hound Radars will be added (it will not a
 
 ```
 ## Global settings
-Global settings are bet set early, which is why I'm listing them here. However they might effect resources that will only be explained later in this document. So if something looks out of place, don't worry about it.
+Global settings are best set early, which is why I'm listing them here. However they might effect resources that will only be explained later in this document. So if something looks out of place, don't worry about it.
 
 ---
 ### Map markers
@@ -657,7 +658,7 @@ If you are satisfied by only supressing the Extended uncertenty and the Extended
 ```lua
   HOUND.showExtendedInfo(false)
 ```
-If a more extensive change is desired, The recommended way to achieve it is to `COPY` the `HOUND.Contact:generateTtsReport` and `HOUND.Contact:generateTextReport` functions from `src/301 - HoundContact_comms.lua` file in this repo to a new file. In that new file perform the changes you want. To activate load the new file to the mission using `Do script file` **AFTER** the main Hound script is loaded. this will replace the original implementation without  editing the original file. allowing a simpler upgrades to newer Hound versions without loosing you changes.  
+If a more extensive change is desired, The recommended way to achieve it is to `COPY` the `HOUND.Contact.Emitter:generateTtsReport` and `HOUND.Contact.Emitter:generateTextReport` functions from `src/311 - HoundContact_comms.lua` file in this repo to a new file. In that new file perform the changes you want. To activate load the new file to the mission using `Do script file` **AFTER** the main Hound script is loaded. this will replace the original implementation without  editing the original file. allowing a simpler upgrades to newer Hound versions without loosing you changes.  
 
  ### Notifier
  ---
@@ -686,6 +687,13 @@ Oviously, you may want to tweak the radio to better work with you mission.
 this can be done using an arguments table and passing it to the configuration funtion.
 
 possible settings are slightly different based on your TTS provider of choice.
+
+by default, if correct gRPC version is present, Hound will use it over STTS
+to change it and use STTS regardless. you need to set a global variable (which is true by default)
+```lua
+  HOUND.PREFER_GRPC_TTS = false
+```
+
 #### STTS settings
 ```lua
         args = {
@@ -704,11 +712,11 @@ possible settings are slightly different based on your TTS provider of choice.
         args = {
             freq = 250.000,
             speed = <speed> -- optional, range is -10 to +10 on windows TTS. you can also specify a number between 50 and 250 which will be treated as speech speeed (100% is normal)
-            volume = "1.0", -- optiona (currently not implemented for gRPC.tts)
+            volume = "1.0", -- optional
             gender = "male"|"female", -- optional
             culture = "en-US"|"en-UK" -- (must be available on you system)
             name = "name_of_voice", -- optional (overrides gender/culture settings)
-            provider = {} -- optional gRPC.tts provider settings (consult DCS-gRPC). for example ATIS works with windows TTS. controller via a cloud provider
+            provider = {} -- optional gRPC.tts provider settings (consult DCS-gRPC). for example ATIS works with windows TTS. controller via a cloud provider (like AWS or Azure)
       
 #### applying the settings
 you can override one or more, and you can also have mutiple frequencies.
@@ -840,7 +848,7 @@ data structure of each record will follow this pattern.
 {
     typeName = <String ("straight flush","P-19")> 
     uid = <int (2 digits)> 
-    DCSunitName = <String (Name of actual DCS Unit)>
+    DCSobjectName = <String (Name of actual DCS Unit)>
     maxWeaponsRange = <Int (Max range of group weapons in Meters)>
     last_seen = <float (time last spotted by platform in seconds, timer.getAbsTime)>
     detected_by = <table (list of platform names that detected contact)>

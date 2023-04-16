@@ -12,7 +12,7 @@ end
 
 do
     HOUND = {
-        VERSION = "0.3.4-develop-20230328",
+        VERSION = "0.4.0-feature/site_managment-20230416",
         DEBUG = false,
         ELLIPSE_PERCENTILE = 0.6,
         DATAPOINTS_NUM = 30,
@@ -23,7 +23,7 @@ do
         MIST_VERSION = tonumber(table.concat({mist.majorVersion,mist.minorVersion},".")),
         FORCE_MANAGE_MARKERS = false,
         USE_LEGACY_MARKERS = true,
-        IGNORE_GRPC_TTS = true -- grpc currently causes CTD, disabling for now
+        PREFER_GRPC_TTS = true
     }
 
     HOUND.MARKER = {
@@ -77,6 +77,7 @@ do
         HOUND.EventHandler.removeEventHandler(handler)
     end
 
+    HOUND.Contact = {}
     HOUND.Comms = {}
 
     function inheritsFrom( baseClass )
@@ -917,7 +918,6 @@ do
             ['AJS37'] = {antenna = {size = 4.5, factor = 1}, require = {CLSID='{U22A}'},ins_error=50},
             ['F-16C_50'] = {antenna = {size = 1.45, factor = 1},require = {CLSID='{AN_ASQ_213}'},ins_error=0},
             ['JF-17'] = {antenna = {size = 3.25, factor = 1}, require = {CLSID='{DIS_SPJ_POD}'},ins_error=0},
-            ['Mirage-F1CE'] = {antenna = {size = 3.7, factor = 1}, require = {CLSID='{TMV_018_Syrel_POD}'},ins_error=100}, -- temporary for intial release, CE had not INS, therefor could do ELINT.
             ['Mirage-F1EE'] = {antenna = {size = 3.7, factor = 1}, require = {CLSID='{TMV_018_Syrel_POD}'},ins_error=50}, -- does not reflect features in actual released product
             ['Mirage-F1M-CE'] = {antenna = {size = 3.7, factor = 1}, require = {CLSID='{TMV_018_Syrel_POD}'},ins_error=0}, -- does not reflect features in actual released product
             ['Mirage-F1M-EE'] = {antenna = {size = 3.7, factor = 1}, require = {CLSID='{TMV_018_Syrel_POD}'},ins_error=0}, -- does not reflect features in actual released product
@@ -2207,7 +2207,7 @@ do
     end
 
     function HOUND.Utils.TTS.isAvailable()
-        if (l_grpc ~= nil and type(l_grpc.tts) == "function" and not HOUND.IGNORE_GRPC_TTS)  then
+        if (l_grpc ~= nil and type(l_grpc.tts) == "function" and HOUND.PREFER_GRPC_TTS)  then
             return true
         end
         if STTS ~= nil then
@@ -2249,7 +2249,7 @@ do
         args.name = args.name or "Hound"
         args.gender = args.gender or "female"
 
-        if (l_grpc ~= nil and type(l_grpc.tts) == "function" and not HOUND.IGNORE_GRPC_TTS) then
+        if (l_grpc ~= nil and type(l_grpc.tts) == "function" and HOUND.PREFER_GRPC_TTS) then
             return HOUND.Utils.TTS.TransmitGRPC(msg,coalitionID,args,transmitterPos)
         end
 
@@ -2663,6 +2663,12 @@ do
             end
         end
         return nil
+    end
+
+    function HOUND.Utils.Zone.getGroupRoute(GroupName)
+        if type(GroupName) == "string" and Group.getByName(GroupName) then
+            return mist.getGroupPoints(GroupName)
+        end
     end
 
     function HOUND.Utils.Polygon.threatOnSector(polygon,point, radius)
@@ -3184,11 +3190,11 @@ do
     local l_math = math
     local PI_2 = 2*l_math.pi
 
-    HOUND.Estimator = {}
-    HOUND.Estimator.__index = HOUND.Estimator
-    HOUND.Estimator.Kalman = {}
+    HOUND.Contact.Estimator = {}
+    HOUND.Contact.Estimator.__index = HOUND.Contact.Estimator
+    HOUND.Contact.Estimator.Kalman = {}
 
-    function HOUND.Estimator.accuracyScore(err)
+    function HOUND.Contact.Estimator.accuracyScore(err)
         local score = 0
         if type(err) == "number" then
             score = HOUND.Utils.Mapping.linear(err,0,100000,1,0,true)
@@ -3201,7 +3207,7 @@ do
         end
     end
 
-    function HOUND.Estimator.Kalman.posFilter()
+    function HOUND.Contact.Estimator.Kalman.posFilter()
         local Kalman = {}
 
         Kalman.P = {
@@ -3246,7 +3252,7 @@ do
         return Kalman
     end
 
-    function HOUND.Estimator.Kalman.AzFilter(noise)
+    function HOUND.Contact.Estimator.Kalman.AzFilter(noise)
         local Kalman = {}
         Kalman.P = 0.5
         Kalman.noise = noise
@@ -3280,7 +3286,7 @@ do
         return Kalman
     end
 
-    function HOUND.Estimator.Kalman.AzElFilter()
+    function HOUND.Contact.Estimator.Kalman.AzElFilter()
         local Kalman = {}
         Kalman.K = {
             Az = 0,
@@ -3348,13 +3354,13 @@ do
     local l_mist = mist
     local PI_2 = 2*l_math.pi
 
-    HOUND.Datapoint = {}
-    HOUND.Datapoint.__index = HOUND.Datapoint
-    HOUND.Datapoint.DataPointId = 0
+    HOUND.Contact.Datapoint = {}
+    HOUND.Contact.Datapoint.__index = HOUND.Contact.Datapoint
+    HOUND.Contact.Datapoint.DataPointId = 0
 
-    function HOUND.Datapoint.New(platform0, p0, az0, el0, t0, angularResolution, isPlatformStatic)
+    function HOUND.Contact.Datapoint.New(platform0, p0, az0, el0, t0, angularResolution, isPlatformStatic)
         local elintDatapoint = {}
-        setmetatable(elintDatapoint, HOUND.Datapoint)
+        setmetatable(elintDatapoint, HOUND.Contact.Datapoint)
         elintDatapoint.platformPos = p0
         elintDatapoint.az = az0
         elintDatapoint.el = el0
@@ -3369,7 +3375,7 @@ do
         elintDatapoint.kalman = nil
         elintDatapoint.processed = false
         if elintDatapoint.platformStatic then
-            elintDatapoint.kalman = HOUND.Estimator.Kalman.AzFilter(elintDatapoint.platformPrecision)
+            elintDatapoint.kalman = HOUND.Contact.Estimator.Kalman.AzFilter(elintDatapoint.platformPrecision)
             elintDatapoint:update(elintDatapoint.az)
         end
         if HOUND.DEBUG then
@@ -3378,43 +3384,43 @@ do
         return elintDatapoint
     end
 
-    function HOUND.Datapoint.isStatic(self)
+    function HOUND.Contact.Datapoint.isStatic(self)
         return self.platformStatic
     end
 
-    function HOUND.Datapoint.getPos(self)
+    function HOUND.Contact.Datapoint.getPos(self)
         return self.estimatedPos
     end
 
-    function HOUND.Datapoint.getAge(self)
+    function HOUND.Contact.Datapoint.getAge(self)
         return HOUND.Utils.absTimeDelta(self.t)
     end
 
-    function HOUND.Datapoint.get2dPoly(self)
+    function HOUND.Contact.Datapoint.get2dPoly(self)
         return self.posPolygon['2D']
     end
 
-    function HOUND.Datapoint.get3dPoly(self)
+    function HOUND.Contact.Datapoint.get3dPoly(self)
         return self.posPolygon['3D']
     end
 
-    function HOUND.Datapoint.getEllipseParams(self)
+    function HOUND.Contact.Datapoint.getEllipseParams(self)
         return self.posPolygon['EllipseParams']
     end
 
-    function HOUND.Datapoint.getErrors(self)
+    function HOUND.Contact.Datapoint.getErrors(self)
         if type(self.err) ~= "table" then
             self:calcError()
         end
         return self.err
     end
 
-    function HOUND.Datapoint.estimatePos(self)
+    function HOUND.Contact.Datapoint.estimatePos(self)
         if self.el == nil or l_math.abs(self.el) <= self.platformPrecision then return end
         return HOUND.Utils.Geo.getProjectedIP(self.platformPos,self.az,self.el)
     end
 
-    function HOUND.Datapoint.calcPolygons(self)
+    function HOUND.Contact.Datapoint.calcPolygons(self)
         if self.platformPrecision == 0 then return nil,nil end
         local maxSlant = l_math.min(250000,HOUND.Utils.Geo.EarthLOS(self.platformPos.y)*1.1)
         local poly2D = {}
@@ -3469,7 +3475,7 @@ do
         return poly2D,poly3D,ellipse
     end
 
-    function HOUND.Datapoint.calcError(self)
+    function HOUND.Contact.Datapoint.calcError(self)
         if type(self.posPolygon["EllipseParams"]) == "table" and self.posPolygon["EllipseParams"].theta then
         local ellipse = self.posPolygon['EllipseParams']
         if ellipse.theta then
@@ -3480,14 +3486,14 @@ do
                 z = l_math.max(l_math.abs(ellipse.minor/2*sinTheta), l_math.abs(ellipse.major/2*cosTheta))
             }
             self.err.score = {
-                x = HOUND.Estimator.accuracyScore(self.err.x),
-                z = HOUND.Estimator.accuracyScore(self.err.z)
+                x = HOUND.Contact.Estimator.accuracyScore(self.err.x),
+                z = HOUND.Contact.Estimator.accuracyScore(self.err.z)
             }
         end
 
         end
     end
-    function HOUND.Datapoint.update(self,newAz,predictedAz,processNoise)
+    function HOUND.Contact.Datapoint.update(self,newAz,predictedAz,processNoise)
         if not self.platformPrecision and not self.platformStatic then return end
         self.kalman:update(newAz,nil,processNoise)
         self.az = self.kalman:get()
@@ -3495,31 +3501,31 @@ do
         return self.az
     end
 
-    function HOUND.Datapoint.getId()
-        HOUND.Datapoint.DataPointId = HOUND.Datapoint.DataPointId + 1
-        return HOUND.Datapoint.DataPointId
+    function HOUND.Contact.Datapoint.getId()
+        HOUND.Contact.Datapoint.DataPointId = HOUND.Contact.Datapoint.DataPointId + 1
+        return HOUND.Contact.Datapoint.DataPointId
     end
 end
 do
-    HOUND.Contact = {}
-    HOUND.Contact.__index = HOUND.Contact
+    HOUND.Contact.Emitter = {}
+    HOUND.Contact.Emitter.__index = HOUND.Contact.Emitter
 
     local l_math = math
     local l_mist = mist
     local pi_2 = l_math.pi*2
 
-    function HOUND.Contact.New(DCS_Unit,HoundCoalition,ContactId)
+    function HOUND.Contact.Emitter.New(DCS_Unit,HoundCoalition,ContactId)
         if not DCS_Unit or type(DCS_Unit) ~= "table" or not DCS_Unit.getName or not HoundCoalition then
             HOUND.Logger.warn("failed to create HOUND.Contact instance")
             return
         end
         local elintcontact = {}
-        setmetatable(elintcontact, HOUND.Contact)
-        elintcontact.unit = DCS_Unit
+        setmetatable(elintcontact, HOUND.Contact.Emitter)
+        elintcontact.DCSobject = DCS_Unit
         elintcontact.uid = ContactId or DCS_Unit:getID()
         elintcontact.DCStypeName = DCS_Unit:getTypeName()
         elintcontact.DCSgroupName = Group.getName(DCS_Unit:getGroup())
-        elintcontact.DCSunitName = DCS_Unit:getName()
+        elintcontact.DCSobjectName = DCS_Unit:getName()
         elintcontact.typeName = DCS_Unit:getTypeName()
         elintcontact.isEWR = false
         elintcontact.typeAssigned = {"Unknown"}
@@ -3570,48 +3576,48 @@ do
         elintcontact.state = HOUND.EVENTS.RADAR_NEW
         elintcontact.preBriefed = false
         elintcontact.unitAlive = true
-        elintcontact._kalman = HOUND.Estimator.Kalman.posFilter()
+        elintcontact._kalman = HOUND.Contact.Estimator.Kalman.posFilter()
         return elintcontact
     end
 
-    function HOUND.Contact:destroy()
+    function HOUND.Contact.Emitter:destroy()
         self:removeMarkers()
     end
 
-    function HOUND.Contact:getName()
+    function HOUND.Contact.Emitter:getName()
         return self:getType() .. " " .. self:getId()
     end
 
-    function HOUND.Contact:getType()
+    function HOUND.Contact.Emitter:getType()
         return self.typeName
     end
 
-    function HOUND.Contact:getId()
+    function HOUND.Contact.Emitter:getId()
         return self.uid%100
     end
 
-    function HOUND.Contact:getGroupName()
+    function HOUND.Contact.Emitter:getGroupName()
         return self.DCSgroupName
     end
 
-    function HOUND.Contact:getDcsName()
-        return self.DCSunitName
+    function HOUND.Contact.Emitter:getDcsName()
+        return self.DCSobjectName
     end
 
-    function HOUND.Contact:getDCSObject()
-        return self.unit or self.DCSunitName
+    function HOUND.Contact.Emitter:getDCSObject()
+        return self.DCSobject or self.DCSobjectName
     end
-    function HOUND.Contact:getLastSeen()
+    function HOUND.Contact.Emitter:getLastSeen()
         return HOUND.Utils.absTimeDelta(self.last_seen)
     end
-    function HOUND.Contact:getTrackId()
+    function HOUND.Contact.Emitter:getTrackId()
         local trackType = 'E'
         if self.preBriefed then
             trackType = 'I'
         end
         return string.format("%s-%d",trackType,self.uid)
     end
-    function HOUND.Contact:getNatoDesignation()
+    function HOUND.Contact.Emitter:getNatoDesignation()
         local natoDesignation = string.gsub(self:getTypeAssigned(),"(SA)-",'')
             if natoDesignation == "Naval" then
                 natoDesignation = self:getType()
@@ -3619,11 +3625,11 @@ do
         return natoDesignation
     end
 
-    function HOUND.Contact:getPos()
+    function HOUND.Contact.Emitter:getPos()
         return self.pos.p
     end
 
-    function HOUND.Contact:getElev()
+    function HOUND.Contact.Emitter:getElev()
         if not self:hasPos() then return 0 end
         local step = 50
         if self:isAccurate() then
@@ -3632,68 +3638,72 @@ do
         return HOUND.Utils.getRoundedElevationFt(self.pos.elev,step)
     end
 
-    function HOUND.Contact:getUnit()
-        return self.unit
+    function HOUND.Contact.Emitter:getUnit()
+        return self.DCSobject
     end
-    function HOUND.Contact:hasPos()
+    function HOUND.Contact.Emitter:hasPos()
         return HOUND.Utils.Geo.isDcsPoint(self.pos.p)
     end
 
-    function HOUND.Contact:getMaxWeaponsRange()
+    function HOUND.Contact.Emitter:getMaxWeaponsRange()
         return self.maxWeaponsRange
     end
 
-    function HOUND.Contact:getTypeAssigned()
+    function HOUND.Contact.Emitter:getRadarDetectionRange()
+        return self.detectionRange
+    end
+
+    function HOUND.Contact.Emitter:getTypeAssigned()
         return table.concat(self.typeAssigned," or ")
     end
 
-    function HOUND.Contact:getLife()
-        if self:isAlive() and (not self.unit or not self.unit.getLife) then
-            HOUND.Logger.error("something is wrong with the object for " .. self.DCSunitName)
+    function HOUND.Contact.Emitter:getLife()
+        if self:isAlive() and (not self.DCSobject or not self.DCSobject.getLife) then
+            HOUND.Logger.error("something is wrong with the object for " .. self.DCSobjectName)
             self:updateDeadDCSObject()
         end
-        if self.unit and type(self.unit) == "table" and self.unit:isExist() then
-            return self.unit:getLife()
+        if self.DCSobject and type(self.DCSobject) == "table" and self.DCSobject:isExist() then
+            return self.DCSobject:getLife()
         end
         return 0
     end
-    function HOUND.Contact:isAlive()
-        return self.unitAlive
+    function HOUND.Contact.Emitter:isAlive()
+        return self.DCSobjectAlive
     end
 
-    function HOUND.Contact:setDead()
-        self.unitAlive = false
+    function HOUND.Contact.Emitter:setDead()
+        self.DCSobjectAlive = false
         self:updateDeadDCSObject()
     end
 
-    function HOUND.Contact:updateDeadDCSObject()
-        self.unit = Unit.getByName(self.DCSunitName) or StaticObject.getByName(self.DCSunitName)
-        if not self.unit then
-            self.unit = self.DCSunitName
+    function HOUND.Contact.Emitter:updateDeadDCSObject()
+        self.DCSobject = Unit.getByName(self.DCSobjectName) or StaticObject.getByName(self.DCSobjectName)
+        if not self.DCSobject then
+            self.DCSobject = self.DCSobjectName
         end
     end
 
-    function HOUND.Contact:isActive()
+    function HOUND.Contact.Emitter:isActive()
         return self:getLastSeen()/16 < 1.0
     end
 
-    function HOUND.Contact:isRecent()
+    function HOUND.Contact.Emitter:isRecent()
         return self:getLastSeen()/120 < 1.0
     end
 
-    function HOUND.Contact:isAccurate()
+    function HOUND.Contact.Emitter:isAccurate()
         return self.preBriefed
     end
 
-    function HOUND.Contact:isTimedout()
+    function HOUND.Contact.Emitter:isTimedout()
         return self:getLastSeen() > HOUND.CONTACT_TIMEOUT
     end
 
-    function HOUND.Contact:getState()
+    function HOUND.Contact.Emitter:getState()
         return self.state
     end
 
-    function HOUND.Contact:CleanTimedout()
+    function HOUND.Contact.Emitter:CleanTimedout()
         if self:isTimedout() then
             self._dataPoints = {}
             self.state = HOUND.EVENTS.RADAR_ASLEEP
@@ -3701,7 +3711,7 @@ do
         return self.state
     end
 
-    function HOUND.Contact:countPlatforms(skipStatic)
+    function HOUND.Contact.Emitter:countPlatforms(skipStatic)
         local count = 0
         if Length(self._dataPoints) == 0 then return count end
         for _,platformDataPoints in pairs(self._dataPoints) do
@@ -3712,7 +3722,7 @@ do
         return count
     end
 
-    function HOUND.Contact:countDatapoints()
+    function HOUND.Contact.Emitter:countDatapoints()
         local count = 0
         if Length(self._dataPoints) == 0 then return count end
         for _,platformDataPoints in pairs(self._dataPoints) do
@@ -3721,7 +3731,7 @@ do
         return count
     end
 
-    function HOUND.Contact:AddPoint(datapoint)
+    function HOUND.Contact.Emitter:AddPoint(datapoint)
         self.last_seen = datapoint.t
         if Length(self._dataPoints[datapoint.platformId]) == 0 then
             self._dataPoints[datapoint.platformId] = {}
@@ -3736,7 +3746,7 @@ do
             if HOUND.Utils.Geo.isDcsPoint(self.pos.p) then
                 predicted.az,predicted.el = HOUND.Utils.Elint.getAzimuth( datapoint.platformPos , self.pos.p, 0.0 )
                 if type(self.uncertenty_data) == "table" and self.uncertenty_data.minor and self.uncertenty_data.major and self.uncertenty_data.az then
-                    predicted.err = HOUND.Utils.Polygon.azMinMax(HOUND.Contact.calculatePoly(self.uncertenty_data,8,self.pos.p),datapoint.platformPos)
+                    predicted.err = HOUND.Utils.Polygon.azMinMax(HOUND.Contact.Emitter.calculatePoly(self.uncertenty_data,8,self.pos.p),datapoint.platformPos)
                 end
             end
             self._dataPoints[datapoint.platformId][1]:update(datapoint.az,predicted.az,predicted.err)
@@ -3768,7 +3778,7 @@ do
         end
     end
 
-    function HOUND.Contact.triangulatePoints(earlyPoint, latePoint)
+    function HOUND.Contact.Emitter.triangulatePoints(earlyPoint, latePoint)
         local p1 = earlyPoint.platformPos
         local p2 = latePoint.platformPos
 
@@ -3789,7 +3799,7 @@ do
         return pos
     end
 
-    function HOUND.Contact.getDeltaSubsetPercent(Table,referencePos,NthPercentile)
+    function HOUND.Contact.Emitter.getDeltaSubsetPercent(Table,referencePos,NthPercentile)
         local t = l_mist.utils.deepCopy(Table)
         local len_t = Length(t)
         t = HOUND.Utils.Geo.setHeight(t)
@@ -3811,10 +3821,10 @@ do
         return RelativeToPos
     end
 
-    function HOUND.Contact.calculateEllipse(estimatedPositions,giftWrapped,refPos)
+    function HOUND.Contact.Emitter.calculateEllipse(estimatedPositions,giftWrapped,refPos)
         local percentile = HOUND.ELLIPSE_PERCENTILE
         if giftWrapped then percentile = 1.0 end
-        local RelativeToPos = HOUND.Contact.getDeltaSubsetPercent(estimatedPositions,refPos,percentile)
+        local RelativeToPos = HOUND.Contact.Emitter.getDeltaSubsetPercent(estimatedPositions,refPos,percentile)
 
         local min = {}
         min.x = 99999
@@ -3856,7 +3866,7 @@ do
         return uncertenty_data
     end
 
-    function HOUND.Contact.calculateEllipseErrors(uncertenty_ellipse)
+    function HOUND.Contact.Emitter.calculateEllipseErrors(uncertenty_ellipse)
         if not uncertenty_ellipse.theta then return end
         local err = {}
 
@@ -3867,19 +3877,19 @@ do
         err.z = l_math.max(l_math.abs(uncertenty_ellipse.minor/2*sinTheta), l_math.abs(uncertenty_ellipse.major/2*cosTheta))
 
         err.score = {}
-        err.score.x = HOUND.Estimator.accuracyScore(err.x)
-        err.score.z = HOUND.Estimator.accuracyScore(err.z)
+        err.score.x = HOUND.Contact.Estimator.accuracyScore(err.x)
+        err.score.z = HOUND.Contact.Estimator.accuracyScore(err.z)
         return err
     end
 
-    function HOUND.Contact.calculatePos(estimatedPositions,converge)
+    function HOUND.Contact.Emitter.calculatePos(estimatedPositions,converge)
         if type(estimatedPositions) ~= "table" or Length(estimatedPositions) == 0 then return end
         local pos = l_mist.getAvgPoint(estimatedPositions)
         if converge then
             local subList = estimatedPositions
             local subsetPos = pos
             while (Length(subList) * HOUND.ELLIPSE_PERCENTILE) > 5 do
-                local NewsubList = HOUND.Contact.getDeltaSubsetPercent(subList,subsetPos,HOUND.ELLIPSE_PERCENTILE)
+                local NewsubList = HOUND.Contact.Emitter.getDeltaSubsetPercent(subList,subsetPos,HOUND.ELLIPSE_PERCENTILE)
                 subsetPos = l_mist.getAvgPoint(NewsubList)
 
                 pos.x = pos.x + (subsetPos.x )
@@ -3891,7 +3901,7 @@ do
         return pos
     end
 
-    function HOUND.Contact:calculateExtrasPosData(pos)
+    function HOUND.Contact.Emitter:calculateExtrasPosData(pos)
         if type(pos.p) == "table" and HOUND.Utils.Geo.isDcsPoint(pos.p) then
             local bullsPos = coalition.getMainRefPoint(self._platformCoalition)
             pos.LL = {}
@@ -3903,7 +3913,7 @@ do
         return pos
     end
 
-    function HOUND.Contact:processIntersection(targetTable,point1,point2)
+    function HOUND.Contact.Emitter:processIntersection(targetTable,point1,point2)
         local err = (point1.platformPrecision + point2.platformPrecision)/2
         if HOUND.Utils.angleDeltaRad(point1.az,point2.az) < err then return end
         local intersection = self.triangulatePoints(point1,point2)
@@ -3911,10 +3921,10 @@ do
         table.insert(targetTable,intersection)
     end
 
-    function HOUND.Contact:processData()
+    function HOUND.Contact.Emitter:processData()
         if self.preBriefed then
-            if type(self.unit) == "table" and self.unit.isExist and self.unit:isExist() then
-                local unitPos = self.unit:getPosition()
+            if type(self.DCSobject) == "table" and self.DCSobject.isExist and self.DCSobject:isExist() then
+                local unitPos = self.DCSobject:getPosition()
                 if l_mist.utils.get3DDist(unitPos.p,self.pos.p) < 0.25 then return end
                 self.preBriefed = false
             else return end
@@ -4016,13 +4026,13 @@ do
         return self.state
     end
 
-    function HOUND.Contact:removeMarkers()
+    function HOUND.Contact.Emitter:removeMarkers()
         for _,marker in pairs(self._markpoints) do
             marker:remove()
         end
     end
 
-    function HOUND.Contact.calculatePoly(uncertenty_data,numPoints,refPos)
+    function HOUND.Contact.Emitter.calculatePoly(uncertenty_data,numPoints,refPos)
         local polygonPoints = {}
         if type(uncertenty_data) ~= "table" or not uncertenty_data.major or not uncertenty_data.minor or not uncertenty_data.az then
             return polygonPoints
@@ -4054,7 +4064,7 @@ do
 
     end
 
-    function HOUND.Contact:drawAreaMarker(numPoints)
+    function HOUND.Contact.Emitter:drawAreaMarker(numPoints)
         if numPoints == nil then numPoints = 1 end
         if numPoints ~= 1 and numPoints ~= 4 and numPoints ~=8 and numPoints ~= 16 then
             HOUND.Logger.error("DCS limitation, only 1,4,8 or 16 points are allowed")
@@ -4090,12 +4100,12 @@ do
                 r = self.uncertenty_data.r
             }
         else
-            markArgs.pos = HOUND.Contact.calculatePoly(self.uncertenty_data,numPoints,self.pos.p)
+            markArgs.pos = HOUND.Contact.Emitter.calculatePoly(self.uncertenty_data,numPoints,self.pos.p)
         end
         return self._markpoints.u:update(markArgs)
     end
 
-    function HOUND.Contact:updateMarker(MarkerType)
+    function HOUND.Contact.Emitter:updateMarker(MarkerType)
         if not self:hasPos() or self.uncertenty_data == nil or not self:isRecent() then return end
         if self:isAccurate() and self._markpoints.p:isDrawn() then return end
         local markerArgs = {
@@ -4132,19 +4142,19 @@ do
         end
     end
 
-    function HOUND.Contact:getPrimarySector()
+    function HOUND.Contact.Emitter:getPrimarySector()
         return self.primarySector
     end
 
-    function HOUND.Contact:getSectors()
+    function HOUND.Contact.Emitter:getSectors()
         return self.threatSectors
     end
 
-    function HOUND.Contact:isInSector(sectorName)
+    function HOUND.Contact.Emitter:isInSector(sectorName)
         return self.threatSectors[sectorName] or false
     end
 
-    function HOUND.Contact:updateDefaultSector()
+    function HOUND.Contact.Emitter:updateDefaultSector()
         self.threatSectors[self.primarySector] = true
         if self.primarySector == "default" then return end
         for k,v in pairs(self.threatSectors) do
@@ -4156,7 +4166,7 @@ do
         self.threatSectors["default"] = true
     end
 
-    function HOUND.Contact:updateSector(sectorName,inSector,threatsSector)
+    function HOUND.Contact.Emitter:updateSector(sectorName,inSector,threatsSector)
         if inSector == nil and threatsSector == nil then
             return
         end
@@ -4169,24 +4179,24 @@ do
         self:updateDefaultSector()
     end
 
-    function HOUND.Contact:addSector(sectorName)
+    function HOUND.Contact.Emitter:addSector(sectorName)
         self.threatSectors[sectorName] = true
         self:updateDefaultSector()
     end
 
-    function HOUND.Contact:removeSector(sectorName)
+    function HOUND.Contact.Emitter:removeSector(sectorName)
         if self.threatSectors[sectorName] then
             self.threatSectors[sectorName] = false
             self:updateDefaultSector()
         end
     end
 
-    function HOUND.Contact:isThreatsSector(sectorName)
+    function HOUND.Contact.Emitter:isThreatsSector(sectorName)
         return self.threatSectors[sectorName] or false
     end
 
-    function HOUND.Contact:useUnitPos()
-        if not self.unit:isExist() then
+    function HOUND.Contact.Emitter:useUnitPos()
+        if not self.DCSobject:isExist() then
             HOUND.Logger.info("PB failed - unit does not exist")
             return
         end
@@ -4194,7 +4204,7 @@ do
         if type(self.pos.p) == "table" then
             self.state = HOUND.EVENTS.RADAR_UPDATED
         end
-        local unitPos = self.unit:getPosition()
+        local unitPos = self.DCSobject:getPosition()
         self.preBriefed = true
 
         self.pos.p = unitPos.p
@@ -4211,11 +4221,11 @@ do
         return self.state
     end
 
-    function HOUND.Contact:export()
+    function HOUND.Contact.Emitter:export()
         local contact = {}
         contact.typeName = self.typeName
         contact.uid = self.uid % 100
-        contact.DCSunitName = self.unit:getName()
+        contact.DCSobjectName = self.DCSobject:getName()
         if self.pos.p ~= nil and self.uncertenty_data ~= nil then
             contact.pos = self.pos.p
             contact.LL = self.pos.LL
@@ -4236,7 +4246,7 @@ end
 do
     local l_math = math
 
-    function HOUND.Contact:getTextData(utmZone,MGRSdigits)
+    function HOUND.Contact.Emitter:getTextData(utmZone,MGRSdigits)
         if self.pos.p == nil then return end
         local GridPos = ""
         if utmZone then
@@ -4254,7 +4264,7 @@ do
         return GridPos,BE
     end
 
-    function HOUND.Contact:getTtsData(utmZone,MGRSdigits)
+    function HOUND.Contact.Emitter:getTtsData(utmZone,MGRSdigits)
         if self.pos.p == nil then return end
         local phoneticGridPos = ""
         if utmZone then
@@ -4274,7 +4284,7 @@ do
         return phoneticGridPos,phoneticBulls
     end
 
-    function HOUND.Contact:generateTtsBrief(NATO)
+    function HOUND.Contact.Emitter:generateTtsBrief(NATO)
         if self.pos.p == nil or self.uncertenty_data == nil then return end
         local phoneticGridPos,phoneticBulls = self:getTtsData(false,1)
         local reportedName = self:getName()
@@ -4299,7 +4309,7 @@ do
         return str
     end
 
-    function HOUND.Contact:generateTtsReport(useDMM,refPos)
+    function HOUND.Contact.Emitter:generateTtsReport(useDMM,refPos)
         if self.pos.p == nil then return end
         useDMM = useDMM or false
 
@@ -4341,7 +4351,7 @@ do
         return msg
     end
 
-    function HOUND.Contact:generateTextReport(useDMM,refPos)
+    function HOUND.Contact.Emitter:generateTextReport(useDMM,refPos)
         if self.pos.p == nil then return end
         useDMM = useDMM or false
 
@@ -4376,14 +4386,14 @@ do
         return msg
     end
 
-    function HOUND.Contact:generateRadioItemText()
+    function HOUND.Contact.Emitter:generateRadioItemText()
         if not self:hasPos() then return end
         local GridPos,BePos = self:getTextData(true,1)
         BePos = BePos:gsub(" for ","/")
         return self:getName() .. " - BE: " .. BePos .. " (".. GridPos ..")"
     end
 
-    function HOUND.Contact:generatePopUpReport(isTTS,sectorName)
+    function HOUND.Contact.Emitter:generatePopUpReport(isTTS,sectorName)
         local msg = self:getName() .. " is now Alive"
 
         if sectorName then
@@ -4403,7 +4413,7 @@ do
         return msg .. "."
     end
 
-    function HOUND.Contact:generateDeathReport(isTTS,sectorName)
+    function HOUND.Contact.Emitter:generateDeathReport(isTTS,sectorName)
         local msg = self:getName() .. " has been destroyed"
         if sectorName then
             msg = msg .. " in " .. sectorName
@@ -4422,7 +4432,7 @@ do
         return msg .. "."
     end
 
-    function HOUND.Contact:generateIntelBrief()
+    function HOUND.Contact.Emitter:generateIntelBrief()
         local msg = ""
         if self:hasPos() then
             local GridPos,BePos = self:getTextData(true,HOUND.MGRS_PRECISION)
@@ -4431,13 +4441,104 @@ do
                 HOUND.Utils.TTS.getVerbalContactAge(self.last_seen,true,true),
                 BePos,string.format("%02.6f",self.pos.LL.lat),string.format("%03.6f",self.pos.LL.lon), GridPos,
                 HOUND.Utils.TTS.getVerbalConfidenceLevel( self.uncertenty_data.r ),
-                HOUND.Utils.Text.getTime(self.last_seen),self.DCStypeName,self.DCSunitName,self.DCSgroupName
+                HOUND.Utils.Text.getTime(self.last_seen),self.DCStypeName,self.DCSobjectName,self.DCSgroupName
             }
             msg = table.concat(msg,",")
         end
         return msg
     end
 end
+do
+    HOUND.Contact.Site = {}
+    HOUND.Contact.Site.__index = HOUND.Contact.Site
+
+    local l_math = math
+    local l_mist = mist
+    local pi_2 = l_math.pi*2
+
+    function HOUND.Contact.Site.New(HoundContact,HoundCoalition,SiteId)
+        if not HoundContact or type(HoundContact) ~= "table" or not HoundContact.getGroupName or not HoundCoalition then
+            HOUND.Logger.warn("failed to create HOUND.Contact.Site instance")
+            return
+        end
+        local elintsite = {}
+        setmetatable(elintsite, HOUND.Contact.Site)
+        elintsite.group = HoundContact.unit:getGroup()
+        elintsite.gid = SiteId or elintsite.group:getId()
+        elintsite.DCSgroupName = elintsite.group:getName()
+        elintsite.typeAssigned = HoundContact.typeAssigned
+
+        elintsite.emitters = { HoundContact }
+        elintsite.primaryEmitter = HoundContact
+        elintsite.last_seen = HoundContact:getLastSeen()
+        elintsite.first_seen = HoundContact.first_seen
+        elintsite.maxWeaponsRange = HoundContact:getMaxWeaponsRange()
+        elintsite.detectionRange = HoundContact:getRadarDetectionRange()
+
+        elintsite.state = HOUND.EVENTS.SITE_NEW
+        elintsite.preBriefed = HoundContact:isAccurate()
+
+        return elintsite
+    end
+
+    function HOUND.Contact.Site:destroy()
+        HOUND.Logger.debug("site destroy")
+    end
+
+    function HOUND.Contact.Site:getName()
+        return self:getType() .. " " .. self:getId()
+    end
+
+    function HOUND.Contact.Site:getType()
+        return self.typeName
+    end
+
+    function HOUND.Contact.Site:getId()
+        return self.gid%100
+    end
+
+    function HOUND.Contact.Site:getGroupName()
+        return self.DCSgroupName
+    end
+
+    function HOUND.Contact.Site:getDcsName()
+        return self.DCSgroupName
+    end
+
+    function HOUND.Contact.Site:getDCSObject()
+        return self.group or self.DCSgroupName
+    end
+    function HOUND.Contact.Site:getLastSeen()
+        return HOUND.Utils.absTimeDelta(self.last_seen)
+    end
+
+    function HOUND.Contact.Site:getTypeAssigned()
+        return table.concat(self.typeAssigned," or ")
+    end
+
+    function HOUND.Contact.Site:isActive()
+        return self:getLastSeen()/16 < 1.0
+    end
+
+    function HOUND.Contact.Site:isRecent()
+        return self:getLastSeen()/120 < 1.0
+    end
+
+    function HOUND.Contact.Site:isAccurate()
+        return self.preBriefed
+    end
+
+    function HOUND.Contact.Site:isTimedout()
+        return self:getLastSeen() > HOUND.CONTACT_TIMEOUT
+    end
+
+    function HOUND.Contact.Site:getState()
+        return self.state
+    end
+end--- HOUND.Contact.Site_comms
+do
+    local l_math = math
+end--- Hound Comms Manager (Base class)
 do
     HOUND.Comms.Manager = {}
     HOUND.Comms.Manager.__index = HOUND.Comms.Manager
@@ -4867,6 +4968,7 @@ do
         local instance = {}
         instance.contacts = {}
         instance.platforms = {}
+        instance.sites = {}
         instance.settings =  HOUND.Config.get(HoundInstanceId)
         instance.coalitionId = nil
         instance.TrackIdCounter = 0
@@ -4885,6 +4987,11 @@ do
 
     function HOUND.ElintWorker:getCoalition()
         return self.settings:getCoalition()
+    end
+
+    function HOUND.ElintWorker:getNewTrackId()
+        self.TrackIdCounter = self.TrackIdCounter + 1
+        return self.TrackIdCounter
     end
 
     function HOUND.ElintWorker:addPlatform(platformName)
@@ -4977,11 +5084,6 @@ do
         return platforms
     end
 
-    function HOUND.ElintWorker:getNewTrackId()
-        self.TrackIdCounter = self.TrackIdCounter + 1
-        return self.TrackIdCounter
-    end
-
     function HOUND.ElintWorker:isContact(emitter)
         if emitter == nil then return false end
         local emitterName = nil
@@ -4998,7 +5100,7 @@ do
         if emitter == nil or emitter.getName == nil then return end
         local emitterName = emitter:getName()
         if self.contacts[emitterName] ~= nil then return emitterName end
-        self.contacts[emitterName] = HOUND.Contact.New(emitter, self:getCoalition(), self:getNewTrackId())
+        self.contacts[emitterName] = HOUND.Contact.Emitter.New(emitter, self:getCoalition(), self:getNewTrackId())
         HOUND.EventHandler.publishEvent({
             id = HOUND.EVENTS.RADAR_NEW,
             initiator = emitter,
@@ -5073,6 +5175,68 @@ do
         end
         local HoundContact = self:getContact(emitter)
         HoundContact:AddPoint(datapoint)
+    end
+
+    function HOUND.ElintWorker:isSite(site)
+        if site == nil then return false end
+        local groupName = nil
+        if type(site) == "string" then
+            groupName = site
+        end
+        if type(site) == "table" and site.getName ~= nil then
+            groupName = site:getName()
+        end
+        return setContains(self.sites,groupName)
+    end
+
+    function HOUND.ElintWorker:addSite(emitter)
+        if emitter == nil or emitter.getName == nil then return end
+        local groupName = emitter:getGroup()
+        if self.sites[groupName] ~= nil then return groupName end
+        self.sites[groupName] = HOUND.Site.New(emitter, self:getCoalition(), self:getNewTrackId())
+        HOUND.EventHandler.publishEvent({
+            id = HOUND.EVENTS.SITE_NEW,
+            initiator = emitter,
+            houndId = self.settings:getId(),
+            coalition = self.settings:getCoalition()
+        })
+        return groupName
+    end
+
+    function HOUND.ElintWorker:getSite(emitter,getOnly)
+        if emitter == nil then return nil end
+        local groupName = nil
+        if type(emitter) == "string" then
+            groupName = emitter
+        end
+        if type(emitter) == "table" and emitter.getName ~= nil then
+            groupName = emitter:getGroup():getName()
+        end
+
+        if groupName ~= nil and self.sites[groupName] ~= nil then return self.sites[groupName] end
+        if not self.contacts[groupName] and type(emitter) == "table" and not getOnly then
+            self:addSite(emitter)
+            return self.contacts[groupName]
+        end
+        return nil
+    end
+
+    function HOUND.ElintWorker:removeSite(groupName)
+        if not type(groupName) == "string" then return false end
+        if self.sites[groupName] then
+            for emitterName,emitter in pairs(self.sites[groupName]:getRadars()) do
+                self:removeContact(emitterName)
+            end
+            self.sites[groupName]:updateDeadDCSObject()
+            HOUND.EventHandler.publishEvent({
+                id = HOUND.EVENTS.SITE_REMOVED,
+                initiator = self.sites[groupName],
+                houndId = self.settings:getId(),
+                coalition = self.settings:getCoalition()
+            })
+        end
+        self.sites[groupName] = nil
+        return true
     end
 
     function HOUND.ElintWorker:listInSector(sectorName)
@@ -5177,7 +5341,7 @@ do
 
                         end
 
-                        local datapoint = HOUND.Datapoint.New(platform,platformData.pos, az, el, timer.getAbsTime(),sampleAngularResolution,platformData.isStatic)
+                        local datapoint = HOUND.Contact.Datapoint.New(platform,platformData.pos, az, el, timer.getAbsTime(),sampleAngularResolution,platformData.isStatic)
                         contact:AddPoint(datapoint)
                     end
                 end
@@ -5400,19 +5564,15 @@ do
             HOUND.Logger.warn("[Hound] - cannot set zone to default sector")
             return
         end
-        if type(zonecandidate) == "string" then
-            local zone = HOUND.Utils.Zone.getDrawnZone(zonecandidate)
-            if not zone and (Group.getByName(zonecandidate)) then
-                zone = mist.getGroupPoints(zonecandidate)
-            end
-            self.settings.zone = zone
-            return
-        end
+        local zone = nil
         if not zonecandidate then
-            local zone = HOUND.Utils.Zone.getDrawnZone(self.name .. " Sector")
-            if zone then
-                self.settings.zone = zone
-            end
+            zone = HOUND.Utils.Zone.getDrawnZone(self.name .. " Sector")
+        end
+        if type(zonecandidate) == "string" then
+            zone = HOUND.Utils.Zone.getDrawnZone(zonecandidate) or HOUND.Utils.Zone.getGroupRoute(zonecandidate)
+        end
+        if zone then
+            self.settings.zone = zone
         end
     end
 
@@ -7099,4 +7259,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.3.4-develop-20230328 - Compiled on 2023-03-28 10:16
+-- Hound version 0.4.0-feature/site_managment-20230416 - Compiled on 2023-04-16 06:56

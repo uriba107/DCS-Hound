@@ -211,19 +211,21 @@ do
             HOUND.Logger.warn("[Hound] - cannot set zone to default sector")
             return
         end
-        if type(zonecandidate) == "string" then
-            local zone = HOUND.Utils.Zone.getDrawnZone(zonecandidate)
-            if not zone and (Group.getByName(zonecandidate)) then
-                zone = mist.getGroupPoints(zonecandidate)
-            end
-            self.settings.zone = zone
-            return
-        end
+        local zone = nil
         if not zonecandidate then
-            local zone = HOUND.Utils.Zone.getDrawnZone(self.name .. " Sector")
-            if zone then
-                self.settings.zone = zone
-            end
+            zone = HOUND.Utils.Zone.getDrawnZone(self.name .. " Sector")
+        end
+        if type(zonecandidate) == "string" then
+            zone = HOUND.Utils.Zone.getDrawnZone(zonecandidate) or HOUND.Utils.Zone.getGroupRoute(zonecandidate)
+            -- local zone = HOUND.Utils.Zone.getDrawnZone(zonecandidate)
+            -- if not zone and (Group.getByName(zonecandidate)) then
+            --     zone = mist.getGroupPoints(zonecandidate)
+            -- end
+            -- self.settings.zone = zone
+            -- return
+        end
+        if zone then
+            self.settings.zone = zone
         end
     end
 

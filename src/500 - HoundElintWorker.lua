@@ -9,6 +9,7 @@ do
         local instance = {}
         instance.contacts = {}
         instance.platforms = {}
+        instance.sites = {}
         instance.settings =  HOUND.Config.get(HoundInstanceId)
         instance.coalitionId = nil
         instance.TrackIdCounter = 0
@@ -32,6 +33,16 @@ do
     function HOUND.ElintWorker:getCoalition()
         return self.settings:getCoalition()
     end
+
+    --- get the next track number
+    -- @return UID for the contact
+    function HOUND.ElintWorker:getNewTrackId()
+        self.TrackIdCounter = self.TrackIdCounter + 1
+        return self.TrackIdCounter
+    end
+
+    --- Platform Management
+    -- @section Platforms
 
     --- add platform
     -- @string platformName DCS Unit Name of platform to be added
@@ -135,12 +146,8 @@ do
         return platforms
     end
 
-    --- get the next track number
-    -- @return UID for the contact
-    function HOUND.ElintWorker:getNewTrackId()
-        self.TrackIdCounter = self.TrackIdCounter + 1
-        return self.TrackIdCounter
-    end
+    --- Contact Management
+    -- @section Contacts 
 
     --- return if contact exists in the system
     -- @return Bool return True if unit is in the system
@@ -163,7 +170,7 @@ do
         if emitter == nil or emitter.getName == nil then return end
         local emitterName = emitter:getName()
         if self.contacts[emitterName] ~= nil then return emitterName end
-        self.contacts[emitterName] = HOUND.Contact.New(emitter, self:getCoalition(), self:getNewTrackId())
+        self.contacts[emitterName] = HOUND.Contact.Emitter.New(emitter, self:getCoalition(), self:getNewTrackId())
         HOUND.EventHandler.publishEvent({
             id = HOUND.EVENTS.RADAR_NEW,
             initiator = emitter,
@@ -248,7 +255,7 @@ do
 
     --- add datapoint to emitter
     -- @param emitter DCS UNIT with radar
-    -- @param datapoint @{HOUND.Datapoint} instance
+    -- @param datapoint @{HOUND.Contact.Datapoint} instance
     function HOUND.ElintWorker:addDatapointToEmitter(emitter,datapoint)
         if not self:isTracked(emitter) then
             self:addContact(emitter)
@@ -257,7 +264,89 @@ do
         HoundContact:AddPoint(datapoint)
     end
 
+    --- Site functions
+    -- @section Sites
+
+    --- return if site exists in the system
+    -- @return Bool return True if group is in the system
+    function HOUND.ElintWorker:isSite(site)
+        if site == nil then return false end
+        local groupName = nil
+        if type(site) == "string" then
+            groupName = site
+        end
+        if type(site) == "table" and site.getName ~= nil then
+            groupName = site:getName()
+        end
+        return setContains(self.sites,groupName)
+    end
+
+
+    --- add site to worker
+    -- @param emitter DCS Unit to add
+    -- @return Name of added group
+    function HOUND.ElintWorker:addSite(emitter)
+        if emitter == nil or emitter.getName == nil then return end
+        local groupName = emitter:getGroup()
+        if self.sites[groupName] ~= nil then return groupName end
+        self.sites[groupName] = HOUND.Site.New(emitter, self:getCoalition(), self:getNewTrackId())
+        HOUND.EventHandler.publishEvent({
+            id = HOUND.EVENTS.SITE_NEW,
+            initiator = emitter,
+            houndId = self.settings:getId(),
+            coalition = self.settings:getCoalition()
+        })
+        return groupName
+    end
+
+    --- get HOUND.Site from DCS Unit/UID
+    -- @param emitter DCS Unit/name of radar unit
+    -- @param[opt] getOnly if true function will not create new unit if not exist
+    -- @return @{HOUND.Contact} instance of that Unit
+    function HOUND.ElintWorker:getSite(emitter,getOnly)
+        if emitter == nil then return nil end
+        local groupName = nil
+        if type(emitter) == "string" then
+            groupName = emitter
+        end
+        if type(emitter) == "table" and emitter.getName ~= nil then
+            groupName = emitter:getGroup():getName()
+        end
+
+        if groupName ~= nil and self.sites[groupName] ~= nil then return self.sites[groupName] end
+        if not self.contacts[groupName] and type(emitter) == "table" and not getOnly then
+            self:addSite(emitter)
+            return self.contacts[groupName]
+        end
+        return nil
+    end
+
+    --- remove Site from tracking
+    -- @string groupName DCS group Name to remove
+    -- @return Bool. true if removed.
+    function HOUND.ElintWorker:removeSite(groupName)
+        if not type(groupName) == "string" then return false end
+        if self.sites[groupName] then
+            for emitterName,emitter in pairs(self.sites[groupName]:getRadars()) do
+                self:removeContact(emitterName)
+            end
+            self.sites[groupName]:updateDeadDCSObject()
+            HOUND.EventHandler.publishEvent({
+                id = HOUND.EVENTS.SITE_REMOVED,
+                initiator = self.sites[groupName],
+                houndId = self.settings:getId(),
+                coalition = self.settings:getCoalition()
+            })
+        end
+        self.sites[groupName] = nil
+        return true
+    end
+
+    --- Worker functions
+    -- @section Worker
+
     --- list all contact is a sector
+    -- @param[opt] sectorName String name or sector to filter by
     function HOUND.ElintWorker:listInSector(sectorName)
         local emitters = {}
         for _,emitter in ipairs(self.contacts) do
@@ -279,6 +368,7 @@ do
     end
 
     --- Return all contacts managed by this instance regardless of sector
+    -- @param[opt] sectorName String name or sector to filter by
     function HOUND.ElintWorker:listAll(sectorName)
         if sectorName then
             local contacts = {}
@@ -407,7 +497,7 @@ do
                             -- end
                         end
 
-                        local datapoint = HOUND.Datapoint.New(platform,platformData.pos, az, el, timer.getAbsTime(),sampleAngularResolution,platformData.isStatic)
+                        local datapoint = HOUND.Contact.Datapoint.New(platform,platformData.pos, az, el, timer.getAbsTime(),sampleAngularResolution,platformData.isStatic)
                         contact:AddPoint(datapoint)
                     end
                 end
