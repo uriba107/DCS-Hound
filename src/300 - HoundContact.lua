@@ -529,7 +529,7 @@ do
         if self.preBriefed then
             if type(self.unit) == "table" and self.unit.isExist and self.unit:isExist() then
                 local unitPos = self.unit:getPosition()
-                if l_mist.utils.get3DDist(unitPos.p,self.pos.p) < 0.25 then return end
+                if l_mist.utils.get2DDist(unitPos.p,self.pos.p) < 0.25 or (l_mist.utils.get2DDist(unitPos.p,self.pos.p) >= 0.25 and not self:isActive()) then return end
                 self.preBriefed = false
             else return end
         end

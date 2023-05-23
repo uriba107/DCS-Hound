@@ -434,7 +434,7 @@ do
                 if self.settings:getBDA() and contact:isAlive() and contact:getLife() < 1 then
                     contact:setDead()
                 end
-                if not contact:isAlive() and contact:getLastSeen() > 60 then
+                if not contact:isAlive() and contact:getLastSeen() > HOUND.CONTACT_TIMEOUT then
                     self:removeContact(contactName)
                     contact:destroy()
                     return
