@@ -35,6 +35,7 @@
 <li><a href="#Tables">Tables</a></li>
 <li><a href="#General_functions">General functions </a></li>
 <li><a href="#Value_mapping_Functions">Value mapping Functions </a></li>
+<li><a href="#DCS_object_functions">DCS object functions </a></li>
 <li><a href="#Geo_Function">Geo Function </a></li>
 <li><a href="#Marker_Functions">Marker Functions </a></li>
 <li><a href="#HOUND_Utils_Marker_instance">HOUND.Utils.Marker.instance</a></li>
@@ -58,9 +59,11 @@
   <li><a href="../modules/HOUND.Config.html">HOUND.Config</a></li>
   <li><strong>HOUND.Utils</strong></li>
   <li><a href="../modules/HOUND.EventHandler.html">HOUND.EventHandler</a></li>
-  <li><a href="../modules/HOUND.Estimator.html">HOUND.Estimator</a></li>
-  <li><a href="../modules/HOUND.Datapoint.html">HOUND.Datapoint</a></li>
-  <li><a href="../modules/HOUND.Contact.html">HOUND.Contact</a></li>
+  <li><a href="../modules/HOUND.Contact.Base.html">HOUND.Contact.Base</a></li>
+  <li><a href="../modules/HOUND.Contact.Estimator.html">HOUND.Contact.Estimator</a></li>
+  <li><a href="../modules/HOUND.Contact.Datapoint.html">HOUND.Contact.Datapoint</a></li>
+  <li><a href="../modules/HOUND.Contact.Emitter.html">HOUND.Contact.Emitter</a></li>
+  <li><a href="../modules/HOUND.Contact.Site.html">HOUND.Contact.Site</a></li>
   <li><a href="../modules/HOUND.Comms.Manager.html">HOUND.Comms.Manager</a></li>
   <li><a href="../modules/HOUND.Comms.InformationSystem.html">HOUND.Comms.InformationSystem</a></li>
   <li><a href="../modules/HOUND.Comms.Controller.html">HOUND.Comms.Controller</a></li>
@@ -116,6 +119,10 @@
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Utils.AzimuthAverage">HOUND.Utils.AzimuthAverage (azimuths)</a></td>
 	<td class="summary">return avarage azimuth</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.getMagVar">HOUND.Utils.getMagVar (DCSpoint)</a></td>
+	<td class="summary">Return magnetic variation in point</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Utils.PointClusterTilt">HOUND.Utils.PointClusterTilt (points[, MagNorth[, refPos]])</a></td>
@@ -202,6 +209,25 @@
 	<td class="summary">Map values on a curve</td>
 	</tr>
 </table>
+<h2><a href="#DCS_object_functions">DCS object functions </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Dcs.isPoint">HOUND.Utils.Dcs.isPoint (point)</a></td>
+	<td class="summary">check if point is DCS point</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Dcs.isUnit">HOUND.Utils.Dcs.isUnit (obj)</a></td>
+	<td class="summary">check if object is DCS Unit</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Dcs.isGroup">HOUND.Utils.Dcs.isGroup (obj)</a></td>
+	<td class="summary">check if object is DCS Group</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Dcs.isStaticObject">HOUND.Utils.Dcs.isStaticObject (obj)</a></td>
+	<td class="summary">check if object is DCS static object</td>
+	</tr>
+</table>
 <h2><a href="#Geo_Function">Geo Function </a></h2>
 <table class="function_list">
 	<tr>
@@ -213,10 +239,6 @@
 	<td class="name" nowrap><a href="#HOUND.Utils.Geo.EarthLOS">HOUND.Utils.Geo.EarthLOS (h0[, h1])</a></td>
 	<td class="summary">Returns maximum horizon distance given heigh above the earth of two points
  if only one observer hight is provided, result would be maximum view distance to Sea Level</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.Geo.isDcsPoint">HOUND.Utils.Geo.isDcsPoint (point)</a></td>
-	<td class="summary">check if point is DCS point</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Utils.Geo.getProjectedIP">HOUND.Utils.Geo.getProjectedIP (p0, az, el)</a></td>
@@ -403,6 +425,10 @@
 	<td class="summary">Get zone from drawing\
  (supported types are freeForm Polygon, rectangle and Oval)</td>
 	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Zone.getGroupRoute">HOUND.Utils.Zone.getGroupRoute (GroupName)</a></td>
+	<td class="summary">get polygon defined by group waypoints</td>
+	</tr>
 </table>
 <h2><a href="#Polygon_functions">Polygon functions </a></h2>
 <table class="function_list">
@@ -481,6 +507,10 @@
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Utils.Sort.ContactsById">HOUND.Utils.Sort.ContactsById (a, b)</a></td>
 	<td class="summary">Sort contacts by ID</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Sort.ContactsByPrio">HOUND.Utils.Sort.ContactsByPrio (a, b)</a></td>
+	<td class="summary">sort contacts by Priority (primary first)</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Utils.Sort.sectorsByPriorityLowFirst">HOUND.Utils.Sort.sectorsByPriorityLowFirst (a, b)</a></td>
@@ -628,7 +658,7 @@
     <h3>Returns:</h3>
     <ol>
 
-        Bool True if initial ID was updated
+        (Bool) True if initial ID was updated
     </ol>
 
 
@@ -719,6 +749,31 @@
     <ol>
 
         the avarage azimuth of the list provided in radians (between 0 and 2*pi)
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.getMagVar"></a>
+    <strong>HOUND.Utils.getMagVar (DCSpoint)</strong>
+    </dt>
+    <dd>
+    Return magnetic variation in point
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">DCSpoint</span>
+         point
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Magentic variation in radians
     </ol>
 
 
@@ -1301,6 +1356,110 @@
 
 </dd>
 </dl>
+    <h2 class="section-header "><a name="DCS_object_functions"></a>DCS object functions </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HOUND.Utils.Dcs.isPoint"></a>
+    <strong>HOUND.Utils.Dcs.isPoint (point)</strong>
+    </dt>
+    <dd>
+    check if point is DCS point
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">point</span>
+         DCS point candidate
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        (Bool) True if is valid point
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.Dcs.isUnit"></a>
+    <strong>HOUND.Utils.Dcs.isUnit (obj)</strong>
+    </dt>
+    <dd>
+    check if object is DCS Unit
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">obj</span>
+         DCS Object canidate
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        (Bool) True if object is unit
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.Dcs.isGroup"></a>
+    <strong>HOUND.Utils.Dcs.isGroup (obj)</strong>
+    </dt>
+    <dd>
+    check if object is DCS Group
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">obj</span>
+         DCS Object canidate
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        (Bool) True if object is Group
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.Dcs.isStaticObject"></a>
+    <strong>HOUND.Utils.Dcs.isStaticObject (obj)</strong>
+    </dt>
+    <dd>
+    check if object is DCS static object
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">obj</span>
+         DCS Object canidate
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        (Bool) True if object is static object
+    </ol>
+
+
+
+
+</dd>
+</dl>
     <h2 class="section-header "><a name="Geo_Function"></a>Geo Function </h2>
 
     <dl class="function">
@@ -1357,31 +1516,6 @@
     <ol>
 
         distance maximum LOS distance in meters
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Utils.Geo.isDcsPoint"></a>
-    <strong>HOUND.Utils.Geo.isDcsPoint (point)</strong>
-    </dt>
-    <dd>
-    check if point is DCS point
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">point</span>
-         DCS point candidate
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        Bool True if is valid point
     </ol>
 
 
@@ -1510,7 +1644,7 @@
     <h3>Returns:</h3>
     <ol>
 
-        Bool True if initial ID was updated
+        (Bool) True if initial ID was updated
     </ol>
 
 
@@ -1815,7 +1949,7 @@
     <h3>Returns:</h3>
     <ol>
 
-        Bool true if TTS is available
+        (Bool) True if TTS is available
     </ol>
 
 
@@ -2438,6 +2572,31 @@
 
 
 </dd>
+    <dt>
+    <a name = "HOUND.Utils.Zone.getGroupRoute"></a>
+    <strong>HOUND.Utils.Zone.getGroupRoute (GroupName)</strong>
+    </dt>
+    <dd>
+    get polygon defined by group waypoints
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">GroupName</span>
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table of points if group exists or nil
+    </ol>
+
+
+
+
+</dd>
 </dl>
     <h2 class="section-header "><a name="Polygon_functions"></a>Polygon functions </h2>
 
@@ -2466,9 +2625,9 @@
     <h3>Returns:</h3>
     <ol>
         <li>
-        Bool True if point is in polygon</li>
+        (Bool) True if point is in polygon</li>
         <li>
-        Bool True if radius around point intersects polygon</li>
+        (Bool) True if radius around point intersects polygon</li>
     </ol>
 
 
@@ -2848,10 +3007,10 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">a</span>
-         <a href="../modules/HOUND.Contact.html#">HOUND.Contact</a> instance
+         <a href="../modules/HOUND.Contact.Emitter.html#">HOUND.Contact.Emitter</a> instance
         </li>
         <li><span class="parameter">b</span>
-         <a href="../modules/HOUND.Contact.html#">HOUND.Contact</a> Instance
+         <a href="../modules/HOUND.Contact.Emitter.html#">HOUND.Contact.Emitter</a> Instance
         </li>
     </ul>
 
@@ -2880,10 +3039,10 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">a</span>
-         <a href="../modules/HOUND.Contact.html#">HOUND.Contact</a> instance
+         <a href="../modules/HOUND.Contact.Emitter.html#">HOUND.Contact.Emitter</a> instance
         </li>
         <li><span class="parameter">b</span>
-         <a href="../modules/HOUND.Contact.html#">HOUND.Contact</a> Instance
+         <a href="../modules/HOUND.Contact.Emitter.html#">HOUND.Contact.Emitter</a> Instance
         </li>
     </ul>
 
@@ -2898,6 +3057,38 @@
     <h3>Usage:</h3>
     <ul>
         <pre class="example"><span class="global">table</span>.sort(unSorted,HOUND.Utils.Sort.ContactsById)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.Sort.ContactsByPrio"></a>
+    <strong>HOUND.Utils.Sort.ContactsByPrio (a, b)</strong>
+    </dt>
+    <dd>
+    sort contacts by Priority (primary first)
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+         <a href="../modules/HOUND.Contact.Emitter.html#">HOUND.Contact.Emitter</a> instance
+        </li>
+        <li><span class="parameter">b</span>
+         <a href="../modules/HOUND.Contact.Emitter.html#">HOUND.Contact.Emitter</a> Instance
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Bool
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="global">table</span>.sort(unSorted,HOUND.Utils.Sort.ContactsByPrio)</pre>
     </ul>
 
 </dd>
@@ -3054,7 +3245,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2023-03-28 13:16:49 </i>
+<i style="float:right;">Last updated 2023-05-23 14:08:42 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

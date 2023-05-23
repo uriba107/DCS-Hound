@@ -33,6 +33,10 @@
 <h2>Contents</h2>
 <ul>
 <li><a href="#Functions">Functions</a></li>
+<li><a href="#Platform_Management">Platform Management </a></li>
+<li><a href="#Contact_Management">Contact Management </a></li>
+<li><a href="#Site_functions">Site functions </a></li>
+<li><a href="#Worker_functions">Worker functions </a></li>
 </ul>
 
 
@@ -44,9 +48,11 @@
   <li><a href="../modules/HOUND.Config.html">HOUND.Config</a></li>
   <li><a href="../modules/HOUND.Utils.html">HOUND.Utils</a></li>
   <li><a href="../modules/HOUND.EventHandler.html">HOUND.EventHandler</a></li>
-  <li><a href="../modules/HOUND.Estimator.html">HOUND.Estimator</a></li>
-  <li><a href="../modules/HOUND.Datapoint.html">HOUND.Datapoint</a></li>
-  <li><a href="../modules/HOUND.Contact.html">HOUND.Contact</a></li>
+  <li><a href="../modules/HOUND.Contact.Base.html">HOUND.Contact.Base</a></li>
+  <li><a href="../modules/HOUND.Contact.Estimator.html">HOUND.Contact.Estimator</a></li>
+  <li><a href="../modules/HOUND.Contact.Datapoint.html">HOUND.Contact.Datapoint</a></li>
+  <li><a href="../modules/HOUND.Contact.Emitter.html">HOUND.Contact.Emitter</a></li>
+  <li><a href="../modules/HOUND.Contact.Site.html">HOUND.Contact.Site</a></li>
   <li><a href="../modules/HOUND.Comms.Manager.html">HOUND.Comms.Manager</a></li>
   <li><a href="../modules/HOUND.Comms.InformationSystem.html">HOUND.Comms.InformationSystem</a></li>
   <li><a href="../modules/HOUND.Comms.Controller.html">HOUND.Comms.Controller</a></li>
@@ -81,6 +87,13 @@
 	<td class="summary">get worker coalition</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:getNewTrackId">HOUND.ElintWorker:getNewTrackId ()</a></td>
+	<td class="summary">get the next track number</td>
+	</tr>
+</table>
+<h2><a href="#Platform_Management">Platform Management </a></h2>
+<table class="function_list">
+	<tr>
 	<td class="name" nowrap><a href="#HOUND.ElintWorker:addPlatform">HOUND.ElintWorker:addPlatform (platformName)</a></td>
 	<td class="summary">add platform</td>
 	</tr>
@@ -104,10 +117,9 @@
 	<td class="name" nowrap><a href="#HOUND.ElintWorker:listPlatforms">HOUND.ElintWorker:listPlatforms ()</a></td>
 	<td class="summary">list all associated platform unit names</td>
 	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.ElintWorker:getNewTrackId">HOUND.ElintWorker:getNewTrackId ()</a></td>
-	<td class="summary">get the next track number</td>
-	</tr>
+</table>
+<h2><a href="#Contact_Management">Contact Management </a></h2>
+<table class="function_list">
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.ElintWorker:isContact">HOUND.ElintWorker:isContact (emitter)</a></td>
 	<td class="summary">return if contact exists in the system</td>
@@ -140,8 +152,30 @@
 	<td class="name" nowrap><a href="#HOUND.ElintWorker:addDatapointToEmitter">HOUND.ElintWorker:addDatapointToEmitter (emitter, datapoint)</a></td>
 	<td class="summary">add datapoint to emitter</td>
 	</tr>
+</table>
+<h2><a href="#Site_functions">Site functions </a></h2>
+<table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.ElintWorker:listInSector">HOUND.ElintWorker:listInSector (sectorName)</a></td>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:isSite">HOUND.ElintWorker:isSite (site)</a></td>
+	<td class="summary">return if site exists in the system</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:addSite">HOUND.ElintWorker:addSite (emitter)</a></td>
+	<td class="summary">add site to worker</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:getSite">HOUND.ElintWorker:getSite (emitter[, getOnly])</a></td>
+	<td class="summary">get HOUND.Contact.Site from DCS Unit/UID</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:removeSite">HOUND.ElintWorker:removeSite (groupName)</a></td>
+	<td class="summary">remove Site from tracking</td>
+	</tr>
+</table>
+<h2><a href="#Worker_functions">Worker functions </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:listInSector">HOUND.ElintWorker:listInSector ([sectorName])</a></td>
 	<td class="summary">list all contact is a sector</td>
 	</tr>
 	<tr>
@@ -149,7 +183,7 @@
 	<td class="summary">update markers to all contacts</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.ElintWorker:listAll">HOUND.ElintWorker:listAll (sectorName)</a></td>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:listAll">HOUND.ElintWorker:listAll ([sectorName])</a></td>
 	<td class="summary">Return all contacts managed by this instance regardless of sector</td>
 	</tr>
 	<tr>
@@ -227,6 +261,29 @@
 
 
 </dd>
+    <dt>
+    <a name = "HOUND.ElintWorker:getNewTrackId"></a>
+    <strong>HOUND.ElintWorker:getNewTrackId ()</strong>
+    </dt>
+    <dd>
+    get the next track number
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        UID for the contact
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Platform_Management"></a>Platform Management </h2>
+
+    <dl class="function">
     <dt>
     <a name = "HOUND.ElintWorker:addPlatform"></a>
     <strong>HOUND.ElintWorker:addPlatform (platformName)</strong>
@@ -344,25 +401,10 @@
 
 
 </dd>
-    <dt>
-    <a name = "HOUND.ElintWorker:getNewTrackId"></a>
-    <strong>HOUND.ElintWorker:getNewTrackId ()</strong>
-    </dt>
-    <dd>
-    get the next track number
+</dl>
+    <h2 class="section-header "><a name="Contact_Management"></a>Contact Management </h2>
 
-
-
-    <h3>Returns:</h3>
-    <ol>
-
-        UID for the contact
-    </ol>
-
-
-
-
-</dd>
+    <dl class="function">
     <dt>
     <a name = "HOUND.ElintWorker:isContact"></a>
     <strong>HOUND.ElintWorker:isContact (emitter)</strong>
@@ -435,7 +477,7 @@
     <h3>Returns:</h3>
     <ol>
 
-        <a href="../modules/HOUND.Contact.html#">HOUND.Contact</a> instance of that Unit
+        <a href="../modules/HOUND.Contact.Emitter.html#">HOUND.Contact.Emitter</a> instance of that Unit
     </ol>
 
 
@@ -547,7 +589,7 @@
          DCS UNIT with radar
         </li>
         <li><span class="parameter">datapoint</span>
-         <a href="../modules/HOUND.Datapoint.html#">HOUND.Datapoint</a> instance
+         <a href="../modules/HOUND.Contact.Datapoint.html#">HOUND.Contact.Datapoint</a> instance
         </li>
     </ul>
 
@@ -556,9 +598,122 @@
 
 
 </dd>
+</dl>
+    <h2 class="section-header "><a name="Site_functions"></a>Site functions </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HOUND.ElintWorker:isSite"></a>
+    <strong>HOUND.ElintWorker:isSite (site)</strong>
+    </dt>
+    <dd>
+    return if site exists in the system
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">site</span>
+         group name
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Bool return True if group is in the system
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.ElintWorker:addSite"></a>
+    <strong>HOUND.ElintWorker:addSite (emitter)</strong>
+    </dt>
+    <dd>
+    add site to worker
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">emitter</span>
+         DCS Unit to add
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Name of added group
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.ElintWorker:getSite"></a>
+    <strong>HOUND.ElintWorker:getSite (emitter[, getOnly])</strong>
+    </dt>
+    <dd>
+    get HOUND.Contact.Site from DCS Unit/UID
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">emitter</span>
+         DCS Unit/name of radar unit
+        </li>
+        <li><span class="parameter">getOnly</span>
+         if true function will not create new unit if not exist
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        <a href="../modules/HOUND.Contact.Emitter.html#">HOUND.Contact.Emitter</a> instance of that Unit
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.ElintWorker:removeSite"></a>
+    <strong>HOUND.ElintWorker:removeSite (groupName)</strong>
+    </dt>
+    <dd>
+    remove Site from tracking
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">groupName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         DCS group Name to remove
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Bool. true if removed.
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Worker_functions"></a>Worker functions </h2>
+
+    <dl class="function">
     <dt>
     <a name = "HOUND.ElintWorker:listInSector"></a>
-    <strong>HOUND.ElintWorker:listInSector (sectorName)</strong>
+    <strong>HOUND.ElintWorker:listInSector ([sectorName])</strong>
     </dt>
     <dd>
     list all contact is a sector
@@ -567,7 +722,8 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">sectorName</span>
-
+         String name or sector to filter by
+         (<em>optional</em>)
         </li>
     </ul>
 
@@ -592,7 +748,7 @@
 </dd>
     <dt>
     <a name = "HOUND.ElintWorker:listAll"></a>
-    <strong>HOUND.ElintWorker:listAll (sectorName)</strong>
+    <strong>HOUND.ElintWorker:listAll ([sectorName])</strong>
     </dt>
     <dd>
     Return all contacts managed by this instance regardless of sector
@@ -601,7 +757,8 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">sectorName</span>
-
+         String name or sector to filter by
+         (<em>optional</em>)
         </li>
     </ul>
 
@@ -670,7 +827,7 @@
     <h3>Returns:</h3>
     <ol>
 
-        list of <a href="../modules/HOUND.Contact.html#">HOUND.Contact</a>
+        list of <a href="../modules/HOUND.Contact.Emitter.html#">HOUND.Contact.Emitter</a>
     </ol>
 
 
@@ -699,7 +856,7 @@
     <h3>Returns:</h3>
     <ol>
 
-        sorted list of <a href="../modules/HOUND.Contact.html#">HOUND.Contact</a>
+        sorted list of <a href="../modules/HOUND.Contact.Emitter.html#">HOUND.Contact.Emitter</a>
     </ol>
 
 
@@ -743,7 +900,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2023-03-28 13:16:49 </i>
+<i style="float:right;">Last updated 2023-05-23 14:08:42 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>
