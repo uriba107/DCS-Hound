@@ -30,7 +30,8 @@ do
     -- @field EXTENDED_INFO Hound will add more in depth uncertenty info to controller messages (default is true)
     -- @field FORCE_MANAGE_MARKERS Force Hound to use internal counter for markIds (default is false).
     -- @field USE_LEGACY_MARKERS Force Hound to use normal markers for radar positions (default is true)
-    -- @field PREFER_GRPC_TTS Hound will prefer DCS-gRPC as a TTS engine (default is true)
+    -- @field TTS_ENGINE Hound will prefer use the table to determin TTS engine priority
+
     HOUND = {
         VERSION = "0.4.0-TRUNK",
         DEBUG = true,
@@ -43,7 +44,7 @@ do
         MIST_VERSION = tonumber(table.concat({mist.majorVersion,mist.minorVersion},".")),
         FORCE_MANAGE_MARKERS = false,
         USE_LEGACY_MARKERS = true,
-        PREFER_GRPC_TTS = true
+        TTS_ENGINE = {'GRPC','STTS'}
     }
 
     --- Map Markers ENUM

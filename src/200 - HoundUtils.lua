@@ -922,12 +922,9 @@ do
     --- Check if TTS agent is available (private)
     -- @return (Bool) True if TTS is available
     function HOUND.Utils.TTS.isAvailable()
-        if (l_grpc ~= nil and type(l_grpc.tts) == "function" and HOUND.PREFER_GRPC_TTS)  then
-            -- do checks for DCS-gRPC for now KISS
-            return true
-        end
-        if STTS ~= nil then
-            return true
+        for _,engine in ipairs(HOUND.TTS_ENGINE) do
+            if engine == "GRPC" and (l_grpc ~= nil and type(l_grpc.tts) == "function") then return true end
+            if engine == "STTS" and STTS ~= nil then return true end
         end
         return false
     end
@@ -968,27 +965,39 @@ do
         if not HOUND.Utils.TTS.isAvailable() then return end
         if msg == nil then return end
         if coalitionID == nil then return end
-
+        
         if args.freq == nil then return end
         args.volume = args.volume or "1.0"
         args.name = args.name or "Hound"
         args.gender = args.gender or "female"
 
-        if (l_grpc ~= nil and type(l_grpc.tts) == "function" and HOUND.PREFER_GRPC_TTS) then
-            -- HOUND.Logger.debug("gRPC TTS message")
-            return HOUND.Utils.TTS.TransmitGRPC(msg,coalitionID,args,transmitterPos)
-        end
+        for _,engine in ipairs(HOUND.TTS_ENGINE) do
+            if engine == "GRPC" and (l_grpc ~= nil and type(l_grpc.tts) == "function") then
+                -- HOUND.Logger.debug("gRPC TTS message")
+                return HOUND.Utils.TTS.TransmitGRPC(msg,coalitionID,args,transmitterPos)
+            end
 
-        if STTS ~= nil then
-            args.modulation = args.modulation or HOUND.Utils.TTS.getdefaultModulation(args.freq)
-            args.culture = args.culture or "en-US"
-            return STTS.TextToSpeech(msg,args.freq,args.modulation,args.volume,args.name,coalitionID,transmitterPos,args.speed,args.gender,args.culture,args.voice,args.googleTTS)
+            if engine == "STTS" and STTS ~= nil then
+                return HOUND.Utils.TTS.TransmitSTTS(msg,coalitionID,args,transmitterPos)  
+            end
         end
-
 
     end
+    --- Transmit message using STTS
+    -- @local
+    -- @param msg The message to transmit
+    -- @param coalitionID Coalition to recive transmission
+    -- @param args STTS settings in hash table (minimum required is {freq=})
+    -- @param[opt] transmitterPos DCS Position point for transmitter
+    -- @return currently estimated speechTime
+    function HOUND.Utils.TTS.TransmitSTTS(msg,coalitionID,args,transmitterPos)
+        args.modulation = args.modulation or HOUND.Utils.TTS.getdefaultModulation(args.freq)
+        args.culture = args.culture or "en-US"
+        return STTS.TextToSpeech(msg,args.freq,args.modulation,args.volume,args.name,coalitionID,transmitterPos,args.speed,args.gender,args.culture,args.voice,args.googleTTS)
+    end
 
-    --- Transmit message using gRPC.tts (private)
+    --- Transmit message using gRPC.tts
+    -- @local
     -- @param msg The message to transmit
     -- @param coalitionID Coalition to recive transmission
     -- @param args STTS settings in hash table (minimum required is {freq=})
