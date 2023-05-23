@@ -12,7 +12,7 @@ end
 
 do
     HOUND = {
-        VERSION = "0.3.4-develop-20230411",
+        VERSION = "0.3.4-develop-20230523",
         DEBUG = false,
         ELLIPSE_PERCENTILE = 0.6,
         DATAPOINTS_NUM = 30,
@@ -3914,7 +3914,7 @@ do
         if self.preBriefed then
             if type(self.unit) == "table" and self.unit.isExist and self.unit:isExist() then
                 local unitPos = self.unit:getPosition()
-                if l_mist.utils.get3DDist(unitPos.p,self.pos.p) < 0.25 then return end
+                if l_mist.utils.get2DDist(unitPos.p,self.pos.p) < 0.25 or (l_mist.utils.get2DDist(unitPos.p,self.pos.p) >= 0.25 and not self:isActive()) then return end
                 self.preBriefed = false
             else return end
         end
@@ -5200,7 +5200,7 @@ do
                 if self.settings:getBDA() and contact:isAlive() and contact:getLife() < 1 then
                     contact:setDead()
                 end
-                if not contact:isAlive() and contact:getLastSeen() > 60 then
+                if not contact:isAlive() and contact:getLastSeen() > HOUND.CONTACT_TIMEOUT then
                     self:removeContact(contactName)
                     contact:destroy()
                     return
@@ -7098,4 +7098,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.3.4-develop-20230411 - Compiled on 2023-04-11 20:35
+-- Hound version 0.3.4-develop-20230523 - Compiled on 2023-05-23 12:05

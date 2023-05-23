@@ -1,7 +1,8 @@
 env.info("Loading Hound Scripts dynamicly")
 
-
-local HoundWorkDir = "E:\\Dropbox\\uri\\Dropbox\\DCS\\Mission Building\\HoundElint\\"
+if not HoundWorkDir then
+    HoundWorkDir = "E:\\Dropbox\\uri\\Dropbox\\DCS\\Mission Building\\HoundElint\\"
+end
     assert(loadfile(HoundWorkDir..'test\\StopWatch.lua'))()
 
     assert(loadfile(HoundWorkDir..'include\\mist_4_5_113.lua'))()
