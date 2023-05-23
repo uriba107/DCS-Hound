@@ -86,7 +86,7 @@ do
 
     --- set onScreenDebug
     -- @param value Bool
-    -- @return Bool True if chaned
+    -- @return (Bool) True if chaned
     function HoundElint:onScreenDebug(value)
         return self.settings:setOnScreenDebug(value)
     end
@@ -164,17 +164,18 @@ do
         if type(DCS_Object_Name) ~= "string" then return end
         local units = {}
         local obj = Group.getByName(DCS_Object_Name) or Unit.getByName(DCS_Object_Name)
-        if obj and obj.getUnits then
-            units = obj:getUnits()
-        elseif obj and obj.getGroup then
-            table.insert(units,obj)
-        end
         if not obj then
             HOUND.Logger.info("Cannot pre-brief " .. DCS_Object_Name .. ": object does not exist.")
             return
         end
+        if HOUND.Utils.Dcs.isGroup(obj) then
+            units = obj:getUnits()
+        elseif HOUND.Utils.Dcs.isUnit(obj) then
+            table.insert(units,obj)
+        end
+
         for _,unit in pairs(units) do
-            if unit:getCoalition() ~= self.settings:getCoalition() and unit:isExist() and setContains(HOUND.DB.Radars,unit:getTypeName()) then
+            if unit:getCoalition() ~= self.settings:getCoalition() and unit:isExist() and HOUND.setContains(HOUND.DB.Radars,unit:getTypeName()) then
                 self.contacts:setPreBriefedContact(unit)
             end
         end
@@ -188,12 +189,12 @@ do
         if type(radarUnit) == "string" then
             obj = Group.getByName(radarUnit) or Unit.getByName(radarUnit)
         end
-        if obj and obj.getUnits then
+        if HOUND.Utils.Dcs.isGroup(obj) then
             units = obj:getUnits()
             for _,unit in pairs(units) do
                 unit = unit:getName()
             end
-        elseif obj and obj.getGroup then
+        elseif HOUND.Utils.Dcs.isUnit(obj) then
             table.insert(units,obj:getName())
         end
         if not obj then
@@ -338,14 +339,14 @@ do
     -- @string[opt] element count only sectors with specified element ("controller"/"atis"/"notifier"/"zone")
     -- @return Int. number of sectors
     function HoundElint:countSectors(element)
-        return Length(self:listSectors(element))
+        return HOUND.Length(self:listSectors(element))
     end
 
     --- return HOUND.Sector instance
     -- @string sectorName Name of wanted sector
     -- @return HOUND.Sector
     function HoundElint:getSector(sectorName)
-        if setContains(self.sectors,sectorName) then
+        if HOUND.setContains(self.sectors,sectorName) then
             return self.sectors[sectorName]
         end
     end
@@ -435,7 +436,7 @@ do
 
     --- get controller state
     -- @string[opt] sectorName name of sector to probe
-    -- @return Bool True = enabled. False is disable or not configured
+    -- @return (Bool) True = enabled. False is disable or not configured
     function HoundElint:getControllerState(sectorName)
         sectorName = sectorName or "default"
 
@@ -565,7 +566,7 @@ do
 
     --- get ATIS state
     -- @string[opt] sectorName name of sector to probe
-    -- @return Bool True = enabled. False is disable or not configured
+    -- @return (Bool) True = enabled. False is disable or not configured
     function HoundElint:getAtisState(sectorName)
         sectorName = sectorName or "default"
         if self.sectors[sectorName] then
@@ -657,7 +658,7 @@ do
 
     --- get Notifier state
     -- @string[opt] sectorName name of sector to probe
-    -- @return Bool True = enabled. False is disable or not configured
+    -- @return (Bool) True = enabled. False is disable or not configured
     function HoundElint:getNotifierState(sectorName)
         sectorName = sectorName or "default"
         if self.sectors[sectorName] then
@@ -888,16 +889,16 @@ do
     -- @section HoundElint
 
     --- enable Markers for Hound Instance (default)
-    -- @return Bool True if changed
+    -- @return (Bool) True if changed
     function HoundElint:enableMarkers(markerType)
-        if markerType and setContainsValue(HOUND.MARKER,markerType) then
+        if markerType and HOUND.setContainsValue(HOUND.MARKER,markerType) then
             self:setMarkerType(markerType)
         end
         return self.settings:setUseMarkers(true)
     end
 
     --- disable Markers for Hound Instance
-    -- @return Bool True if changed
+    -- @return (Bool) True if changed
 
     function HoundElint:disableMarkers()
         return self.settings:setUseMarkers(false)
@@ -906,9 +907,9 @@ do
     --- Set marker type for Hound instance
     -- @param markerType valid marker type enum
     -- @see HOUND.MARKER
-    -- @return Bool True if changed
+    -- @return (Bool) True if changed
     function HoundElint:setMarkerType(markerType)
-        if markerType and setContainsValue(HOUND.MARKER,markerType) then
+        if markerType and HOUND.setContainsValue(HOUND.MARKER,markerType) then
             return self.settings:setMarkerType(markerType)
         end
         return false
@@ -917,9 +918,9 @@ do
     --- set intervals
     -- @param setIntervalName interval name to change (scan,process,menu,markers)
     -- @param setValue interval in seconds to set.
-    -- @return Bool True if changed
+    -- @return (Bool) True if changed
     function HoundElint:setTimerInterval(setIntervalName,setValue)
-        if self.settings and setContains(self.settings.intervals,string.lower(setIntervalName)) then
+        if self.settings and HOUND.setContains(self.settings.intervals,string.lower(setIntervalName)) then
             return self.settings:setInterval(setIntervalName,setValue)
         end
         return false
@@ -945,7 +946,7 @@ do
 
     -- set callsign override table
     -- @param overrides Table of overrides
-    -- @return Bool True if setting has been updated
+    -- @return (Bool) True if setting has been updated
     function HoundElint:setCallsignOverride(overrides)
         return self.settings:setCallsignOverride(overrides)
     end
@@ -958,13 +959,13 @@ do
 
     --- enable BDA for Hound Instance
     -- Hound will notify on radar destruction
-    -- @return Bool True if setting has been updated
+    -- @return (Bool) True if setting has been updated
     function HoundElint:enableBDA()
         return self.settings:setBDA(true)
     end
 
     --- disable BDA for Hound Instance
-    -- @return Bool True if setting has been updated
+    -- @return (Bool) True if setting has been updated
     function HoundElint:disableBDA()
         return self.settings:setBDA(false)
     end
@@ -976,19 +977,19 @@ do
     end
 
     --- enable NATO brevity for Hound Instance
-    -- @return Bool True if setting has been updated
+    -- @return (Bool) True if setting has been updated
     function HoundElint:enableNATO()
         return self.settings:setNATO(true)
     end
 
     --- disable NATO brevity for Hound Instance
-    -- @return Bool True if setting has been updated
+    -- @return (Bool) True if setting has been updated
     function HoundElint:disableNATO()
         return self.settings:setNATO(false)
     end
 
     --- set flag if callsignes for sectors under Callsignes would be from the NATO pool
-    -- @return Bool True if setting has been updated
+    -- @return (Bool) True if setting has been updated
     function HoundElint:useNATOCallsignes(value)
         if type(value) ~= "boolean" then return false end
         return self.settings:setUseNATOCallsigns(value)
@@ -1004,7 +1005,7 @@ do
     --- Set Main parent menu for hound Instace
     -- must be set <b>BEFORE</b> calling <code>enableController()</code>
     -- @param parent desired parent menu (pass nil to clear)
-    -- @return Bool True if no errors
+    -- @return (Bool) True if no errors
     function HoundElint:setRadioMenuParent(parent)
         local retval = self.settings:setRadioMenuParent(parent)
         if retval == true then
@@ -1024,7 +1025,7 @@ do
     function HoundElint.runCycle(self)
         local runTime = timer.getAbsTime()
         local timeCycle = StopWatch:Start("Cycle time " .. timer.getAbsTime())
-        local nextRun = timer.getTime() + Gaussian(self.settings.intervals.scan,self.settings.intervals.scan/10)
+        local nextRun = timer.getTime() + HOUND.Gaussian(self.settings.intervals.scan,self.settings.intervals.scan/10)
         if self.settings:getCoalition() == nil then return nextRun end
         if not self.contacts then return nextRun end
 
@@ -1284,7 +1285,7 @@ do
             and DcsEvent.initiator:getCoalition() == self.settings:getCoalition()
             and DcsEvent.initiator.getPlayerName ~= nil
             and DcsEvent.initiator:getPlayerName() ~= nil
-            and setContains(mist.DBs.humansByName,DcsEvent.initiator:getName())
+            and HOUND.setContains(mist.DBs.humansByName,DcsEvent.initiator:getName())
             then return self:populateRadioMenu()
         end
 
@@ -1293,7 +1294,7 @@ do
             or DcsEvent.id == world.event.S_EVENT_EJECTION)
             and DcsEvent.initiator:getCoalition() == self.settings:getCoalition()
             and type(DcsEvent.initiator.getName) == "function"
-            and setContains(mist.DBs.humansByName,DcsEvent.initiator:getName())
+            and HOUND.setContains(mist.DBs.humansByName,DcsEvent.initiator:getName())
                 then return self:populateRadioMenu()
         end
     end

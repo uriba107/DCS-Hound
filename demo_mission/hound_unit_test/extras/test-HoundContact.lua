@@ -3,7 +3,7 @@ do
     TestHoundContact = {}
 
     function TestHoundContact:setUp()
-        self.contact = HOUND.Contact.New(Unit.getByName("TOR_SAIPAN-1"),coalition.side.BLUE)
+        self.contact = HOUND.Contact.Emitter:New(Unit.getByName("TOR_SAIPAN-1"),coalition.side.BLUE)
         lu.assertNotNil(self.contact)
         lu.assertIsTable(self.contact)
 
@@ -45,8 +45,8 @@ do
         -- lu.assertAlmostEquals(az2,,0.0001)
         -- lu.assertAlmostEquals(el2,,0.0001)
 
-        local d1 = HOUND.Datapoint.New(platform1,p1, az1, el1, timer.getAbsTime(),err,false)
-        local d2 = HOUND.Datapoint.New(platform2,p2, az2, el2, timer.getAbsTime(),err,false)
+        local d1 = HOUND.Contact.Datapoint.New(platform1,p1, az1, el1, timer.getAbsTime(),err,false)
+        local d2 = HOUND.Contact.Datapoint.New(platform2,p2, az2, el2, timer.getAbsTime(),err,false)
 
         self.contact:AddPoint(d1)
         self.contact:AddPoint(d2)
@@ -86,8 +86,8 @@ do
         local az1,el1 = HOUND.Utils.Elint.getAzimuth( p1, tgtPos, err )
         local az2,el2 = HOUND.Utils.Elint.getAzimuth( p2, tgtPos, err )
 
-        local d1 = HOUND.Datapoint.New(platform1,p1, az1, el1, timer.getAbsTime(),err,false)
-        local d2 = HOUND.Datapoint.New(platform2,p2, az2, el2, timer.getAbsTime(),err,false)
+        local d1 = HOUND.Contact.Datapoint.New(platform1,p1, az1, el1, timer.getAbsTime(),err,false)
+        local d2 = HOUND.Contact.Datapoint.New(platform2,p2, az2, el2, timer.getAbsTime(),err,false)
 
         self.contact:AddPoint(d1)
         self.contact:AddPoint(d2)

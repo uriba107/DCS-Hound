@@ -49,14 +49,14 @@ do
             group =  HOUND_MISSION.SA6[group]
         end
         for _, data in pairs(group:getUnits()) do
-            if setContainsValue({"Kub 1S91 str","SA-11 Buk SR 9S18M1","Osa 9A33 ln"},Unit.getTypeName(data)) then
+            if HOUND.setContainsValue({"Kub 1S91 str","SA-11 Buk SR 9S18M1","Osa 9A33 ln"},Unit.getTypeName(data)) then
                 HOUND_MISSION.SA6.destroyPos(Unit.getPoint(data))
             end
         end
     end
 
     function HOUND_MISSION.SA6.destroyPos(pos)
-        if HOUND.Utils.Geo.isDcsPoint(pos) then
+        if HOUND.Utils.Dcs.isPoint(pos) then
             trigger.action.explosion(pos,50)
         end
     end
@@ -68,7 +68,7 @@ do
 
         local SAM = Group.getByName(GroupName)
         for _,data in pairs(SAM:getUnits()) do
-            if setContainsValue({"Kub 1S91 str","SA-11 Buk SR 9S18M1","Osa 9A33 ln"},Unit.getTypeName(data)) and (Unit.getLife(data) > 1 or Unit.isExist(data) or (Unit.getLife(data)/Unit.getLife0(data)) > 0.55) then
+            if HOUND.setContainsValue({"Kub 1S91 str","SA-11 Buk SR 9S18M1","Osa 9A33 ln"},Unit.getTypeName(data)) and (Unit.getLife(data) > 1 or Unit.isExist(data) or (Unit.getLife(data)/Unit.getLife0(data)) > 0.55) then
                 destroy = false
             end
         end
@@ -307,7 +307,7 @@ do
                 local contact = event.initiator
                 local SAM = Group.getByName(contact:getGroupName())
                 if SAM and SAM:getSize() > 0 and
-                    setContainsValue({HOUND_MISSION.SA6.North,HOUND_MISSION.SA6.South,HOUND_MISSION.SA6.Joker},SAM)
+                    HOUND.setContainsValue({HOUND_MISSION.SA6.North,HOUND_MISSION.SA6.South,HOUND_MISSION.SA6.Joker},SAM)
                     then
                         timer.scheduleFunction(HOUND_MISSION.SA6.cleanup, SAM, timer.getTime() + math.random(30,60))
                 end
@@ -399,7 +399,7 @@ do
         end
         if DcsEvent.id == world.event.S_EVENT_PLAYER_LEAVE_UNIT then
             if HoundBlue and DcsEvent.initiator and DcsEvent.initiator:getCoalition() == HoundBlue:getCoalition()
-                and DcsEvent.initiator:getTypeName() == "AJS37" and setContainsValue(HoundBlue:listPlatforms(),DcsEvent.initiator:getName())
+                and DcsEvent.initiator:getTypeName() == "AJS37" and HOUND.setContainsValue(HoundBlue:listPlatforms(),DcsEvent.initiator:getName())
             then
                 HoundBlue:removePlatform(DcsEvent.initiator:getName())
             end

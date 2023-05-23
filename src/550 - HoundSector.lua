@@ -44,7 +44,7 @@ do
         }
         instance.priority = priority or 10
 
-        if settings ~= nil and type(settings) == "table" and Length(settings) > 0 then
+        if settings ~= nil and type(settings) == "table" and HOUND.Length(settings) > 0 then
             instance:updateSettings(settings)
         end
         if instance.name ~= "default" then
@@ -74,7 +74,7 @@ do
         for k, v in pairs(settings) do
             local k0 = tostring(k):lower()
             if type(v) == "table" and
-                setContainsValue({"controller", "atis", "notifier"}, k0) then
+                HOUND.setContainsValue({"controller", "atis", "notifier"}, k0) then
                 if not self.settings[k0] then
                     self.settings[k0] = {}
                 end
@@ -170,7 +170,7 @@ do
 
         callsign = string.upper(callsign or HOUND.Utils.getHoundCallsign(namePool))
 
-        while setContainsValue(self._hSettings.callsigns, callsign) do
+        while HOUND.setContainsValue(self._hSettings.callsigns, callsign) do
             callsign = HOUND.Utils.getHoundCallsign(namePool)
         end
 
@@ -528,7 +528,7 @@ do
         local subscribedGid = {}
         for _,player in pairs(self.comms.menu.enrolled) do
             local grpId = player.groupId
-            if not setContainsValue(subscribedGid,grpId) then
+            if not HOUND.setContainsValue(subscribedGid,grpId) then
                 table.insert(subscribedGid,grpId)
             end
         end
@@ -538,7 +538,7 @@ do
     --- clean non existing users from subscribers
     -- @local
     function HOUND.Sector:validateEnrolled()
-        if Length(self.comms.menu.enrolled) == 0 then return end
+        if HOUND.Length(self.comms.menu.enrolled) == 0 then return end
         for _, player in pairs(self.comms.menu.enrolled) do
             local playerUnit = Unit.getByName(player.unitName)
             if not playerUnit or not playerUnit:getPlayerName() then
@@ -554,7 +554,7 @@ do
     function HOUND.Sector.checkIn(args,skipAck)
         local gSelf = args["self"]
         local player = args["player"]
-        if not setContains(gSelf.comms.menu.enrolled, player) then
+        if not HOUND.setContains(gSelf.comms.menu.enrolled, player) then
             gSelf.comms.menu.enrolled[player] = player
             -- table.insert(gSelf.comms.menu.enrolled,player)
         end
@@ -621,7 +621,7 @@ do
                 if grpMenu.check_in ~= nil then
                     grpMenu.check_in = missionCommands.removeItemForGroup(grpId,grpMenu.check_in)
                 end
-                if setContains(self.comms.menu.enrolled, player) then
+                if HOUND.setContains(self.comms.menu.enrolled, player) then
                     grpMenu.check_in =
                         missionCommands.addCommandForGroup(grpId,
                                             self.comms.controller:getCallsign() .. " (" ..
@@ -669,7 +669,7 @@ do
 
         self:createCheckIn()
 
-        if Length(contacts) == 0 then
+        if HOUND.Length(contacts) == 0 then
             if not self.comms.menu.noData then
                 self.comms.menu.noData = missionCommands.addCommandForCoalition(self._hSettings:getCoalition(),
                             "No radars are currently tracked",
@@ -677,7 +677,7 @@ do
             end
         end
 
-        if Length(contacts) > 0 then
+        if HOUND.Length(contacts) > 0 then
             if self.comms.menu.noData ~= nil then
                 missionCommands.removeItemForCoalition(self._hSettings:getCoalition(),
                 self.comms.menu.noData)
@@ -687,7 +687,7 @@ do
 
         local grpMenuDone = {}
         self:validateEnrolled()
-        if Length(self.comms.menu.enrolled) > 0 then
+        if HOUND.Length(self.comms.menu.enrolled) > 0 then
             for _, player in pairs(self.comms.menu.enrolled) do
                 local grpId = player.groupId
                 local grpMenu = self.comms.menu[player]
@@ -782,7 +782,7 @@ do
             return
         end
 
-        if setContains(dataMenu.menus[assigned].data,uid) then
+        if HOUND.setContains(dataMenu.menus[assigned].data,uid) then
             dataMenu.menus[assigned].data[uid] = missionCommands.removeItemForGroup(dataMenu.gid, dataMenu.menus[assigned].data[uid])
         end
     end

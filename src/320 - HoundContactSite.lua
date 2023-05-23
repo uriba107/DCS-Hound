@@ -1,12 +1,13 @@
 --- HOUND.Contact.Site
--- Site class. containing related functions
+-- Site class containing related functions
 -- @module HOUND.Contact.Site
+-- @see HOUND.Contact.Base
 do
-    --- HOUND.Contact.Site decleration
-    -- Site class. containing related functions
+    --- HOUND.Contact.Site  (Extends @{HOUND.Contact.Base})
+    -- Site class containing related functions
     -- @type HOUND.Contact.Site
     HOUND.Contact.Site = {}
-    HOUND.Contact.Site.__index = HOUND.Contact.Site
+    HOUND.Contact.Site = HOUND.inheritsFrom(HOUND.Contact.Base)
 
     local l_math = math
     local l_mist = mist
@@ -17,30 +18,32 @@ do
     -- @param HoundCoalition coalition Id of Hound Instace
     -- @param[opt] SiteId specify uid for the Site. if not present Group ID will be used
     -- @return HOUND.Contact.Site instance
-    function HOUND.Contact.Site.New(HoundContact,HoundCoalition,SiteId)
+    function HOUND.Contact.Site:New(HoundContact,HoundCoalition,SiteId)
         if not HoundContact or type(HoundContact) ~= "table" or not HoundContact.getGroupName or not HoundCoalition then
             HOUND.Logger.warn("failed to create HOUND.Contact.Site instance")
             return
         end
-        local elintsite = {}
-        setmetatable(elintsite, HOUND.Contact.Site)
-        elintsite.group = HoundContact.unit:getGroup()
-        elintsite.gid = SiteId or elintsite.group:getId()
-        elintsite.DCSgroupName = elintsite.group:getName()
-        elintsite.typeAssigned = HoundContact.typeAssigned
+        local instance = self:superClass():New(HoundContact:getDCSObject(),HoundCoalition)
+        setmetatable(instance, HOUND.Contact.Site)
+        self.__index = self
+        instance.DCSobject = HoundContact:getDCSObject():getGroup()
+        instance.gid = SiteId or instance.DCSobject:getId()
+        instance.DCSgroupName = instance.DCSobject:getName()
+        instance.DCSobjectName = instance.DCSobject:getName()
+        instance.typeAssigned = HoundContact.typeAssigned
 
-        elintsite.emitters = { HoundContact }
-        elintsite.primaryEmitter = HoundContact
-        elintsite.last_seen = HoundContact:getLastSeen()
-        elintsite.first_seen = HoundContact.first_seen
-        elintsite.maxWeaponsRange = HoundContact:getMaxWeaponsRange()
-        elintsite.detectionRange = HoundContact:getRadarDetectionRange()
+        instance.emitters = { }
+        instance.emitters[HoundContact:getDcsName()] = HoundContact
+        instance.primaryEmitter = HoundContact
+        instance.last_seen = HoundContact:getLastSeen()
+        instance.first_seen = HoundContact.first_seen
+        instance.maxWeaponsRange = HoundContact:getMaxWeaponsRange()
+        instance.detectionRange = HoundContact:getRadarDetectionRange()
 
-        elintsite.state = HOUND.EVENTS.SITE_NEW
-        elintsite.preBriefed = HoundContact:isAccurate()
+        instance.state = HOUND.EVENTS.SITE_NEW
+        instance.preBriefed = HoundContact:isAccurate()
 
-
-        return elintsite
+        return instance
     end
 
     --- Destructor function
@@ -99,13 +102,13 @@ do
     end
 
     --- Check if contact is Active
-    -- @return Bool True if seen in the last 15 seconds
+    -- @return (Bool) True if seen in the last 15 seconds
     function HOUND.Contact.Site:isActive()
         return self:getLastSeen()/16 < 1.0
     end
 
     --- check if contact is recent
-    -- @return Bool True if seen in the last 2 minutes
+    -- @return (Bool) True if seen in the last 2 minutes
     function HOUND.Contact.Site:isRecent()
         return self:getLastSeen()/120 < 1.0
     end
@@ -117,7 +120,7 @@ do
     end
 
     --- check if contact is timed out
-    -- @return Bool True if timed out
+    -- @return (Bool) True if timed out
     function HOUND.Contact.Site:isTimedout()
         return self:getLastSeen() > HOUND.CONTACT_TIMEOUT
     end
@@ -127,4 +130,70 @@ do
     function HOUND.Contact.Site:getState()
         return self.state
     end
+
+    --- Emitter managment
+    -- @section Emitters
+
+    --- Add emitter to site
+    -- @param HoundEmitter @{HOUND.Contact.Emitter} radar to add
+    -- @return @{HOUND.EVENTS} 
+    function HOUND.Contact.Site:addEmitter(HoundEmitter)
+        self.state = HOUND.EVENTS.NO_CHANGE
+        if HoundEmitter:getGroupName() == self:getGroupName() then
+            if not self.emitters[HoundEmitter:getDcsName()] then
+                self.emitters[HoundEmitter:getDcsName()] = HoundEmitter
+                self:selectPrimaryEmitter()
+                self:updateTypeAssigned()
+                self.state = HOUND.EVENTS.SITE_UPDATED
+            end
+        end
+        return self.state
+    end
+
+    --- Add emitter to site
+    -- @param HoundEmitter @{HOUND.Contact.Emitter} radar to remove
+    -- @return @{HOUND.EVENTS}
+    function HOUND.Contact.Site:removeEmitter(HoundEmitter)
+        self.state = HOUND.EVENTS.NO_CHANGE
+        if HoundEmitter:getGroupName() == self:getGroupName() then
+            if self.emitters[HoundEmitter:getGroupName()] then
+                self.emitters[HoundEmitter:getGroupName()] = nil
+                self:selectPrimaryEmitter()
+                self.state = HOUND.EVENTS.SITE_UPDATED
+            end
+        end
+        return self.state
+    end
+
+    --- select primaty emitter for site
+    -- @return (Bool) True if primary changed
+    function HOUND.Contact.Site:selectPrimaryEmitter()
+        local emitters_list = {}
+        for _,emitter in pairs(self.emitters) do
+            table.insert(emitters_list,emitter)
+        end
+        table.sort(emitters_list,HOUND.Utils.Sort.ContactsByPrio)
+        if self.primaryEmitter ~= emitters_list[1] then
+            self.primaryEmitter = emitters_list[1]
+            self.state = HOUND.EVENTS.SITE_UPDATED
+            return true
+        end
+        return false
+    end
+
+    --- update site type
+    -- @return (Bool) True if site type changed
+    function HOUND.Contact.Site:updateTypeAssigned()
+        local type = self.primaryEmitter.typeAssigned or {}
+        if HOUND.Length(type) ~= 1 then
+            for emitter in self.emitters do
+                type = HOUND.setIntersection(type,emitter.typeAssigned)
+            end
+        end
+        if self.typeAssigned ~= type then
+            self.typeAssigned = type
+            self.state = HOUND.EVENTS.SITE_UPDATED
+        end
+    end
+
 end

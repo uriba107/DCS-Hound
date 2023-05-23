@@ -53,7 +53,7 @@ do
         -- CommsManager.updateSettings = function (self,settings)
         --     for k,v in pairs(settings) do
         --         local k0 = tostring(k):lower()
-        --         if setContainsValue({"enabletts","enabletext","alerts"},k0) then
+        --         if HOUND.setContainsValue({"enabletts","enabletext","alerts"},k0) then
         --             self.preferences[k0] = v
         --         else
         --             self.settings[k0] = v
@@ -61,7 +61,7 @@ do
         --     end
         -- end
 
-        if type(settings) == "table" and Length(settings) > 0 then
+        if type(settings) == "table" and HOUND.Length(settings) > 0 then
             CommsManager:updateSettings(settings)
         end
         return CommsManager
@@ -75,7 +75,7 @@ do
     function HOUND.Comms.Manager:updateSettings(settings)
         for k,v in pairs(settings) do
             local k0 = tostring(k):lower()
-            if setContainsValue({"enabletts","enabletext","alerts"},k0) then
+            if HOUND.setContainsValue({"enabletts","enabletext","alerts"},k0) then
                 self.preferences[k0] = v
             else
                 self.settings[k0] = v
@@ -105,7 +105,7 @@ do
     -- @section Settings
 
     --- is comm instance enabled
-    -- @return Bool True if enabled
+    -- @return (Bool) True if enabled
     function HOUND.Comms.Manager:isEnabled()
         return self.enabled
     end
@@ -115,7 +115,7 @@ do
     -- @return settings[key]
     function HOUND.Comms.Manager:getSettings(key)
         local k0 = tostring(key):lower()
-        if setContainsValue({"enabletts","enabletext","alerts"},k0) then
+        if HOUND.setContainsValue({"enabletts","enabletext","alerts"},k0) then
             return self.preferences[tostring(key):lower()]
         else
             return self.settings[tostring(key):lower()]
@@ -127,7 +127,7 @@ do
     -- @param value desired value
     function HOUND.Comms.Manager:setSettings(key,value)
         local k0 = tostring(key):lower()
-        if setContainsValue({"enabletts","enabletext","alerts"},k0) then
+        if HOUND.setContainsValue({"enabletts","enabletext","alerts"},k0) then
             self.preferences[k0] = value
         else
             self.settings[k0] = value

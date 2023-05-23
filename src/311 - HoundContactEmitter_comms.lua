@@ -1,7 +1,10 @@
---- HOUND.Contact_comms
--- @module HOUND.Contact
+--- HOUND.Contact.Emitter_comms
+-- @module HOUND.Contact.Emitter
 do
     local l_math = math
+
+    --- Comms functions
+    -- @section Comms
 
     --- return Information used in Text messages
     -- @param utmZone (bool) True will add UTM zone to response

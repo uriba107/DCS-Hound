@@ -58,7 +58,7 @@ do
         end
 
         if candidate ~= nil and candidate:getCoalition() == self:getCoalition()
-            and not setContainsValue(self.platforms,candidate) and HOUND.DB.isValidPlatform(candidate) then
+            and not HOUND.setContainsValue(self.platforms,candidate) and HOUND.DB.isValidPlatform(candidate) then
                 table.insert(self.platforms, candidate)
                 HOUND.EventHandler.publishEvent({
                     id = HOUND.EVENTS.PLATFORM_ADDED,
@@ -100,7 +100,7 @@ do
 
     --- make sure all platforms are still alive and relevate
     function HOUND.ElintWorker:platformRefresh()
-        if Length(self.platforms) < 1 then return end
+        if HOUND.Length(self.platforms) < 1 then return end
         for id,platform in ipairs(self.platforms) do
             if platform:isExist() == false or platform:getLife() <1 then
                 table.remove(self.platforms, id)
@@ -116,7 +116,7 @@ do
 
     --- remove dead platforms
     function HOUND.ElintWorker:removeDeadPlatforms()
-        if Length(self.platforms) < 1 then return end
+        if HOUND.Length(self.platforms) < 1 then return end
         for id,platform in ipairs(self.platforms) do
             if platform:isExist() == false or platform:getLife() <1  or (platform:getCategory() ~= Object.Category.STATIC and platform:isActive() == false) then
                 table.remove(self.platforms, id)
@@ -133,7 +133,7 @@ do
     --- count number of platforms
     -- @return Int number of platforms
     function HOUND.ElintWorker:countPlatforms()
-        return Length(self.platforms)
+        return HOUND.Length(self.platforms)
     end
 
     --- list all associated platform unit names
@@ -147,7 +147,7 @@ do
     end
 
     --- Contact Management
-    -- @section Contacts 
+    -- @section Contacts
 
     --- return if contact exists in the system
     -- @return Bool return True if unit is in the system
@@ -160,7 +160,7 @@ do
         if type(emitter) == "table" and emitter.getName ~= nil then
             emitterName = emitter:getName()
         end
-        return setContains(self.contacts,emitterName)
+        return HOUND.setContains(self.contacts,emitterName)
     end
 
     --- add contact to worker
@@ -170,7 +170,13 @@ do
         if emitter == nil or emitter.getName == nil then return end
         local emitterName = emitter:getName()
         if self.contacts[emitterName] ~= nil then return emitterName end
-        self.contacts[emitterName] = HOUND.Contact.Emitter.New(emitter, self:getCoalition(), self:getNewTrackId())
+        self.contacts[emitterName] = HOUND.Contact.Emitter:New(emitter, self:getCoalition(), self:getNewTrackId())
+        local site = self:getSite(self.contacts[emitterName])
+        if site then
+            site:addEmitter(self.contacts[emitterName])
+        else
+            HOUND.Logger.debug("failed to create site")
+        end
         HOUND.EventHandler.publishEvent({
             id = HOUND.EVENTS.RADAR_NEW,
             initiator = emitter,
@@ -183,7 +189,7 @@ do
     --- get HOUND.Contact from DCS Unit/UID
     -- @param emitter DCS Unit/name of radar unit
     -- @param[opt] getOnly if true function will not create new unit if not exist
-    -- @return @{HOUND.Contact} instance of that Unit
+    -- @return @{HOUND.Contact.Emitter} instance of that Unit
     function HOUND.ElintWorker:getContact(emitter,getOnly)
         if emitter == nil then return nil end
         local emitterName = nil
@@ -208,6 +214,7 @@ do
     function HOUND.ElintWorker:removeContact(emitterName)
         if not type(emitterName) == "string" then return false end
         if self.contacts[emitterName] then
+            self:getSite(self.contacts[emitterName],true):removeEmitter(self.contacts[emitterName])
             self.contacts[emitterName]:updateDeadDCSObject()
             HOUND.EventHandler.publishEvent({
                 id = HOUND.EVENTS.RADAR_DESTROYED,
@@ -268,6 +275,7 @@ do
     -- @section Sites
 
     --- return if site exists in the system
+    -- @param site group name
     -- @return Bool return True if group is in the system
     function HOUND.ElintWorker:isSite(site)
         if site == nil then return false end
@@ -278,7 +286,7 @@ do
         if type(site) == "table" and site.getName ~= nil then
             groupName = site:getName()
         end
-        return setContains(self.sites,groupName)
+        return HOUND.setContains(self.sites,groupName)
     end
 
 
@@ -287,9 +295,9 @@ do
     -- @return Name of added group
     function HOUND.ElintWorker:addSite(emitter)
         if emitter == nil or emitter.getName == nil then return end
-        local groupName = emitter:getGroup()
+        local groupName = emitter:getGroupName()
         if self.sites[groupName] ~= nil then return groupName end
-        self.sites[groupName] = HOUND.Site.New(emitter, self:getCoalition(), self:getNewTrackId())
+        self.sites[groupName] = HOUND.Contact.Site:New(emitter, self:getCoalition(), self:getNewTrackId())
         HOUND.EventHandler.publishEvent({
             id = HOUND.EVENTS.SITE_NEW,
             initiator = emitter,
@@ -299,24 +307,23 @@ do
         return groupName
     end
 
-    --- get HOUND.Site from DCS Unit/UID
+    --- get HOUND.Contact.Site from DCS Unit/UID
     -- @param emitter DCS Unit/name of radar unit
     -- @param[opt] getOnly if true function will not create new unit if not exist
-    -- @return @{HOUND.Contact} instance of that Unit
+    -- @return @{HOUND.Contact.Emitter} instance of that Unit
     function HOUND.ElintWorker:getSite(emitter,getOnly)
         if emitter == nil then return nil end
         local groupName = nil
         if type(emitter) == "string" then
             groupName = emitter
         end
-        if type(emitter) == "table" and emitter.getName ~= nil then
-            groupName = emitter:getGroup():getName()
+        if type(emitter) == "table" and emitter.getGroupName ~= nil then
+            groupName = emitter:getGroupName()
         end
-
         if groupName ~= nil and self.sites[groupName] ~= nil then return self.sites[groupName] end
-        if not self.contacts[groupName] and type(emitter) == "table" and not getOnly then
+        if not self.sites[groupName] and type(emitter) == "table" and not getOnly then
             self:addSite(emitter)
-            return self.contacts[groupName]
+            return self.sites[groupName]
         end
         return nil
     end
@@ -399,12 +406,12 @@ do
             end
             return contacts
         end
-        return Length(self.contacts)
+        return HOUND.Length(self.contacts)
     end
 
     --- return list of contacts
     -- @param[opt] sectorName String. sector to filter by
-    -- @return list of @{HOUND.Contact}
+    -- @return list of @{HOUND.Contact.Emitter}
     function HOUND.ElintWorker:getContacts(sectorName)
         local contacts = {}
         for _,emitter in pairs(self.contacts) do
@@ -422,7 +429,7 @@ do
     --- return a sorted list of contacts
     -- @param sortFunc Function to sort by
     -- @param[opt] sectorName String. sector to filter by
-    -- @return sorted list of @{HOUND.Contact}
+    -- @return sorted list of @{HOUND.Contact.Emitter}
     function HOUND.ElintWorker:sortContacts(sortFunc,sectorName)
         if type(sortFunc) ~= "function" then return end
         local sorted = self:getContacts(sectorName)
@@ -435,11 +442,11 @@ do
     function HOUND.ElintWorker:Sniff()
         self:removeDeadPlatforms()
 
-        if Length(self.platforms) == 0 then return end
+        if HOUND.Length(self.platforms) == 0 then return end
 
         local Radars = HOUND.Utils.Elint.getActiveRadars(self:getCoalition())
 
-        if Length(Radars) == 0 then return end
+        if HOUND.Length(Radars) == 0 then return end
         -- env.info("Recivers: " .. table.getn(self.platform) .. " | Radars: " .. table.getn(Radars))
         for _,RadarName in ipairs(Radars) do
             local radar = Unit.getByName(RadarName)
@@ -451,25 +458,6 @@ do
 
             for _,platform in ipairs(self.platforms) do
                 local platformData = HOUND.DB.getPlatformData(platform)
-                -- local platformPos = platform:getPosition().p
-                -- local platformIsStatic = false
-                -- local isAerialUnit = false
-                -- local posErr = {x = 0, z = 0, y = 0 }
-
-                -- if platform:getCategory() == Object.Category.STATIC then
-                --     platformIsStatic = true
-                --     platformPos.y = platformPos.y + platform:getDesc()["box"]["max"]["y"]
-                -- else
-                --     local PlatformUnitCategory = platform:getDesc()["category"]
-                --     if PlatformUnitCategory == Unit.Category.HELICOPTER or PlatformUnitCategory == Unit.Category.AIRPLANE then
-                --         isAerialUnit = true
-                --         posErr = HOUND.Utils.Vector.getRandomVec3(self.settings:getPosErr())
-                --     end
-
-                --     if PlatformUnitCategory == Unit.Category.GROUND_UNIT then
-                --         platformPos.y = platformPos.y + platform:getDesc()["box"]["max"]["y"]
-                --     end
-                -- end
 
                 if HOUND.Utils.Geo.checkLOS(platformData.pos, radarPos) then
                     local contact = self:getContact(radar)
@@ -481,24 +469,14 @@ do
                         end
 
                         if not platform.isStatic and self.settings:getPosErr() then
-                            --  local origPos = mist.utils.deepCopy(platformData.pos)
-                            --  local hasErr = 0
                             for axis,value in pairs(platformData.pos) do
-                                -- hasErr = hasErr + platformData.posErr[axis]
                                 platformData.pos[axis] = value + platformData.posErr[axis]
                             end
-                            -- if hasErr > 0 and HOUND.DEBUG then
-                            --     -- HOUND.Logger.trace(mist.utils.tableShow(origPos))
-                            --     -- HOUND.Logger.trace(mist.utils.tableShow(platformData.posErr))
-                            --     -- HOUND.Logger.trace(mist.utils.tableShow(platformData.pos))
-
-                            --     trigger.action.lineToAll(-1,HOUND.Utils.Marker.getId(),origPos,platformData.pos,{0,255,0,255},4)
-                            --     trigger.action.markToAll(HOUND.Utils.Marker.getId(),"pos+err",platformData.pos)
-                            -- end
                         end
 
                         local datapoint = HOUND.Contact.Datapoint.New(platform,platformData.pos, az, el, timer.getAbsTime(),sampleAngularResolution,platformData.isStatic)
                         contact:AddPoint(datapoint)
+                        local site = self:getSite(contact)
                     end
                 end
             end
@@ -508,10 +486,9 @@ do
     --- Process function
     -- process all the information stored in the system to update all radar positions
     function HOUND.ElintWorker:Process()
-        if Length(self.contacts) < 1 then return end
+        if HOUND.Length(self.contacts) < 1 then return end
         for contactName, contact in pairs(self.contacts) do
             if contact ~= nil then
-                -- env.info("emitter " .. contact:getName() .. " has " .. contact:countDatapoints() .. " dataPoints")
                 local contactState = contact:processData()
 
                 if contactState == HOUND.EVENTS.RADAR_DETECTED then
@@ -524,14 +501,14 @@ do
                 if self.settings:getBDA() and contact:isAlive() and contact:getLife() < 1 then
                     contact:setDead()
                 end
-                if not contact:isAlive() and contact:getLastSeen() > 60 then
+                if not contact:isAlive() and not contact:getPreBriefed() and contact:getLastSeen() > HOUND.CONTACT_TIMEOUT then
                     self:removeContact(contactName)
                     contact:destroy()
                     return
                 end
 
                 -- publish event (in case of destroyed radar, event is handled by the notify function)
-                if contactState then
+                if contactState and contactState ~= HOUND.EVENTS.NO_CHANGE then
                     HOUND.EventHandler.publishEvent({
                         id = contactState,
                         initiator = contact,

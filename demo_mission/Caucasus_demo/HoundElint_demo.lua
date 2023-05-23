@@ -71,12 +71,12 @@ do
     end
 
     function testing.spawnPlatform(hound)
-        env.info("No. platforms before: " .. Length(hound.platform))
+        env.info("No. platforms before: " .. HOUND.Length(hound.platform))
         local newGrp = mist.cloneGroup("ELINT_C17_SPAWN",true)
         local newUnit = newGrp.units[1].name
         env.info("MIST Spawn - Grp:" .. newGrp.name .. " Unit: " .. newUnit)
         hound:addPlatform(newUnit)
-        env.info("No. platforms after: " .. Length(hound.platform))
+        env.info("No. platforms after: " .. HOUND.Length(hound.platform))
     end
 
     function testing.AddMarker()
@@ -168,16 +168,28 @@ do
             end
         end
     end
-    
-        
-        function testing.GRPCtts(msg)
-            local ssml = msg or "balh  blah"
-            local frequency = 250*1000000
-            local options = {
-                srsClientName = "DCS-gRPC"
-            }
-            GRPC.tts(ssml, frequency, options)
+
+    function testing.UnitDrawArgs(unitName)
+        local unit = Unit.getByName(unitName)
+        local args = {}
+        for i=1,1100 do
+            local v = unit:getDrawArgumentValue(i)
+            if v ~= nil and v ~= 0 then
+                args[i] = v
+            end
         end
+        env.info(mist.utils.tableShow(args))
+
+    end
+
+    function testing.GRPCtts(msg)
+        local ssml = msg or "balh  blah"
+        local frequency = 250*1000000
+        local options = {
+            srsClientName = "DCS-gRPC"
+        }
+        GRPC.tts(ssml, frequency, options)
+    end
 
     testing.Menu = missionCommands.addSubMenu("Hound Testing")
     missionCommands.addCommand("Poke Radar",testing.Menu,testing.boom,Unit.getByName("PB-test-3"))
@@ -199,6 +211,8 @@ do
     -- missionCommands.addCommand("test gRPC",testing.Menu,testing.GRPCtts,'testing 1,2,3...')
     -- missionCommands.addCommand("atis volume down",testing.Menu,testing.decreaseAtisVolume,Elint_blue)
     -- missionCommands.addCommand("atis volume up",testing.Menu,testing.increaseAtisVolume,Elint_blue)
+    -- missionCommands.addCommand("unit data",testing.Menu,testing.GrpData,'Elint')
+    -- missionCommands.addCommand("unit data",testing.Menu,testing.UnitDrawArgs,'EMPTY_VIPER')
 
 
 end
@@ -245,4 +259,29 @@ do
     -- end
     -- mist.debug.dump_G('hound_post_rename_G.lua')
     -- mist.debug.dumpDBs()
+
+    -- for _,unit in ipairs({StaticObject.getByName('Kokotse_Elint'),StaticObject.getByName('TV_TOWER'),StaticObject.getByName('COMMAND_CENTER')}) do
+    --     local data = unit:getDesc()
+    --     local pos = unit:getPosition().p
+    --     env.info("Hight of ".. unit:getTypeName() .. " is " .. unit:getDesc()["box"]["max"]["y"])
+    -- end
+    local balloon = StaticObject.getByName('BALLOON_ANCHOR')
+    env.info(mist.utils.tableShow(balloon:getDesc()))
+    
+    for cid,v in pairs(_G.env.mission.coalition.blue.country) do
+        if cid ~= nil and type(v) == "table" then
+            env.info("CID: " .. cid)
+            for k,v1 in pairs(v) do
+                if k == "name" then
+                    env.info("name: " .. v1)
+                end
+                if k == "static" then
+                    for _,obj in pairs(v1) do
+                        env.info(mist.utils.tableShow(obj))
+                    end
+                end
+            end
+        end
+
+    end
 end

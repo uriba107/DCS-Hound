@@ -6,8 +6,10 @@ do
             lu.assertStrContains(self.houndBlue:printDebugging(),expectedStr)
         end
         local delayMove = function()
-            Group.getByName("TOR_SAIPAN"):getController():setSpeed(20)
+            Group.getByName("TOR_SAIPAN"):getController():setSpeed(50)
         end
+        self.houndBlue:preBriefedContact('SA-5_SAIPAN')
+
         lu.assertEquals(self.houndBlue:countPreBriefedContacts(),2)
         lu.assertStrContains(self.houndBlue:printDebugging(),"Platforms: 2 | sectors: 3 (Z:2 ,C:2 ,A: 2 ,N:1) | Contacts: 3 (A:1 ,PB:2)")
         self.houndBlue:preBriefedContact('EWR_SAIPAN')
@@ -16,8 +18,8 @@ do
         tor:enableEmission(false)
         self.houndBlue:preBriefedContact(tor:getName())
         lu.assertEquals(self.houndBlue:countPreBriefedContacts(),4)
-        timer.scheduleFunction(delayTest,"Platforms: 2 | sectors: 3 (Z:2 ,C:2 ,A: 2 ,N:1) | Contacts: 4 (A:1 ,PB:4)",timer.getTime()+20)
-        timer.scheduleFunction(delayMove,nil,timer.getTime()+30)
+        timer.scheduleFunction(delayTest,"Platforms: 2 | sectors: 3 (Z:2 ,C:2 ,A: 2 ,N:1) | Contacts: 4 (A:1 ,PB:4)",timer.getTime()+45)
+        timer.scheduleFunction(delayMove,nil,timer.getTime()+60)
     end
 
     function TestHoundFunctional:Test_5mDelay_00_preBriefed()

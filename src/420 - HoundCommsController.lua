@@ -6,7 +6,7 @@ do
     -- @see HOUND.Comms.Manager
 
     HOUND.Comms.Controller = {}
-    HOUND.Comms.Controller = inheritsFrom(HOUND.Comms.Manager)
+    HOUND.Comms.Controller = HOUND.inheritsFrom(HOUND.Comms.Manager)
 
     --- Hound Controller Create
     -- @string sector name of parent sector

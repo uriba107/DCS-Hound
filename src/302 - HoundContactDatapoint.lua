@@ -59,7 +59,7 @@ do
     end
 
     --- check if platform is static
-    -- @return Bool True if platform is static
+    -- @return (Bool) True if platform is static
     function HOUND.Contact.Datapoint.isStatic(self)
         return self.platformStatic
     end
@@ -109,7 +109,7 @@ do
         if self.el == nil or l_math.abs(self.el) <= self.platformPrecision then return end
         -- local maxSlant = HOUND.Utils.Geo.EarthLOS(self.platformPos.y)*0.8
         -- local point = HOUND.Utils.Geo.getProjectedIP(self.platformPos,self.az,self.el)
-        -- if not HOUND.Utils.Geo.isDcsPoint(point) then
+        -- if not HOUND.Utils.Dcs.isPoint(point) then
         --     point = {x=maxSlant*l_math.cos(self.az) + self.platformPos.x,z=maxSlant*l_math.sin(self.az) + self.platformPos.z}
         -- end
         return HOUND.Utils.Geo.getProjectedIP(self.platformPos,self.az,self.el)
@@ -157,7 +157,7 @@ do
                 point = HOUND.Utils.Geo.setHeight(point)
             end
 
-            if HOUND.Utils.Geo.isDcsPoint(point) and HOUND.Utils.Geo.isDcsPoint(self:getPos()) then
+            if HOUND.Utils.Dcs.isPoint(point) and HOUND.Utils.Dcs.isPoint(self:getPos()) then
                 table.insert(poly3D,point)
                 if i == numSteps/4 then
                     ellipse.minor = point
@@ -165,11 +165,11 @@ do
                     ellipse.major = point
                     ellipse.majorCG = l_mist.utils.get2DDist(self:getPos(),point)
                 elseif i == 3*(numSteps/4) then
-                    if HOUND.Utils.Geo.isDcsPoint(ellipse.minor) then
+                    if HOUND.Utils.Dcs.isPoint(ellipse.minor) then
                         ellipse.minor = l_mist.utils.get2DDist(ellipse.minor,point)
                     end
                 elseif i == numSteps then
-                    if HOUND.Utils.Geo.isDcsPoint(ellipse.major) then
+                    if HOUND.Utils.Dcs.isPoint(ellipse.major) then
                         ellipse.major = l_mist.utils.get2DDist(ellipse.major,point)
                         ellipse.majorCG = ellipse.majorCG / (ellipse.majorCG + l_mist.utils.get2DDist(self:getPos(),point))
                     end

@@ -63,6 +63,7 @@ do
 
     --- Hound Events
     -- @table EVENTS
+    -- @field NO_CHANGE nothing changed in the object
     -- @field HOUND_ENABLED Hound Event
     -- @field HOUND_DISABLED Hound Event
     -- @field PLATFORM_ADDED Hound Event
@@ -81,6 +82,7 @@ do
     -- @field SITE_ALIVE Hound Event
     -- @field SITE_ASLEEP Hound Event
     HOUND.EVENTS = {
+        NO_CHANGE     = 0,
         HOUND_ENABLED = 1,
         HOUND_DISABLED = 2,
         PLATFORM_ADDED = 3,
@@ -153,7 +155,7 @@ do
     --- helper code for class inheritance
     -- @local
     -- @param baseClass Base class to inherit from
-    function inheritsFrom( baseClass )
+    function HOUND.inheritsFrom( baseClass )
 
         local new_class = {}
         local class_mt = { __index = new_class }
@@ -201,7 +203,7 @@ do
     -- @local
     -- @param T table
     -- @return length of T
-    function Length(T)
+    function HOUND.Length(T)
         local count = 0
         if T ~= nil then for _ in pairs(T) do count = count + 1 end end
         return count
@@ -212,7 +214,7 @@ do
     -- @param set Hash table to check
     -- @param key to check
     -- @return Bool. True if key exists in set
-    function setContains(set, key)
+    function HOUND.setContains(set, key)
         if not set or not key then return false end
         return set[key] ~= nil
     end
@@ -222,7 +224,7 @@ do
     -- @param set Table to check
     -- @param value Value to check
     -- @return Bool. True if value exists in set
-    function setContainsValue(set,value)
+    function HOUND.setContainsValue(set,value)
         if not set or not value then return false end
         for _,v in pairs(set) do
             if v == value then
@@ -232,12 +234,25 @@ do
         return false
     end
 
+    --- return set intersection product
+    -- @local
+    -- @param a Table
+    -- @param b Table
+    -- @return Table
+    function HOUND.setIntersection (a,b)
+        local res = Set.new{}
+        for k in pairs(a) do
+          res[k] = b[k]
+        end
+        return res
+      end
+
     --- return Gaussian random number
     -- @local
     -- @param mean Mean value (i.e center of the gausssian curve)
     -- @param sigma amount of variance in the random value
     -- @return random number in gaussian space
-    function Gaussian(mean, sigma)
+    function HOUND.Gaussian(mean, sigma)
         return math.sqrt(-2 * sigma * math.log(math.random())) *
                    math.cos(2 * math.pi * math.random()) + mean
     end

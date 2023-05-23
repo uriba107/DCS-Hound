@@ -1,6 +1,8 @@
 do
-    local currentDir = "E:\\Dropbox\\uri\\Dropbox\\DCS\\Mission Building\\HoundElint\\"
-    -- assert(loadfile(currentDir..'include\\DCS-SimpleTextToSpeech.lua'))()
+    if HoundWorkDir == nil then
+        HoundWorkDir = "E:\\Dropbox\\uri\\Dropbox\\DCS\\Mission Building\\HoundElint\\"
+    end
+    -- assert(loadfile(HoundWorkDir..'include\\DCS-SimpleTextToSpeech.lua'))()
 
     function UserSpaceLogging(msg)
         trigger.action.outText(msg,10)
@@ -8,7 +10,7 @@ do
     end
 
     env.info("Loading UnitTesting")
-    assert(loadfile(currentDir..'demo_mission\\hound_unit_test\\extras\\luaunit.lua'))()
+    assert(loadfile(HoundWorkDir..'demo_mission\\hound_unit_test\\extras\\luaunit.lua'))()
 
     runTest = {
         next = 1
@@ -18,7 +20,7 @@ do
             {name = "module", func = self.moduleTesting, next_test_delay = 10},
             {name = "hound init", func = self.initTesting, next_test_delay = 15},
             {name = "hound base", func = self.baseTesting, next_test_delay = 1*60},
-            {name = "hound functional 1 min", func = self.delayedTesting1m, next_test_delay = 5*60},
+            {name = "hound functional 1 min", func = self.delayedTesting1m, next_test_delay = 4*60},
             {name = "hound functional 5 min", func = self.delayedTesting5m, next_test_delay = 0}
 
         }
@@ -34,23 +36,23 @@ do
     end
 
     function runTest.moduleTesting()
-        assert(loadfile(currentDir..'demo_mission\\hound_unit_test\\extras\\test-houndUtils.lua'))()
-        assert(loadfile(currentDir..'demo_mission\\hound_unit_test\\extras\\test-houndContact.lua'))()
+        assert(loadfile(HoundWorkDir..'demo_mission\\hound_unit_test\\extras\\test-houndUtils.lua'))()
+        assert(loadfile(HoundWorkDir..'demo_mission\\hound_unit_test\\extras\\test-houndContact.lua'))()
         lu.LuaUnit.run()
     end
 
     function runTest.initTesting()
-        assert(loadfile(currentDir..'demo_mission\\hound_unit_test\\extras\\test-hound-init.lua'))()
+        assert(loadfile(HoundWorkDir..'demo_mission\\hound_unit_test\\extras\\test-hound-init.lua'))()
         lu.LuaUnit.run('--pattern', '01_init')
     end
 
     function runTest.baseTesting()
-        assert(loadfile(currentDir..'demo_mission\\hound_unit_test\\extras\\test-hound-base.lua'))()
+        assert(loadfile(HoundWorkDir..'demo_mission\\hound_unit_test\\extras\\test-hound-base.lua'))()
         lu.LuaUnit.run('--pattern', '02_base')
     end
 
     function runTest.delayedTesting1m()
-        assert(loadfile(currentDir..'demo_mission\\hound_unit_test\\extras\\test-hound-delayed.lua'))()
+        assert(loadfile(HoundWorkDir..'demo_mission\\hound_unit_test\\extras\\test-hound-delayed.lua'))()
         lu.LuaUnit.run('--pattern', '1mDelay')
     end
 

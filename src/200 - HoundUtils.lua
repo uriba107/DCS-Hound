@@ -21,6 +21,7 @@ do
 -- @field _HoundId internal HoundId counter
     HOUND.Utils = {
         Mapping = {},
+        Dcs     = {},
         Geo     = {},
         Marker  = {},
         TTS     = {},
@@ -61,7 +62,7 @@ do
     -- @see HOUND.Utils.Marker.setInitialId
     -- @local
     -- @param startId Number to start counting from
-    -- @return Bool True if initial ID was updated
+    -- @return (Bool) True if initial ID was updated
     function HOUND.Utils.setInitialMarkId(startId)
         return HOUND.Utils.Marker.setInitialId(startId)
     end
@@ -98,17 +99,30 @@ do
 
     function HOUND.Utils.AzimuthAverage(azimuths)
         -- TODO: fix this function. Circular mean has errors, bad ones..
-        if not azimuths or Length(azimuths) == 0 then return nil end
+        if not azimuths or HOUND.Length(azimuths) == 0 then return nil end
 
         local sumSin = 0
         local sumCos = 0
-        for i=1, Length(azimuths) do
+        for i=1, HOUND.Length(azimuths) do
             sumSin = sumSin + l_math.sin(azimuths[i])
             sumCos = sumCos + l_math.cos(azimuths[i])
         end
         return (l_math.atan2(sumSin,sumCos) + pi_2) % pi_2
     end
 
+    --- Return magnetic variation in point
+    -- @param DCSpoint point
+    -- @return Magentic variation in radians
+    function HOUND.Utils.getMagVar(DCSpoint)
+        if not HOUND.Utils.Dcs.isPoint(DCSpoint) then return 0 end
+        local l_magvar = require('magvar')
+        if l_magvar then
+            local lat, lon, _ = coord.LOtoLL(DCSpoint)
+            return magvar.get_mag_decl(lat, lon)
+        end
+        return l_mist.getNorthCorrection(DCSpoint)
+
+    end
     --- return the tilt of a point cluster
     -- @param points a list of DCS points
     -- @param[opt] MagNorth (Bool) if true value will include north var correction
@@ -121,7 +135,7 @@ do
         end
         local magVar = 0
         if MagNorth then
-            magVar = l_mist.getNorthCorrection(refPos)
+            magVar = HOUND.Utils.getMagVar(refPos)
         end
         local biasVector = nil
         for _,point in pairs(points) do
@@ -178,9 +192,9 @@ do
         local detectionRange = 0
         local unit_sensors = DCS_Unit:getSensors()
         if not unit_sensors then return detectionRange end
-        if not setContains(unit_sensors,Unit.SensorType.RADAR) then return detectionRange end
+        if not HOUND.setContains(unit_sensors,Unit.SensorType.RADAR) then return detectionRange end
         for _,radar in pairs(unit_sensors[Unit.SensorType.RADAR]) do
-            if setContains(radar,"detectionDistanceAir") then
+            if HOUND.setContains(radar,"detectionDistanceAir") then
                 for _,aspects in pairs(radar["detectionDistanceAir"]) do
                     for _,range in pairs(aspects) do
                         detectionRange = l_math.max(detectionRange,range)
@@ -242,7 +256,7 @@ do
             "Please send my regards.",
             " "
         }
-        return response[l_math.max(1,l_math.min(l_math.ceil(timer.getAbsTime() % Length(response)),Length(response)))]
+        return response[l_math.max(1,l_math.min(l_math.ceil(timer.getAbsTime() % HOUND.Length(response)),HOUND.Length(response)))]
     end
 
     --- get coalition string
@@ -368,7 +382,7 @@ do
         end
 
         if type(override) == "table" then
-            if setContains(override,formationCallsign) then
+            if HOUND.setContains(override,formationCallsign) then
                 callsign = callsign:gsub(formationCallsign,override[formationCallsign])
                 return string.upper(callsign:match( "^%s*(.-)%s*$" ))
             end
@@ -413,7 +427,7 @@ do
     -- @return string random callsign from pool
     function HOUND.Utils.getHoundCallsign(namePool)
         local SelectedPool = HOUND.DB.CALLSIGNS[namePool] or HOUND.DB.CALLSIGNS.GENERIC
-        return SelectedPool[l_math.random(1, Length(SelectedPool))]
+        return SelectedPool[l_math.random(1, HOUND.Length(SelectedPool))]
     end
 
     --- Unit use DMM
@@ -427,7 +441,7 @@ do
         if type(DCS_Unit) == "Table" and DCS_Unit.getTypeName then
             typeName = DCS_Unit:getTypeName()
         end
-        return setContains(HOUND.DB.useDecMin,typeName)
+        return HOUND.setContains(HOUND.DB.useDecMin,typeName)
     end
 
     --- does unit has payload (placeholder)
@@ -535,6 +549,41 @@ do
         return mappedIn
     end
 
+    --- DCS object functions
+    -- @section Dcs
+
+    ---  check if point is DCS point
+    -- @param point DCS point candidate
+    -- @return (Bool) True if is valid point
+    function HOUND.Utils.Dcs.isPoint(point)
+        if type(point) ~= "table" then return false end
+        return (type(point.x) == "number") and (type(point.z) == "number")
+    end
+
+    --- check if object is DCS Unit
+    -- @param obj DCS Object canidate
+    -- @return (Bool) True if object is unit
+    function HOUND.Utils.Dcs.isUnit(obj)
+        if type(obj) ~= "table" then return false end
+        return getmetatable(obj) == Unit
+    end
+
+    --- check if object is DCS Group
+    -- @param obj DCS Object canidate
+    -- @return (Bool) True if object is Group
+    function HOUND.Utils.Dcs.isGroup(obj)
+        if type(obj) ~= "table" then return false end
+        return getmetatable(obj) == Group
+    end
+
+    --- check if object is DCS static object
+    -- @param obj DCS Object canidate
+    -- @return (Bool) True if object is static object
+    function HOUND.Utils.Dcs.isStaticObject(obj)
+        if type(obj) ~= "table" then return false end
+        return getmetatable(obj) == StaticObject
+    end
+
     --- Geo Function
     -- @section Geo
 
@@ -566,21 +615,13 @@ do
         return d0+d1
     end
 
-    ---  check if point is DCS point
-    -- @param point DCS point candidate
-    -- @return Bool True if is valid point
-    function HOUND.Utils.Geo.isDcsPoint(point)
-        if type(point) ~= "table" then return false end
-        return (type(point.x) == "number") and (type(point.z) == "number")
-    end
-
     --- Returns Projected line impact point with Terrain
     -- @param p0 source Postion
     -- @param az Azimuth from Position (radians)
     -- @param el Elevation angle from position (radians)
     -- @return DCS point of intersection with ground
     function HOUND.Utils.Geo.getProjectedIP(p0,az,el)
-        if not HOUND.Utils.Geo.isDcsPoint(p0) or type(az) ~= "number" or type(el) ~= "number" then return end
+        if not HOUND.Utils.Dcs.isPoint(p0) or type(az) ~= "number" or type(el) ~= "number" then return end
         local maxSlant = HOUND.Utils.Geo.EarthLOS(p0.y)*1.2
         -- local maxSlant = (p0.y/l_math.abs(l_math.sin(el)))+100
 
@@ -593,7 +634,7 @@ do
     -- @param point DCS point
     -- @return Point but with elevation
     function HOUND.Utils.Geo.setPointHeight(point)
-        if HOUND.Utils.Geo.isDcsPoint(point) and type(point.y) ~= "number" then
+        if HOUND.Utils.Dcs.isPoint(point) and type(point.y) ~= "number" then
             point.y = land.getHeight({x=point.x,y=point.z})
         end
         return point
@@ -604,7 +645,7 @@ do
     -- @return same as input, but with elevation. will return original value if is not DCS point
     function HOUND.Utils.Geo.setHeight(point)
         if type(point) == "table" then
-            if HOUND.Utils.Geo.isDcsPoint(point) then
+            if HOUND.Utils.Dcs.isPoint(point) then
                 return HOUND.Utils.Geo.setPointHeight(point)
             end
             for _,pt in pairs(point) do
@@ -645,7 +686,7 @@ do
     --- Set New initial marker Id
     -- @local
     -- @param startId Number to start counting from
-    -- @return Bool True if initial ID was updated
+    -- @return (Bool) True if initial ID was updated
     function HOUND.Utils.Marker.setInitialId(startId)
         if type(startId) ~= "number" then
             HOUND.Logger.error("Failed to set Initial marker Id. Value provided was not a number")
@@ -676,7 +717,7 @@ do
         -- @param pos position of marker (only single point is supported)
         instance.setPos = function(self,pos)
             if self.type == HOUND.Utils.Marker.Type.FREEFORM then return end
-            if HOUND.Utils.Geo.isDcsPoint(pos) then
+            if HOUND.Utils.Dcs.isPoint(pos) then
                 trigger.action.setMarkupPositionStart(self.id,pos)
             end
         end
@@ -688,7 +729,8 @@ do
         instance.setText = function(self,text)
             if type(text) == "string" and self.id > 0 then
                 if self.type == HOUND.Utils.Marker.Type.TEXT then
-                    text = "¤ « " .. text
+                    -- text = "¤ « " .. text
+                    text = "⇙ « " .. text
                 end
                 trigger.action.setMarkupText(self.id,text)
             end
@@ -773,7 +815,7 @@ do
             -- if type(fillColor) ~= "table" or type(lineColor) ~= "table" or type(text) ~= "string" then return false end
             self.id = HOUND.Utils.Marker.getId()
 
-            if HOUND.Utils.Geo.isDcsPoint(pos) then
+            if HOUND.Utils.Dcs.isPoint(pos) then
                 if HOUND.USE_LEGACY_MARKERS then
                     self.type = HOUND.Utils.Marker.Type.POINT
                     trigger.action.markToCoalition(self.id, text, pos, coalition,true)
@@ -784,27 +826,27 @@ do
                 return true
             end
 
-            if Length(pos) == 2 and HOUND.Utils.Geo.isDcsPoint(pos.p) and type(pos.r) == "number" then
+            if HOUND.Length(pos) == 2 and HOUND.Utils.Dcs.isPoint(pos.p) and type(pos.r) == "number" then
                 self.type = HOUND.Utils.Marker.Type.CIRCLE
                 trigger.action.circleToAll(coalition,self.id, pos.p,pos.r,lineColor,fillColor,lineType,true)
                 return true
             end
 
-            if Length(pos) == 4 then
+            if HOUND.Length(pos) == 4 then
                 self.type = HOUND.Utils.Marker.Type.FREEFORM
                 trigger.action.markupToAll(6,coalition,self.id,
                     pos[1], pos[2], pos[3], pos[4],
                     lineColor,fillColor,lineType,true)
 
             end
-            if Length(pos) == 8 then
+            if HOUND.Length(pos) == 8 then
                 self.type = HOUND.Utils.Marker.Type.FREEFORM
                 trigger.action.markupToAll(7,coalition,self.id,
                     pos[1], pos[2], pos[3], pos[4],
                     pos[5], pos[6], pos[7], pos[8],
                     lineColor,fillColor,lineType,true)
             end
-            if Length(pos) == 16 then
+            if HOUND.Length(pos) == 16 then
                 self.type = HOUND.Utils.Marker.Type.FREEFORM
                 trigger.action.markupToAll(7,coalition,self.id,
                     pos[1], pos[2], pos[3], pos[4],
@@ -838,18 +880,17 @@ do
             -- if self.id > 0 and self.type ~= HOUND.Utils.Marker.Type.NONE then
                     return self:_replace(args)
             end
-            -- Update still does not work in MP for DC 2.7 leaving this for the future :(
             if self.id > 0 then
                 if args.pos then
                     local pos = args.pos
-                    if HOUND.Utils.Geo.isDcsPoint(pos) then
+                    if HOUND.Utils.Dcs.isPoint(pos) then
                         self:setPos(pos)
                     end
-                    if Length(pos) == 2 and type(pos.r) == "number" and HOUND.Utils.Geo.isDcsPoint(pos.p) then
+                    if HOUND.Length(pos) == 2 and type(pos.r) == "number" and HOUND.Utils.Dcs.isPoint(pos.p) then
                         self:setPos(pos.p)
                         self:setRadius(pos.r)
                     end
-                    if type(pos) == "table" and Length(pos) > 2 and HOUND.Utils.Geo.isDcsPoint(pos[1]) then
+                    if type(pos) == "table" and HOUND.Length(pos) > 2 and HOUND.Utils.Dcs.isPoint(pos[1]) then
                         return self:_replace(args)
                     end
                 end
@@ -879,7 +920,7 @@ do
     -- @section TTS
 
     --- Check if TTS agent is available (private)
-    -- @return Bool true if TTS is available
+    -- @return (Bool) True if TTS is available
     function HOUND.Utils.TTS.isAvailable()
         if (l_grpc ~= nil and type(l_grpc.tts) == "function" and HOUND.PREFER_GRPC_TTS)  then
             -- do checks for DCS-gRPC for now KISS
@@ -993,7 +1034,7 @@ do
         if args.volume ~= 1.0 then
             local volume = ""
 
-            if setContainsValue(VOLUME,args.volume) then
+            if HOUND.setContainsValue(VOLUME,args.volume) then
                 volume = args.volume
             end
 
@@ -1412,7 +1453,7 @@ do
         for _,drawLayer in pairs(base.drawings.layers) do
             if type(drawLayer["objects"]) == "table" then
                 for _,drawObject in pairs(drawLayer["objects"]) do
-                    if drawObject["primitiveType"] == "Polygon" and (setContainsValue({"free","rect","oval"},drawObject["polygonMode"])) then
+                    if drawObject["primitiveType"] == "Polygon" and (HOUND.setContainsValue({"free","rect","oval"},drawObject["polygonMode"])) then
                         table.insert(zoneNames,drawObject["name"])
                     end
                 end
@@ -1434,7 +1475,7 @@ do
                     if drawObject["name"] == zoneName and drawObject["primitiveType"] == "Polygon" then
                         local points = {}
                         local theta = nil
-                        if drawObject["polygonMode"] == "free" and Length(drawObject["points"]) >2 then
+                        if drawObject["polygonMode"] == "free" and HOUND.Length(drawObject["points"]) >2 then
                             points = l_mist.utils.deepCopy(drawObject["points"])
                             table.remove(points)
                         end
@@ -1469,7 +1510,7 @@ do
                                 point.y = x * l_math.sin(theta) + y * l_math.cos(theta)
                             end
                         end
-                        if Length(points) < 3 then return nil end
+                        if HOUND.Length(points) < 3 then return nil end
                         local objectX,objecty = drawObject["mapX"],drawObject["mapY"]
                         for _,point in pairs(points) do
                             point.x = point.x + objectX
@@ -1499,13 +1540,13 @@ do
     -- @param polygon Table of point reprasenting a polygon
     -- @param point DCS position (x,z)
     -- @param radius Radius in Meters around point to test
-    -- @return Bool True if point is in polygon
-    -- @return Bool True if radius around point intersects polygon
+    -- @return (Bool) True if point is in polygon
+    -- @return (Bool) True if radius around point intersects polygon
     function HOUND.Utils.Polygon.threatOnSector(polygon,point, radius)
-        if type(polygon) ~= "table" or Length(polygon) < 3 or not HOUND.Utils.Geo.isDcsPoint(l_mist.utils.makeVec3(polygon[1])) then
+        if type(polygon) ~= "table" or HOUND.Length(polygon) < 3 or not HOUND.Utils.Dcs.isPoint(l_mist.utils.makeVec3(polygon[1])) then
             return
         end
-        if not HOUND.Utils.Geo.isDcsPoint(point) then
+        if not HOUND.Utils.Dcs.isPoint(point) then
             return
         end
         local inPolygon = l_mist.pointInPolygon(point,polygon)
@@ -1577,7 +1618,7 @@ do
         end
         cp1 = cp2
         end
-        if Length(outputList) > 0 then
+        if HOUND.Length(outputList) > 0 then
             return outputList
         end
         return nil
@@ -1637,10 +1678,10 @@ do
     function HOUND.Utils.Polygon.circumcirclePoints(points)
         local function calcCircle(p1,p2,p3)
             local cx,cz, r
-            if HOUND.Utils.Geo.isDcsPoint(p1) and not p2 and not p3 then
+            if HOUND.Utils.Dcs.isPoint(p1) and not p2 and not p3 then
                 return {x = p1.x, z = p1.z,r = 0}
             end
-            if HOUND.Utils.Geo.isDcsPoint(p1) and HOUND.Utils.Geo.isDcsPoint(p2) and not p3 then
+            if HOUND.Utils.Dcs.isPoint(p1) and HOUND.Utils.Dcs.isPoint(p2) and not p3 then
                 cx = 0.5 * (p1.x + p2.x)
                 cz = 0.5 * (p1.z + p2.z)
             else
@@ -1699,14 +1740,14 @@ do
     -- @param polygon list of DCS points
     -- @return area of polygon
     function HOUND.Utils.Polygon.getArea(polygon)
-        if not polygon or type(polygon) ~= "table" or Length(polygon) < 2 then return 0 end
+        if not polygon or type(polygon) ~= "table" or HOUND.Length(polygon) < 2 then return 0 end
         local a,b = 0,0
-        for i=1,Length(polygon)-1 do
+        for i=1,HOUND.Length(polygon)-1 do
             a = a + polygon[i].x * polygon[i+1].z
             b = b + polygon[i].z * polygon[i+1].x
         end
-        a = a + polygon[Length(polygon)].x * polygon[1].z
-        b = b + polygon[Length(polygon)].z * polygon[1].x
+        a = a + polygon[HOUND.Length(polygon)].x * polygon[1].z
+        b = b + polygon[HOUND.Length(polygon)].z * polygon[1].x
         return l_math.abs((a-b)/2)
     end
 
@@ -1737,7 +1778,7 @@ do
     -- @return minAz (rad)
     -- @return maxAz (rad)
     function HOUND.Utils.Polygon.azMinMax(poly,refPos)
-        if not HOUND.Utils.Geo.isDcsPoint(refPos) or type(poly) ~= "table" or Length(poly) < 2 or l_mist.pointInPolygon(refPos,poly) then
+        if not HOUND.Utils.Dcs.isPoint(refPos) or type(poly) ~= "table" or HOUND.Length(poly) < 2 or l_mist.pointInPolygon(refPos,poly) then
             return
         end
 
@@ -1795,18 +1836,18 @@ do
     -- @return DCS point of the cluster weighted mean
 
     function HOUND.Utils.Cluster.weightedMean(origPoints,initPos,threashold,maxIttr)
-        if type(origPoints) ~= "table" or not HOUND.Utils.Geo.isDcsPoint(origPoints[1]) then return end
+        if type(origPoints) ~= "table" or not HOUND.Utils.Dcs.isPoint(origPoints[1]) then return end
         local points = HOUND.Utils.Geo.setHeight(l_mist.utils.deepCopy(origPoints))
-        if Length(points) == 1 then return l_mist.utils.deepCopy(points[1]) end
+        if HOUND.Length(points) == 1 then return l_mist.utils.deepCopy(points[1]) end
 
         local current_mean = initPos
         if type(current_mean) == "boolean" and current_mean then
-            current_mean = points[l_math.random(Length(points))]
+            current_mean = points[l_math.random(HOUND.Length(points))]
         end
-        if not HOUND.Utils.Geo.isDcsPoint(current_mean) then
+        if not HOUND.Utils.Dcs.isPoint(current_mean) then
             current_mean = l_mist.getAvgPoint(origPoints)
         end
-        if not HOUND.Utils.Geo.isDcsPoint(current_mean) then return end
+        if not HOUND.Utils.Dcs.isPoint(current_mean) then return end
         threashold = threashold or 1
         maxIttr = maxIttr or 100
         local last_mean
@@ -2011,12 +2052,12 @@ do
 
     --     local function compareCentroids(item1,item2)
     --         if item1.p.x ~= item2.p.x or item1.p.z ~= item2.p.z or item1.r ~= item2.r then return false end
-    --         if Length(item1.members) ~= Length(item2.members) then return false end
+    --         if HOUND.Length(item1.members) ~= HOUND.Length(item2.members) then return false end
     --         return true
     --     end
 
     --     local function compareCentroidLists(t1,t2)
-    --         if Length(t1) ~= Length(t2) then return false end
+    --         if HOUND.Length(t1) ~= HOUND.Length(t2) then return false end
     --         for _,item1 in ipairs(t1) do
     --             for _,item2 in ipairs(t2) do
     --                 if not compareCentroids(item1,item2) then return false end
@@ -2030,7 +2071,7 @@ do
     --         for _,item in ipairs(t) do
     --             if not compareCentroids(item,candidate) then return end
     --         end
-    --         env.info("Adding uniq: " .. candidate.p.x .. "/" .. candidate.p.z ..  " r=".. candidate.r .. " with " .. Length(candidate.members) .. " members")
+    --         env.info("Adding uniq: " .. candidate.p.x .. "/" .. candidate.p.z ..  " r=".. candidate.r .. " with " .. HOUND.Length(candidate.members) .. " members")
     --         table.insert(t,candidate)
     --     end
 
@@ -2051,7 +2092,7 @@ do
     --     local converged = false
     --     local itr = 1
     --     while not converged do
-    --         env.info("itteration " .. itr .. " starting with " .. Length(centroids) .. " centroids")
+    --         env.info("itteration " .. itr .. " starting with " .. HOUND.Length(centroids) .. " centroids")
     --         local new_centroids = {}
     --         for _,centroid in ipairs(centroids) do
     --             local neighbours = findNeighbours(centroids,centroid)
@@ -2091,8 +2132,8 @@ do
     -- @section Sort
 
     --- Sort contacts by engament range
-    -- @param a @{HOUND.Contact} instance
-    -- @param b @{HOUND.Contact} Instance
+    -- @param a @{HOUND.Contact.Emitter} instance
+    -- @param b @{HOUND.Contact.Emitter} Instance
     -- @return Bool
     -- @usage table.sort(unSorted,HOUND.Utils.Sort.ContactsByRange)
     function HOUND.Utils.Sort.ContactsByRange(a,b)
@@ -2118,8 +2159,8 @@ do
     end
 
     --- Sort contacts by ID
-    -- @param a @{HOUND.Contact} instance
-    -- @param b @{HOUND.Contact} Instance
+    -- @param a @{HOUND.Contact.Emitter} instance
+    -- @param b @{HOUND.Contact.Emitter} Instance
     -- @return Bool
     -- @usage table.sort(unSorted,HOUND.Utils.Sort.ContactsById)
     function HOUND.Utils.Sort.ContactsById(a,b)
@@ -2127,6 +2168,28 @@ do
             return a.uid < b.uid
         end
         return a.maxWeaponsRange > b.maxWeaponsRange
+    end
+
+    --- sort contacts by Priority (primary first)
+    -- @param a @{HOUND.Contact.Emitter} instance
+    -- @param b @{HOUND.Contact.Emitter} Instance
+    -- @return Bool
+    -- @usage table.sort(unSorted,HOUND.Utils.Sort.ContactsByPrio)
+    function HOUND.Utils.Sort.ContactsByPrio(a,b)
+        if a.isPrimary ~= b.isPrimary then
+            return a.isPrimary and not b.isPrimary
+        end
+        if a.radarRoles ~= b.radarRoles then
+            local aRoles,bRoles = 0,0
+            for _,role in pairs(a.radarRoles) do
+                aRoles = aRoles + role
+            end
+            for _,role in pairs(b.radarRoles) do
+                bRoles = bRoles + role
+            end
+            return aRoles > bRoles
+        end
+        return a.uid < b.uid
     end
 
     --- sort sectors by priority (low first)

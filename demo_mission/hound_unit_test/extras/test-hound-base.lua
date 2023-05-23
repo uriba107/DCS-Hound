@@ -300,7 +300,7 @@ do
         function humanElint:onEvent(DcsEvent)
             if DcsEvent.id == world.event.S_EVENT_BIRTH and self.HoundInstance then
                 if self.HoundInstance and DcsEvent.initiator and DcsEvent.initiator:getCoalition() == self.HoundInstance:getCoalition()
-                and setContainsValue({"AJS37","Su-25T","F-16C_50"},DcsEvent.initiator:getTypeName()) and DcsEvent.initiator:getPlayerName()
+                and HOUND.setContainsValue({"AJS37","Su-25T","F-16C_50"},DcsEvent.initiator:getTypeName()) and DcsEvent.initiator:getPlayerName()
                 then
                     env.info(self.HoundInstance:countPlatforms())
                     env.info("Adding Human " .. DcsEvent.initiator:getPlayerName() .. " (" .. DcsEvent.initiator:getTypeName() ..")")

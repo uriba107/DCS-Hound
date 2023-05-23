@@ -40,7 +40,7 @@ do
         Kalman.estimated = {}
 
         Kalman.update = function(self,datapoint)
-            if type(self.estimated.p) ~= "table" and HOUND.Utils.Geo.isDcsPoint(datapoint) then
+            if type(self.estimated.p) ~= "table" and HOUND.Utils.Dcs.isPoint(datapoint) then
                 self.estimated.p = {
                     x = datapoint.x,
                     z = datapoint.z,

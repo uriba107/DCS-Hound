@@ -15,7 +15,7 @@ do
     function HOUND.DB.getRadarData(typeName)
         if not HOUND.DB.Radars[typeName] then return end
         local data = l_mist.utils.deepCopy(HOUND.DB.Radars[typeName])
-        data.isEWR = setContainsValue(data.Role,"EWR")
+        data.isEWR = HOUND.setContainsValue(data.Role,"EWR")
         return data
     end
 
@@ -23,24 +23,24 @@ do
     -- @param candidate DCS Object (Unit or Static Object)
     -- @return Bool. True if object is valid platform
     function HOUND.DB.isValidPlatform(candidate)
-        if type(candidate) ~= "table" or type(candidate.isExist) ~= "function" or not candidate:isExist()
+        if (not HOUND.Utils.Dcs.isUnit(candidate) and not HOUND.Utils.Dcs.isStaticObject(candidate)) or not candidate:isExist()
              then return false
         end
 
         local isValid = false
         local mainCategory = candidate:getCategory()
         local type = candidate:getTypeName()
-        if setContains(HOUND.DB.Platform,mainCategory) then
-            if setContains(HOUND.DB.Platform[mainCategory],type) then
+        if HOUND.setContains(HOUND.DB.Platform,mainCategory) then
+            if HOUND.setContains(HOUND.DB.Platform[mainCategory],type) then
                 if HOUND.DB.Platform[mainCategory][type]['require'] then
                     local platformData = HOUND.DB.Platform[mainCategory][type]
                     -- TODO: actually make logic here
-                    if setContains(platformData['require'],'CLSID') then
+                    if HOUND.setContains(platformData['require'],'CLSID') then
                         local required = platformData['require']['CLSID']
                         -- then if payload is valid (currently always retuns true)
                         isValid = HOUND.Utils.hasPayload(candidate,required)
                     end
-                    if setContains(platformData['require'],'TASK') then
+                    if HOUND.setContains(platformData['require'],'TASK') then
                         local required = platformData['require']['TASK']
                         -- check for tasking requirements (for now will always return false)
                         isValid = not HOUND.Utils.hasTask(candidate,required)
@@ -114,8 +114,8 @@ do
         if type(DCS_Unit) ~= "table" or not DCS_Unit.getTypeName or not DCS_Unit.getCategory then return 0 end
         local mainCategory = DCS_Unit:getCategory()
         local typeName = DCS_Unit:getTypeName()
-        if setContains(HOUND.DB.Platform,mainCategory) then
-            if setContains(HOUND.DB.Platform[mainCategory],typeName) then
+        if HOUND.setContains(HOUND.DB.Platform,mainCategory) then
+            if HOUND.setContains(HOUND.DB.Platform[mainCategory],typeName) then
                 return HOUND.DB.Platform[mainCategory][typeName].antenna.size *  HOUND.DB.Platform[mainCategory][typeName].antenna.factor
             end
         end
@@ -129,7 +129,7 @@ do
     function HOUND.DB.getEmitterBand(DCS_Unit)
         if type(DCS_Unit) ~= "table" or not DCS_Unit.getTypeName then return 'C' end
         local typeName = DCS_Unit:getTypeName()
-        if setContains(HOUND.DB.Radars,typeName) then
+        if HOUND.setContains(HOUND.DB.Radars,typeName) then
             return HOUND.DB.Radars[typeName].Band
         end
         return 'C'

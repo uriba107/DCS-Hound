@@ -88,13 +88,13 @@ do
     end
 
     function TestHoundUtils:TestGeo()
-        -- HOUND.Utils.Geo.isDcsPoint
-        lu.assertIsFalse(HOUND.Utils.Geo.isDcsPoint("somethign"))
-        lu.assertIsFalse(HOUND.Utils.Geo.isDcsPoint(true))
-        lu.assertIsFalse(HOUND.Utils.Geo.isDcsPoint({"assd","asdf"}))
-        lu.assertIsFalse(HOUND.Utils.Geo.isDcsPoint({x="asdf",z="asdf"}))
-        lu.assertIsFalse(HOUND.Utils.Geo.isDcsPoint({x="123123",z="123123"}))
-        lu.assertIsTrue(HOUND.Utils.Geo.isDcsPoint({x=12345,z=67890}))
+        -- HOUND.Utils.Dcs.isPoint
+        lu.assertIsFalse(HOUND.Utils.Dcs.isPoint("somethign"))
+        lu.assertIsFalse(HOUND.Utils.Dcs.isPoint(true))
+        lu.assertIsFalse(HOUND.Utils.Dcs.isPoint({"assd","asdf"}))
+        lu.assertIsFalse(HOUND.Utils.Dcs.isPoint({x="asdf",z="asdf"}))
+        lu.assertIsFalse(HOUND.Utils.Dcs.isPoint({x="123123",z="123123"}))
+        lu.assertIsTrue(HOUND.Utils.Dcs.isPoint({x=12345,z=67890}))
     end
 
     function TestHoundUtils:TestTTS()
@@ -207,10 +207,10 @@ do
         -- HOUND.Utils.Elint.getAzimuth
 
         -- HOUND.Utils.getHoundCallsign
-        lu.assertIsTrue(setContainsValue(HOUND.DB.CALLSIGNS.GENERIC,HOUND.Utils.getHoundCallsign()))
-        lu.assertIsFalse(setContainsValue(HOUND.DB.CALLSIGNS.GENERIC,HOUND.Utils.getHoundCallsign("NATO")))
-        lu.assertIsTrue(setContainsValue(HOUND.DB.CALLSIGNS.NATO,HOUND.Utils.getHoundCallsign("NATO")))
-        lu.assertIsFalse(setContainsValue(HOUND.DB.CALLSIGNS.NATO,HOUND.Utils.getHoundCallsign()))
+        lu.assertIsTrue(HOUND.setContainsValue(HOUND.DB.CALLSIGNS.GENERIC,HOUND.Utils.getHoundCallsign()))
+        lu.assertIsFalse(HOUND.setContainsValue(HOUND.DB.CALLSIGNS.GENERIC,HOUND.Utils.getHoundCallsign("NATO")))
+        lu.assertIsTrue(HOUND.setContainsValue(HOUND.DB.CALLSIGNS.NATO,HOUND.Utils.getHoundCallsign("NATO")))
+        lu.assertIsFalse(HOUND.setContainsValue(HOUND.DB.CALLSIGNS.NATO,HOUND.Utils.getHoundCallsign()))
     end
 
     function TestHoundUtils:TestPolygon()
@@ -225,11 +225,26 @@ do
 
         local zone = HOUND.Utils.Zone.getDrawnZone("Tinian Sector")
         lu.assertNotNil(zone)
-        lu.assertEquals(Length(zone),15)
-        -- lu.assertItemsEquals(zone[1],zone[Length(zone)])
+        lu.assertEquals(HOUND.Length(zone),15)
+        -- lu.assertItemsEquals(zone[1],zone[HOUND.Length(zone)])
 
         lu.assertItemsEquals(HOUND.Utils.Zone.listDrawnZones(),{"Tinian Sector"})
 
+    end
+
+    function TestHoundUtils:TestDcs()
+        local unit = Unit.getByName("TOR_SAIPAN-1")
+        local group = Group.getByName("SA-5_SAIPAN")
+
+        lu.assertIsFalse(HOUND.Utils.Dcs.isGroup(nil))
+        lu.assertIsFalse(HOUND.Utils.Dcs.isGroup("SA-5_SAIPAN"))
+        lu.assertIsFalse(HOUND.Utils.Dcs.isGroup(unit))
+        lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(group))
+
+        lu.assertIsFalse(HOUND.Utils.Dcs.isUnit(nil))
+        lu.assertIsFalse(HOUND.Utils.Dcs.isUnit("SA-5_SAIPAN"))
+        lu.assertIsFalse(HOUND.Utils.Dcs.isUnit(group))
+        lu.assertIsTrue(HOUND.Utils.Dcs.isUnit(unit))
     end
 
     function TestHoundUtils:tearDown()
