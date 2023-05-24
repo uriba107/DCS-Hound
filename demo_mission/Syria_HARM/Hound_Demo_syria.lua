@@ -78,6 +78,15 @@ do
         return destroy
     end
 
+    function HOUND_MISSION.SA6.cleanup(dcsGroup)
+        for _,key in ipairs({"North","South","Joker"}) 
+        do
+            if HOUND_MISSION.SA6[key] == dcsGroup then
+                Group.destroy(dcsGroup)
+                HOUND_MISSION.SA6[key] = nil
+            end
+        end    end
+
     function HOUND_MISSION.SA6.activate(SAM)
         SAM:enableEmission(false)
         local control = SAM:getController()
@@ -300,7 +309,7 @@ do
                 if SAM and SAM:getSize() > 0 and
                     setContainsValue({HOUND_MISSION.SA6.North,HOUND_MISSION.SA6.South,HOUND_MISSION.SA6.Joker},SAM)
                     then
-                        timer.scheduleFunction(Group.destroy, SAM, timer.getTime() + math.random(30,60))
+                        timer.scheduleFunction(HOUND_MISSION.SA6.cleanup, SAM, timer.getTime() + math.random(30,60))
                 end
             end
             if event.id == HOUND.EVENTS.HOUND_ENABLED then

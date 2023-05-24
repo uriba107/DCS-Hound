@@ -124,7 +124,7 @@ do
     function HOUND.Datapoint.calcPolygons(self)
         if self.platformPrecision == 0 then return nil,nil end
         -- calc 2D az triangle
-        local maxSlant = HOUND.Utils.Geo.EarthLOS(self.platformPos.y)*1.2
+        local maxSlant = l_math.min(250000,HOUND.Utils.Geo.EarthLOS(self.platformPos.y)*1.1)
         local poly2D = {}
         table.insert(poly2D,self.platformPos)
         for _,theta in ipairs({((self.az - self.platformPrecision + PI_2) % PI_2),((self.az + self.platformPrecision + PI_2) % PI_2) }) do

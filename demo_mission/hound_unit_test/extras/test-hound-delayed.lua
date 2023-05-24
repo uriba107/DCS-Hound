@@ -33,7 +33,7 @@ do
         lu.assertStrContains(self.houndBlue:printDebugging(),"Platforms: 2 | sectors: 3 (Z:2 ,C:2 ,A: 2 ,N:1) | Contacts: 4 (A:1 ,PB:4)")
         local tor = Group.getByName("TOR_SAIPAN")
         tor:enableEmission(true)
-        timer.scheduleFunction(delayTest,"Platforms: 2 | sectors: 3 (Z:2 ,C:2 ,A: 2 ,N:1) | Contacts: 4 (A:2 ,PB:3)",timer.getTime()+30)
+        timer.scheduleFunction(delayTest,"Platforms: 2 | sectors: 3 (Z:2 ,C:2 ,A: 2 ,N:1) | Contacts: 4 (A:2 ,PB:3)",timer.getTime()+45)
 
     end
 end

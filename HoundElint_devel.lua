@@ -1,14 +1,19 @@
 env.info("Loading Hound Scripts dynamicly")
 
-
-local HoundWorkDir = "F:\\Dropbox\\uri\\Dropbox\\DCS\\Mission Building\\HoundElint\\"
+if not HoundWorkDir then
+    HoundWorkDir = "E:\\Dropbox\\uri\\Dropbox\\DCS\\Mission Building\\HoundElint\\"
+end
     assert(loadfile(HoundWorkDir..'test\\StopWatch.lua'))()
 
--- assert(loadfile(HoundWorkDir..'include\\DCS-SimpleTextToSpeech.lua'))()
+    assert(loadfile(HoundWorkDir..'include\\mist_4_5_113.lua'))()
+    assert(loadfile(HoundWorkDir..'include\\DCS-SimpleTextToSpeech.lua'))()
 
     assert(loadfile(HoundWorkDir..'src\\000 - HoundGlobals.lua'))()
     assert(loadfile(HoundWorkDir..'src\\010 - HoundLogger.lua'))()
     assert(loadfile(HoundWorkDir..'src\\100 - HoundDBs.lua'))()
+    assert(loadfile(HoundWorkDir..'src\\101 - HoundDBs_UnitDcs.lua'))()
+    assert(loadfile(HoundWorkDir..'src\\102 - HoundDBs_UnitMods.lua'))()
+    assert(loadfile(HoundWorkDir..'src\\103 - HoundDBs_func.lua'))()
     assert(loadfile(HoundWorkDir..'src\\110 - HoundConfig.lua'))()
     assert(loadfile(HoundWorkDir..'src\\200 - HoundUtils.lua'))()
     assert(loadfile(HoundWorkDir..'src\\210 - HoundEventHandler.lua'))()

@@ -498,7 +498,7 @@ do
     --- calculate additional position data
     -- @param pos basic position table to be filled with extended data
     -- @return pos input object, but with more data
-    function HOUND.Contact:calculatePosExtras(pos)
+    function HOUND.Contact:calculateExtrasPosData(pos)
         if type(pos.p) == "table" and HOUND.Utils.Geo.isDcsPoint(pos.p) then
             local bullsPos = coalition.getMainRefPoint(self._platformCoalition)
             pos.LL = {}
@@ -529,7 +529,7 @@ do
         if self.preBriefed then
             if type(self.unit) == "table" and self.unit.isExist and self.unit:isExist() then
                 local unitPos = self.unit:getPosition()
-                if l_mist.utils.get3DDist(unitPos.p,self.pos.p) < 0.25 then return end
+                if l_mist.utils.get2DDist(unitPos.p,self.pos.p) < 0.25 or (l_mist.utils.get2DDist(unitPos.p,self.pos.p) >= 0.25 and not self:isActive()) then return end
                 self.preBriefed = false
             else return end
         end
@@ -603,14 +603,13 @@ do
         if Length(estimatePositions) > 2 or (Length(estimatePositions) > 0 and staticPlatformsOnly) then
             self.pos.p = HOUND.Utils.Cluster.weightedMean(estimatePositions)
             self.uncertenty_data = self.calculateEllipse(estimatePositions,false,self.pos.p)
-
             if type(staticClipPolygon2D) == "table" and ( staticPlatformsOnly) then
                 self.uncertenty_data = self.calculateEllipse(staticClipPolygon2D,true,self.pos.p)
             end
 
             self.uncertenty_data.az = l_mist.utils.round(l_math.deg((self.uncertenty_data.theta+l_mist.getNorthCorrection(self.pos.p)+pi_2)%pi_2))
 
-            self:calculatePosExtras(self.pos)
+            self:calculateExtrasPosData(self.pos)
 
             if self.state == HOUND.EVENTS.RADAR_ASLEEP then
                 self.state = HOUND.EVENTS.SITE_ALIVE
@@ -628,7 +627,7 @@ do
 
         if newContact and self.pos.p ~= nil and self.isEWR == false then
             self.state = HOUND.EVENTS.RADAR_DETECTED
-            self:calculatePosExtras(self.pos)
+            self:calculateExtrasPosData(self.pos)
         end
 
         return self.state
@@ -699,6 +698,10 @@ do
         local alpha = HOUND.Utils.Mapping.linear(l_math.floor(HOUND.Utils.absTimeDelta(self.last_seen)),0,HOUND.CONTACT_TIMEOUT,0.2,0.05,true)
         local fillColor = {0,0,0,alpha}
         local lineColor = {0,0,0,0.30}
+        local lineType = 2
+        if (HOUND.Utils.absTimeDelta(self.last_seen) < 15) then
+            lineType = 1
+        end
         if self._platformCoalition == coalition.side.BLUE then
             fillColor[1] = 1
             lineColor[1] = 1
@@ -712,7 +715,8 @@ do
         local markArgs = {
             fillColor = fillColor,
             lineColor = lineColor,
-            coalition = self._platformCoalition
+            coalition = self._platformCoalition,
+            lineType = lineType
         }
         if numPoints == 1 then
             markArgs.pos = {
@@ -735,7 +739,7 @@ do
             pos = self.pos.p,
             coalition = self._platformCoalition
         }
-        if not self:isAccurate() then
+        if not self:isAccurate() and HOUND.USE_LEGACY_MARKERS then
             markerArgs.text = markerArgs.text .. " (" .. self.uncertenty_data.major .. "/" .. self.uncertenty_data.minor .. "@" .. self.uncertenty_data.az .. ")"
         end
         self._markpoints.p:update(markerArgs)
@@ -858,7 +862,7 @@ do
         self.preBriefed = true
 
         self.pos.p = unitPos.p
-        self:calculatePosExtras(self.pos)
+        self:calculateExtrasPosData(self.pos)
 
         self.uncertenty_data = {}
         self.uncertenty_data.major = 0.1

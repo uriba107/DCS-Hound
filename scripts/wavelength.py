@@ -49,6 +49,11 @@ platforms = {
             "EA-6B": {"category": 2, "antenna":{"size":9, "factor":1}},
             "C-47": {"category": 2, "antenna":{"size":12, "factor":1}},
             "RC135RJ": {"category": 2, "antenna":{"size":40, "factor": 1}},
+            "EF-18G": {"category": 2, "antenna":{"size":14, "factor": 1}},
+            "P-8A": {"category": 2, "antenna":{"size":35, "factor": 1}},
+            "TU-214R": {"category": 2, "antenna":{"size":40, "factor": 1}},
+            "P-3C": {"category": 2, "antenna":{"size":25, "factor": 1}},
+
         }
 
 def genBandTable():

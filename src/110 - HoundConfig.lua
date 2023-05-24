@@ -32,7 +32,7 @@ do
         }
         instance.preferences = {
             useMarkers = true,
-            markerType = HOUND.MARKER.DIAMOND,
+            markerType = HOUND.MARKER.CIRCLE,
             hardcore = false,
             detectDeadRadars = true,
             NatoBrevity = false,
@@ -43,6 +43,7 @@ do
         instance.coalitionId = nil
         instance.id = HoundInstanceId
         instance.callsigns = {}
+        instance.callsignOverride = {}
         instance.radioMenu = {
             root = nil,
             parent = nil
@@ -276,6 +277,27 @@ do
         instance.setOnScreenDebug = function(self,value)
             if type(value) == "boolean" then
                 self.onScreenDebug = value
+                return true
+            end
+            return false
+        end
+
+        --- Callsign override table getter
+        -- @within HOUND.Config.instance
+        -- @param self config instance
+        -- @return table of current callsign overrides
+        instance.getCallsignOverride = function(self)
+            return self.callsignOverride
+        end
+
+        --- Callsign override table setter
+        -- @within HOUND.Config.instance
+        -- @param self config instance
+        -- @param value table of callsign overrides
+        -- @return Bool true if change was made
+        instance.setCallsignOverride = function(self,value)
+            if type(value) == "table" then
+                self.callsignOverride = value
                 return true
             end
             return false

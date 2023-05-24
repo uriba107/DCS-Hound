@@ -937,6 +937,19 @@ do
         return self.settings:setPosErr(false)
     end
 
+    -- get current callsign override table
+    -- @return table current state
+    function HoundElint:getCallsignOverride()
+        return self.settings:getCallsignOverride()
+    end
+
+    -- set callsign override table
+    -- @param overrides Table of overrides
+    -- @return Bool True if setting has been updated
+    function HoundElint:setCallsignOverride(overrides)
+        return self.settings:setCallsignOverride(overrides)
+    end
+
     --- get current BDA setting state
     -- @return Bool current state
     function HoundElint:getBDA()

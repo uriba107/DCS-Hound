@@ -33,16 +33,27 @@ function PBviaUnit(HoundInstance,unitName)
 ```
 
 ## Send Hound events to DCS-gRPC
-Emit all hound events to DCS-gRPC
+Emit all radar related hound events to DCS-gRPC in a serilized form
 ```lua
     FakeEventHandler = {}
     function FakeEventHandler:onHoundEvent(HoundEvent)
-        if (GRPC != nil) then
+        if (GRPC ~= nil) then
+        if HoundEvent.id == if houndEvent.id == HOUND.EVENTS.RADAR_DETECTED or
+           HoundEvent.id == HOUND.EVENTS.RADAR_DESTROYED or
+           HoundEvent.id == HOUND.EVENTS.RADAR_UPDATED
+        then
+
+        local hound_serializeable = {
+            id = HoundEvent.id,
+            houndId = HoundEvent.houndId,
+            coalition = HoundEvent.coalition,
+            initiator = HoundEvent.initiator:export()
+        }
         local RPCevent = {
             type = "scriptEvent",
             publisher = "hound",
             name = "HoundEvent_"..HoundEvent.id,
-            details = HoundEvent
+            details = hound_serializeable
 
         GRPC.event({
             time = HoundEvent.time,

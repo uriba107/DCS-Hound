@@ -4,6 +4,7 @@
 do
     local l_mist = mist
     local l_math = math
+    local l_grpc = GRPC
     local pi_2 = 2*l_math.pi
 
 --- HOUND.Utils decleration
@@ -350,14 +351,27 @@ do
 
     --- Get group callsign from unit
     -- @param player mist.DB entry to get formation callsign for
+    -- @param[opt] override callsign substitution table
     -- @param[opt] flightMember if True. value returned will be the full callsign (i.e "Uzi 1 1" rather then the default "Uzi 1")
     -- @return Formation callsign string
-    function HOUND.Utils.getFormationCallsign(player,flightMember)
+    function HOUND.Utils.getFormationCallsign(player,override,flightMember)
         local callsign = ""
         if type(player) ~= "table" then return callsign end
-        callsign = string.gsub(player.callsign.name,"[%d%s]","") .. " " .. player.callsign[2]
+        if type(flightMember) == "table" and override == nil then
+            override,flightMember = flightMember,override
+        end
+        local formationCallsign = string.gsub(player.callsign.name,"[%d%s]","")
+
+        callsign =  formationCallsign .. " " .. player.callsign[2]
         if flightMember then
             callsign = callsign .. " " .. player.callsign[3]
+        end
+
+        if type(override) == "table" then
+            if setContains(override,formationCallsign) then
+                callsign = callsign:gsub(formationCallsign,override[formationCallsign])
+                return string.upper(callsign:match( "^%s*(.-)%s*$" ))
+            end
         end
 
         local DCS_Unit = Unit.getByName(player.unitName)
@@ -606,8 +620,9 @@ do
     HOUND.Utils.Marker.Type = {
         NONE = 0,
         POINT = 1,
-        CIRCLE = 2,
-        FREEFORM = 3
+        TEXT =  2,
+        CIRCLE = 3,
+        FREEFORM = 4
     }
 
     --- Get next Markpoint Id
@@ -672,6 +687,9 @@ do
         -- @param text new text for marker
         instance.setText = function(self,text)
             if type(text) == "string" and self.id > 0 then
+                if self.type == HOUND.Utils.Marker.Type.TEXT then
+                    text = "¤ « " .. text
+                end
                 trigger.action.setMarkupText(self.id,text)
             end
         end
@@ -703,6 +721,16 @@ do
         instance.setLineColor = function(self,color)
             if self.id > 0 and self.type ~= HOUND.Utils.Marker.Type.FREEFORM and type(color) == "table" then
                 trigger.action.setMarkupColor(self.id,color)
+            end
+        end
+
+        --- update markpoint line type
+        -- @within HOUND.Utils.Marker.instance
+        -- @param self Hound Marker instance
+        -- @param lineType new lineType for marker
+        instance.setLineType = function(self,lineType)
+            if self.id > 0 and type(lineType) == "number" and self.type ~= HOUND.Utils.Marker.Type.FREEFORM then
+                trigger.action.setMarkupTypeLine(self.id,lineType)
             end
         end
 
@@ -738,20 +766,27 @@ do
             local coalition = args.coalition
             local pos = args.pos
             local text = args.text
-            local lineColor = args.lineColor
-            local fillColor = args.fillColor
+            local lineColor = args.lineColor or {0,0,0,0.75}
+            local fillColor = args.fillColor or {0,0,0,0}
+            local lineType = args.lineType or 2
+            local fontSize = args.fontSize or 16
             -- if type(fillColor) ~= "table" or type(lineColor) ~= "table" or type(text) ~= "string" then return false end
             self.id = HOUND.Utils.Marker.getId()
 
             if HOUND.Utils.Geo.isDcsPoint(pos) then
-                self.type = HOUND.Utils.Marker.Type.POINT
-                trigger.action.markToCoalition(self.id, text, pos, coalition,true)
+                if HOUND.USE_LEGACY_MARKERS then
+                    self.type = HOUND.Utils.Marker.Type.POINT
+                    trigger.action.markToCoalition(self.id, text, pos, coalition,true)
+                    return true
+                end
+                self.type = HOUND.Utils.Marker.Type.TEXT
+                trigger.action.textToAll(coalition,self.id, pos,lineColor,fillColor,fontSize,true,"¤ « " .. text)
                 return true
             end
 
             if Length(pos) == 2 and HOUND.Utils.Geo.isDcsPoint(pos.p) and type(pos.r) == "number" then
                 self.type = HOUND.Utils.Marker.Type.CIRCLE
-                trigger.action.circleToAll(coalition,self.id, pos.p,pos.r,lineColor,fillColor,2,true)
+                trigger.action.circleToAll(coalition,self.id, pos.p,pos.r,lineColor,fillColor,lineType,true)
                 return true
             end
 
@@ -759,7 +794,7 @@ do
                 self.type = HOUND.Utils.Marker.Type.FREEFORM
                 trigger.action.markupToAll(6,coalition,self.id,
                     pos[1], pos[2], pos[3], pos[4],
-                    lineColor,fillColor,2,true)
+                    lineColor,fillColor,lineType,true)
 
             end
             if Length(pos) == 8 then
@@ -767,7 +802,7 @@ do
                 trigger.action.markupToAll(7,coalition,self.id,
                     pos[1], pos[2], pos[3], pos[4],
                     pos[5], pos[6], pos[7], pos[8],
-                    lineColor,fillColor,2,true)
+                    lineColor,fillColor,lineType,true)
             end
             if Length(pos) == 16 then
                 self.type = HOUND.Utils.Marker.Type.FREEFORM
@@ -776,7 +811,7 @@ do
                     pos[5], pos[6], pos[7], pos[8],
                     pos[9], pos[10], pos[11], pos[12],
                     pos[13], pos[14], pos[15], pos[16],
-                    lineColor,fillColor,2,true)
+                    lineColor,fillColor,lineType,true)
             end
         end
 
@@ -799,35 +834,39 @@ do
             if self.id < 0 then
                 return self:_new(args)
             end
-            -- if self.id > 0 and self.type == HOUND.Utils.Marker.Type.FREEFORM then
-            if self.id > 0 and self.type ~= HOUND.Utils.Marker.Type.NONE then
+            if self.id > 0 and (self.type == HOUND.Utils.Marker.Type.FREEFORM or self.type ==  HOUND.Utils.Marker.Type.POINT)then
+            -- if self.id > 0 and self.type ~= HOUND.Utils.Marker.Type.NONE then
                     return self:_replace(args)
             end
             -- Update still does not work in MP for DC 2.7 leaving this for the future :(
-            -- if self.id > 0 then
-            --     if args.pos then
-            --         local pos = args.pos
-            --         if HOUND.Utils.Geo.isDcsPoint(pos) then
-            --             self:setPos(pos)
-            --         end
-            --         if Length(pos) == 2 and type(pos.r) == "number" and HOUND.Utils.Geo.isDcsPoint(pos.p) then
-            --             self:setPos(pos.p)
-            --             self:setRadius(pos.r)
-            --         end
-            --         if type(pos) == "table" and Length(pos) > 2 and HOUND.Utils.Geo.isDcsPoint(pos[1]) then
-            --             return self:_replace(args)
-            --         end
-            --     end
-            --     if args.text and type(args.text) == "string" then
-            --         self:setText(args.text)
-            --     end
-            --     if type(args.fillColor) == "table" then
-            --         self:setFillColor(args.fillColor)
-            --     end
-            --     if type(args.lineColor) == "table" then
-            --         self:setLineColor(args.lineColor)
-            --     end
-            -- end
+            if self.id > 0 then
+                if args.pos then
+                    local pos = args.pos
+                    if HOUND.Utils.Geo.isDcsPoint(pos) then
+                        self:setPos(pos)
+                    end
+                    if Length(pos) == 2 and type(pos.r) == "number" and HOUND.Utils.Geo.isDcsPoint(pos.p) then
+                        self:setPos(pos.p)
+                        self:setRadius(pos.r)
+                    end
+                    if type(pos) == "table" and Length(pos) > 2 and HOUND.Utils.Geo.isDcsPoint(pos[1]) then
+                        return self:_replace(args)
+                    end
+                end
+                if args.text and type(args.text) == "string" then
+                    self:setText(args.text)
+                end
+                if type(args.fillColor) == "table" then
+                    self:setFillColor(args.fillColor)
+                end
+                if type(args.lineColor) == "table" then
+                    self:setLineColor(args.lineColor)
+                end
+
+                if type(args.lineType) == "number" then
+                    self:setLineType(args.lineType)
+                end
+            end
         end
         -- actual logic for the class
         if type(args) == "table" then
@@ -839,6 +878,44 @@ do
     --- TTS Functions
     -- @section TTS
 
+    --- Check if TTS agent is available (private)
+    -- @return Bool true if TTS is available
+    function HOUND.Utils.TTS.isAvailable()
+        if (l_grpc ~= nil and type(l_grpc.tts) == "function" and HOUND.PREFER_GRPC_TTS)  then
+            -- do checks for DCS-gRPC for now KISS
+            return true
+        end
+        if STTS ~= nil then
+            return true
+        end
+        return false
+    end
+
+    --- Return default Modulation based on frequency
+    -- @param freq The frequency in Mhz, Hz or table of frequencies
+    -- @return Modulation string "AM" or "FM"
+    function HOUND.Utils.TTS.getdefaultModulation(freq)
+        if not freq then return "AM" end
+        if tonumber(freq) ~= nil then
+            freq = tonumber(freq)
+            if freq < 90 or (freq > 1000000 and freq < (90 * 1000000)) then
+                return "FM"
+            else
+                return "AM"
+            end
+        end
+        if type(freq) == "string" then
+            freq = string.split(freq,",")
+        end
+        if type(freq) == "table" then
+            local retval = {}
+            for _,frequency in ipairs(freq) do
+                table.insert(retval,HOUND.Utils.TTS.getdefaultModulation(tonumber(frequency)))
+            end
+            return table.concat(retval,",")
+        end
+        return "AM"
+    end
     --- Transmit message using STTS (private)
     -- @param msg The message to transmit
     -- @param coalitionID Coalition to recive transmission
@@ -847,19 +924,126 @@ do
     -- @return STTS.TextToSpeech return value recived from STTS, currently estimated speechTime
 
     function HOUND.Utils.TTS.Transmit(msg,coalitionID,args,transmitterPos)
-
-        if STTS == nil then return end
+        if not HOUND.Utils.TTS.isAvailable() then return end
         if msg == nil then return end
         if coalitionID == nil then return end
 
         if args.freq == nil then return end
-        args.modulation = args.modulation or "AM"
         args.volume = args.volume or "1.0"
         args.name = args.name or "Hound"
         args.gender = args.gender or "female"
-        args.culture = args.culture or "en-US"
 
-        return STTS.TextToSpeech(msg,args.freq,args.modulation,args.volume,args.name,coalitionID,transmitterPos,args.speed,args.gender,args.culture,args.voice,args.googleTTS)
+        if (l_grpc ~= nil and type(l_grpc.tts) == "function" and HOUND.PREFER_GRPC_TTS) then
+            -- HOUND.Logger.debug("gRPC TTS message")
+            return HOUND.Utils.TTS.TransmitGRPC(msg,coalitionID,args,transmitterPos)
+        end
+
+        if STTS ~= nil then
+            args.modulation = args.modulation or HOUND.Utils.TTS.getdefaultModulation(args.freq)
+            args.culture = args.culture or "en-US"
+            return STTS.TextToSpeech(msg,args.freq,args.modulation,args.volume,args.name,coalitionID,transmitterPos,args.speed,args.gender,args.culture,args.voice,args.googleTTS)
+        end
+
+
+    end
+
+    --- Transmit message using gRPC.tts (private)
+    -- @param msg The message to transmit
+    -- @param coalitionID Coalition to recive transmission
+    -- @param args STTS settings in hash table (minimum required is {freq=})
+    -- @param[opt] transmitterPos DCS Position point for transmitter
+    -- @return currently estimated speechTime
+    function HOUND.Utils.TTS.TransmitGRPC(msg,coalitionID,args,transmitterPos)
+        local VOLUME = {"default","x-slow", "slow", "medium", "fast", "x-fast"}
+        local ssml_msg = msg
+
+        local grpc_ttsArgs = {
+            srsClientName = args.name,
+            coalition = HOUND.Utils.getCoalitionString(coalitionID):lower(),
+        }
+        if type(transmitterPos) == "table" then
+            grpc_ttsArgs.position = {}
+            grpc_ttsArgs.position.lat, grpc_ttsArgs.position.lon, grpc_ttsArgs.position.alt = coord.LOtoLL( transmitterPos )
+        end
+        if type(args.provider) == "table" then
+            grpc_ttsArgs.provider = args.provider
+        end
+
+        local readSpeed = 1.0
+        if args.speed ~= 0 then
+            if args.speed > 10 then
+                readSpeed = HOUND.Utils.Mapping.linear(args.speed,50,250,0.5,2.5,true)
+            else
+
+                if args.speed > 0 then
+                    -- 250% = 10
+                    readSpeed = HOUND.Utils.Mapping.linear(args.speed,0,10,1.0,2.5,true)
+                else
+                    -- 50% = -10
+                    readSpeed = HOUND.Utils.Mapping.linear(args.speed,-10,0,0.5,1.0,true)
+                end
+            end
+        end
+
+        local ssml_prosody = ""
+        if readSpeed ~= 1.0  then
+            ssml_prosody = ssml_prosody .. " rate='"..readSpeed.."'"
+        end
+
+        if args.volume ~= 1.0 then
+            local volume = ""
+
+            if setContainsValue(VOLUME,args.volume) then
+                volume = args.volume
+            end
+
+            if type(args.volume)=="number" then
+                if args.volume ~= 0 then
+                    volume = (args.volume*100)-100 .. "%"
+                    if args.volume > 1 then
+                        volume = "+" .. volume
+                    end
+                else
+                    volume = "slient"
+                end
+            end
+
+            if string.len(volume) > 0 then
+                ssml_prosody = ssml_prosody .. " volume='"..volume.."'"
+            end
+        end
+        if string.len(ssml_prosody) > 0 then
+            ssml_msg = table.concat({"<prosody",ssml_prosody,">",ssml_msg,"</prosody>"},"")
+        end
+
+        local ssml_voice = ""
+        if args.voice then
+            ssml_voice = ssml_voice.." name='"..args.voice.."'"
+        else
+            if args.gender then
+                ssml_voice = ssml_voice.." gender='"..args.gender.."'"
+            end
+            if args.culture then
+                ssml_voice = ssml_voice.." language='"..args.culture.."'"
+            end
+        end
+
+        if string.len(ssml_voice) > 0 then
+            ssml_msg = table.concat({"<voice",ssml_voice,">",ssml_msg,"</voice>"},"")
+        end
+
+        -- HOUND.Logger.debug(ssml_msg)
+
+        local freqs = string.split(args.freq,",")
+
+        for _,freq in ipairs(freqs) do
+            -- HOUND.Logger.debug("transmitting on "..freq)
+
+            freq = math.ceil(freq * 1000000)
+            l_grpc.tts(ssml_msg, freq, grpc_ttsArgs)
+            -- break -- for debugging. only transmit once
+        end
+        return HOUND.Utils.TTS.getReadTime(msg) / readSpeed -- read speed > 1.0 is fast
     end
 
     --- returns current DCS time in military time string for TTS
@@ -1604,6 +1788,7 @@ do
     function HOUND.Utils.Cluster.weightedMean(origPoints,initPos,threashold,maxIttr)
         if type(origPoints) ~= "table" or not HOUND.Utils.Geo.isDcsPoint(origPoints[1]) then return end
         local points = HOUND.Utils.Geo.setHeight(l_mist.utils.deepCopy(origPoints))
+        if Length(points) == 1 then return l_mist.utils.deepCopy(points[1]) end
 
         local current_mean = initPos
         if type(current_mean) == "boolean" and current_mean then
