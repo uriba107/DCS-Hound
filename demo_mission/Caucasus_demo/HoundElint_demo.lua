@@ -275,11 +275,11 @@ do
                 if k == "name" then
                     env.info("name: " .. v1)
                 end
-                if k == "static" then
-                    for _,obj in pairs(v1) do
-                        env.info(mist.utils.tableShow(obj))
-                    end
-                end
+                -- if k == "static" then
+                --     for _,obj in pairs(v1) do
+                --         env.info(mist.utils.tableShow(obj))
+                --     end
+                -- end
             end
         end
 

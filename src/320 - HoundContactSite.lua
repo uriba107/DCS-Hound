@@ -9,9 +9,10 @@ do
     HOUND.Contact.Site = {}
     HOUND.Contact.Site = HOUND.inheritsFrom(HOUND.Contact.Base)
 
-    local l_math = math
-    local l_mist = mist
-    local pi_2 = l_math.pi*2
+    -- local l_math = math
+    -- local l_mist = mist
+    -- local pi_2 = l_math.pi*2
+    local HoundUtils = HOUND.Utils
 
     --- create new HOUND.Contact.Site instance
     -- @param HoundContact emitter HoundContact
@@ -92,7 +93,7 @@ do
     --- Get last seen in seconds
     -- @return number in seconds since contact was last seen
     function HOUND.Contact.Site:getLastSeen()
-        return HOUND.Utils.absTimeDelta(self.last_seen)
+        return HoundUtils.absTimeDelta(self.last_seen)
     end
 
     --- get type assinged string
@@ -136,7 +137,7 @@ do
 
     --- Add emitter to site
     -- @param HoundEmitter @{HOUND.Contact.Emitter} radar to add
-    -- @return @{HOUND.EVENTS} 
+    -- @return @{HOUND.EVENTS}
     function HOUND.Contact.Site:addEmitter(HoundEmitter)
         self.state = HOUND.EVENTS.NO_CHANGE
         if HoundEmitter:getGroupName() == self:getGroupName() then
@@ -165,6 +166,16 @@ do
         return self.state
     end
 
+    function HOUND.Contact.Site:getPrimary()
+        if not self.primaryEmitter then
+            self:selectPrimaryEmitter()
+        end
+        return self.primaryEmitter
+    end
+
+    function HOUND.Contact.Site:getEmitters()
+        return self.emitters
+    end
     --- select primaty emitter for site
     -- @return (Bool) True if primary changed
     function HOUND.Contact.Site:selectPrimaryEmitter()
@@ -172,7 +183,7 @@ do
         for _,emitter in pairs(self.emitters) do
             table.insert(emitters_list,emitter)
         end
-        table.sort(emitters_list,HOUND.Utils.Sort.ContactsByPrio)
+        table.sort(emitters_list,HoundUtils.Sort.ContactsByPrio)
         if self.primaryEmitter ~= emitters_list[1] then
             self.primaryEmitter = emitters_list[1]
             self.state = HOUND.EVENTS.SITE_UPDATED
@@ -190,10 +201,23 @@ do
                 type = HOUND.setIntersection(type,emitter.typeAssigned)
             end
         end
-        if self.typeAssigned ~= type then
+        if self:getTypeAssigned() ~= table.concat(type," or ") then
             self.typeAssigned = type
+            if self.state ~= HOUND.EVENTS.SITE_NEW then
+                HOUND.EventHandler.publishEvent({
+                    id = HOUND.EVENTS.SITE_CLASSIFIED,
+                    initiator = self,
+                    houndId = self.settings:getId(),
+                    coalition = self.settings:getCoalition()
+                })
+            end
             self.state = HOUND.EVENTS.SITE_UPDATED
         end
     end
 
+    --- Update sector data
+    function HOUND.Contact.Site:updateSector()
+        self.threatSectors = self:getPrimary().threatSectors
+        self:updateDefaultSector()
+    end
 end

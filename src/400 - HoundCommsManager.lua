@@ -1,6 +1,7 @@
 --- Hound Comms Manager (Base class)
 -- @module HOUND.Comms.Manager
 do
+    local HoundUtils = HOUND.Utils
     --- HOUND.Comms.Manager decleration
     -- @type HOUND.Comms.Manager
     HOUND.Comms.Manager = {}
@@ -44,7 +45,7 @@ do
             enabletext = false
         }
 
-        if not HOUND.Utils.TTS.isAvailable() then
+        if not HoundUtils.TTS.isAvailable() then
             CommsManager.preferences.enabletts = false
         end
 
@@ -146,7 +147,7 @@ do
 
     --- enable text messages
     function HOUND.Comms.Manager:enableTTS()
-        if HOUND.Utils.TTS.isAvailable() then
+        if HoundUtils.TTS.isAvailable() then
             self:setSettings("enableTTS",true)
         end
     end
@@ -229,7 +230,7 @@ do
         local retval = {}
 
         for i,freq in ipairs(freqs) do
-            local str = string.format("%.3f",tonumber(freq)) .. " " .. (mod[i] or HOUND.Utils.TTS.getdefaultModulation(freq))
+            local str = string.format("%.3f",tonumber(freq)) .. " " .. (mod[i] or HoundUtils.TTS.getdefaultModulation(freq))
             table.insert(retval,str)
         end
         return retval
@@ -326,14 +327,14 @@ do
             return timer.getTime() + 10
         end
 
-        if gSelf.enabled and HOUND.Utils.TTS.isAvailable() and msgObj.tts ~= nil and gSelf.preferences.enabletts then
-            HOUND.Utils.TTS.Transmit(msgObj.tts,msgObj.coalition,gSelf.settings,transmitterPos)
-            readTime = HOUND.Utils.TTS.getReadTime(msgObj.tts,gSelf.settings.speed)
+        if gSelf.enabled and HoundUtils.TTS.isAvailable() and msgObj.tts ~= nil and gSelf.preferences.enabletts then
+            HoundUtils.TTS.Transmit(msgObj.tts,msgObj.coalition,gSelf.settings,transmitterPos)
+            readTime = HoundUtils.TTS.getReadTime(msgObj.tts,gSelf.settings.speed)
             -- env.info("TTS msg: " .. msgObj.tts)
         end
 
         if gSelf.enabled and gSelf.preferences.enabletext and msgObj.txt ~= nil then
-            readTime =  HOUND.Utils.TTS.getReadTime(msgObj.tts,gSelf.settings.speed) or HOUND.Utils.TTS.getReadTime(msgObj.txt,gSelf.settings.speed)
+            readTime =  HoundUtils.TTS.getReadTime(msgObj.tts,gSelf.settings.speed) or HoundUtils.TTS.getReadTime(msgObj.txt,gSelf.settings.speed)
             if msgObj.gid then
                 if type(msgObj.gid) == "table" then
                     for _,gid in ipairs(msgObj.gid) do

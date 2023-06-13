@@ -6,6 +6,7 @@ do
     local l_math = math
     local l_mist = mist
     local pi_2 = l_math.pi*2
+    local HoundUtils = HOUND.Utils
 
     --- HOUND.Contact decleration (Extends HOUND.Contact.Base)
     -- Contact class. containing related functions
@@ -37,13 +38,19 @@ do
         instance.typeName = DCSobject:getTypeName()
         instance.isEWR = false
         instance.typeAssigned = {"Unknown"}
-        instance.band = "C"
+        instance.band = {
+            [false] = HOUND.DB.Bands.C,
+            [true] = HOUND.DB.Bands.C,
+        }
         instance.isPrimary = false
-        instance.radarRoles = {HOUND.DB.RadarType.NONE}
+        instance.radarRoles = {HOUND.DB.RadarType.SEARCH}
 
         local contactUnitCategory = DCSobject:getDesc()["category"]
         if contactUnitCategory and contactUnitCategory == Unit.Category.SHIP then
-            instance.band = "E"
+            instance.band = {
+                [false] = HOUND.DB.Bands.E,
+                [true] = HOUND.DB.Bands.E,
+            }
             instance.typeAssigned = {"Naval"}
             instance.radarRoles = {HOUND.DB.RadarType.NAVAL}
         end
@@ -56,15 +63,16 @@ do
             instance.band = contactData.Band
             instance.isPrimary = contactData.isPrimary
             instance.radarRoles = contactData.Role
+            -- HOUND.Logger.debug(mist.utils.tableShow(instance.radarRole))
         end
 
         instance.uncertenty_data = nil
-        instance.maxWeaponsRange = HOUND.Utils.getSamMaxRange(DCSobject)
-        instance.detectionRange = HOUND.Utils.getRadarDetectionRange(DCSobject)
+        instance.maxWeaponsRange = HoundUtils.Dcs.getSamMaxRange(DCSobject)
+        instance.detectionRange = HoundUtils.Dcs.getRadarDetectionRange(DCSobject)
         instance._dataPoints = {}
         instance._markpoints = {
-            pos = HOUND.Utils.Marker.create(),
-            area = HOUND.Utils.Marker.create()
+            pos = HoundUtils.Marker.create(),
+            area = HoundUtils.Marker.create()
         }
         instance.detected_by = {}
         instance.state = HOUND.EVENTS.RADAR_NEW
@@ -123,16 +131,16 @@ do
         if self:isAccurate() then
             step = 1
         end
-        return HOUND.Utils.getRoundedElevationFt(self.pos.elev,step)
+        return HoundUtils.getRoundedElevationFt(self.pos.elev,step)
     end
 
     --- get unit health
     function HOUND.Contact.Emitter:getLife()
-        if self:isAlive() and (not HOUND.Utils.Dcs.isUnit(self.DCSobject)) then
+        if self:isAlive() and (not self.DCSobject or not self.DCSobject.getLife) then
             HOUND.Logger.error("something is wrong with the object for " .. self.DCSobjectName)
             self:updateDeadDCSObject()
         end
-        if HOUND.Utils.Dcs.isUnit(self.DCSobject) then
+        if self.DCSobject and type(self.DCSobject) == "table" and self.DCSobject:isExist() then
             return self.DCSobject:getLife()
         end
         return 0
@@ -216,10 +224,10 @@ do
                 return
             end
             local predicted = {}
-            if HOUND.Utils.Dcs.isPoint(self.pos.p) then
-                predicted.az,predicted.el = HOUND.Utils.Elint.getAzimuth( datapoint.platformPos , self.pos.p, 0.0 )
+            if HoundUtils.Dcs.isPoint(self.pos.p) then
+                predicted.az,predicted.el = HoundUtils.Elint.getAzimuth( datapoint.platformPos , self.pos.p, 0.0 )
                 if type(self.uncertenty_data) == "table" and self.uncertenty_data.minor and self.uncertenty_data.major and self.uncertenty_data.az then
-                    predicted.err = HOUND.Utils.Polygon.azMinMax(HOUND.Contact.Emitter.calculatePoly(self.uncertenty_data,8,self.pos.p),datapoint.platformPos)
+                    predicted.err = HoundUtils.Polygon.azMinMax(HOUND.Contact.Emitter.calculatePoly(self.uncertenty_data,8,self.pos.p),datapoint.platformPos)
                 end
             end
             self._dataPoints[datapoint.platformId][1]:update(datapoint.az,predicted.az,predicted.err)
@@ -288,7 +296,7 @@ do
     function HOUND.Contact.Emitter.getDeltaSubsetPercent(Table,referencePos,NthPercentile)
         local t = l_mist.utils.deepCopy(Table)
         local len_t = HOUND.Length(t)
-        t = HOUND.Utils.Geo.setHeight(t)
+        t = HoundUtils.Geo.setHeight(t)
         if not referencePos then
             referencePos = l_mist.getAvgPoint(t)
         end
@@ -329,7 +337,7 @@ do
         max.x = -99999
         max.y = -99999
 
-        Theta = HOUND.Utils.PointClusterTilt(RelativeToPos)
+        Theta = HoundUtils.PointClusterTilt(RelativeToPos)
 
         local sinTheta = l_math.sin(-Theta)
         local cosTheta = l_math.cos(-Theta)
@@ -361,58 +369,17 @@ do
         return uncertenty_data
     end
 
-    --- calculate ellipse errors
-    function HOUND.Contact.Emitter.calculateEllipseErrors(uncertenty_ellipse)
-        if not uncertenty_ellipse.theta then return end
-        local err = {}
-
-        local sinTheta = l_math.sin(uncertenty_ellipse.theta)
-        local cosTheta = l_math.cos(uncertenty_ellipse.theta)
-
-        err.x = l_math.max(l_math.abs(uncertenty_ellipse.minor/2*cosTheta), l_math.abs(-uncertenty_ellipse.major/2*sinTheta))
-        err.z = l_math.max(l_math.abs(uncertenty_ellipse.minor/2*sinTheta), l_math.abs(uncertenty_ellipse.major/2*cosTheta))
-
-        err.score = {}
-        err.score.x = HOUND.Contact.Estimator.accuracyScore(err.x)
-        err.score.z = HOUND.Contact.Estimator.accuracyScore(err.z)
-        return err
-    end
-
-    --- Finallize position estimation Contact position
-    -- @local
-    -- @param estimatedPositions List of all estimated positions derrived fomr datapoints and intersections
-    -- @param[opt] converge Boolean, if True function will try and converge on best position
-    -- @return estimated position (DCS point)
-    function HOUND.Contact.Emitter.calculatePos(estimatedPositions,converge)
-        if type(estimatedPositions) ~= "table" or HOUND.Length(estimatedPositions) == 0 then return end
-        local pos = l_mist.getAvgPoint(estimatedPositions)
-        if converge then
-            local subList = estimatedPositions
-            local subsetPos = pos
-            while (HOUND.Length(subList) * HOUND.ELLIPSE_PERCENTILE) > 5 do
-                local NewsubList = HOUND.Contact.Emitter.getDeltaSubsetPercent(subList,subsetPos,HOUND.ELLIPSE_PERCENTILE)
-                subsetPos = l_mist.getAvgPoint(NewsubList)
-
-                pos.x = pos.x + (subsetPos.x )
-                pos.z = pos.z + (subsetPos.z )
-                subList = NewsubList
-            end
-        end
-        pos.y = land.getHeight({x=pos.x,y=pos.z})
-        return pos
-    end
-
     --- calculate additional position data
     -- @param pos basic position table to be filled with extended data
     -- @return pos input object, but with more data
     function HOUND.Contact.Emitter:calculateExtrasPosData(pos)
-        if type(pos.p) == "table" and HOUND.Utils.Dcs.isPoint(pos.p) then
+        if HoundUtils.Dcs.isPoint(pos.p) then
             local bullsPos = coalition.getMainRefPoint(self._platformCoalition)
             pos.LL = {}
             pos.LL.lat, pos.LL.lon = coord.LOtoLL(pos.p)
             pos.elev = pos.p.y
             pos.grid  = coord.LLtoMGRS(pos.LL.lat, pos.LL.lon)
-            pos.be = HOUND.Utils.getBR(bullsPos,pos.p)
+            pos.be = HoundUtils.getBR(bullsPos,pos.p)
         end
         return pos
     end
@@ -424,9 +391,9 @@ do
     -- @param point2 @{HOUND.Contact.Datapoint} Instance no.2
     function HOUND.Contact.Emitter:processIntersection(targetTable,point1,point2)
         local err = (point1.platformPrecision + point2.platformPrecision)/2
-        if HOUND.Utils.angleDeltaRad(point1.az,point2.az) < err then return end
+        if HoundUtils.angleDeltaRad(point1.az,point2.az) < err then return end
         local intersection = self.triangulatePoints(point1,point2)
-        if not HOUND.Utils.Dcs.isPoint(intersection) then return end
+        if not HoundUtils.Dcs.isPoint(intersection) then return end
         table.insert(targetTable,intersection)
     end
 
@@ -434,17 +401,19 @@ do
     -- @return HoundEvent id (@{HOUND.EVENTS})
     function HOUND.Contact.Emitter:processData()
         if self:getPreBriefed() then
-            if HOUND.Utils.Dcs.isUnit(self.DCSobject) and self.DCSobject:isExist()
+            if type(self.DCSobject) == "table" and type(self.DCSobject.isExist) == "function" and self.DCSobject:isExist()
                 then
-                    local distance = l_mist.utils.get2DDist(self.DCSobject:getPosition().p,self.pos.p)
-                    if distance <= 0.25 or not self:isActive() then return end
+                    local unitPos = self.DCSobject:getPosition()
+                    if l_mist.utils.get2DDist(unitPos.p,self.pos.p) < 0.25 then return end
+                    -- HOUND.Logger.debug(self:getName().. " has moved")
+                    -- HOUND.Logger.debug("3D: ".. l_mist.utils.get3DDist(unitPos.p,self.pos.p) .. " | 2D: "..l_mist.utils.get2DDist(unitPos.p,self.pos.p))
                     if self:isActive() then
                         HOUND.Logger.debug(self:getName().. " is active and moved.. not longer PB")
                         self:setPreBriefed(false)
                     end
                 else
                     self.state = HOUND.EVENTS.NO_CHANGE
-                    return self.state
+                    return
             end
         end
 
@@ -466,13 +435,13 @@ do
                     if datapoint:isStatic() then
                         table.insert(staticDataPoints,datapoint)
                         if type(datapoint:get2dPoly()) == "table" then
-                            staticClipPolygon2D = HOUND.Utils.Polygon.clipPolygons(staticClipPolygon2D,datapoint:get2dPoly()) or datapoint:get2dPoly()
+                            staticClipPolygon2D = HoundUtils.Polygon.clipPolygons(staticClipPolygon2D,datapoint:get2dPoly()) or datapoint:get2dPoly()
                         end
                     else
                         staticPlatformsOnly = false
                         table.insert(mobileDataPoints,datapoint)
                     end
-                    if HOUND.Utils.Dcs.isPoint(datapoint:getPos()) then
+                    if HoundUtils.Dcs.isPoint(datapoint:getPos()) then
                         local point = l_mist.utils.deepCopy(datapoint:getPos())
                         table.insert(estimatePositions,point)
                     end
@@ -515,7 +484,7 @@ do
         end
 
         if HOUND.Length(estimatePositions) > 2 or (HOUND.Length(estimatePositions) > 0 and staticPlatformsOnly) then
-            self.pos.p = HOUND.Utils.Cluster.weightedMean(estimatePositions)
+            self.pos.p = HoundUtils.Cluster.weightedMean(estimatePositions,self.pos.p)
             self.uncertenty_data = self.calculateEllipse(estimatePositions,false,self.pos.p)
             if type(staticClipPolygon2D) == "table" and ( staticPlatformsOnly) then
                 self.uncertenty_data = self.calculateEllipse(staticClipPolygon2D,true,self.pos.p)
@@ -572,7 +541,7 @@ do
         if type(numPoints) ~= "number" then
             numPoints = 8
         end
-        if not HOUND.Utils.Dcs.isPoint(refPos) then
+        if not HoundUtils.Dcs.isPoint(refPos) then
             refPos = {x=0,y=0,z=0}
         end
         local angleStep = pi_2/numPoints
@@ -592,7 +561,7 @@ do
 
             table.insert(polygonPoints, point)
         end
-        HOUND.Utils.Geo.setHeight(polygonPoints)
+        HoundUtils.Geo.setHeight(polygonPoints)
 
         return polygonPoints
 
@@ -609,11 +578,11 @@ do
             end
 
         -- setup the marker
-        local alpha = HOUND.Utils.Mapping.linear(l_math.floor(HOUND.Utils.absTimeDelta(self.last_seen)),0,HOUND.CONTACT_TIMEOUT,0.2,0.05,true)
+        local alpha = HoundUtils.Mapping.linear(l_math.floor(HoundUtils.absTimeDelta(self.last_seen)),0,HOUND.CONTACT_TIMEOUT,0.2,0.05,true)
         local fillColor = {0,0,0,alpha}
         local lineColor = {0,0,0,0.30}
         local lineType = 2
-        if (HOUND.Utils.absTimeDelta(self.last_seen) < 15) then
+        if (HoundUtils.absTimeDelta(self.last_seen) < 15) then
             lineType = 1
         end
         if self._platformCoalition == coalition.side.BLUE then
@@ -708,7 +677,6 @@ do
         self.uncertenty_data.r  = 0.1
 
         table.insert(self.detected_by,"External")
-        self:removeMarkers()
         self:updateMarker(HOUND.MARKER.NONE)
         return self.state
     end
@@ -724,7 +692,7 @@ do
             contact.pos = self.pos.p
             contact.LL = self.pos.LL
 
-            contact.accuracy = HOUND.Utils.TTS.getVerbalConfidenceLevel( self.uncertenty_data.r )
+            contact.accuracy = HoundUtils.TTS.getVerbalConfidenceLevel( self.uncertenty_data.r )
             contact.uncertenty = {
                 major = self.uncertenty_data.major,
                 minor = self.uncertenty_data.minor,

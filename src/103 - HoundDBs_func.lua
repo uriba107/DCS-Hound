@@ -15,7 +15,7 @@ do
     function HOUND.DB.getRadarData(typeName)
         if not HOUND.DB.Radars[typeName] then return end
         local data = l_mist.utils.deepCopy(HOUND.DB.Radars[typeName])
-        data.isEWR = HOUND.setContainsValue(data.Role,"EWR")
+        data.isEWR = HOUND.setContainsValue(data.Role,HOUND.DB.RadarType.EWR)
         return data
     end
 
@@ -97,13 +97,13 @@ do
     --- Get defraction
     -- for band and effective antenna size return angular resolution
     -- @local
-    -- @param band Radar transmission band (A-L) as defined in HOUND.DB
+    -- @param wavelength Radar transmission band (A-L) as defined in HOUND.DB
     -- @param antenna_size Effective antenna size for platform as defined in HOUND.DB
     -- @return angular resolution in Radians for Band Antenna combo
 
-    function HOUND.DB.getDefraction(band,antenna_size)
-        if band == nil or antenna_size == nil or antenna_size == 0 then return l_math.rad(30) end
-        return HOUND.DB.Bands[band]/antenna_size
+    function HOUND.DB.getDefraction(wavelength,antenna_size)
+        if wavelength == nil or antenna_size == nil or antenna_size == 0 then return l_math.rad(30) end
+        return wavelength/antenna_size
     end
 
     --- get Effective Aperture size for unit
@@ -127,12 +127,12 @@ do
     -- @param DCS_Unit Radar unit
     -- @return Char radar band
     function HOUND.DB.getEmitterBand(DCS_Unit)
-        if type(DCS_Unit) ~= "table" or not DCS_Unit.getTypeName then return 'C' end
+        if type(DCS_Unit) ~= "table" or not DCS_Unit.getTypeName then return HOUND.DB.Bands.C end
         local typeName = DCS_Unit:getTypeName()
         if HOUND.setContains(HOUND.DB.Radars,typeName) then
-            return HOUND.DB.Radars[typeName].Band
+            return HOUND.DB.Radars[typeName].Band[false]
         end
-        return 'C'
+        return HOUND.DB.Bands.C
     end
 
     --- Elint Function - Get sensor precision

@@ -133,14 +133,6 @@
 	<td class="summary">returns a random angle</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.getSamMaxRange">HOUND.Utils.getSamMaxRange (DCS_Unit)</a></td>
-	<td class="summary">return maximum weapon range in the group of DCS Unit</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.getRadarDetectionRange">HOUND.Utils.getRadarDetectionRange (DCS_Unit)</a></td>
-	<td class="summary">return Radar detection Range for provided unit</td>
-	</tr>
-	<tr>
 	<td class="name" nowrap><a href="#HOUND.Utils.getRoundedElevationFt">HOUND.Utils.getRoundedElevationFt (elev[, resolution])</a></td>
 	<td class="summary">return ground elevation rouded to 50 feet</td>
 	</tr>
@@ -226,6 +218,14 @@
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Utils.Dcs.isStaticObject">HOUND.Utils.Dcs.isStaticObject (obj)</a></td>
 	<td class="summary">check if object is DCS static object</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Dcs.getSamMaxRange">HOUND.Utils.Dcs.getSamMaxRange (DCS_Unit)</a></td>
+	<td class="summary">return maximum weapon range in the group of DCS Unit</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Dcs.getRadarDetectionRange">HOUND.Utils.Dcs.getRadarDetectionRange (DCS_Unit)</a></td>
+	<td class="summary">return Radar detection Range for provided unit</td>
 	</tr>
 </table>
 <h2><a href="#Geo_Function">Geo Function </a></h2>
@@ -330,8 +330,12 @@
 	<td class="summary">Transmit message using STTS (private)</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.TTS.TransmitSTTS">HOUND.Utils.TTS.TransmitSTTS (msg, coalitionID, args[, transmitterPos])</a></td>
+	<td class="summary">Transmit message using STTS</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#HOUND.Utils.TTS.TransmitGRPC">HOUND.Utils.TTS.TransmitGRPC (msg, coalitionID, args[, transmitterPos])</a></td>
-	<td class="summary">Transmit message using gRPC.tts (private)</td>
+	<td class="summary">Transmit message using gRPC.tts</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Utils.TTS.getTtsTime">HOUND.Utils.TTS.getTtsTime ([timestamp])</a></td>
@@ -482,20 +486,6 @@
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Utils.Cluster.weightedMean">HOUND.Utils.Cluster.weightedMean (origPoints[, initPos[, threashold[, maxIttr]]])</a></td>
 	<td class="summary">find the weighted mean of a points cluster (meanShift)</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.Cluster.kmeans">HOUND.Utils.Cluster.kmeans (data, nclusters, init)</a></td>
-	<td class="summary">K-means++ algorithm
- <a href=https://rosettacode.org/wiki/K-means%2B%2B_clustering#Lua>Source of implementation</a></td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#contacts">contacts</a></td>
-	<td class="summary">convert contacts to centroieds for meanShift</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#contacts">contacts</a></td>
-	<td class="summary">Mean-shift algorithem to group radars to sites
- http://www.chioka.in/meanshift-algorithm-for-the-rest-of-us-python/</td>
 	</tr>
 </table>
 <h2><a href="#Sort_Functions">Sort Functions </a></h2>
@@ -826,56 +816,6 @@
     <ol>
 
         random angle in radians between 0 and 2*pi
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Utils.getSamMaxRange"></a>
-    <strong>HOUND.Utils.getSamMaxRange (DCS_Unit)</strong>
-    </dt>
-    <dd>
-    return maximum weapon range in the group of DCS Unit
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">DCS_Unit</span>
-         DCS unit - in Hound context unit with emitting radar
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        maximum weapon range in meters of the DCS Group the emitter is part of
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Utils.getRadarDetectionRange"></a>
-    <strong>HOUND.Utils.getRadarDetectionRange (DCS_Unit)</strong>
-    </dt>
-    <dd>
-    return Radar detection Range for provided unit
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">DCS_Unit</span>
-         DCS Unit with radars sensor
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        Unit radar detection range agains airborne targers in meters
     </ol>
 
 
@@ -1459,6 +1399,56 @@
 
 
 </dd>
+    <dt>
+    <a name = "HOUND.Utils.Dcs.getSamMaxRange"></a>
+    <strong>HOUND.Utils.Dcs.getSamMaxRange (DCS_Unit)</strong>
+    </dt>
+    <dd>
+    return maximum weapon range in the group of DCS Unit
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">DCS_Unit</span>
+         DCS unit - in Hound context unit with emitting radar
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        maximum weapon range in meters of the DCS Group the emitter is part of
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.Dcs.getRadarDetectionRange"></a>
+    <strong>HOUND.Utils.Dcs.getRadarDetectionRange (DCS_Unit)</strong>
+    </dt>
+    <dd>
+    return Radar detection Range for provided unit
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">DCS_Unit</span>
+         DCS Unit with radars sensor
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Unit radar detection range agains airborne targers in meters
+    </ol>
+
+
+
+
+</dd>
 </dl>
     <h2 class="section-header "><a name="Geo_Function"></a>Geo Function </h2>
 
@@ -2017,11 +2007,46 @@
 
 </dd>
     <dt>
+    <a name = "HOUND.Utils.TTS.TransmitSTTS"></a>
+    <strong>HOUND.Utils.TTS.TransmitSTTS (msg, coalitionID, args[, transmitterPos])</strong>
+    </dt>
+    <dd>
+    Transmit message using STTS
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">msg</span>
+         The message to transmit
+        </li>
+        <li><span class="parameter">coalitionID</span>
+         Coalition to recive transmission
+        </li>
+        <li><span class="parameter">args</span>
+         STTS settings in hash table (minimum required is {freq=})
+        </li>
+        <li><span class="parameter">transmitterPos</span>
+         DCS Position point for transmitter
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        currently estimated speechTime
+    </ol>
+
+
+
+
+</dd>
+    <dt>
     <a name = "HOUND.Utils.TTS.TransmitGRPC"></a>
     <strong>HOUND.Utils.TTS.TransmitGRPC (msg, coalitionID, args[, transmitterPos])</strong>
     </dt>
     <dd>
-    Transmit message using gRPC.tts (private)
+    Transmit message using gRPC.tts
 
 
     <h3>Parameters:</h3>
@@ -2913,85 +2938,6 @@
 
 
 </dd>
-    <dt>
-    <a name = "HOUND.Utils.Cluster.kmeans"></a>
-    <strong>HOUND.Utils.Cluster.kmeans (data, nclusters, init)</strong>
-    </dt>
-    <dd>
-    K-means++ algorithm
- <a href=https://rosettacode.org/wiki/K-means%2B%2B_clustering#Lua>Source of implementation</a>
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">data</span>
-         Datapoints
-        </li>
-        <li><span class="parameter">nclusters</span>
-         Number of clusters to create
-        </li>
-        <li><span class="parameter">init</span>
-         Initilization method. Valid values are ["kmeans++","random"]
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-        <li>
-        centers (table)</li>
-        <li>
-        cluster (table)</li>
-        <li>
-        J loss value</li>
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "contacts"></a>
-    <strong>contacts</strong>
-    </dt>
-    <dd>
-    convert contacts to centroieds for meanShift
-
-
-    <ul>
-        <li><span class="parameter">contacts</span>
-         list of HOUND.Contact instances to evaluate
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "contacts"></a>
-    <strong>contacts</strong>
-    </dt>
-    <dd>
-    Mean-shift algorithem to group radars to sites
- http://www.chioka.in/meanshift-algorithm-for-the-rest-of-us-python/
-
-
-    <ul>
-        <li><span class="parameter">contacts</span>
-         list of HOUND.Contact instances to cluster
-        </li>
-        <li><span class="parameter">iterations</span>
-         maximum nuber of itteratoins to run
-         (<em>optional</em>)
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
 </dl>
     <h2 class="section-header "><a name="Sort_Functions"></a>Sort Functions </h2>
 
@@ -3245,7 +3191,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2023-05-23 14:08:42 </i>
+<i style="float:right;">Last updated 2023-06-10 21:22:51 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

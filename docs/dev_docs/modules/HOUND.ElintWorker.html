@@ -37,6 +37,7 @@
 <li><a href="#Contact_Management">Contact Management </a></li>
 <li><a href="#Site_functions">Site functions </a></li>
 <li><a href="#Worker_functions">Worker functions </a></li>
+<li><a href="#Query_functions">Query functions </a></li>
 </ul>
 
 
@@ -175,19 +176,33 @@
 <h2><a href="#Worker_functions">Worker functions </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.ElintWorker:listInSector">HOUND.ElintWorker:listInSector ([sectorName])</a></td>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:UpdateMarkers">HOUND.ElintWorker:UpdateMarkers ()</a></td>
+	<td class="summary">update markers to all contacts
+ update all emitters</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:Sniff">HOUND.ElintWorker:Sniff ()</a></td>
+	<td class="summary">Perform a sample of all emitting radars against all platforms
+ generates and stores datapoints as required</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:Process">HOUND.ElintWorker:Process ()</a></td>
+	<td class="summary">Process function
+ process all the information stored in the system to update all radar positions</td>
+	</tr>
+</table>
+<h2><a href="#Query_functions">Query functions </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:listContactsInSector">HOUND.ElintWorker:listContactsInSector ([sectorName])</a></td>
 	<td class="summary">list all contact is a sector</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.ElintWorker:UpdateMarkers">HOUND.ElintWorker:UpdateMarkers ()</a></td>
-	<td class="summary">update markers to all contacts</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.ElintWorker:listAll">HOUND.ElintWorker:listAll ([sectorName])</a></td>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:listAllContacts">HOUND.ElintWorker:listAllContacts ([sectorName])</a></td>
 	<td class="summary">Return all contacts managed by this instance regardless of sector</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.ElintWorker:listAllbyRange">HOUND.ElintWorker:listAllbyRange (sectorName)</a></td>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:listAllContactsByRange">HOUND.ElintWorker:listAllContactsByRange (sectorName)</a></td>
 	<td class="summary">return all contacts managed by this instance sorted by range</td>
 	</tr>
 	<tr>
@@ -203,14 +218,24 @@
 	<td class="summary">return a sorted list of contacts</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.ElintWorker:Sniff">HOUND.ElintWorker:Sniff ()</a></td>
-	<td class="summary">Perform a sample of all emitting radars against all platforms
- generates and stores datapoints as required</td>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:countSites">HOUND.ElintWorker:countSites ([sectorName])</a></td>
+	<td class="summary">return number of contacts tracked</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.ElintWorker:Process">HOUND.ElintWorker:Process ()</a></td>
-	<td class="summary">Process function
- process all the information stored in the system to update all radar positions</td>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:getSites">HOUND.ElintWorker:getSites ([sectorName])</a></td>
+	<td class="summary">return list of contacts</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:sortSites">HOUND.ElintWorker:sortSites (sortFunc[, sectorName])</a></td>
+	<td class="summary">return a sorted list of contacts</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:listAllSites">HOUND.ElintWorker:listAllSites ([sectorName])</a></td>
+	<td class="summary">Return all contacts managed by this instance regardless of sector</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:listAllSitesByRange">HOUND.ElintWorker:listAllSitesByRange (sectorName)</a></td>
+	<td class="summary">return all contacts managed by this instance sorted by range</td>
 	</tr>
 </table>
 
@@ -663,7 +688,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">emitter</span>
-         DCS Unit/name of radar unit
+          <a href="../modules/HOUND.Contact.Emitter.html#">HOUND.Contact.Emitter</a> or DCS group name or DCS group
         </li>
         <li><span class="parameter">getOnly</span>
          if true function will not create new unit if not exist
@@ -674,7 +699,7 @@
     <h3>Returns:</h3>
     <ol>
 
-        <a href="../modules/HOUND.Contact.Emitter.html#">HOUND.Contact.Emitter</a> instance of that Unit
+        <a href="../modules/HOUND.Contact.Site.html#">HOUND.Contact.Site</a> instance of input group
     </ol>
 
 
@@ -712,8 +737,57 @@
 
     <dl class="function">
     <dt>
-    <a name = "HOUND.ElintWorker:listInSector"></a>
-    <strong>HOUND.ElintWorker:listInSector ([sectorName])</strong>
+    <a name = "HOUND.ElintWorker:UpdateMarkers"></a>
+    <strong>HOUND.ElintWorker:UpdateMarkers ()</strong>
+    </dt>
+    <dd>
+    update markers to all contacts
+ update all emitters
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.ElintWorker:Sniff"></a>
+    <strong>HOUND.ElintWorker:Sniff ()</strong>
+    </dt>
+    <dd>
+    Perform a sample of all emitting radars against all platforms
+ generates and stores datapoints as required
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.ElintWorker:Process"></a>
+    <strong>HOUND.ElintWorker:Process ()</strong>
+    </dt>
+    <dd>
+    Process function
+ process all the information stored in the system to update all radar positions
+
+
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Query_functions"></a>Query functions </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HOUND.ElintWorker:listContactsInSector"></a>
+    <strong>HOUND.ElintWorker:listContactsInSector ([sectorName])</strong>
     </dt>
     <dd>
     list all contact is a sector
@@ -733,22 +807,8 @@
 
 </dd>
     <dt>
-    <a name = "HOUND.ElintWorker:UpdateMarkers"></a>
-    <strong>HOUND.ElintWorker:UpdateMarkers ()</strong>
-    </dt>
-    <dd>
-    update markers to all contacts
-
-
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.ElintWorker:listAll"></a>
-    <strong>HOUND.ElintWorker:listAll ([sectorName])</strong>
+    <a name = "HOUND.ElintWorker:listAllContacts"></a>
+    <strong>HOUND.ElintWorker:listAllContacts ([sectorName])</strong>
     </dt>
     <dd>
     Return all contacts managed by this instance regardless of sector
@@ -768,8 +828,8 @@
 
 </dd>
     <dt>
-    <a name = "HOUND.ElintWorker:listAllbyRange"></a>
-    <strong>HOUND.ElintWorker:listAllbyRange (sectorName)</strong>
+    <a name = "HOUND.ElintWorker:listAllContactsByRange"></a>
+    <strong>HOUND.ElintWorker:listAllContactsByRange (sectorName)</strong>
     </dt>
     <dd>
     return all contacts managed by this instance sorted by range
@@ -864,14 +924,20 @@
 
 </dd>
     <dt>
-    <a name = "HOUND.ElintWorker:Sniff"></a>
-    <strong>HOUND.ElintWorker:Sniff ()</strong>
+    <a name = "HOUND.ElintWorker:countSites"></a>
+    <strong>HOUND.ElintWorker:countSites ([sectorName])</strong>
     </dt>
     <dd>
-    Perform a sample of all emitting radars against all platforms
- generates and stores datapoints as required
+    return number of contacts tracked
 
 
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">sectorName</span>
+         String name or sector to filter by
+         (<em>optional</em>)
+        </li>
+    </ul>
 
 
 
@@ -879,14 +945,95 @@
 
 </dd>
     <dt>
-    <a name = "HOUND.ElintWorker:Process"></a>
-    <strong>HOUND.ElintWorker:Process ()</strong>
+    <a name = "HOUND.ElintWorker:getSites"></a>
+    <strong>HOUND.ElintWorker:getSites ([sectorName])</strong>
     </dt>
     <dd>
-    Process function
- process all the information stored in the system to update all radar positions
+    return list of contacts
 
 
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">sectorName</span>
+         String. sector to filter by
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        list of <a href="../modules/HOUND.Contact.Site.html#">HOUND.Contact.Site</a>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.ElintWorker:sortSites"></a>
+    <strong>HOUND.ElintWorker:sortSites (sortFunc[, sectorName])</strong>
+    </dt>
+    <dd>
+    return a sorted list of contacts
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">sortFunc</span>
+         Function to sort by
+        </li>
+        <li><span class="parameter">sectorName</span>
+         String. sector to filter by
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        sorted list of <a href="../modules/HOUND.Contact.Emitter.html#">HOUND.Contact.Emitter</a>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.ElintWorker:listAllSites"></a>
+    <strong>HOUND.ElintWorker:listAllSites ([sectorName])</strong>
+    </dt>
+    <dd>
+    Return all contacts managed by this instance regardless of sector
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">sectorName</span>
+         String name or sector to filter by
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.ElintWorker:listAllSitesByRange"></a>
+    <strong>HOUND.ElintWorker:listAllSitesByRange (sectorName)</strong>
+    </dt>
+    <dd>
+    return all contacts managed by this instance sorted by range
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">sectorName</span>
+
+        </li>
+    </ul>
 
 
 
@@ -900,7 +1047,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2023-05-23 14:08:42 </i>
+<i style="float:right;">Last updated 2023-06-10 21:22:51 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

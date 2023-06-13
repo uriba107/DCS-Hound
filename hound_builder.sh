@@ -14,6 +14,7 @@ fi
 
 LDOC=$(which ldoc) 
 LUACHECK=$(which luacheck)
+MD_TOC="${HOME}/gh-md-toc"
 # initial function setup
 LINT_SRC=0
 BUILD_DOCS=0
@@ -43,6 +44,18 @@ function check_dependecies {
         ROCKS="luacheck ${ROCKS}"
     fi
 
+    if [ ! -f ${MD_TOC} ]; then
+      MD_TOC_VERSION=1.2.1
+      MD_TOC_URL="https://github.com/ekalinin/github-markdown-toc.go/releases/download/v${MD_TOC_VERSION}/gh-md-toc_${MD_TOC_VERSION}_linux_amd64.tar.gz"
+      if [ $isMacOs -eq 0 ]; then
+      MD_TOC_URL=$(echo ${MD_TOC_URL} | sed 's/linux/darwin//')
+      fi
+      curl -L ${MD_TOC_URL} -o ${MD_TOC}.tar.gz
+      tar -xzvf ${MD_TOC}.tar.gz -C ${HOME} gh-md-toc
+      rm  ${MD_TOC}.tar.gz
+      #chmod a+x ${MD_TOC}
+    fi
+
     if [ ! -z "${APT}" ]; then
       echo "missing Dependecies to install please run"
       echo "using apt"
@@ -70,6 +83,15 @@ function build_docs {
     highlight "Building Dev Docs$"
     $LDOC -p "Hound<br> ELINT for DCS" -a -d docs/dev_docs --merge --style !fixed src
 }
+function build_toc {
+    local README=${1:-README.MD}
+    highlight "Buding TOC for ${README}"
+
+   TOC_CONTENT=$(/home/uri/gh-md-toc --hide-footer ./docs/src/${README}) \
+     envsubst < ./docs/src/${README} > ./${README}
+
+
+} 
 
 function lint_compiled {
     highlight "lint compiled Hound"
@@ -83,7 +105,7 @@ function compile {
     # echo 'env.info("[Hound] - start loading (".. HOUND.VERSION..")")' >> ${TARGET_FILE}
 
     mkdir -p $TARGET_PATH
-    for FILE in src/*; do
+    for FILE in src/*.lua; do
         cat "${FILE}" >> ${TARGET_FILE}
     done
 
@@ -196,6 +218,7 @@ if [ $LINT_SRC -eq 1 ]; then
 fi
 if [ $BUILD_DOCS -eq 1 ]; then
     build_docs
+    build_toc
 fi
 if [ $COMPILE -eq 1 ]; then
     compile

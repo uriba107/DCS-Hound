@@ -11,6 +11,7 @@ do
     local l_math = math
     local l_mist = mist
     local pi_2 = l_math.pi*2
+    local HoundUtils = HOUND.Utils
 
     --- create new HOUND.Contact instance
     -- @param DCSObject emitter DCS Unit
@@ -82,7 +83,7 @@ do
     --- Get last seen in seconds
     -- @return number in seconds since contact was last seen
     function HOUND.Contact.Base:getLastSeen()
-        return HOUND.Utils.absTimeDelta(self.last_seen)
+        return HoundUtils.absTimeDelta(self.last_seen)
     end
 
     --- get DCS Object instane assoiciated with contact
@@ -93,7 +94,7 @@ do
     --- check if contact has estimated position
     -- @return (Bool) True if contact has estimated position
     function HOUND.Contact.Base:hasPos()
-        return HOUND.Utils.Dcs.isPoint(self.pos.p)
+        return HoundUtils.Dcs.isPoint(self.pos.p)
     end
 
     --- get max weapons range

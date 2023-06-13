@@ -6,7 +6,7 @@ do
         self.contact = HOUND.Contact.Emitter:New(Unit.getByName("TOR_SAIPAN-1"),coalition.side.BLUE)
         lu.assertNotNil(self.contact)
         lu.assertIsTable(self.contact)
-
+        lu.assertIsTrue(getmetatable(self.contact)==HOUND.Contact.Emitter)
     end
 
     function TestHoundContact:tearDown()
@@ -20,12 +20,13 @@ do
         local platform1 = Unit.getByName("ELINT_BLUE_C17_EAST")
         local platform2 = Unit.getByName("ELINT_BLUE_C17_WEST")
 
-        lu.assertIsTable(emitter)
-        lu.assertIsTable(platform1)
-        lu.assertIsTable(platform1)
+        lu.assertIsTrue(HOUND.Utils.Dcs.isUnit(emitter))
+        lu.assertIsTrue(HOUND.Utils.Dcs.isUnit(platform1))
+        lu.assertIsTrue(HOUND.Utils.Dcs.isUnit(platform1))
 
         lu.assertNotNil(self.contact)
         lu.assertIsTable(self.contact)
+        lu.assertIsTrue(getmetatable(self.contact)==HOUND.Contact.Emitter)
         lu.assertEquals(self.contact.state,HOUND.EVENTS.RADAR_NEW)
 
         local tgtPos = emitter:getPosition().p

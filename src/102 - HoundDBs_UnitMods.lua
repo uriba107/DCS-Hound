@@ -22,140 +22,200 @@ do
             ['Name'] = "Big Bird",
             ['Assigned'] = {"SA-10"},
             ['Role'] = {HOUND.DB.RadarType.SEARCH},
-            ['Band'] = 'C',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.C,
+                [false] = HOUND.DB.Bands.C
+            },
             ['Primary'] = false
         }
     HOUND.DB.Radars['S-300PS SA-10B 40B6MD MAST sr'] = {
             ['Name'] = "Clam Shell",
             ['Assigned'] = {"SA-10"},
             ['Role'] = {HOUND.DB.RadarType.SEARCH},
-            ['Band'] = 'I',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.I,
+                [false] = HOUND.DB.Bands.I
+            },
             ['Primary'] = false
         }
     HOUND.DB.Radars['S-300PS 40B6M MAST tr'] = {
             ['Name'] = "Flap Lid",
             ['Assigned'] = {"SA-10"},
             ['Role'] = {HOUND.DB.RadarType.TRACK},
-            ['Band'] = 'J',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.J,
+                [false] = HOUND.DB.Bands.J
+            },
             ['Primary'] = true
         }
     HOUND.DB.Radars['S-300PS 30H6 TRAILER tr'] = {
             ['Name'] = "Flap Lid",
             ['Assigned'] = {"SA-10"},
             ['Role'] = {HOUND.DB.RadarType.TRACK},
-            ['Band'] = 'J',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.J,
+                [false] = HOUND.DB.Bands.J
+            },
             ['Primary'] = true
         }
     HOUND.DB.Radars['S-300PS 30N6 TRAILER tr'] = {
             ['Name'] = "Flap Lid",
             ['Assigned'] = {"SA-10"},
             ['Role'] = {HOUND.DB.RadarType.TRACK},
-            ['Band'] = 'J',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.J,
+                [false] = HOUND.DB.Bands.J
+            },
             ['Primary'] = true
         }
     HOUND.DB.Radars['S-300PMU1 40B6MD sr'] = {
             ['Name'] = "Clam Shell",
             ['Assigned'] = {"SA-10"},
             ['Role'] = {HOUND.DB.RadarType.SEARCH},
-            ['Band'] = 'I',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.I,
+                [false] = HOUND.DB.Bands.I
+            },
             ['Primary'] = false
         }
     HOUND.DB.Radars['S-300PMU1 64N6E sr'] = {
             ['Name'] = "Big Bird",
             ['Assigned'] = {"SA-10"},
             ['Role'] = {HOUND.DB.RadarType.SEARCH},
-            ['Band'] = 'C',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.C,
+                [false] = HOUND.DB.Bands.C
+            },
             ['Primary'] = false
         }
     HOUND.DB.Radars['S-300PMU1 30N6E tr'] = {
             ['Name'] = "Flap Lid",
             ['Assigned'] = {"SA-10"},
             ['Role'] = {HOUND.DB.RadarType.TRACK},
-            ['Band'] = 'J',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.J,
+                [false] = HOUND.DB.Bands.J
+            },
             ['Primary'] = true
         }
     HOUND.DB.Radars['S-300PMU1 40B6M tr'] = {
             ['Name'] = "Grave Stone",
             ['Assigned'] = {"SA-10"},
             ['Role'] = {HOUND.DB.RadarType.TRACK},
-            ['Band'] = 'J',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.J,
+                [false] = HOUND.DB.Bands.J
+            },
             ['Primary'] = true
         }
     HOUND.DB.Radars['S-300V 9S15 sr'] = {
             ['Name'] = 'Bill Board',
             ['Assigned'] = {"SA-12"},
             ['Role'] = {HOUND.DB.RadarType.SEARCH},
-            ['Band'] = 'E',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.E,
+                [false] = HOUND.DB.Bands.E
+            },
             ['Primary'] = false
         }
     HOUND.DB.Radars['S-300V 9S19 sr'] = {
             ['Name'] = 'High Screen',
             ['Assigned'] = {"SA-12"},
             ['Role'] = {HOUND.DB.RadarType.SEARCH},
-            ['Band'] = 'C',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.C,
+                [false] = HOUND.DB.Bands.C
+            },
             ['Primary'] = false
         }
     HOUND.DB.Radars['S-300V 9S32 tr'] = {
             ['Name'] = 'Grill Pan',
             ['Assigned'] = {"SA-12"},
             ['Role'] = {HOUND.DB.RadarType.TRACK},
-            ['Band'] = 'J',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.J,
+                [false] = HOUND.DB.Bands.J
+            },
             ['Primary'] = true
         }
     HOUND.DB.Radars['S-300PMU2 92H6E tr'] = {
             ['Name'] = 'Grave Stone',
             ['Assigned'] = {"SA-20"},
             ['Role'] = {HOUND.DB.RadarType.TRACK},
-            ['Band'] = 'I',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.I,
+                [false] = HOUND.DB.Bands.I
+            },
             ['Primary'] = true
         }
     HOUND.DB.Radars['S-300PMU2 64H6E2 sr'] = {
             ['Name'] = "Big Bird",
             ['Assigned'] = {"SA-20"},
             ['Role'] = {HOUND.DB.RadarType.SEARCH},
-            ['Band'] = 'C',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.C,
+                [false] = HOUND.DB.Bands.C
+            },
             ['Primary'] = false
         }
     HOUND.DB.Radars['S-300VM 9S15M2 sr'] = {
             ['Name'] = 'Bill Board M',
             ['Assigned'] = {"SA-23"},
             ['Role'] = {HOUND.DB.RadarType.SEARCH},
-            ['Band'] = 'E',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.E,
+                [false] = HOUND.DB.Bands.E
+            },
             ['Primary'] = false
         }
     HOUND.DB.Radars['S-300VM 9S19M2 sr'] = {
             ['Name'] = 'High Screen M',
             ['Assigned'] = {"SA-23"},
             ['Role'] = {HOUND.DB.RadarType.SEARCH},
-            ['Band'] = 'C',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.C,
+                [false] = HOUND.DB.Bands.C
+            },
             ['Primary'] = false
         }
     HOUND.DB.Radars['S-300VM 9S32ME tr'] = {
             ['Name'] = 'Grill Pan M',
             ['Assigned'] = {"SA-23"},
             ['Role'] = {HOUND.DB.RadarType.TRACK},
-            ['Band'] = 'K',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.K,
+                [false] = HOUND.DB.Bands.K
+            },
             ['Primary'] = true
         }
     HOUND.DB.Radars['SA-17 Buk M1-2 LN 9A310M1-2'] = {
             ['Name'] = "Fire Dome M",
             ['Assigned'] = {"SA-17"},
             ['Role'] = {HOUND.DB.RadarType.TRACK},
-            ['Band'] = 'H',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.H,
+                [false] = HOUND.DB.Bands.H
+            },
             ['Primary'] = false
         }
     HOUND.DB.Radars['34Ya6E Gazetchik E decoy'] = {
             ['Name'] = "Flap Lid",
             ['Assigned'] = {"SA-10"},
             ['Role'] = {HOUND.DB.RadarType.TRACK},
-            ['Band'] = 'J',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.J,
+                [false] = HOUND.DB.Bands.J
+            },
             ['Primary'] = true
         }
     HOUND.DB.Radars['Fire Can radar'] = {
             ['Name'] = "Fire Can",
             ['Assigned'] = {"AAA"},
             ['Role'] = {HOUND.DB.RadarType.TRACK},
-            ['Band'] = 'E',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.E,
+                [false] = HOUND.DB.Bands.E
+            },
             ['Primary'] = true
         }
         -- SAM Assets pack
@@ -163,28 +223,40 @@ do
             ['Name'] = "Tall Rack",
             ['Assigned'] = {"EWR"},
             ['Role'] = {HOUND.DB.RadarType.EWR},
-            ['Band'] = 'A',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.A,
+                [false] = HOUND.DB.Bands.A
+            },
             ['Primary'] = false
         }
     HOUND.DB.Radars['EWR P-37 BAR LOCK'] = {
             ['Name'] = "Bar lock",
             ['Assigned'] = {"EWR","SA-5"},
             ['Role'] = {HOUND.DB.RadarType.EWR,HOUND.DB.RadarType.SEARCH},
-            ['Band'] = 'E',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.E,
+                [false] = HOUND.DB.Bands.E
+            },
             ['Primary'] = false
         }
     HOUND.DB.Radars['EWR 1L119 Nebo-SVU'] = {
             ['Name'] = "Nebo-SVU",
             ['Assigned'] = {"EWR"},
             ['Role'] = {HOUND.DB.RadarType.EWR},
-            ['Band'] = 'A',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.A,
+                [false] = HOUND.DB.Bands.A
+            },
             ['Primary'] = false
         }
     HOUND.DB.Radars['EWR Generic radar tower'] = {
             ['Name'] = "Civilian Radar",
             ['Assigned'] = {"EWR"},
             ['Role'] = {HOUND.DB.RadarType.EWR},
-            ['Band'] = 'C',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.C,
+                [false] = HOUND.DB.Bands.C
+            },
             ['Primary'] = false
         }
         --Military Assets for DCS by Currenthill (Russia)
@@ -192,42 +264,60 @@ do
             ['Name'] = "Pantsir",
             ['Assigned'] = {"SA-22"},
             ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
-            ['Band'] = 'F',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.F,
+                [false] = HOUND.DB.Bands.F
+            },
             ['Primary'] = true
         }
     HOUND.DB.Radars['PantsirS2'] = {
             ['Name'] = "Pantsir",
             ['Assigned'] = {"SA-22"},
             ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
-            ['Band'] = 'F',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.F,
+                [false] = HOUND.DB.Bands.F
+            },
             ['Primary'] = true
         }
     HOUND.DB.Radars['Admiral_Kasatonov'] = {
             ['Name'] = "Gorshkov (FF)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
-            ['Band'] = 'F',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.F,
+                [false] = HOUND.DB.Bands.F
+            },
             ['Primary'] = true
         }
     HOUND.DB.Radars['Karakurt_AShM'] = {
             ['Name'] = "Karakurt (FS)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
-            ['Band'] = 'F',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.F,
+                [false] = HOUND.DB.Bands.F
+            },
             ['Primary'] = true
         }
     HOUND.DB.Radars['Karakurt_LACM'] = {
             ['Name'] = "Karakurt (FS)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
-            ['Band'] = 'F',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.F,
+                [false] = HOUND.DB.Bands.F
+            },
             ['Primary'] = true
         }
     HOUND.DB.Radars['MonolitB'] = {
             ['Name'] = "Monolit B",
             ['Assigned'] = {"Bastion"},
             ['Role'] = {HOUND.DB.RadarType.ANTISHIP},
-            ['Band'] = 'I',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.I,
+                [false] = HOUND.DB.Bands.I
+            },
             ['Primary'] = true
         }
         --Military Assets for DCS by Currenthill (USA)
@@ -235,42 +325,60 @@ do
             ['Name'] = "Arleigh Burke (DD)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
-            ['Band'] = 'E',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.E,
+                [false] = HOUND.DB.Bands.E
+            },
             ['Primary'] = true
         }
     HOUND.DB.Radars['Arleigh_Burke_Flight_III_LACM'] = {
             ['Name'] = "Arleigh Burke (DD)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
-            ['Band'] = 'E',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.E,
+                [false] = HOUND.DB.Bands.E
+            },
             ['Primary'] = true
         }
     HOUND.DB.Radars['Arleigh_Burke_Flight_III_SAM'] = {
             ['Name'] = "Arleigh Burke (DD)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
-            ['Band'] = 'E',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.E,
+                [false] = HOUND.DB.Bands.E
+            },
             ['Primary'] = true
         }
     HOUND.DB.Radars['Ticonderoga_CMP_AShM'] = {
             ['Name'] = "Ticonderoga (CG)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
-            ['Band'] = 'E',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.E,
+                [false] = HOUND.DB.Bands.E
+            },
             ['Primary'] = true
         }
     HOUND.DB.Radars['Ticonderoga_CMP_LACM'] = {
             ['Name'] = "Ticonderoga (CG)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
-            ['Band'] = 'E',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.E,
+                [false] = HOUND.DB.Bands.E
+            },
             ['Primary'] = true
         }
     HOUND.DB.Radars['Ticonderoga_CMP_SAM'] = {
             ['Name'] = "Ticonderoga (CG)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
-            ['Band'] = 'E',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.E,
+                [false] = HOUND.DB.Bands.E
+            },
             ['Primary'] = true
         }
         --Military Assets for DCS by Currenthill (UK)
@@ -278,7 +386,10 @@ do
             ['Name'] = "Type 45 (DD)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
-            ['Band'] = 'E',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.E,
+                [false] = HOUND.DB.Bands.E
+            },
             ['Primary'] = true
         }
         --Military Assets for DCS by Currenthill (Sweden)
@@ -286,49 +397,70 @@ do
             ['Name'] = "Visby (FS)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
-            ['Band'] = 'F',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.F,
+                [false] = HOUND.DB.Bands.F
+            },
             ['Primary'] = true
         }
     HOUND.DB.Radars['LvKv9040'] ={
             ['Name'] = "LvKv9040",
             ['Assigned'] = {"AAA"},
             ['Role'] = {HOUND.DB.RadarType.RANGEFINDER},
-            ['Band'] = 'J',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.J,
+                [false] = HOUND.DB.Bands.J
+            },
             ['Primary'] = true
         }
     HOUND.DB.Radars['LvS-103_PM103'] = {
             ['Name'] = "Patriot",
             ['Assigned'] = {"Patriot"},
             ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
-            ['Band'] = 'K',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.K,
+                [false] = HOUND.DB.Bands.K
+            },
             ['Primary'] = true
         }
     HOUND.DB.Radars['LvS-103_PM103_HX'] = {
             ['Name'] = "Patriot",
             ['Assigned'] = {"Patriot"},
             ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
-            ['Band'] = 'K',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.K,
+                [false] = HOUND.DB.Bands.K
+            },
             ['Primary'] = true
         }
     HOUND.DB.Radars['RBS-90'] = {
             ['Name'] = "RBS-90",
             ['Assigned'] = {"SHORAD"},
             ['Role'] = {HOUND.DB.RadarType.RANGEFINDER},
-            ['Band'] = 'J',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.J,
+                [false] = HOUND.DB.Bands.J
+            },
             ['Primary'] = false
         }
     HOUND.DB.Radars['BV410_RBS90'] = {
             ['Name'] = "RBS-90",
             ['Assigned'] = {"SHORAD"},
             ['Role'] = {HOUND.DB.RadarType.RANGEFINDER},
-            ['Band'] = 'J',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.J,
+                [false] = HOUND.DB.Bands.J
+            },
             ['Primary'] = false
         }
     HOUND.DB.Radars['UndE23'] = {
             ['Name'] = "UndE23",
             ['Assigned'] = {"SHORAD"},
             ['Role'] = {HOUND.DB.RadarType.SEARCH},
-            ['Band'] = 'G',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.G,
+                [false] = HOUND.DB.Bands.G
+            },
             ['Primary'] = true
         }
         --Military Assets for DCS by Currenthill (China)
@@ -336,28 +468,40 @@ do
             ['Name'] = "Type 055 (CG)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
-            ['Band'] = 'E',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.E,
+                [false] = HOUND.DB.Bands.E
+            },
             ['Primary'] = true
         }
     HOUND.DB.Radars['Type052D'] = {
             ['Name'] = "Type 052D (DD)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
-            ['Band'] = 'E',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.E,
+                [false] = HOUND.DB.Bands.E
+            },
             ['Primary'] = true
         }
     HOUND.DB.Radars['PGL_625'] = {
             ['Name'] = "PGL-625",
             ['Assigned'] = {"SHORAD"},
             ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
-            ['Band'] = 'F',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.F,
+                [false] = HOUND.DB.Bands.F
+            },
             ['Primary'] = true
         }
     HOUND.DB.Radars['HQ17A'] = {
             ['Name'] = "HQ-17",
             ['Assigned'] = {"HQ-17"},
             ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
-            ['Band'] = 'F',
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.F,
+                [false] = HOUND.DB.Bands.F
+            },
             ['Primary'] = true
         }
 

@@ -1,6 +1,8 @@
     --- HOUND.ElintWorker
     -- @module HOUND.ElintWorker
 do
+    local HoundUtils = HOUND.Utils
+
     HOUND.ElintWorker = {}
     HOUND.ElintWorker.__index = HOUND.ElintWorker
 
@@ -283,7 +285,7 @@ do
         if type(site) == "string" then
             groupName = site
         end
-        if type(site) == "table" and site.getName ~= nil then
+        if HOUND.Utils.Dcs.isGroup(site) then
             groupName = site:getName()
         end
         return HOUND.setContains(self.sites,groupName)
@@ -308,16 +310,19 @@ do
     end
 
     --- get HOUND.Contact.Site from DCS Unit/UID
-    -- @param emitter DCS Unit/name of radar unit
+    -- @param emitter  @{HOUND.Contact.Emitter} or DCS group name or DCS group
     -- @param[opt] getOnly if true function will not create new unit if not exist
-    -- @return @{HOUND.Contact.Emitter} instance of that Unit
+    -- @return @{HOUND.Contact.Site} instance of input group
     function HOUND.ElintWorker:getSite(emitter,getOnly)
         if emitter == nil then return nil end
         local groupName = nil
         if type(emitter) == "string" then
             groupName = emitter
         end
-        if type(emitter) == "table" and emitter.getGroupName ~= nil then
+        if HOUND.Utils.Dcs.isGroup(emitter) then
+            groupName:getName()
+        end
+        if getmetatable(emitter) == HOUND.Contact.Emitter then
             groupName = emitter:getGroupName()
         end
         if groupName ~= nil and self.sites[groupName] ~= nil then return self.sites[groupName] end
@@ -334,7 +339,7 @@ do
     function HOUND.ElintWorker:removeSite(groupName)
         if not type(groupName) == "string" then return false end
         if self.sites[groupName] then
-            for emitterName,emitter in pairs(self.sites[groupName]:getRadars()) do
+            for emitterName,_ in pairs(self.sites[groupName]:getRadars()) do
                 self:removeContact(emitterName)
             end
             self.sites[groupName]:updateDeadDCSObject()
@@ -349,92 +354,18 @@ do
         return true
     end
 
+
     --- Worker functions
     -- @section Worker
 
-    --- list all contact is a sector
-    -- @param[opt] sectorName String name or sector to filter by
-    function HOUND.ElintWorker:listInSector(sectorName)
-        local emitters = {}
-        for _,emitter in ipairs(self.contacts) do
-            if emitter:isInSector(sectorName) then
-                table.insert(emitters,emitter)
-            end
-        end
-        table.sort(emitters,HOUND.Utils.Sort.ContactsByRange)
-        return emitters
-    end
-
     --- update markers to all contacts
+    -- update all emitters
     function HOUND.ElintWorker:UpdateMarkers()
         if self.settings:getUseMarkers() then
             for _, contact in pairs(self.contacts) do
                 contact:updateMarker(self.settings:getMarkerType())
             end
         end
-    end
-
-    --- Return all contacts managed by this instance regardless of sector
-    -- @param[opt] sectorName String name or sector to filter by
-    function HOUND.ElintWorker:listAll(sectorName)
-        if sectorName then
-            local contacts = {}
-            for _,emitter in pairs(self.contacts) do
-                if emitter:isInSector(sectorName) then
-                        table.insert(contacts,emitter)
-                end
-            end
-            return contacts
-        end
-        return self.contacts
-    end
-
-    --- return all contacts managed by this instance sorted by range
-    function HOUND.ElintWorker:listAllbyRange(sectorName)
-        return self:sortContacts(HOUND.Utils.Sort.ContactsByRange,sectorName)
-    end
-
-    --- return number of contacts tracked
-    -- @param[opt] sectorName String name or sector to filter by
-    function HOUND.ElintWorker:countContacts(sectorName)
-        if sectorName then
-            local contacts = 0
-            for _,contact in pairs(self.contacts) do
-                if contact:isInSector(sectorName) then
-                    contacts = contacts + 1
-                end
-            end
-            return contacts
-        end
-        return HOUND.Length(self.contacts)
-    end
-
-    --- return list of contacts
-    -- @param[opt] sectorName String. sector to filter by
-    -- @return list of @{HOUND.Contact.Emitter}
-    function HOUND.ElintWorker:getContacts(sectorName)
-        local contacts = {}
-        for _,emitter in pairs(self.contacts) do
-            if sectorName then
-                if emitter:isInSector(sectorName) then
-                    table.insert(contacts,emitter)
-                end
-            else
-                table.insert(contacts,emitter)
-            end
-        end
-        return contacts
-    end
-
-    --- return a sorted list of contacts
-    -- @param sortFunc Function to sort by
-    -- @param[opt] sectorName String. sector to filter by
-    -- @return sorted list of @{HOUND.Contact.Emitter}
-    function HOUND.ElintWorker:sortContacts(sortFunc,sectorName)
-        if type(sortFunc) ~= "function" then return end
-        local sorted = self:getContacts(sectorName)
-        table.sort(sorted, sortFunc)
-        return sorted
     end
 
     --- Perform a sample of all emitting radars against all platforms
@@ -444,7 +375,7 @@ do
 
         if HOUND.Length(self.platforms) == 0 then return end
 
-        local Radars = HOUND.Utils.Elint.getActiveRadars(self:getCoalition())
+        local Radars = HoundUtils.Elint.getActiveRadars(self:getCoalition())
 
         if HOUND.Length(Radars) == 0 then return end
         -- env.info("Recivers: " .. table.getn(self.platform) .. " | Radars: " .. table.getn(Radars))
@@ -455,15 +386,25 @@ do
             -- local RadarName = radar:getName()
             local radarPos = radar:getPosition().p
             radarPos.y = radarPos.y + radar:getDesc()["box"]["max"]["y"] -- use vehicle bounting box for height
+            local _,isRadarTracking = radar:getRadar()
+            if HOUND.DEBUG then
+                if HoundUtils.Dcs.isUnit(isRadarTracking) then
+                    HOUND.Logger.debug(RadarName .. " is tracking " .. isRadarTracking:getName())
+                else
+                    HOUND.Logger.debug(RadarName .. " is not tracking anyone ")
+                end
+            end
+            isRadarTracking = HoundUtils.Dcs.isUnit(isRadarTracking)
 
             for _,platform in ipairs(self.platforms) do
                 local platformData = HOUND.DB.getPlatformData(platform)
 
-                if HOUND.Utils.Geo.checkLOS(platformData.pos, radarPos) then
+                if HoundUtils.Geo.checkLOS(platformData.pos, radarPos) then
                     local contact = self:getContact(radar)
-                    local sampleAngularResolution = HOUND.DB.getSensorPrecision(platform,contact.band)
+                    HOUND.Logger.debug(RadarName .. " transmits on " .. HOUND.reverseLookup(HOUND.DB.Bands,contact.band[isRadarTracking]) .." Band")
+                    local sampleAngularResolution = HOUND.DB.getSensorPrecision(platform,contact.band[isRadarTracking])
                     if sampleAngularResolution < l_math.rad(10.0) then
-                        local az,el = HOUND.Utils.Elint.getAzimuth( platformData.pos, radarPos, sampleAngularResolution )
+                        local az,el = HoundUtils.Elint.getAzimuth( platformData.pos, radarPos, sampleAngularResolution )
                         if not platformData.isAerial then
                             el = nil
                         end
@@ -482,6 +423,7 @@ do
             end
         end
     end
+
 
     --- Process function
     -- process all the information stored in the system to update all radar positions

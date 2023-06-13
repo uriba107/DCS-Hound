@@ -2,6 +2,7 @@
 -- @module HOUND.Contact.Emitter
 do
     local l_math = math
+    local HoundUtils = HOUND.Utils
 
     --- Comms functions
     -- @section Comms
@@ -38,18 +39,18 @@ do
         if self.pos.p == nil then return end
         local phoneticGridPos = ""
         if utmZone then
-            phoneticGridPos =  phoneticGridPos .. HOUND.Utils.TTS.toPhonetic(self.pos.grid.UTMZone) .. " "
+            phoneticGridPos =  phoneticGridPos .. HoundUtils.TTS.toPhonetic(self.pos.grid.UTMZone) .. " "
         end
 
-        phoneticGridPos =  phoneticGridPos ..  HOUND.Utils.TTS.toPhonetic(self.pos.grid.MGRSDigraph)
-        local phoneticBulls = HOUND.Utils.TTS.toPhonetic(self.pos.be.brStr)
+        phoneticGridPos =  phoneticGridPos ..  HoundUtils.TTS.toPhonetic(self.pos.grid.MGRSDigraph)
+        local phoneticBulls = HoundUtils.TTS.toPhonetic(self.pos.be.brStr)
                                 .. "  " .. self.pos.be.rng
         if MGRSdigits==nil then
             return phoneticGridPos,phoneticBulls
         end
         local E = l_math.floor(self.pos.grid.Easting/(10^l_math.min(5,l_math.max(1,5-MGRSdigits))))
         local N = l_math.floor(self.pos.grid.Northing/(10^l_math.min(5,l_math.max(1,5-MGRSdigits))))
-        phoneticGridPos = phoneticGridPos .. " " .. HOUND.Utils.TTS.toPhonetic(E) .. "   " .. HOUND.Utils.TTS.toPhonetic(N)
+        phoneticGridPos = phoneticGridPos .. " " .. HoundUtils.TTS.toPhonetic(E) .. "   " .. HoundUtils.TTS.toPhonetic(N)
 
         return phoneticGridPos,phoneticBulls
     end
@@ -69,7 +70,7 @@ do
         if self:isAccurate() then
             str = str .. ", reported"
         else
-            str = str .. ", " .. HOUND.Utils.TTS.getVerbalContactAge(self.last_seen,true,NATO)
+            str = str .. ", " .. HoundUtils.TTS.getVerbalContactAge(self.last_seen,true,NATO)
         end
         if NATO then
             str = str .. " bullseye " .. phoneticBulls
@@ -77,7 +78,7 @@ do
             str = str .. " at " .. phoneticGridPos
         end
         if not self:isAccurate() then
-            str = str .. ", accuracy " .. HOUND.Utils.TTS.getVerbalConfidenceLevel( self.uncertenty_data.r )
+            str = str .. ", accuracy " .. HoundUtils.TTS.getVerbalConfidenceLevel( self.uncertenty_data.r )
         end
         str = str .. "."
         return str
@@ -93,7 +94,7 @@ do
 
         local BR = nil
         if refPos ~= nil and refPos.x ~= nil and refPos.z ~= nil then
-            BR = HOUND.Utils.getBR(self.pos.p,refPos)
+            BR = HoundUtils.getBR(self.pos.p,refPos)
         end
         local phoneticGridPos,phoneticBulls = self:getTtsData(true,HOUND.MGRS_PRECISION)
         local msg =  self:getName()
@@ -101,16 +102,16 @@ do
             then
                 msg = msg .. ", reported"
             else
-               msg = msg .. ", " .. HOUND.Utils.TTS.getVerbalContactAge(self.last_seen,true)
+               msg = msg .. ", " .. HoundUtils.TTS.getVerbalContactAge(self.last_seen,true)
         end
         if BR ~= nil
             then
-                msg = msg .. " from you " .. HOUND.Utils.TTS.toPhonetic(BR.brStr) .. " for " .. BR.rng
+                msg = msg .. " from you " .. HoundUtils.TTS.toPhonetic(BR.brStr) .. " for " .. BR.rng
             else
                 msg = msg .." at bullseye " .. phoneticBulls
         end
-        local LLstr = HOUND.Utils.TTS.getVerbalLL(self.pos.LL.lat,self.pos.LL.lon,useDMM)
-        msg = msg .. ", accuracy " .. HOUND.Utils.TTS.getVerbalConfidenceLevel( self.uncertenty_data.r )
+        local LLstr = HoundUtils.TTS.getVerbalLL(self.pos.LL.lat,self.pos.LL.lon,useDMM)
+        msg = msg .. ", accuracy " .. HoundUtils.TTS.getVerbalConfidenceLevel( self.uncertenty_data.r )
         msg = msg .. ", position " .. LLstr
         msg = msg .. ", I say again " .. LLstr
         msg = msg .. ", MGRS " .. phoneticGridPos
@@ -119,13 +120,13 @@ do
         if HOUND.EXTENDED_INFO then
             if self:isAccurate()
                 then
-                    msg = msg .. ", Reported " .. HOUND.Utils.TTS.getVerbalContactAge(self.first_seen) .. " ago"
+                    msg = msg .. ", Reported " .. HoundUtils.TTS.getVerbalContactAge(self.first_seen) .. " ago"
                 else
-                    msg = msg .. ", ellipse " ..  HOUND.Utils.TTS.simplfyDistance(self.uncertenty_data.major) .. " by " ..  HOUND.Utils.TTS.simplfyDistance(self.uncertenty_data.minor) .. ", aligned bearing " .. HOUND.Utils.TTS.toPhonetic(string.format("%03d",self.uncertenty_data.az))
-                    msg = msg .. ", Tracked for " .. HOUND.Utils.TTS.getVerbalContactAge(self.first_seen) .. ", last seen " .. HOUND.Utils.TTS.getVerbalContactAge(self.last_seen) .. " ago"
+                    msg = msg .. ", ellipse " ..  HoundUtils.TTS.simplfyDistance(self.uncertenty_data.major) .. " by " ..  HoundUtils.TTS.simplfyDistance(self.uncertenty_data.minor) .. ", aligned bearing " .. HoundUtils.TTS.toPhonetic(string.format("%03d",self.uncertenty_data.az))
+                    msg = msg .. ", Tracked for " .. HoundUtils.TTS.getVerbalContactAge(self.first_seen) .. ", last seen " .. HoundUtils.TTS.getVerbalContactAge(self.last_seen) .. " ago"
                 end
         end
-        msg = msg .. ". " .. HOUND.Utils.getControllerResponse()
+        msg = msg .. ". " .. HoundUtils.getControllerResponse()
         return msg
     end
 
@@ -140,29 +141,29 @@ do
         local GridPos,BePos = self:getTextData(true,HOUND.MGRS_PRECISION)
         local BR = nil
         if refPos ~= nil and refPos.x ~= nil and refPos.z ~= nil then
-            BR = HOUND.Utils.getBR(self.pos.p,refPos)
+            BR = HoundUtils.getBR(self.pos.p,refPos)
         end
         local msg =  self:getName()
         if self:isAccurate()
             then
                 msg = msg .." (Reported)\n"
             else
-                msg = msg .." (" .. HOUND.Utils.TTS.getVerbalContactAge(self.last_seen,true).. ")\n"
+                msg = msg .." (" .. HoundUtils.TTS.getVerbalContactAge(self.last_seen,true).. ")\n"
         end
-        msg = msg .. "Accuracy: " .. HOUND.Utils.TTS.getVerbalConfidenceLevel( self.uncertenty_data.r ) .. "\n"
+        msg = msg .. "Accuracy: " .. HoundUtils.TTS.getVerbalConfidenceLevel( self.uncertenty_data.r ) .. "\n"
         msg = msg .. "BE: " .. BePos .. "\n" -- .. " (grid ".. GridPos ..")\n"
         if BR ~= nil then
             msg = msg .. "BR: " .. BR.brStr .. " for " .. BR.rng
         end
-        msg = msg .. "LL: " .. HOUND.Utils.Text.getLL(self.pos.LL.lat,self.pos.LL.lon,useDMM).."\n"
+        msg = msg .. "LL: " .. HoundUtils.Text.getLL(self.pos.LL.lat,self.pos.LL.lon,useDMM).."\n"
         msg = msg .. "MGRS: " .. GridPos .. "\n"
         msg = msg .. "Elev: " .. self:getElev() .. "ft"
         if HOUND.EXTENDED_INFO then
             if self:isAccurate() then
-                msg = msg .. "\nReported " .. HOUND.Utils.TTS.getVerbalContactAge(self.first_seen) .. " ago. "
+                msg = msg .. "\nReported " .. HoundUtils.TTS.getVerbalContactAge(self.first_seen) .. " ago. "
             else
                 msg = msg .. "\nEllipse: " ..  self.uncertenty_data.major .. " by " ..  self.uncertenty_data.minor .. " aligned bearing " .. string.format("%03d",self.uncertenty_data.az) .. "\n"
-                msg = msg .. "Tracked for: " .. HOUND.Utils.TTS.getVerbalContactAge(self.first_seen) .. " Last Contact: " ..  HOUND.Utils.TTS.getVerbalContactAge(self.last_seen) .. " ago. "
+                msg = msg .. "Tracked for: " .. HoundUtils.TTS.getVerbalContactAge(self.first_seen) .. " Last Contact: " ..  HoundUtils.TTS.getVerbalContactAge(self.last_seen) .. " ago. "
             end
         end
         return msg
@@ -233,10 +234,10 @@ do
             local GridPos,BePos = self:getTextData(true,HOUND.MGRS_PRECISION)
             msg = {
                 self:getTrackId(),self:getNatoDesignation(),self:getType(),
-                HOUND.Utils.TTS.getVerbalContactAge(self.last_seen,true,true),
+                HoundUtils.TTS.getVerbalContactAge(self.last_seen,true,true),
                 BePos,string.format("%02.6f",self.pos.LL.lat),string.format("%03.6f",self.pos.LL.lon), GridPos,
-                HOUND.Utils.TTS.getVerbalConfidenceLevel( self.uncertenty_data.r ),
-                HOUND.Utils.Text.getTime(self.last_seen),self.DCStypeName,self.DCSobjectName,self.DCSgroupName
+                HoundUtils.TTS.getVerbalConfidenceLevel( self.uncertenty_data.r ),
+                HoundUtils.Text.getTime(self.last_seen),self.DCStypeName,self.DCSobjectName,self.DCSgroupName
             }
             msg = table.concat(msg,",")
         end

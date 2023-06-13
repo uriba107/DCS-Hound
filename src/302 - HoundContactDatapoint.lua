@@ -4,6 +4,7 @@ do
     local l_math = math
     local l_mist = mist
     local PI_2 = 2*l_math.pi
+    local HoundUtils = HOUND.Utils
 
     --- @table HOUND.Contact.Datapoint
     -- @field platformPos position of platform at time of sample
@@ -73,7 +74,7 @@ do
     --- Get datapoint age in seconds
     -- @return time in seconds
     function HOUND.Contact.Datapoint.getAge(self)
-        return HOUND.Utils.absTimeDelta(self.t)
+        return HoundUtils.absTimeDelta(self.t)
     end
 
     --- Get 2D polygon
@@ -107,12 +108,12 @@ do
     -- @local
     function HOUND.Contact.Datapoint.estimatePos(self)
         if self.el == nil or l_math.abs(self.el) <= self.platformPrecision then return end
-        -- local maxSlant = HOUND.Utils.Geo.EarthLOS(self.platformPos.y)*0.8
-        -- local point = HOUND.Utils.Geo.getProjectedIP(self.platformPos,self.az,self.el)
-        -- if not HOUND.Utils.Dcs.isPoint(point) then
+        -- local maxSlant = HoundUtils.Geo.EarthLOS(self.platformPos.y)*0.8
+        -- local point = HoundUtils.Geo.getProjectedIP(self.platformPos,self.az,self.el)
+        -- if not HoundUtils.Dcs.isPoint(point) then
         --     point = {x=maxSlant*l_math.cos(self.az) + self.platformPos.x,z=maxSlant*l_math.sin(self.az) + self.platformPos.z}
         -- end
-        return HOUND.Utils.Geo.getProjectedIP(self.platformPos,self.az,self.el)
+        return HoundUtils.Geo.getProjectedIP(self.platformPos,self.az,self.el)
     end
 
     --- generate Az only Triangle and if possible Az/El polygon footprint
@@ -124,7 +125,7 @@ do
     function HOUND.Contact.Datapoint.calcPolygons(self)
         if self.platformPrecision == 0 then return nil,nil end
         -- calc 2D az triangle
-        local maxSlant = l_math.min(250000,HOUND.Utils.Geo.EarthLOS(self.platformPos.y)*1.1)
+        local maxSlant = l_math.min(250000,HoundUtils.Geo.EarthLOS(self.platformPos.y)*1.1)
         local poly2D = {}
         table.insert(poly2D,self.platformPos)
         for _,theta in ipairs({((self.az - self.platformPrecision + PI_2) % PI_2),((self.az + self.platformPrecision + PI_2) % PI_2) }) do
@@ -134,7 +135,7 @@ do
             -- point.y = land.getHeight({x=point.x,y=point.z})+0.5
             table.insert(poly2D,point)
         end
-        HOUND.Utils.Geo.setHeight(poly2D)
+        HoundUtils.Geo.setHeight(poly2D)
         -- if self.platformStatic then
         --     mist.marker.add({pos={poly2D[1],poly2D[3]},markType="line"})
         -- end
@@ -152,12 +153,12 @@ do
             local pointAngle = (i*angleStep)
             local azStep = self.az + (self.platformPrecision * l_math.sin(pointAngle))
             local elStep = self.el + (self.platformPrecision * l_math.cos(pointAngle))
-            local point = HOUND.Utils.Geo.getProjectedIP(self.platformPos, azStep,elStep) or {x=maxSlant*l_math.cos(azStep) + self.platformPos.x,z=maxSlant*l_math.sin(azStep) + self.platformPos.z}
+            local point = HoundUtils.Geo.getProjectedIP(self.platformPos, azStep,elStep) or {x=maxSlant*l_math.cos(azStep) + self.platformPos.x,z=maxSlant*l_math.sin(azStep) + self.platformPos.z}
             if not point.y then
-                point = HOUND.Utils.Geo.setHeight(point)
+                point = HoundUtils.Geo.setHeight(point)
             end
 
-            if HOUND.Utils.Dcs.isPoint(point) and HOUND.Utils.Dcs.isPoint(self:getPos()) then
+            if HoundUtils.Dcs.isPoint(point) and HoundUtils.Dcs.isPoint(self:getPos()) then
                 table.insert(poly3D,point)
                 if i == numSteps/4 then
                     ellipse.minor = point
@@ -165,11 +166,11 @@ do
                     ellipse.major = point
                     ellipse.majorCG = l_mist.utils.get2DDist(self:getPos(),point)
                 elseif i == 3*(numSteps/4) then
-                    if HOUND.Utils.Dcs.isPoint(ellipse.minor) then
+                    if HoundUtils.Dcs.isPoint(ellipse.minor) then
                         ellipse.minor = l_mist.utils.get2DDist(ellipse.minor,point)
                     end
                 elseif i == numSteps then
-                    if HOUND.Utils.Dcs.isPoint(ellipse.major) then
+                    if HoundUtils.Dcs.isPoint(ellipse.major) then
                         ellipse.major = l_mist.utils.get2DDist(ellipse.major,point)
                         ellipse.majorCG = ellipse.majorCG / (ellipse.majorCG + l_mist.utils.get2DDist(self:getPos(),point))
                     end

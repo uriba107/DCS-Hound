@@ -4,6 +4,7 @@
 -- @copyright uri_ba 2020-2021
 -- @script HoundElint
 do
+    local HoundUtils = HOUND.Utils
     --- Main entry point
     -- @type HoundElint
     HoundElint = {}
@@ -168,9 +169,9 @@ do
             HOUND.Logger.info("Cannot pre-brief " .. DCS_Object_Name .. ": object does not exist.")
             return
         end
-        if HOUND.Utils.Dcs.isGroup(obj) then
+        if HoundUtils.Dcs.isGroup(obj) then
             units = obj:getUnits()
-        elseif HOUND.Utils.Dcs.isUnit(obj) then
+        elseif HoundUtils.Dcs.isUnit(obj) then
             table.insert(units,obj)
         end
 
@@ -189,12 +190,12 @@ do
         if type(radarUnit) == "string" then
             obj = Group.getByName(radarUnit) or Unit.getByName(radarUnit)
         end
-        if HOUND.Utils.Dcs.isGroup(obj) then
+        if HoundUtils.Dcs.isGroup(obj) then
             units = obj:getUnits()
             for _,unit in pairs(units) do
                 unit = unit:getName()
             end
-        elseif HOUND.Utils.Dcs.isUnit(obj) then
+        elseif HoundUtils.Dcs.isUnit(obj) then
             table.insert(units,obj:getName())
         end
         if not obj then
@@ -211,6 +212,13 @@ do
             end
         end
 
+    end
+
+    --- count sites
+    -- @param[opt] sectorName String name or sector to filter by
+    -- @return Int number of contacts currently tracked
+    function HoundElint:countSites(sectorName)
+        return self.contacts:countSites(sectorName)
     end
 
     --- Sector managment
@@ -877,11 +885,14 @@ do
     -- @local
     function HoundElint:updateSectorMembership()
         local sectors = self:getSectors()
-        table.sort(sectors,HOUND.Utils.Sort.sectorsByPriorityLowFirst)
-        for _,contact in ipairs(self.contacts:listAll()) do
+        table.sort(sectors,HoundUtils.Sort.sectorsByPriorityLowFirst)
+        for _,contact in ipairs(self.contacts:listAllContacts()) do
             for _,sector in pairs(sectors) do
                 sector:updateSectorMembership(contact)
             end
+        end
+        for _,site in ipairs(self.contacts:listAllSites()) do
+            site:updateSector()
         end
     end
 
@@ -1037,13 +1048,13 @@ do
             local doMenus = false
             local doMarkers = false
             if self.timingCounters.lastProcess then
-                doProcess = ((HOUND.Utils.absTimeDelta(self.timingCounters.lastProcess,runTime)/self.settings.intervals.process) > 0.99)
+                doProcess = ((HoundUtils.absTimeDelta(self.timingCounters.lastProcess,runTime)/self.settings.intervals.process) > 0.99)
             end
             if self.timingCounters.lastMenus then
-                doMenus = ((HOUND.Utils.absTimeDelta(self.timingCounters.lastMenus,runTime)/self.settings.intervals.menus) > 0.99)
+                doMenus = ((HoundUtils.absTimeDelta(self.timingCounters.lastMenus,runTime)/self.settings.intervals.menus) > 0.99)
             end
             if self.timingCounters.lastMarkers then
-                doMarkers = ((HOUND.Utils.absTimeDelta(self.timingCounters.lastMarkers,runTime)/self.settings.intervals.markers) > 0.99)
+                doMarkers = ((HoundUtils.absTimeDelta(self.timingCounters.lastMarkers,runTime)/self.settings.intervals.markers) > 0.99)
             end
 
             if doProcess then
@@ -1096,7 +1107,7 @@ do
             return
         end
         local sectors = self:getSectors()
-        table.sort(sectors,HOUND.Utils.Sort.sectorsByPriorityLowLast)
+        table.sort(sectors,HoundUtils.Sort.sectorsByPriorityLowLast)
         for _,sector in pairs(sectors) do
             sector:populateRadioMenu()
         end
@@ -1171,27 +1182,38 @@ do
     -- @section export
 
     --- get an exported list of all contacts tracked by the instance
+    -- @param[opt] legacyExport if true function will return output as before 0.4
     -- @return table of all contact tracked for integration with external tools
-    function HoundElint:getContacts()
-        local contacts = {
-            ewr = { contacts = {}
-                },
-            sam = {
-                    contacts = {}
+    function HoundElint:getContacts(legacyExport)
+        if legacyExport then
+            local contacts = {
+                ewr = { contacts = {}
+                    },
+                sam = {
+                        contacts = {}
+                    }
                 }
-        }
-        for _,emitter in pairs(self.contacts:listAll()) do
-            local contact = emitter:export()
-            if contact ~= nil then
-                if emitter.isEWR then
-                    table.insert(contacts.ewr.contacts,contact)
-                else
-                    table.insert(contacts.sam.contacts,contact)
+            for _,emitter in pairs(self.contacts:listAllContacts()) do
+                local contact = emitter:export()
+                if contact ~= nil then
+                    if emitter.isEWR then
+                        table.insert(contacts.ewr.contacts,contact)
+                    else
+                        table.insert(contacts.sam.contacts,contact)
+                    end
                 end
             end
+            contacts.ewr.count = #contacts.ewr.contacts or 0
+            contacts.sam.count = #contacts.sam.contacts or 0
+            return contacts
         end
-        contacts.ewr.count = #contacts.ewr.contacts or 0
-        contacts.sam.count = #contacts.sam.contacts or 0
+        local contacts = {}
+        -- for _,site in pairs(self.contacts:listAllSites()) do
+        --     local contact = site:export()
+        --     if contact ~= nil then
+        --
+        --     end
+        -- end
         return contacts
     end
 
@@ -1207,11 +1229,11 @@ do
         if not filename then
             filename = string.format("hound_contacts_%d.csv",self:getId())
         end
-        local currentGameTime = HOUND.Utils.Text.getTime()
+        local currentGameTime = HoundUtils.Text.getTime()
         local csvFile = io.open(lfs.writedir() .. filename, "w+")
         csvFile:write("TrackId,NatoDesignation,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accuracy,lastSeen,DCStype,DCSunit,DCSgroup,ReportGenerated\n")
         csvFile:flush()
-        for _,emitter in pairs(self.contacts:listAllbyRange()) do
+        for _,emitter in pairs(self.contacts:listAllContactsByRange()) do
             local entry = emitter:generateIntelBrief()
             if entry ~= "" then
                 csvFile:write(entry .. "," .. currentGameTime .."\n")
@@ -1224,11 +1246,11 @@ do
     --- return Debugging information
     -- @return string
     function HoundElint:printDebugging()
-        local debugMsg = "Hound instace " .. self:getId() .. " (".. HOUND.Utils.getCoalitionString(self:getCoalition()) .. ")\n"
+        local debugMsg = "Hound instace " .. self:getId() .. " (".. HoundUtils.getCoalitionString(self:getCoalition()) .. ")\n"
         debugMsg = debugMsg .. "-----------------------------\n"
         debugMsg = debugMsg .. "Platforms: " .. self:countPlatforms() .. " | sectors: " .. self:countSectors()
         debugMsg = debugMsg .. " (Z:"..self:countSectors("zone").." ,C:"..self:countSectors("controller").." ,A: " .. self:countSectors("atis") .. " ,N:"..self:countSectors("notifier") ..") | "
-        debugMsg = debugMsg .. "Contacts: ".. self:countContacts() .. " (A:" .. self:countActiveContacts() .. " ,PB:" .. self:countPreBriefedContacts() .. ")"
+        debugMsg = debugMsg .. "Sites: " .. self:countSites() .. " | Contacts: ".. self:countContacts() .. " (A:" .. self:countActiveContacts() .. " ,PB:" .. self:countPreBriefedContacts() .. ")"
         return debugMsg
     end
 
@@ -1243,7 +1265,7 @@ do
         if houndEvent.id == HOUND.EVENTS.HOUND_DISABLED then return end
 
         local sectors = self:getSectors()
-        table.sort(sectors,HOUND.Utils.Sort.sectorsByPriorityLowFirst)
+        table.sort(sectors,HoundUtils.Sort.sectorsByPriorityLowFirst)
 
         if houndEvent.id == HOUND.EVENTS.RADAR_DETECTED then
             for _,sector in pairs(sectors) do
@@ -1251,7 +1273,7 @@ do
             end
             if self:isRunning() then
                 for _,sector in pairs(sectors) do
-                    sector:notifyNewEmitter(houndEvent.initiator)
+                    sector:notifyEmitterNew(houndEvent.initiator)
                 end
             end
         end
@@ -1259,7 +1281,31 @@ do
         if houndEvent.id == HOUND.EVENTS.RADAR_DESTROYED then
             if self:isRunning() then
                 for _,sector in pairs(sectors) do
-                    sector:notifyDeadEmitter(houndEvent.initiator)
+                    sector:notifyEmitterDead(houndEvent.initiator)
+                end
+            end
+        end
+
+        if houndEvent.id == HOUND.EVENTS.SITE_CREATED then
+            if self:isRunning() then
+                for _,sector in pairs(sectors) do
+                    sector:notifySiteNew(houndEvent.initiator)
+                end
+            end
+        end
+
+        if houndEvent.id == HOUND.EVENTS.SITE_CLASSIFIED then
+            if self:isRunning() then
+                for _,sector in pairs(sectors) do
+                    sector:notifySiteIdentified(houndEvent.initiator)
+                end
+            end
+        end
+
+        if houndEvent.id == HOUND.EVENTS.SITE_REMOVED then
+            if self:isRunning() then
+                for _,sector in pairs(sectors) do
+                    sector:notifySiteDead(houndEvent.initiator)
                 end
             end
         end

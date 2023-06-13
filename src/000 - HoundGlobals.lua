@@ -30,12 +30,12 @@ do
     -- @field EXTENDED_INFO Hound will add more in depth uncertenty info to controller messages (default is true)
     -- @field FORCE_MANAGE_MARKERS Force Hound to use internal counter for markIds (default is false).
     -- @field USE_LEGACY_MARKERS Force Hound to use normal markers for radar positions (default is true)
-    -- @field TTS_ENGINE Hound will prefer use the table to determin TTS engine priority
+    -- @field TTS_ENGINE Hound will use the table to determin TTS engine priority
 
     HOUND = {
         VERSION = "0.4.0-TRUNK",
         DEBUG = true,
-        ELLIPSE_PERCENTILE = 0.6,
+        ELLIPSE_PERCENTILE = 0.75,
         DATAPOINTS_NUM = 30,
         DATAPOINTS_INTERVAL = 30,
         CONTACT_TIMEOUT = 900,
@@ -79,6 +79,7 @@ do
     -- @field SITE_NEW Hound Event
     -- @field SITE_CREATED Hound Event
     -- @field SITE_UPDATED Hound Event
+    -- @field SITE_CLASSIFIED Hound Event
     -- @field SITE_REMOVED Hound Event
     -- @field SITE_ALIVE Hound Event
     -- @field SITE_ASLEEP Hound Event
@@ -98,12 +99,13 @@ do
         RADAR_DESTROYED = 12,
         RADAR_ALIVE = 13,
         RADAR_ASLEEP = 14,
-        SITE_NEW = 15,      -- Placeholder
-        SITE_CREATED = 16,  -- Placeholder
-        SITE_UPDATED = 17,  -- Placeholder
-        SITE_REMOVED = 18,  -- Placeholder
-        SITE_ALIVE = 19,    -- Placeholder
-        SITE_ASLEEP = 20    -- Placeholder
+        SITE_NEW = 15,
+        SITE_CREATED = 16,
+        SITE_UPDATED = 17,
+        SITE_CLASSIFIED = 18,
+        SITE_REMOVED = 19,
+        SITE_ALIVE = 20,
+        SITE_ASLEEP = 21
     }
 
     --- Event structure
@@ -281,5 +283,17 @@ do
             table.insert(chunks, substring)
         end
         return chunks
+    end
+
+    --- reverse tble lookup 
+    -- @local
+    -- @param #table tbl
+    -- @param value to search
+    -- @return the key wher value was found
+    function HOUND.reverseLookup(tbl,value)
+        if type(tbl) ~= "table" or type(value) == "nil" then return end
+        for k,v in pairs(tbl) do
+            if v == value then return k end
+        end
     end
 end

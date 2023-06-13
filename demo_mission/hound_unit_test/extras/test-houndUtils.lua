@@ -86,15 +86,31 @@ do
     function TestHoundUtils:TestgetBR()
         
     end
-
-    function TestHoundUtils:TestGeo()
+    function TestHoundUtils:TestDcs()
         -- HOUND.Utils.Dcs.isPoint
+
         lu.assertIsFalse(HOUND.Utils.Dcs.isPoint("somethign"))
         lu.assertIsFalse(HOUND.Utils.Dcs.isPoint(true))
         lu.assertIsFalse(HOUND.Utils.Dcs.isPoint({"assd","asdf"}))
         lu.assertIsFalse(HOUND.Utils.Dcs.isPoint({x="asdf",z="asdf"}))
         lu.assertIsFalse(HOUND.Utils.Dcs.isPoint({x="123123",z="123123"}))
         lu.assertIsTrue(HOUND.Utils.Dcs.isPoint({x=12345,z=67890}))
+        
+        local unit = Unit.getByName("TOR_SAIPAN-1")
+        local group = Group.getByName("SA-5_SAIPAN")
+
+        lu.assertIsFalse(HOUND.Utils.Dcs.isGroup(nil))
+        lu.assertIsFalse(HOUND.Utils.Dcs.isGroup("SA-5_SAIPAN"))
+        lu.assertIsFalse(HOUND.Utils.Dcs.isGroup(unit))
+        lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(group))
+
+        lu.assertIsFalse(HOUND.Utils.Dcs.isUnit(nil))
+        lu.assertIsFalse(HOUND.Utils.Dcs.isUnit("SA-5_SAIPAN"))
+        lu.assertIsFalse(HOUND.Utils.Dcs.isUnit(group))
+        lu.assertIsTrue(HOUND.Utils.Dcs.isUnit(unit))
+    end
+    function TestHoundUtils:TestGeo()
+
     end
 
     function TestHoundUtils:TestTTS()
@@ -189,8 +205,8 @@ do
         local platform = Unit.getByName("ELINT_BLUE_C17_EAST")
 
         -- HOUND.DB.getEmitterBand
-        lu.assertEquals(HOUND.DB.getEmitterBand(),'C')
-        lu.assertEquals(HOUND.DB.getEmitterBand(emitter),'F')
+        lu.assertEquals(HOUND.DB.getEmitterBand(),HOUND.DB.Bands.C)
+        lu.assertEquals(HOUND.DB.getEmitterBand(emitter),HOUND.DB.Bands.F)
 
         -- HOUND.DB.getApertureSize
         lu.assertEquals(HOUND.DB.getApertureSize(),0)
@@ -232,20 +248,7 @@ do
 
     end
 
-    function TestHoundUtils:TestDcs()
-        local unit = Unit.getByName("TOR_SAIPAN-1")
-        local group = Group.getByName("SA-5_SAIPAN")
 
-        lu.assertIsFalse(HOUND.Utils.Dcs.isGroup(nil))
-        lu.assertIsFalse(HOUND.Utils.Dcs.isGroup("SA-5_SAIPAN"))
-        lu.assertIsFalse(HOUND.Utils.Dcs.isGroup(unit))
-        lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(group))
-
-        lu.assertIsFalse(HOUND.Utils.Dcs.isUnit(nil))
-        lu.assertIsFalse(HOUND.Utils.Dcs.isUnit("SA-5_SAIPAN"))
-        lu.assertIsFalse(HOUND.Utils.Dcs.isUnit(group))
-        lu.assertIsTrue(HOUND.Utils.Dcs.isUnit(unit))
-    end
 
     function TestHoundUtils:tearDown()
     end

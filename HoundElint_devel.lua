@@ -1,7 +1,7 @@
 env.info("Loading Hound Scripts dynamicly")
 
-
     if HoundWorkDir == nil then
+        -- HoundWorkDir = "C:\\Users\\me\\Dropbox\\DCS\\Mission Building\\HoundElint\\"
         HoundWorkDir = "E:\\Dropbox\\uri\\Dropbox\\DCS\\Mission Building\\HoundElint\\"
     end
     
@@ -31,16 +31,11 @@ env.info("Loading Hound Scripts dynamicly")
     assert(loadfile(HoundWorkDir..'src\\420 - HoundCommsController.lua'))()
     assert(loadfile(HoundWorkDir..'src\\421 - HoundCommsNotifier.lua'))()
     assert(loadfile(HoundWorkDir..'src\\500 - HoundElintWorker.lua'))()
+    assert(loadfile(HoundWorkDir..'src\\501 - HoundElintWorker_queries.lua'))()
     assert(loadfile(HoundWorkDir..'src\\510 - HoundContactManager.lua'))()
     assert(loadfile(HoundWorkDir..'src\\550 - HoundSector.lua'))()
     assert(loadfile(HoundWorkDir..'src\\800 - HoundElint.lua'))()
     assert(loadfile(HoundWorkDir..'src\\999 - Hound_footer.lua'))()
-
-    -- assert(loadfile(HoundWorkDir..'demo_mission\\hound_unit_test\\hound-unit-tests.lua'))()
-    -- assert(loadfile(HoundWorkDir..'demo_mission\\Caucasus_demo\\HoundElint_demo.lua'))()
-    -- assert(loadfile(HoundWorkDir..'demo_mission\\Syria_POC\\Hound_Demo_SyADFGCI.lua'))()
-    -- assert(loadfile(HoundWorkDir..'demo_mission\\Syria_HARM\\Hound_Demo_syria.lua'))()
-
 
 env.info("Loading Done")
 

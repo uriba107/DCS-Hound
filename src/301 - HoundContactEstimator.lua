@@ -4,6 +4,7 @@ do
     local l_math = math
     -- local l_mist = mist
     local PI_2 = 2*l_math.pi
+    local HoundUtils = HOUND.Utils
 
     -- @type HOUND.Contact.Datapoint
     HOUND.Contact.Estimator = {}
@@ -15,8 +16,8 @@ do
     function HOUND.Contact.Estimator.accuracyScore(err)
         local score = 0
         if type(err) == "number" then
-            score = HOUND.Utils.Mapping.linear(err,0,100000,1,0,true)
-            score = HOUND.Utils.Cluster.gaussianKernel(score,0.2)
+            score = HoundUtils.Mapping.linear(err,0,100000,1,0,true)
+            score = HoundUtils.Cluster.gaussianKernel(score,0.2)
         end
         if type(score) == "number" then
             return score
@@ -40,7 +41,7 @@ do
         Kalman.estimated = {}
 
         Kalman.update = function(self,datapoint)
-            if type(self.estimated.p) ~= "table" and HOUND.Utils.Dcs.isPoint(datapoint) then
+            if type(self.estimated.p) ~= "table" and HoundUtils.Dcs.isPoint(datapoint) then
                 self.estimated.p = {
                     x = datapoint.x,
                     z = datapoint.z,
@@ -63,7 +64,7 @@ do
             self.P.x = (1-Kx) * self.P.x
             self.P.z = (1-Kz) * self.P.z
 
-            self.estimated.p = HOUND.Utils.Geo.setHeight(self.estimated.p)
+            self.estimated.p = HoundUtils.Geo.setHeight(self.estimated.p)
             return self.estimated.p
         end
 
@@ -142,7 +143,7 @@ do
             if not self.estimated.pos and datapoint:getPos() then
                 self.estimated.Az = (1/self.P.Az) * datapoint.az
                 self.estimated.El = (1/self.P.El) * datapoint.el
-                self.estimated.pos = HOUND.Utils.Geo.getProjectedIP(datapoint.platformPos,self.estimated.Az,self.estimated.El)
+                self.estimated.pos = HoundUtils.Geo.getProjectedIP(datapoint.platformPos,self.estimated.Az,self.estimated.El)
                 return self.estimated
             end
             local prediction = self:predict(datapoint)
@@ -159,7 +160,7 @@ do
 
             self.estimated.Az = self.estimated.Az + (self.K.Az * (datapoint.az-prediction.Az))
             self.estimated.El = self.estimated.El + (self.K.El * (datapoint.el-prediction.El))
-            self.estimated.pos = HOUND.Utils.Geo.getProjectedIP(datapoint.platformPos,self.estimated.Az,self.estimated.El)
+            self.estimated.pos = HoundUtils.Geo.getProjectedIP(datapoint.platformPos,self.estimated.Az,self.estimated.El)
 
             self.P.Az = (1-self.K.Az)
             self.P.El = (1-self.K.El)
@@ -169,8 +170,8 @@ do
 
         Kalman.predict = function(self,datapoint)
             local prediction = {}
-            prediction.Az,prediction.El = HOUND.Utils.Elint.getAzimuth( datapoint.platformPos , self.estimated.pos, 0 )
-            -- prediction.pos = HOUND.Utils.Geo.getProjectedIP(datapoint.platformPos,prediction.Az,prediction.El)
+            prediction.Az,prediction.El = HoundUtils.Elint.getAzimuth( datapoint.platformPos , self.estimated.pos, 0 )
+            -- prediction.pos = HoundUtils.Geo.getProjectedIP(datapoint.platformPos,prediction.Az,prediction.El)
             return prediction
         end
 
