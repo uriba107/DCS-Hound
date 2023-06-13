@@ -287,7 +287,7 @@ do
 
     --- reverse tble lookup 
     -- @local
-    -- @param #table tbl
+    -- @param #tbl table
     -- @param value to search
     -- @return the key wher value was found
     function HOUND.reverseLookup(tbl,value)
