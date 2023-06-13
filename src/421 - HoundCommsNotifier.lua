@@ -5,7 +5,7 @@ do
     --- Hound Notifier (extends HOUND.Comms.Manager)
     -- @see HOUND.Comms.Manager
     HOUND.Comms.Notifier = {}
-    HOUND.Comms.Notifier = inheritsFrom(HOUND.Comms.Manager)
+    HOUND.Comms.Notifier = HOUND.inheritsFrom(HOUND.Comms.Manager)
 
     --- Hound Notifier Create
     -- @string sector name of parent sector

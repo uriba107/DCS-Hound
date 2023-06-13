@@ -1,6 +1,7 @@
 --- Hound Comms Manager (Base class)
 -- @module HOUND.Comms.Manager
 do
+    local HoundUtils = HOUND.Utils
     --- HOUND.Comms.Manager decleration
     -- @type HOUND.Comms.Manager
     HOUND.Comms.Manager = {}
@@ -44,7 +45,7 @@ do
             enabletext = false
         }
 
-        if not HOUND.Utils.TTS.isAvailable() then
+        if not HoundUtils.TTS.isAvailable() then
             CommsManager.preferences.enabletts = false
         end
 
@@ -53,7 +54,7 @@ do
         -- CommsManager.updateSettings = function (self,settings)
         --     for k,v in pairs(settings) do
         --         local k0 = tostring(k):lower()
-        --         if setContainsValue({"enabletts","enabletext","alerts"},k0) then
+        --         if HOUND.setContainsValue({"enabletts","enabletext","alerts"},k0) then
         --             self.preferences[k0] = v
         --         else
         --             self.settings[k0] = v
@@ -61,7 +62,7 @@ do
         --     end
         -- end
 
-        if type(settings) == "table" and Length(settings) > 0 then
+        if type(settings) == "table" and HOUND.Length(settings) > 0 then
             CommsManager:updateSettings(settings)
         end
         return CommsManager
@@ -75,7 +76,7 @@ do
     function HOUND.Comms.Manager:updateSettings(settings)
         for k,v in pairs(settings) do
             local k0 = tostring(k):lower()
-            if setContainsValue({"enabletts","enabletext","alerts"},k0) then
+            if HOUND.setContainsValue({"enabletts","enabletext","alerts"},k0) then
                 self.preferences[k0] = v
             else
                 self.settings[k0] = v
@@ -105,7 +106,7 @@ do
     -- @section Settings
 
     --- is comm instance enabled
-    -- @return Bool True if enabled
+    -- @return (Bool) True if enabled
     function HOUND.Comms.Manager:isEnabled()
         return self.enabled
     end
@@ -115,7 +116,7 @@ do
     -- @return settings[key]
     function HOUND.Comms.Manager:getSettings(key)
         local k0 = tostring(key):lower()
-        if setContainsValue({"enabletts","enabletext","alerts"},k0) then
+        if HOUND.setContainsValue({"enabletts","enabletext","alerts"},k0) then
             return self.preferences[tostring(key):lower()]
         else
             return self.settings[tostring(key):lower()]
@@ -127,7 +128,7 @@ do
     -- @param value desired value
     function HOUND.Comms.Manager:setSettings(key,value)
         local k0 = tostring(key):lower()
-        if setContainsValue({"enabletts","enabletext","alerts"},k0) then
+        if HOUND.setContainsValue({"enabletts","enabletext","alerts"},k0) then
             self.preferences[k0] = value
         else
             self.settings[k0] = value
@@ -146,7 +147,7 @@ do
 
     --- enable text messages
     function HOUND.Comms.Manager:enableTTS()
-        if HOUND.Utils.TTS.isAvailable() then
+        if HoundUtils.TTS.isAvailable() then
             self:setSettings("enableTTS",true)
         end
     end
@@ -229,7 +230,7 @@ do
         local retval = {}
 
         for i,freq in ipairs(freqs) do
-            local str = string.format("%.3f",tonumber(freq)) .. " " .. (mod[i] or HOUND.Utils.TTS.getdefaultModulation(freq))
+            local str = string.format("%.3f",tonumber(freq)) .. " " .. (mod[i] or HoundUtils.TTS.getdefaultModulation(freq))
             table.insert(retval,str)
         end
         return retval
@@ -326,14 +327,14 @@ do
             return timer.getTime() + 10
         end
 
-        if gSelf.enabled and HOUND.Utils.TTS.isAvailable() and msgObj.tts ~= nil and gSelf.preferences.enabletts then
-            HOUND.Utils.TTS.Transmit(msgObj.tts,msgObj.coalition,gSelf.settings,transmitterPos)
-            readTime = HOUND.Utils.TTS.getReadTime(msgObj.tts,gSelf.settings.speed)
+        if gSelf.enabled and HoundUtils.TTS.isAvailable() and msgObj.tts ~= nil and gSelf.preferences.enabletts then
+            HoundUtils.TTS.Transmit(msgObj.tts,msgObj.coalition,gSelf.settings,transmitterPos)
+            readTime = HoundUtils.TTS.getReadTime(msgObj.tts,gSelf.settings.speed)
             -- env.info("TTS msg: " .. msgObj.tts)
         end
 
         if gSelf.enabled and gSelf.preferences.enabletext and msgObj.txt ~= nil then
-            readTime =  HOUND.Utils.TTS.getReadTime(msgObj.tts,gSelf.settings.speed) or HOUND.Utils.TTS.getReadTime(msgObj.txt,gSelf.settings.speed)
+            readTime =  HoundUtils.TTS.getReadTime(msgObj.tts,gSelf.settings.speed) or HoundUtils.TTS.getReadTime(msgObj.txt,gSelf.settings.speed)
             if msgObj.gid then
                 if type(msgObj.gid) == "table" then
                     for _,gid in ipairs(msgObj.gid) do

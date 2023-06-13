@@ -57,9 +57,11 @@
   <li><a href="../modules/HOUND.Config.html">HOUND.Config</a></li>
   <li><a href="../modules/HOUND.Utils.html">HOUND.Utils</a></li>
   <li><a href="../modules/HOUND.EventHandler.html">HOUND.EventHandler</a></li>
-  <li><a href="../modules/HOUND.Estimator.html">HOUND.Estimator</a></li>
-  <li><a href="../modules/HOUND.Datapoint.html">HOUND.Datapoint</a></li>
-  <li><a href="../modules/HOUND.Contact.html">HOUND.Contact</a></li>
+  <li><a href="../modules/HOUND.Contact.Base.html">HOUND.Contact.Base</a></li>
+  <li><a href="../modules/HOUND.Contact.Estimator.html">HOUND.Contact.Estimator</a></li>
+  <li><a href="../modules/HOUND.Contact.Datapoint.html">HOUND.Contact.Datapoint</a></li>
+  <li><a href="../modules/HOUND.Contact.Emitter.html">HOUND.Contact.Emitter</a></li>
+  <li><a href="../modules/HOUND.Contact.Site.html">HOUND.Contact.Site</a></li>
   <li><a href="../modules/HOUND.Comms.Manager.html">HOUND.Comms.Manager</a></li>
   <li><a href="../modules/HOUND.Comms.InformationSystem.html">HOUND.Comms.InformationSystem</a></li>
   <li><a href="../modules/HOUND.Comms.Controller.html">HOUND.Comms.Controller</a></li>
@@ -214,6 +216,10 @@
 	<tr>
 	<td class="name" nowrap><a href="#markDeadContact">markDeadContact (radarUnit)</a></td>
 	<td class="summary">Mark Radar as dead</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#countSites">countSites ([sectorName])</a></td>
+	<td class="summary">count sites</td>
 	</tr>
 </table>
 <h2><a href="#Sector_managment">Sector managment </a></h2>
@@ -428,7 +434,7 @@
 <h2><a href="#Exports">Exports </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#getContacts">getContacts ()</a></td>
+	<td class="name" nowrap><a href="#getContacts">getContacts ([legacyExport])</a></td>
 	<td class="summary">get an exported list of all contacts tracked by the instance</td>
 	</tr>
 	<tr>
@@ -586,7 +592,7 @@
     <h3>Returns:</h3>
     <ol>
 
-        Bool True if chaned
+        (Bool) True if chaned
     </ol>
 
 
@@ -611,7 +617,7 @@
     <h3>Returns:</h3>
     <ol>
 
-        Bool True if changed
+        (Bool) True if changed
     </ol>
 
 
@@ -630,7 +636,7 @@
     <h3>Returns:</h3>
     <ol>
 
-        Bool True if changed
+        (Bool) True if changed
     </ol>
 
 
@@ -655,7 +661,7 @@
     <h3>Returns:</h3>
     <ol>
 
-        Bool True if changed
+        (Bool) True if changed
     </ol>
 
 
@@ -687,7 +693,7 @@
     <h3>Returns:</h3>
     <ol>
 
-        Bool True if changed
+        (Bool) True if changed
     </ol>
 
 
@@ -764,7 +770,7 @@
     <h3>Returns:</h3>
     <ol>
 
-        Bool True if setting has been updated
+        (Bool) True if setting has been updated
     </ol>
 
 
@@ -783,7 +789,7 @@
     <h3>Returns:</h3>
     <ol>
 
-        Bool True if setting has been updated
+        (Bool) True if setting has been updated
     </ol>
 
 
@@ -821,7 +827,7 @@
     <h3>Returns:</h3>
     <ol>
 
-        Bool True if setting has been updated
+        (Bool) True if setting has been updated
     </ol>
 
 
@@ -840,7 +846,7 @@
     <h3>Returns:</h3>
     <ol>
 
-        Bool True if setting has been updated
+        (Bool) True if setting has been updated
     </ol>
 
 
@@ -865,7 +871,7 @@
     <h3>Returns:</h3>
     <ol>
 
-        Bool True if setting has been updated
+        (Bool) True if setting has been updated
     </ol>
 
 
@@ -916,7 +922,7 @@
     <h3>Returns:</h3>
     <ol>
 
-        Bool True if no errors
+        (Bool) True if no errors
     </ol>
 
 
@@ -1134,6 +1140,32 @@
         </li>
     </ul>
 
+
+
+
+
+</dd>
+    <dt>
+    <a name = "countSites"></a>
+    <strong>countSites ([sectorName])</strong>
+    </dt>
+    <dd>
+    count sites
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">sectorName</span>
+         String name or sector to filter by
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Int number of contacts currently tracked
+    </ol>
 
 
 
@@ -1807,7 +1839,7 @@
     <h3>Returns:</h3>
     <ol>
 
-        Bool True = enabled. False is disable or not configured
+        (Bool) True = enabled. False is disable or not configured
     </ol>
 
 
@@ -2011,7 +2043,7 @@
     <h3>Returns:</h3>
     <ol>
 
-        Bool True = enabled. False is disable or not configured
+        (Bool) True = enabled. False is disable or not configured
     </ol>
 
 
@@ -2168,7 +2200,7 @@
     <h3>Returns:</h3>
     <ol>
 
-        Bool True = enabled. False is disable or not configured
+        (Bool) True = enabled. False is disable or not configured
     </ol>
 
 
@@ -2321,12 +2353,19 @@
     <dl class="function">
     <dt>
     <a name = "getContacts"></a>
-    <strong>getContacts ()</strong>
+    <strong>getContacts ([legacyExport])</strong>
     </dt>
     <dd>
     get an exported list of all contacts tracked by the instance
 
 
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">legacyExport</span>
+         if true function will return output as before 0.4
+         (<em>optional</em>)
+        </li>
+    </ul>
 
     <h3>Returns:</h3>
     <ol>
@@ -2453,7 +2492,11 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+<<<<<<< HEAD
 <i style="float:right;">Last updated 2023-05-23 15:05:11 </i>
+=======
+<i style="float:right;">Last updated 2023-06-10 21:22:51 </i>
+>>>>>>> develop-0.4.0
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

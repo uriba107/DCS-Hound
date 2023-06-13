@@ -71,12 +71,12 @@ do
     end
 
     function testing.spawnPlatform(hound)
-        env.info("No. platforms before: " .. Length(hound.platform))
+        env.info("No. platforms before: " .. HOUND.Length(hound.platform))
         local newGrp = mist.cloneGroup("ELINT_C17_SPAWN",true)
         local newUnit = newGrp.units[1].name
         env.info("MIST Spawn - Grp:" .. newGrp.name .. " Unit: " .. newUnit)
         hound:addPlatform(newUnit)
-        env.info("No. platforms after: " .. Length(hound.platform))
+        env.info("No. platforms after: " .. HOUND.Length(hound.platform))
     end
 
     function testing.AddMarker()
@@ -260,4 +260,28 @@ do
     -- mist.debug.dump_G('hound_post_rename_G.lua')
     -- mist.debug.dumpDBs()
 
+    -- for _,unit in ipairs({StaticObject.getByName('Kokotse_Elint'),StaticObject.getByName('TV_TOWER'),StaticObject.getByName('COMMAND_CENTER')}) do
+    --     local data = unit:getDesc()
+    --     local pos = unit:getPosition().p
+    --     env.info("Hight of ".. unit:getTypeName() .. " is " .. unit:getDesc()["box"]["max"]["y"])
+    -- end
+    local balloon = StaticObject.getByName('BALLOON_ANCHOR')
+    env.info(mist.utils.tableShow(balloon:getDesc()))
+    
+    for cid,v in pairs(_G.env.mission.coalition.blue.country) do
+        if cid ~= nil and type(v) == "table" then
+            env.info("CID: " .. cid)
+            for k,v1 in pairs(v) do
+                if k == "name" then
+                    env.info("name: " .. v1)
+                end
+                -- if k == "static" then
+                --     for _,obj in pairs(v1) do
+                --         env.info(mist.utils.tableShow(obj))
+                --     end
+                -- end
+            end
+        end
+
+    end
 end

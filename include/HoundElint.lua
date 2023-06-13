@@ -12,7 +12,7 @@ end
 
 do
     HOUND = {
-        VERSION = "0.3.4-develop-20230523",
+        VERSION = "0.4.0-feature/site_managment-20230523",
         DEBUG = false,
         ELLIPSE_PERCENTILE = 0.6,
         DATAPOINTS_NUM = 30,
@@ -23,7 +23,7 @@ do
         MIST_VERSION = tonumber(table.concat({mist.majorVersion,mist.minorVersion},".")),
         FORCE_MANAGE_MARKERS = false,
         USE_LEGACY_MARKERS = true,
-        PREFER_GRPC_TTS = false -- disabled for now. will require fix planned for gRPC 0.7.2 to function correctly.
+        PREFER_GRPC_TTS = true
     }
 
     HOUND.MARKER = {
@@ -35,6 +35,7 @@ do
     }
 
     HOUND.EVENTS = {
+        NO_CHANGE     = 0,
         HOUND_ENABLED = 1,
         HOUND_DISABLED = 2,
         PLATFORM_ADDED = 3,
@@ -77,9 +78,10 @@ do
         HOUND.EventHandler.removeEventHandler(handler)
     end
 
+    HOUND.Contact = {}
     HOUND.Comms = {}
 
-    function inheritsFrom( baseClass )
+    function HOUND.inheritsFrom( baseClass )
 
         local new_class = {}
         local class_mt = { __index = new_class }
@@ -118,18 +120,18 @@ do
         return new_class
     end
 
-    function Length(T)
+    function HOUND.Length(T)
         local count = 0
         if T ~= nil then for _ in pairs(T) do count = count + 1 end end
         return count
     end
 
-    function setContains(set, key)
+    function HOUND.setContains(set, key)
         if not set or not key then return false end
         return set[key] ~= nil
     end
 
-    function setContainsValue(set,value)
+    function HOUND.setContainsValue(set,value)
         if not set or not value then return false end
         for _,v in pairs(set) do
             if v == value then
@@ -139,7 +141,15 @@ do
         return false
     end
 
-    function Gaussian(mean, sigma)
+    function HOUND.setIntersection (a,b)
+        local res = Set.new{}
+        for k in pairs(a) do
+          res[k] = b[k]
+        end
+        return res
+      end
+
+    function HOUND.Gaussian(mean, sigma)
         return math.sqrt(-2 * sigma * math.log(math.random())) *
                    math.cos(2 * math.pi * math.random()) + mean
     end
@@ -173,7 +183,7 @@ do
     }
 
     function HOUND.Logger.setBaseLevel(level)
-        if setContainsValue(HOUND.Logger.LEVEL,level) then
+        if HOUND.setContainsValue(HOUND.Logger.LEVEL,level) then
             HOUND.Logger.level = level
         end
     end
@@ -351,6 +361,16 @@ do
         ['L'] = 0.005996,
     }
 
+    HOUND.DB.RadarType = {
+        ['NONE'] = 0x00,
+        ['EWR'] = 0x01,
+        ['RANGEFINDER'] = 0x02,
+        ['ANTISHIP'] = 0x04,
+        ['SEARCH'] = 0x08,
+        ['TRACK'] = 0x10,
+        ['NAVAL'] = 0x20
+    }
+
     HOUND.DB.CALLSIGNS = {
         NATO = {
             "ABLOW", "ACTON", "AGRAM", "AMINO", "AWOKE", "BARB", "BART", "BAZOO",
@@ -381,504 +401,504 @@ do
         ['1L13 EWR'] = {
             ['Name'] = "Box Spring",
             ['Assigned'] = {"EWR"},
-            ['Role'] = {"EWR"},
+            ['Role'] = {HOUND.DB.RadarType.EWR},
             ['Band'] = 'A',
             ['Primary'] = false
         },
         ['55G6 EWR'] = {
             ['Name'] = "Tall Rack",
             ['Assigned'] = {"EWR"},
-            ['Role'] = {"EWR"},
+            ['Role'] = {HOUND.DB.RadarType.EWR},
             ['Band'] = 'A',
             ['Primary'] = false
         },
         ['FPS-117'] = {
             ['Name'] = "Seek Igloo",
             ['Assigned'] = {"EWR"},
-            ['Role'] = {"EWR"},
+            ['Role'] = {HOUND.DB.RadarType.EWR},
             ['Band'] = 'D',
             ['Primary'] = false
         },
         ['FPS-117 Dome'] = {
             ['Name'] = "Seek Igloo",
             ['Assigned'] = {"EWR"},
-            ['Role'] = {"EWR"},
+            ['Role'] = {HOUND.DB.RadarType.EWR},
             ['Band'] = 'D',
             ['Primary'] = false
         },
         ['p-19 s-125 sr'] = {
             ['Name'] = "Flat Face",
             ['Assigned'] = {"SA-2","SA-3","SA-5"},
-            ['Role'] = {"SR"},
+            ['Role'] = {HOUND.DB.RadarType.SEARCH},
             ['Band'] = 'C',
             ['Primary'] = false
         },
         ['SNR_75V'] = {
             ['Name'] = "Fan-song",
             ['Assigned'] = {"SA-2"},
-            ['Role'] = {"TR"},
+            ['Role'] = {HOUND.DB.RadarType.TRACK},
             ['Band'] = 'G',
             ['Primary'] = true
         },
         ['RD_75'] = {
             ['Name'] = "Amazonka",
             ['Assigned'] = {"SA-2"},
-            ['Role'] = {"RF"},
+            ['Role'] = {HOUND.DB.RadarType.RANGEFINDER},
             ['Band'] = 'G',
             ['Primary'] = false
         },
         ['snr s-125 tr'] = {
             ['Name'] = "Low Blow",
             ['Assigned'] = {"SA-3"},
-            ['Role'] = {"TR"},
+            ['Role'] = {HOUND.DB.RadarType.TRACK},
             ['Band'] = 'I',
             ['Primary'] = true
         },
         ['Kub 1S91 str'] = {
             ['Name'] = "Straight Flush",
             ['Assigned'] = {"SA-6"},
-            ['Role'] = {"SR","TR"},
+            ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
             ['Band'] = 'G',
             ['Primary'] = true
         },
         ['Osa 9A33 ln'] = {
             ['Name'] = "Osa",
             ['Assigned'] = {"SA-8"},
-            ['Role'] = {"SR","TR"},
+            ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
             ['Band'] = 'H',
             ['Primary'] = true
         },
         ['S-300PS 40B6MD sr'] = {
             ['Name'] = "Clam Shell",
             ['Assigned'] = {"SA-10"},
-            ['Role'] = {"SR"},
+            ['Role'] = {HOUND.DB.RadarType.SEARCH},
             ['Band'] = 'I',
             ['Primary'] = false
         },
         ['S-300PS 64H6E sr'] = {
             ['Name'] = "Big Bird",
             ['Assigned'] = {"SA-10"},
-            ['Role'] = {"SR"},
+            ['Role'] = {HOUND.DB.RadarType.SEARCH},
             ['Band'] = 'C',
             ['Primary'] = false
         },
         ['RLS_19J6'] = {
             ['Name'] = "Tin Shield",
             ['Assigned'] = {"SA-5"},
-            ['Role'] = {"SR"},
+            ['Role'] = {HOUND.DB.RadarType.SEARCH},
             ['Band'] = 'E',
             ['Primary'] = false
         },
         ['S-300PS 40B6M tr'] = {
             ['Name'] = "Tomb Stone",
             ['Assigned'] = {"SA-10"},
-            ['Role'] = {"TR"},
+            ['Role'] = {HOUND.DB.RadarType.TRACK},
             ['Band'] = 'J',
             ['Primary'] = true
         },
         ['SA-11 Buk SR 9S18M1'] = {
             ['Name'] = "Snow Drift",
             ['Assigned'] = {"SA-11","SA-17"},
-            ['Role'] = {"SR"},
+            ['Role'] = {HOUND.DB.RadarType.SEARCH},
             ['Band'] = 'G',
             ['Primary'] = true
         },
         ['SA-11 Buk LN 9A310M1'] = {
             ['Name'] = "Fire Dome",
             ['Assigned'] = {"SA-11"},
-            ['Role'] = {"TR"},
+            ['Role'] = {HOUND.DB.RadarType.TRACK},
             ['Band'] = 'H',
             ['Primary'] = false
         },
         ['Tor 9A331'] = {
             ['Name'] = "Tor",
             ['Assigned'] = {"SA-15"},
-            ['Role'] = {"SR","TR"},
+            ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
             ['Band'] = 'F',
             ['Primary'] = true
         },
         ['Strela-1 9P31'] = {
             ['Name'] = "SA-9",
             ['Assigned'] = {"SA-9"},
-            ['Role'] = {"RF"},
+            ['Role'] = {HOUND.DB.RadarType.RANGEFINDER},
             ['Band'] = 'K',
             ['Primary'] = false
         },
         ['Strela-10M3'] = {
             ['Name'] = "SA-13",
             ['Assigned'] = {"SA-13"},
-            ['Role'] = {"RF"},
+            ['Role'] = {HOUND.DB.RadarType.RANGEFINDER},
             ['Band'] = 'J',
             ['Primary'] = false
         },
         ['Patriot str'] = {
             ['Name'] = "Patriot",
             ['Assigned'] = {"Patriot"},
-            ['Role'] = {"SR","TR"},
+            ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
             ['Band'] = 'K',
             ['Primary'] = true
         },
         ['Hawk sr'] = {
             ['Name'] = "Hawk SR",
             ['Assigned'] = {"Hawk"},
-            ['Role'] = {"SR"},
+            ['Role'] = {HOUND.DB.RadarType.SEARCH},
             ['Band'] = 'C',
             ['Primary'] = false
         },
         ['Hawk tr'] = {
             ['Name'] = "Hawk TR",
             ['Assigned'] = {"Hawk"},
-            ['Role'] = {"TR"},
+            ['Role'] = {HOUND.DB.RadarType.TRACK},
             ['Band'] = 'J',
             ['Primary'] = true
         },
         ['Hawk cwar'] = {
             ['Name'] = "Hawk CWAR",
             ['Assigned'] = {"Hawk"},
-            ['Role'] = {"TR"},
+            ['Role'] = {HOUND.DB.RadarType.TRACK},
             ['Band'] = 'J',
             ['Primary'] = false
         },
         ['RPC_5N62V'] = {
             ['Name'] = "Square Pair",
             ['Assigned'] = {"SA-5"},
-            ['Role'] = {"TR"},
+            ['Role'] = {HOUND.DB.RadarType.TRACK},
             ['Band'] = 'H',
             ['Primary'] = true
         },
         ['Roland ADS'] = {
             ['Name'] = "Roland TR",
             ['Assigned'] = {"Roland"},
-            ['Role'] = {"TR"},
+            ['Role'] = {HOUND.DB.RadarType.TRACK},
             ['Band'] = 'H',
             ['Primary'] = true
         },
         ['Roland Radar'] = {
             ['Name'] = "Roland SR",
             ['Assigned'] = {"Roland"},
-            ['Role'] = {"SR"},
+            ['Role'] = {HOUND.DB.RadarType.SEARCH},
             ['Band'] = 'C',
             ['Primary'] = false
         },
         ['Gepard'] = {
             ['Name'] = "Gepard",
             ['Assigned'] = {"Gepard"},
-            ['Role'] = {"SR","TR"},
+            ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['rapier_fsa_blindfire_radar'] = {
             ['Name'] = "Rapier",
             ['Assigned'] = {"Rapier"},
-            ['Role'] = {"TR"},
+            ['Role'] = {HOUND.DB.RadarType.TRACK},
             ['Band'] = 'D',
             ['Primary'] = true
         },
         ['rapier_fsa_launcher'] = {
             ['Name'] = "Rapier",
             ['Assigned'] = {"Rapier"},
-            ['Role'] = {"TR"},
+            ['Role'] = {HOUND.DB.RadarType.TRACK},
             ['Band'] = 'J',
             ['Primary'] = false
         },
         ['NASAMS_Radar_MPQ64F1'] = {
             ['Name'] = "Sentinel",
             ['Assigned'] = {"NASAMS"},
-            ['Role'] = {"SR"},
+            ['Role'] = {HOUND.DB.RadarType.SEARCH},
             ['Band'] = 'I',
             ['Primary'] = true
         },
         ['HQ-7_STR_SP'] = {
             ['Name'] = "HQ-7",
             ['Assigned'] = {"HQ-7"},
-            ['Role'] = {"SR"},
+            ['Role'] = {HOUND.DB.RadarType.SEARCH},
             ['Band'] = 'F',
             ['Primary'] = false
         },
         ['HQ-7_LN_SP'] = {
             ['Name'] = "HQ-7",
             ['Assigned'] = {"HQ-7"},
-            ['Role'] = {"TR"},
+            ['Role'] = {HOUND.DB.RadarType.TRACK},
             ['Band'] = 'J',
             ['Primary'] = true
         },
         ['2S6 Tunguska'] = {
             ['Name'] = "Tunguska",
             ['Assigned'] = {"Tunguska"},
-            ['Role'] = {"SR","TR"},
+            ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
             ['Band'] = 'F',
             ['Primary'] = true
         },
         ['ZSU-23-4 Shilka'] = {
             ['Name'] = "Shilka",
             ['Assigned'] = {"AAA"},
-            ['Role'] = {"TR"},
+            ['Role'] = {HOUND.DB.RadarType.TRACK},
             ['Band'] = 'J',
             ['Primary'] = true
         },
         ['Dog Ear radar'] = {
             ['Name'] = "Dog Ear",
             ['Assigned'] = {"AAA"},
-            ['Role'] = {"SR"},
+            ['Role'] = {HOUND.DB.RadarType.SEARCH},
             ['Band'] = 'G',
             ['Primary'] = true
         },
         ['SON_9'] = {
             ['Name'] = "Fire Can",
             ['Assigned'] = {"AAA"},
-            ['Role'] = {"TR"},
+            ['Role'] = {HOUND.DB.RadarType.TRACK},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['Silkworm_SR'] = {
             ['Name'] = "Silkworm",
             ['Assigned'] = {"Silkworm"},
-            ['Role'] = {"AS"},
+            ['Role'] = {HOUND.DB.RadarType.ANTISHIP},
             ['Band'] = 'K',
             ['Primary'] = true
         },
         ['FuSe-65'] = {
             ['Name'] = "Würzburg",
             ['Assigned'] = {"AAA"},
-            ['Role'] = {"TR"},
+            ['Role'] = {HOUND.DB.RadarType.TRACK},
             ['Band'] = 'C',
             ['Primary'] = false
         },
         ['FuMG-401'] = {
             ['Name'] = "EWR",
             ['Assigned'] = {"EWR"},
-            ['Role'] = {"EWR"},
+            ['Role'] = {HOUND.DB.RadarType.EWR},
             ['Band'] = 'B',
             ['Primary'] = false
         },
         ['Flakscheinwerfer_37'] = {
             ['Name'] = "AAA Searchlight",
             ['Assigned'] = {"AAA"},
-            ['Role'] = {"None"},
+            ['Role'] = {HOUND.DB.RadarType.NONE},
             ['Band'] = 'L',
             ['Primary'] = false
         },
         ['Type_052B'] = {
             ['Name'] = "Type 052B (DD)",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['Type_052C'] = {
             ['Name'] = "Type 052C (DD)",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['Type_054A'] = {
             ['Name'] = "Type 054A (DD)",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['Type_071'] = {
             ['Name'] = "Type 071",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['Type_093'] = {
             ['Name'] = "Type 093",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['USS_Arleigh_Burke_IIa'] = {
             ['Name'] = "Arleigh Burke (DD)",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['CV_1143_5'] = {
             ['Name'] = "Kuznetsov (CV)",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'F',
             ['Primary'] = true
         },
         ['KUZNECOW'] = {
             ['Name'] = "Kuznetsov (CV)",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'F',
             ['Primary'] = true
         },
         ['Forrestal'] = {
             ['Name'] = "Forrestal (CV)",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['VINSON'] = {
             ['Name'] = "Nimitz (CV)",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['CVN_71'] = {
             ['Name'] = "Nimitz (CV)",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['CVN_72'] = {
             ['Name'] = "Nimitz (CV)",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['CVN_73'] = {
             ['Name'] = "Nimitz (CV)",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['Stennis'] = {
             ['Name'] = "Nimitz (CV)",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['CVN_75'] = {
             ['Name'] = "Nimitz (CV)",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['La_Combattante_II'] = {
             ['Name'] = "La Combattante (FC)",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['ALBATROS'] = {
             ['Name'] = "Grisha (FC)",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['MOLNIYA'] = {
             ['Name'] = "Molniya (FC)",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['MOSCOW'] = {
             ['Name'] = "Moskva (CG)",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['NEUSTRASH'] = {
             ['Name'] = "Neustrashimy (DD)",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['PERRY'] = {
             ['Name'] = "Oliver H. Perry (FF)",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['PIOTR'] = {
             ['Name'] = "Kirov (CG)",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['REZKY'] = {
             ['Name'] = "Krivak (FF)",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['LHA_Tarawa'] = {
             ['Name'] = "Tarawa (LHA)",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['TICONDEROG'] = {
             ['Name'] = "Ticonderoga (CG)",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['hms_invincible'] = {
             ['Name'] = "Invincible (CV)",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'E',
             ['Primary'] = true
         },
         ['leander-gun-achilles'] = {
             ['Name'] = "Leander (FF)",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'F',
             ['Primary'] = true
         },
         ['leander-gun-andromeda'] = {
             ['Name'] = "Leander (FF)",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'F',
             ['Primary'] = true
         },
         ['leander-gun-ariadne'] = {
             ['Name'] = "Leander (FF)",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'F',
             ['Primary'] = true
         },
         ['leander-gun-condell'] = {
             ['Name'] = "Condell (FF)",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'K',
             ['Primary'] = true
         },
         ['leander-gun-lynch'] = {
             ['Name'] = "Condell (FF)",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'K',
             ['Primary'] = true
         },
         ['BDK-775'] = {
             ['Name'] = "Ropucha",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'E',
             ['Primary'] = true
         },
@@ -886,8 +906,11 @@ do
 
     HOUND.DB.Platform =  {
         [Object.Category.STATIC] = {
-            ['Comms tower M'] = {antenna = {size = 80, factor = 1},ins_error=0},
-            ['Cow'] = {antenna = {size = 1000, factor = 10},ins_error=0}
+            ['Comms tower M'] = {antenna = {size = 107, factor = 1},ins_error=0},
+            ['.Command Center'] = {antenna = {size = 80, factor = 1},ins_error=0},
+            ['Cow'] = {antenna = {size = 1000, factor = 10},ins_error=0},
+            ['m1_vla'] = {antenna = {size = 15, factor = 1},ins_error=0},
+            ['TV tower']  = {antenna = {size = 235, factor = 1},ins_error=0},
         },
         [Object.Category.UNIT] = {
             ['MLRS FDDM'] = {antenna = {size = 15, factor = 1},ins_error=0},
@@ -940,336 +963,336 @@ do
     HOUND.DB.Radars['S-300PS 64H6E TRAILER sr'] = {
             ['Name'] = "Big Bird",
             ['Assigned'] = {"SA-10"},
-            ['Role'] = {"SR"},
+            ['Role'] = {HOUND.DB.RadarType.SEARCH},
             ['Band'] = 'C',
             ['Primary'] = false
         }
     HOUND.DB.Radars['S-300PS SA-10B 40B6MD MAST sr'] = {
             ['Name'] = "Clam Shell",
             ['Assigned'] = {"SA-10"},
-            ['Role'] = {"SR"},
+            ['Role'] = {HOUND.DB.RadarType.SEARCH},
             ['Band'] = 'I',
             ['Primary'] = false
         }
     HOUND.DB.Radars['S-300PS 40B6M MAST tr'] = {
             ['Name'] = "Flap Lid",
             ['Assigned'] = {"SA-10"},
-            ['Role'] = {"TR"},
+            ['Role'] = {HOUND.DB.RadarType.TRACK},
             ['Band'] = 'J',
             ['Primary'] = true
         }
     HOUND.DB.Radars['S-300PS 30H6 TRAILER tr'] = {
             ['Name'] = "Flap Lid",
             ['Assigned'] = {"SA-10"},
-            ['Role'] = {"TR"},
+            ['Role'] = {HOUND.DB.RadarType.TRACK},
             ['Band'] = 'J',
             ['Primary'] = true
         }
     HOUND.DB.Radars['S-300PS 30N6 TRAILER tr'] = {
             ['Name'] = "Flap Lid",
             ['Assigned'] = {"SA-10"},
-            ['Role'] = {"TR"},
+            ['Role'] = {HOUND.DB.RadarType.TRACK},
             ['Band'] = 'J',
             ['Primary'] = true
         }
     HOUND.DB.Radars['S-300PMU1 40B6MD sr'] = {
             ['Name'] = "Clam Shell",
             ['Assigned'] = {"SA-10"},
-            ['Role'] = {"SR"},
+            ['Role'] = {HOUND.DB.RadarType.SEARCH},
             ['Band'] = 'I',
             ['Primary'] = false
         }
     HOUND.DB.Radars['S-300PMU1 64N6E sr'] = {
             ['Name'] = "Big Bird",
             ['Assigned'] = {"SA-10"},
-            ['Role'] = {"SR"},
+            ['Role'] = {HOUND.DB.RadarType.SEARCH},
             ['Band'] = 'C',
             ['Primary'] = false
         }
     HOUND.DB.Radars['S-300PMU1 30N6E tr'] = {
             ['Name'] = "Flap Lid",
             ['Assigned'] = {"SA-10"},
-            ['Role'] = {"TR"},
+            ['Role'] = {HOUND.DB.RadarType.TRACK},
             ['Band'] = 'J',
             ['Primary'] = true
         }
     HOUND.DB.Radars['S-300PMU1 40B6M tr'] = {
             ['Name'] = "Grave Stone",
             ['Assigned'] = {"SA-10"},
-            ['Role'] = {"TR"},
+            ['Role'] = {HOUND.DB.RadarType.TRACK},
             ['Band'] = 'J',
             ['Primary'] = true
         }
     HOUND.DB.Radars['S-300V 9S15 sr'] = {
             ['Name'] = 'Bill Board',
             ['Assigned'] = {"SA-12"},
-            ['Role'] = {"SR"},
+            ['Role'] = {HOUND.DB.RadarType.SEARCH},
             ['Band'] = 'E',
             ['Primary'] = false
         }
     HOUND.DB.Radars['S-300V 9S19 sr'] = {
             ['Name'] = 'High Screen',
             ['Assigned'] = {"SA-12"},
-            ['Role'] = {"SR"},
+            ['Role'] = {HOUND.DB.RadarType.SEARCH},
             ['Band'] = 'C',
             ['Primary'] = false
         }
     HOUND.DB.Radars['S-300V 9S32 tr'] = {
             ['Name'] = 'Grill Pan',
             ['Assigned'] = {"SA-12"},
-            ['Role'] = {"TR"},
+            ['Role'] = {HOUND.DB.RadarType.TRACK},
             ['Band'] = 'J',
             ['Primary'] = true
         }
     HOUND.DB.Radars['S-300PMU2 92H6E tr'] = {
             ['Name'] = 'Grave Stone',
             ['Assigned'] = {"SA-20"},
-            ['Role'] = {"TR"},
+            ['Role'] = {HOUND.DB.RadarType.TRACK},
             ['Band'] = 'I',
             ['Primary'] = true
         }
     HOUND.DB.Radars['S-300PMU2 64H6E2 sr'] = {
             ['Name'] = "Big Bird",
             ['Assigned'] = {"SA-20"},
-            ['Role'] = {"SR"},
+            ['Role'] = {HOUND.DB.RadarType.SEARCH},
             ['Band'] = 'C',
             ['Primary'] = false
         }
     HOUND.DB.Radars['S-300VM 9S15M2 sr'] = {
             ['Name'] = 'Bill Board M',
             ['Assigned'] = {"SA-23"},
-            ['Role'] = {"SR"},
+            ['Role'] = {HOUND.DB.RadarType.SEARCH},
             ['Band'] = 'E',
             ['Primary'] = false
         }
     HOUND.DB.Radars['S-300VM 9S19M2 sr'] = {
             ['Name'] = 'High Screen M',
             ['Assigned'] = {"SA-23"},
-            ['Role'] = {"SR"},
+            ['Role'] = {HOUND.DB.RadarType.SEARCH},
             ['Band'] = 'C',
             ['Primary'] = false
         }
     HOUND.DB.Radars['S-300VM 9S32ME tr'] = {
             ['Name'] = 'Grill Pan M',
             ['Assigned'] = {"SA-23"},
-            ['Role'] = {"TR"},
+            ['Role'] = {HOUND.DB.RadarType.TRACK},
             ['Band'] = 'K',
             ['Primary'] = true
         }
     HOUND.DB.Radars['SA-17 Buk M1-2 LN 9A310M1-2'] = {
             ['Name'] = "Fire Dome M",
             ['Assigned'] = {"SA-17"},
-            ['Role'] = {"TR"},
+            ['Role'] = {HOUND.DB.RadarType.TRACK},
             ['Band'] = 'H',
             ['Primary'] = false
         }
     HOUND.DB.Radars['34Ya6E Gazetchik E decoy'] = {
             ['Name'] = "Flap Lid",
             ['Assigned'] = {"SA-10"},
-            ['Role'] = {"TR"},
+            ['Role'] = {HOUND.DB.RadarType.TRACK},
             ['Band'] = 'J',
             ['Primary'] = true
         }
     HOUND.DB.Radars['Fire Can radar'] = {
             ['Name'] = "Fire Can",
             ['Assigned'] = {"AAA"},
-            ['Role'] = {"TR"},
+            ['Role'] = {HOUND.DB.RadarType.TRACK},
             ['Band'] = 'E',
             ['Primary'] = true
         }
     HOUND.DB.Radars['EWR 55G6U NEBO-U'] = {
             ['Name'] = "Tall Rack",
             ['Assigned'] = {"EWR"},
-            ['Role'] = {"EWR"},
+            ['Role'] = {HOUND.DB.RadarType.EWR},
             ['Band'] = 'A',
             ['Primary'] = false
         }
     HOUND.DB.Radars['EWR P-37 BAR LOCK'] = {
             ['Name'] = "Bar lock",
-            ['Assigned'] = {"EWR"},
-            ['Role'] = {"SA-5","EWR"},
+            ['Assigned'] = {"EWR","SA-5"},
+            ['Role'] = {HOUND.DB.RadarType.EWR,HOUND.DB.RadarType.SEARCH},
             ['Band'] = 'E',
             ['Primary'] = false
         }
     HOUND.DB.Radars['EWR 1L119 Nebo-SVU'] = {
             ['Name'] = "Nebo-SVU",
             ['Assigned'] = {"EWR"},
-            ['Role'] = {"EWR"},
+            ['Role'] = {HOUND.DB.RadarType.EWR},
             ['Band'] = 'A',
             ['Primary'] = false
         }
     HOUND.DB.Radars['EWR Generic radar tower'] = {
             ['Name'] = "Civilian Radar",
             ['Assigned'] = {"EWR"},
-            ['Role'] = {"EWR"},
+            ['Role'] = {HOUND.DB.RadarType.EWR},
             ['Band'] = 'C',
             ['Primary'] = false
         }
     HOUND.DB.Radars['PantsirS1'] = {
             ['Name'] = "Pantsir",
             ['Assigned'] = {"SA-22"},
-            ['Role'] = {"SR","TR"},
+            ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
             ['Band'] = 'F',
             ['Primary'] = true
         }
     HOUND.DB.Radars['PantsirS2'] = {
             ['Name'] = "Pantsir",
             ['Assigned'] = {"SA-22"},
-            ['Role'] = {"SR","TR"},
+            ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
             ['Band'] = 'F',
             ['Primary'] = true
         }
     HOUND.DB.Radars['Admiral_Kasatonov'] = {
             ['Name'] = "Gorshkov (FF)",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'F',
             ['Primary'] = true
         }
     HOUND.DB.Radars['Karakurt_AShM'] = {
             ['Name'] = "Karakurt (FS)",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'F',
             ['Primary'] = true
         }
     HOUND.DB.Radars['Karakurt_LACM'] = {
             ['Name'] = "Karakurt (FS)",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'F',
             ['Primary'] = true
         }
     HOUND.DB.Radars['MonolitB'] = {
             ['Name'] = "Monolit B",
             ['Assigned'] = {"Bastion"},
-            ['Role'] = {"AS"},
+            ['Role'] = {HOUND.DB.RadarType.ANTISHIP},
             ['Band'] = 'I',
             ['Primary'] = true
         }
         HOUND.DB.Radars['Arleigh_Burke_Flight_III_AShM'] = {
             ['Name'] = "Arleigh Burke (DD)",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'E',
             ['Primary'] = true
         }
     HOUND.DB.Radars['Arleigh_Burke_Flight_III_LACM'] = {
             ['Name'] = "Arleigh Burke (DD)",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'E',
             ['Primary'] = true
         }
     HOUND.DB.Radars['Arleigh_Burke_Flight_III_SAM'] = {
             ['Name'] = "Arleigh Burke (DD)",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'E',
             ['Primary'] = true
         }
     HOUND.DB.Radars['Ticonderoga_CMP_AShM'] = {
             ['Name'] = "Ticonderoga (CG)",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'E',
             ['Primary'] = true
         }
     HOUND.DB.Radars['Ticonderoga_CMP_LACM'] = {
             ['Name'] = "Ticonderoga (CG)",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'E',
             ['Primary'] = true
         }
     HOUND.DB.Radars['Ticonderoga_CMP_SAM'] = {
             ['Name'] = "Ticonderoga (CG)",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'E',
             ['Primary'] = true
         }
         HOUND.DB.Radars['Type45'] = {
             ['Name'] = "Type 45 (DD)",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'E',
             ['Primary'] = true
         }
     HOUND.DB.Radars['HSwMS_Visby'] = {
             ['Name'] = "Visby (FS)",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'F',
             ['Primary'] = true
         }
     HOUND.DB.Radars['LvKv9040'] ={
             ['Name'] = "LvKv9040",
             ['Assigned'] = {"AAA"},
-            ['Role'] = {"RF"},
+            ['Role'] = {HOUND.DB.RadarType.RANGEFINDER},
             ['Band'] = 'J',
             ['Primary'] = true
         }
     HOUND.DB.Radars['LvS-103_PM103'] = {
             ['Name'] = "Patriot",
             ['Assigned'] = {"Patriot"},
-            ['Role'] = {"SR","TR"},
+            ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
             ['Band'] = 'K',
             ['Primary'] = true
         }
     HOUND.DB.Radars['LvS-103_PM103_HX'] = {
             ['Name'] = "Patriot",
             ['Assigned'] = {"Patriot"},
-            ['Role'] = {"SR","TR"},
+            ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
             ['Band'] = 'K',
             ['Primary'] = true
         }
     HOUND.DB.Radars['RBS-90'] = {
             ['Name'] = "RBS-90",
             ['Assigned'] = {"SHORAD"},
-            ['Role'] = {"RF"},
+            ['Role'] = {HOUND.DB.RadarType.RANGEFINDER},
             ['Band'] = 'J',
             ['Primary'] = false
         }
     HOUND.DB.Radars['BV410_RBS90'] = {
             ['Name'] = "RBS-90",
             ['Assigned'] = {"SHORAD"},
-            ['Role'] = {"RF"},
+            ['Role'] = {HOUND.DB.RadarType.RANGEFINDER},
             ['Band'] = 'J',
             ['Primary'] = false
         }
     HOUND.DB.Radars['UndE23'] = {
             ['Name'] = "UndE23",
             ['Assigned'] = {"SHORAD"},
-            ['Role'] = {"SR"},
+            ['Role'] = {HOUND.DB.RadarType.SEARCH},
             ['Band'] = 'G',
             ['Primary'] = true
         }
     HOUND.DB.Radars['Type055'] = {
             ['Name'] = "Type 055 (CG)",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'E',
             ['Primary'] = true
         }
     HOUND.DB.Radars['Type052D'] = {
             ['Name'] = "Type 052D (DD)",
             ['Assigned'] = {"Naval"},
-            ['Role'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = 'E',
             ['Primary'] = true
         }
     HOUND.DB.Radars['PGL_625'] = {
             ['Name'] = "PGL-625",
             ['Assigned'] = {"SHORAD"},
-            ['Role'] = {"SR","TR"},
+            ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
             ['Band'] = 'F',
             ['Primary'] = true
         }
     HOUND.DB.Radars['HQ17A'] = {
             ['Name'] = "HQ-17",
             ['Assigned'] = {"HQ-17"},
-            ['Role'] = {"SR","TR"},
+            ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
             ['Band'] = 'F',
             ['Primary'] = true
         }
@@ -1282,27 +1305,27 @@ do
     function HOUND.DB.getRadarData(typeName)
         if not HOUND.DB.Radars[typeName] then return end
         local data = l_mist.utils.deepCopy(HOUND.DB.Radars[typeName])
-        data.isEWR = setContainsValue(data.Role,"EWR")
+        data.isEWR = HOUND.setContainsValue(data.Role,"EWR")
         return data
     end
 
     function HOUND.DB.isValidPlatform(candidate)
-        if type(candidate) ~= "table" or type(candidate.isExist) ~= "function" or not candidate:isExist()
+        if (not HOUND.Utils.Dcs.isUnit(candidate) and not HOUND.Utils.Dcs.isStaticObject(candidate)) or not candidate:isExist()
              then return false
         end
 
         local isValid = false
         local mainCategory = candidate:getCategory()
         local type = candidate:getTypeName()
-        if setContains(HOUND.DB.Platform,mainCategory) then
-            if setContains(HOUND.DB.Platform[mainCategory],type) then
+        if HOUND.setContains(HOUND.DB.Platform,mainCategory) then
+            if HOUND.setContains(HOUND.DB.Platform[mainCategory],type) then
                 if HOUND.DB.Platform[mainCategory][type]['require'] then
                     local platformData = HOUND.DB.Platform[mainCategory][type]
-                    if setContains(platformData['require'],'CLSID') then
+                    if HOUND.setContains(platformData['require'],'CLSID') then
                         local required = platformData['require']['CLSID']
                         isValid = HOUND.Utils.hasPayload(candidate,required)
                     end
-                    if setContains(platformData['require'],'TASK') then
+                    if HOUND.setContains(platformData['require'],'TASK') then
                         local required = platformData['require']['TASK']
                         isValid = not HOUND.Utils.hasTask(candidate,required)
                     end
@@ -1355,8 +1378,8 @@ do
         if type(DCS_Unit) ~= "table" or not DCS_Unit.getTypeName or not DCS_Unit.getCategory then return 0 end
         local mainCategory = DCS_Unit:getCategory()
         local typeName = DCS_Unit:getTypeName()
-        if setContains(HOUND.DB.Platform,mainCategory) then
-            if setContains(HOUND.DB.Platform[mainCategory],typeName) then
+        if HOUND.setContains(HOUND.DB.Platform,mainCategory) then
+            if HOUND.setContains(HOUND.DB.Platform[mainCategory],typeName) then
                 return HOUND.DB.Platform[mainCategory][typeName].antenna.size *  HOUND.DB.Platform[mainCategory][typeName].antenna.factor
             end
         end
@@ -1366,7 +1389,7 @@ do
     function HOUND.DB.getEmitterBand(DCS_Unit)
         if type(DCS_Unit) ~= "table" or not DCS_Unit.getTypeName then return 'C' end
         local typeName = DCS_Unit:getTypeName()
-        if setContains(HOUND.DB.Radars,typeName) then
+        if HOUND.setContains(HOUND.DB.Radars,typeName) then
             return HOUND.DB.Radars[typeName].Band
         end
         return 'C'
@@ -1385,7 +1408,7 @@ do
     HOUND.Config.__index = HOUND.Config
 
     function HOUND.Config.get(HoundInstanceId)
-        HoundInstanceId = HoundInstanceId or Length(HOUND.Config.configMaps)+1
+        HoundInstanceId = HoundInstanceId or HOUND.Length(HOUND.Config.configMaps)+1
 
         if HOUND.Config.configMaps[HoundInstanceId] then
             return HOUND.Config.configMaps[HoundInstanceId]
@@ -1432,7 +1455,7 @@ do
                 env.info("[Hound] - coalition already set for Instance Id " .. self.id)
                 return false
             end
-            if setContainsValue(coalition.side,coalitionId) then
+            if HOUND.setContainsValue(coalition.side,coalitionId) then
                 self.coalitionId = coalitionId
                 return true
             end
@@ -1440,7 +1463,7 @@ do
         end
 
         instance.setInterval = function (self,intervalName,setVal)
-            if setContains(self.intervals,intervalName) and type(setVal) == "number" then
+            if HOUND.setContains(self.intervals,intervalName) and type(setVal) == "number" then
                 self.intervals[intervalName] = setVal
                 return true
             end
@@ -1452,7 +1475,7 @@ do
         end
 
         instance.setMarkerType = function (self,markerType)
-            if setContainsValue(HOUND.MARKER,markerType) then
+            if HOUND.setContainsValue(HOUND.MARKER,markerType) then
                 self.preferences.markerType = markerType
                 return true
             end
@@ -1610,6 +1633,7 @@ do
 
     HOUND.Utils = {
         Mapping = {},
+        Dcs     = {},
         Geo     = {},
         Marker  = {},
         TTS     = {},
@@ -1650,17 +1674,27 @@ do
     end
 
     function HOUND.Utils.AzimuthAverage(azimuths)
-        if not azimuths or Length(azimuths) == 0 then return nil end
+        if not azimuths or HOUND.Length(azimuths) == 0 then return nil end
 
         local sumSin = 0
         local sumCos = 0
-        for i=1, Length(azimuths) do
+        for i=1, HOUND.Length(azimuths) do
             sumSin = sumSin + l_math.sin(azimuths[i])
             sumCos = sumCos + l_math.cos(azimuths[i])
         end
         return (l_math.atan2(sumSin,sumCos) + pi_2) % pi_2
     end
 
+    function HOUND.Utils.getMagVar(DCSpoint)
+        if not HOUND.Utils.Dcs.isPoint(DCSpoint) then return 0 end
+        local l_magvar = require('magvar')
+        if l_magvar then
+            local lat, lon, _ = coord.LOtoLL(DCSpoint)
+            return magvar.get_mag_decl(lat, lon)
+        end
+        return l_mist.getNorthCorrection(DCSpoint)
+
+    end
     function HOUND.Utils.PointClusterTilt(points,MagNorth,refPos)
         if not points or type(points) ~= "table" then return end
         if not refPos then
@@ -1668,7 +1702,7 @@ do
         end
         local magVar = 0
         if MagNorth then
-            magVar = l_mist.getNorthCorrection(refPos)
+            magVar = HOUND.Utils.getMagVar(refPos)
         end
         local biasVector = nil
         for _,point in pairs(points) do
@@ -1712,9 +1746,9 @@ do
         local detectionRange = 0
         local unit_sensors = DCS_Unit:getSensors()
         if not unit_sensors then return detectionRange end
-        if not setContains(unit_sensors,Unit.SensorType.RADAR) then return detectionRange end
+        if not HOUND.setContains(unit_sensors,Unit.SensorType.RADAR) then return detectionRange end
         for _,radar in pairs(unit_sensors[Unit.SensorType.RADAR]) do
-            if setContains(radar,"detectionDistanceAir") then
+            if HOUND.setContains(radar,"detectionDistanceAir") then
                 for _,aspects in pairs(radar["detectionDistanceAir"]) do
                     for _,range in pairs(aspects) do
                         detectionRange = l_math.max(detectionRange,range)
@@ -1756,7 +1790,7 @@ do
             "Please send my regards.",
             " "
         }
-        return response[l_math.max(1,l_math.min(l_math.ceil(timer.getAbsTime() % Length(response)),Length(response)))]
+        return response[l_math.max(1,l_math.min(l_math.ceil(timer.getAbsTime() % HOUND.Length(response)),HOUND.Length(response)))]
     end
 
     function HOUND.Utils.getCoalitionString(coalitionID)
@@ -1844,7 +1878,7 @@ do
         end
 
         if type(override) == "table" then
-            if setContains(override,formationCallsign) then
+            if HOUND.setContains(override,formationCallsign) then
                 callsign = callsign:gsub(formationCallsign,override[formationCallsign])
                 return string.upper(callsign:match( "^%s*(.-)%s*$" ))
             end
@@ -1886,7 +1920,7 @@ do
 
     function HOUND.Utils.getHoundCallsign(namePool)
         local SelectedPool = HOUND.DB.CALLSIGNS[namePool] or HOUND.DB.CALLSIGNS.GENERIC
-        return SelectedPool[l_math.random(1, Length(SelectedPool))]
+        return SelectedPool[l_math.random(1, HOUND.Length(SelectedPool))]
     end
 
     function HOUND.Utils.isDMM(DCS_Unit)
@@ -1898,7 +1932,7 @@ do
         if type(DCS_Unit) == "Table" and DCS_Unit.getTypeName then
             typeName = DCS_Unit:getTypeName()
         end
-        return setContains(HOUND.DB.useDecMin,typeName)
+        return HOUND.setContains(HOUND.DB.useDecMin,typeName)
     end
 
     function HOUND.Utils.hasPayload(DCS_Unit,payloadName)
@@ -1961,6 +1995,26 @@ do
         return mappedIn
     end
 
+    function HOUND.Utils.Dcs.isPoint(point)
+        if type(point) ~= "table" then return false end
+        return (type(point.x) == "number") and (type(point.z) == "number")
+    end
+
+    function HOUND.Utils.Dcs.isUnit(obj)
+        if type(obj) ~= "table" then return false end
+        return getmetatable(obj) == Unit
+    end
+
+    function HOUND.Utils.Dcs.isGroup(obj)
+        if type(obj) ~= "table" then return false end
+        return getmetatable(obj) == Group
+    end
+
+    function HOUND.Utils.Dcs.isStaticObject(obj)
+        if type(obj) ~= "table" then return false end
+        return getmetatable(obj) == StaticObject
+    end
+
     function HOUND.Utils.Geo.checkLOS(pos0,pos1)
         if not pos0 or not pos1 then return false end
         local dist = l_mist.utils.get2DDist(pos0,pos1)
@@ -1977,13 +2031,8 @@ do
         return d0+d1
     end
 
-    function HOUND.Utils.Geo.isDcsPoint(point)
-        if type(point) ~= "table" then return false end
-        return (type(point.x) == "number") and (type(point.z) == "number")
-    end
-
     function HOUND.Utils.Geo.getProjectedIP(p0,az,el)
-        if not HOUND.Utils.Geo.isDcsPoint(p0) or type(az) ~= "number" or type(el) ~= "number" then return end
+        if not HOUND.Utils.Dcs.isPoint(p0) or type(az) ~= "number" or type(el) ~= "number" then return end
         local maxSlant = HOUND.Utils.Geo.EarthLOS(p0.y)*1.2
 
         local unitVector = HOUND.Utils.Vector.getUnitVector(az,el)
@@ -1991,7 +2040,7 @@ do
     end
 
     function HOUND.Utils.Geo.setPointHeight(point)
-        if HOUND.Utils.Geo.isDcsPoint(point) and type(point.y) ~= "number" then
+        if HOUND.Utils.Dcs.isPoint(point) and type(point.y) ~= "number" then
             point.y = land.getHeight({x=point.x,y=point.z})
         end
         return point
@@ -1999,7 +2048,7 @@ do
 
     function HOUND.Utils.Geo.setHeight(point)
         if type(point) == "table" then
-            if HOUND.Utils.Geo.isDcsPoint(point) then
+            if HOUND.Utils.Dcs.isPoint(point) then
                 return HOUND.Utils.Geo.setPointHeight(point)
             end
             for _,pt in pairs(point) do
@@ -2051,7 +2100,7 @@ do
 
         instance.setPos = function(self,pos)
             if self.type == HOUND.Utils.Marker.Type.FREEFORM then return end
-            if HOUND.Utils.Geo.isDcsPoint(pos) then
+            if HOUND.Utils.Dcs.isPoint(pos) then
                 trigger.action.setMarkupPositionStart(self.id,pos)
             end
         end
@@ -2059,7 +2108,7 @@ do
         instance.setText = function(self,text)
             if type(text) == "string" and self.id > 0 then
                 if self.type == HOUND.Utils.Marker.Type.TEXT then
-                    text = "¤ « " .. text
+                    text = "⇙ « " .. text
                 end
                 trigger.action.setMarkupText(self.id,text)
             end
@@ -2115,7 +2164,7 @@ do
             local fontSize = args.fontSize or 16
             self.id = HOUND.Utils.Marker.getId()
 
-            if HOUND.Utils.Geo.isDcsPoint(pos) then
+            if HOUND.Utils.Dcs.isPoint(pos) then
                 if HOUND.USE_LEGACY_MARKERS then
                     self.type = HOUND.Utils.Marker.Type.POINT
                     trigger.action.markToCoalition(self.id, text, pos, coalition,true)
@@ -2126,27 +2175,27 @@ do
                 return true
             end
 
-            if Length(pos) == 2 and HOUND.Utils.Geo.isDcsPoint(pos.p) and type(pos.r) == "number" then
+            if HOUND.Length(pos) == 2 and HOUND.Utils.Dcs.isPoint(pos.p) and type(pos.r) == "number" then
                 self.type = HOUND.Utils.Marker.Type.CIRCLE
                 trigger.action.circleToAll(coalition,self.id, pos.p,pos.r,lineColor,fillColor,lineType,true)
                 return true
             end
 
-            if Length(pos) == 4 then
+            if HOUND.Length(pos) == 4 then
                 self.type = HOUND.Utils.Marker.Type.FREEFORM
                 trigger.action.markupToAll(6,coalition,self.id,
                     pos[1], pos[2], pos[3], pos[4],
                     lineColor,fillColor,lineType,true)
 
             end
-            if Length(pos) == 8 then
+            if HOUND.Length(pos) == 8 then
                 self.type = HOUND.Utils.Marker.Type.FREEFORM
                 trigger.action.markupToAll(7,coalition,self.id,
                     pos[1], pos[2], pos[3], pos[4],
                     pos[5], pos[6], pos[7], pos[8],
                     lineColor,fillColor,lineType,true)
             end
-            if Length(pos) == 16 then
+            if HOUND.Length(pos) == 16 then
                 self.type = HOUND.Utils.Marker.Type.FREEFORM
                 trigger.action.markupToAll(7,coalition,self.id,
                     pos[1], pos[2], pos[3], pos[4],
@@ -2173,14 +2222,14 @@ do
             if self.id > 0 then
                 if args.pos then
                     local pos = args.pos
-                    if HOUND.Utils.Geo.isDcsPoint(pos) then
+                    if HOUND.Utils.Dcs.isPoint(pos) then
                         self:setPos(pos)
                     end
-                    if Length(pos) == 2 and type(pos.r) == "number" and HOUND.Utils.Geo.isDcsPoint(pos.p) then
+                    if HOUND.Length(pos) == 2 and type(pos.r) == "number" and HOUND.Utils.Dcs.isPoint(pos.p) then
                         self:setPos(pos.p)
                         self:setRadius(pos.r)
                     end
-                    if type(pos) == "table" and Length(pos) > 2 and HOUND.Utils.Geo.isDcsPoint(pos[1]) then
+                    if type(pos) == "table" and HOUND.Length(pos) > 2 and HOUND.Utils.Dcs.isPoint(pos[1]) then
                         return self:_replace(args)
                     end
                 end
@@ -2298,7 +2347,7 @@ do
         if args.volume ~= 1.0 then
             local volume = ""
 
-            if setContainsValue(VOLUME,args.volume) then
+            if HOUND.setContainsValue(VOLUME,args.volume) then
                 volume = args.volume
             end
 
@@ -2598,7 +2647,7 @@ do
         for _,drawLayer in pairs(base.drawings.layers) do
             if type(drawLayer["objects"]) == "table" then
                 for _,drawObject in pairs(drawLayer["objects"]) do
-                    if drawObject["primitiveType"] == "Polygon" and (setContainsValue({"free","rect","oval"},drawObject["polygonMode"])) then
+                    if drawObject["primitiveType"] == "Polygon" and (HOUND.setContainsValue({"free","rect","oval"},drawObject["polygonMode"])) then
                         table.insert(zoneNames,drawObject["name"])
                     end
                 end
@@ -2616,7 +2665,7 @@ do
                     if drawObject["name"] == zoneName and drawObject["primitiveType"] == "Polygon" then
                         local points = {}
                         local theta = nil
-                        if drawObject["polygonMode"] == "free" and Length(drawObject["points"]) >2 then
+                        if drawObject["polygonMode"] == "free" and HOUND.Length(drawObject["points"]) >2 then
                             points = l_mist.utils.deepCopy(drawObject["points"])
                             table.remove(points)
                         end
@@ -2650,7 +2699,7 @@ do
                                 point.y = x * l_math.sin(theta) + y * l_math.cos(theta)
                             end
                         end
-                        if Length(points) < 3 then return nil end
+                        if HOUND.Length(points) < 3 then return nil end
                         local objectX,objecty = drawObject["mapX"],drawObject["mapY"]
                         for _,point in pairs(points) do
                             point.x = point.x + objectX
@@ -2664,11 +2713,17 @@ do
         return nil
     end
 
+    function HOUND.Utils.Zone.getGroupRoute(GroupName)
+        if type(GroupName) == "string" and Group.getByName(GroupName) then
+            return mist.getGroupPoints(GroupName)
+        end
+    end
+
     function HOUND.Utils.Polygon.threatOnSector(polygon,point, radius)
-        if type(polygon) ~= "table" or Length(polygon) < 3 or not HOUND.Utils.Geo.isDcsPoint(l_mist.utils.makeVec3(polygon[1])) then
+        if type(polygon) ~= "table" or HOUND.Length(polygon) < 3 or not HOUND.Utils.Dcs.isPoint(l_mist.utils.makeVec3(polygon[1])) then
             return
         end
-        if not HOUND.Utils.Geo.isDcsPoint(point) then
+        if not HOUND.Utils.Dcs.isPoint(point) then
             return
         end
         local inPolygon = l_mist.pointInPolygon(point,polygon)
@@ -2730,7 +2785,7 @@ do
         end
         cp1 = cp2
         end
-        if Length(outputList) > 0 then
+        if HOUND.Length(outputList) > 0 then
             return outputList
         end
         return nil
@@ -2775,10 +2830,10 @@ do
     function HOUND.Utils.Polygon.circumcirclePoints(points)
         local function calcCircle(p1,p2,p3)
             local cx,cz, r
-            if HOUND.Utils.Geo.isDcsPoint(p1) and not p2 and not p3 then
+            if HOUND.Utils.Dcs.isPoint(p1) and not p2 and not p3 then
                 return {x = p1.x, z = p1.z,r = 0}
             end
-            if HOUND.Utils.Geo.isDcsPoint(p1) and HOUND.Utils.Geo.isDcsPoint(p2) and not p3 then
+            if HOUND.Utils.Dcs.isPoint(p1) and HOUND.Utils.Dcs.isPoint(p2) and not p3 then
                 cx = 0.5 * (p1.x + p2.x)
                 cz = 0.5 * (p1.z + p2.z)
             else
@@ -2833,14 +2888,14 @@ do
     end
 
     function HOUND.Utils.Polygon.getArea(polygon)
-        if not polygon or type(polygon) ~= "table" or Length(polygon) < 2 then return 0 end
+        if not polygon or type(polygon) ~= "table" or HOUND.Length(polygon) < 2 then return 0 end
         local a,b = 0,0
-        for i=1,Length(polygon)-1 do
+        for i=1,HOUND.Length(polygon)-1 do
             a = a + polygon[i].x * polygon[i+1].z
             b = b + polygon[i].z * polygon[i+1].x
         end
-        a = a + polygon[Length(polygon)].x * polygon[1].z
-        b = b + polygon[Length(polygon)].z * polygon[1].x
+        a = a + polygon[HOUND.Length(polygon)].x * polygon[1].z
+        b = b + polygon[HOUND.Length(polygon)].z * polygon[1].x
         return l_math.abs((a-b)/2)
     end
 
@@ -2860,7 +2915,7 @@ do
     end
 
     function HOUND.Utils.Polygon.azMinMax(poly,refPos)
-        if not HOUND.Utils.Geo.isDcsPoint(refPos) or type(poly) ~= "table" or Length(poly) < 2 or l_mist.pointInPolygon(refPos,poly) then
+        if not HOUND.Utils.Dcs.isPoint(refPos) or type(poly) ~= "table" or HOUND.Length(poly) < 2 or l_mist.pointInPolygon(refPos,poly) then
             return
         end
 
@@ -2903,18 +2958,18 @@ do
     end
 
     function HOUND.Utils.Cluster.weightedMean(origPoints,initPos,threashold,maxIttr)
-        if type(origPoints) ~= "table" or not HOUND.Utils.Geo.isDcsPoint(origPoints[1]) then return end
+        if type(origPoints) ~= "table" or not HOUND.Utils.Dcs.isPoint(origPoints[1]) then return end
         local points = HOUND.Utils.Geo.setHeight(l_mist.utils.deepCopy(origPoints))
-        if Length(points) == 1 then return l_mist.utils.deepCopy(points[1]) end
+        if HOUND.Length(points) == 1 then return l_mist.utils.deepCopy(points[1]) end
 
         local current_mean = initPos
         if type(current_mean) == "boolean" and current_mean then
-            current_mean = points[l_math.random(Length(points))]
+            current_mean = points[l_math.random(HOUND.Length(points))]
         end
-        if not HOUND.Utils.Geo.isDcsPoint(current_mean) then
+        if not HOUND.Utils.Dcs.isPoint(current_mean) then
             current_mean = l_mist.getAvgPoint(origPoints)
         end
-        if not HOUND.Utils.Geo.isDcsPoint(current_mean) then return end
+        if not HOUND.Utils.Dcs.isPoint(current_mean) then return end
         threashold = threashold or 1
         maxIttr = maxIttr or 100
         local last_mean
@@ -3074,6 +3129,23 @@ do
         return a.maxWeaponsRange > b.maxWeaponsRange
     end
 
+    function HOUND.Utils.Sort.ContactsByPrio(a,b)
+        if a.isPrimary ~= b.isPrimary then
+            return a.isPrimary and not b.isPrimary
+        end
+        if a.radarRoles ~= b.radarRoles then
+            local aRoles,bRoles = 0,0
+            for _,role in pairs(a.radarRoles) do
+                aRoles = aRoles + role
+            end
+            for _,role in pairs(b.radarRoles) do
+                bRoles = bRoles + role
+            end
+            return aRoles > bRoles
+        end
+        return a.uid < b.uid
+    end
+
     function HOUND.Utils.Sort.sectorsByPriorityLowFirst(a,b)
         return a:getPriority() > b:getPriority()
     end
@@ -3127,7 +3199,8 @@ do
     HOUND.EventHandler = {
         idx = 0,
         subscribers = {},
-        _internalSubscribers = {}
+        _internalSubscribers = {},
+        subscribeOn = {}
     }
 
     HOUND.EventHandler.__index = HOUND.EventHandler
@@ -3140,6 +3213,9 @@ do
 
     function HOUND.EventHandler.removeEventHandler(handler)
         HOUND.EventHandler.subscribers[handler] = nil
+        for eventType,_ in pairs(HOUND.EventHandler.subscribeOn) do
+            HOUND.EventHandler.subscribeOn[eventType][handler] = nil
+        end
     end
 
     function HOUND.EventHandler.addInternalEventHandler(handler)
@@ -3149,8 +3225,17 @@ do
     end
 
     function HOUND.EventHandler.removeInternalEventHandler(handler)
-        if setContains(HOUND.EventHandler._internalSubscribers,handler) then
+        if HOUND.setContains(HOUND.EventHandler._internalSubscribers,handler) then
             HOUND.EventHandler._internalSubscribers[handler] = nil
+        end
+    end
+
+    function HOUND.EventHandler.on(eventType,handler)
+        if type(handler) == "function" then
+            if not HOUND.EventHandler.subscribeOn[eventType] then
+                HOUND.EventHandler.subscribeOn[eventType] = {}
+            end
+            HOUND.EventHandler.subscribeOn[eventType][handler] = handler
         end
     end
 
@@ -3180,14 +3265,196 @@ do
     end
 end
 do
+    HOUND.Contact.Base = {}
+    HOUND.Contact.Base.__index = HOUND.Contact.Base
+
+    local l_math = math
+    local l_mist = mist
+    local pi_2 = l_math.pi*2
+
+    function HOUND.Contact.Base:New(DCSObject,HoundCoalition)
+        if not DCSObject or type(DCSObject) ~= "table" or not DCSObject.getName or not HoundCoalition then
+            HOUND.Logger.warn("failed to create HOUND.Contact instance")
+            return
+        end
+        local instance = {}
+        setmetatable(instance, HOUND.Contact.Base)
+        instance.DCSobject = DCSObject
+        instance.DCSgroupName = nil
+        instance.DCSobjectName = nil
+        instance.typeAssigned = {"Unknown"}
+
+        instance.pos = {
+            p = nil,
+            grid = nil,
+            LL = {
+                lat = nil,
+                lon = nil,
+            },
+            be = {
+                brg = nil,
+                rng = nil
+            }
+        }
+        instance.uncertenty_data = nil
+        instance.last_seen = timer.getAbsTime()
+        instance.first_seen = timer.getAbsTime()
+        instance.maxWeaponsRange = 0
+        instance.detectionRange = 0
+
+        instance._platformCoalition = HoundCoalition
+        instance.primarySector = "default"
+        instance.threatSectors = {
+            default = true
+        }
+        instance.state = nil
+        instance.preBriefed = false
+
+        return instance
+    end
+
+    function HOUND.Contact.Base:destroy()
+        HOUND.Logger.error("HOUND.Contact.Base:destroy() prototype envoked. please override")
+    end
+
+    function HOUND.Contact.Base:getGroupName()
+        return self.DCSgroupName
+    end
+
+    function HOUND.Contact.Base:getDcsName()
+        return self.DCSobjectName
+    end
+
+    function HOUND.Contact.Base:getDCSObject()
+        return self.DCSobject or self.DCSobjectName
+    end
+    function HOUND.Contact.Base:getLastSeen()
+        return HOUND.Utils.absTimeDelta(self.last_seen)
+    end
+
+    function HOUND.Contact.Base:getObject()
+        return self.DCSobject
+    end
+    function HOUND.Contact.Base:hasPos()
+        return HOUND.Utils.Dcs.isPoint(self.pos.p)
+    end
+
+    function HOUND.Contact.Base:getMaxWeaponsRange()
+        return self.maxWeaponsRange
+    end
+
+    function HOUND.Contact.Base:getRadarDetectionRange()
+        return self.detectionRange
+    end
+
+    function HOUND.Contact.Base:getTypeAssigned()
+        return table.concat(self.typeAssigned," or ")
+    end
+
+    function HOUND.Contact.Base:getNatoDesignation()
+        local natoDesignation = string.gsub(self:getTypeAssigned(),"(SA)-",'')
+            if natoDesignation == "Naval" then
+                natoDesignation = self:getType()
+            end
+        return natoDesignation
+    end
+
+    function HOUND.Contact.Base:isAlive()
+        return self.DCSobjectAlive
+    end
+
+    function HOUND.Contact.Base:isActive()
+        return self:getLastSeen()/16 < 1.0
+    end
+
+    function HOUND.Contact.Base:isRecent()
+        return self:getLastSeen()/120 < 1.0
+    end
+
+    function HOUND.Contact.Base:isAccurate()
+        return self.preBriefed
+    end
+
+    function HOUND.Contact.Base:getPreBriefed()
+        return self.preBriefed
+    end
+
+    function HOUND.Contact.Base:setPreBriefed(state)
+        if type(state) == "boolean" then
+            self.preBriefed = state
+        end
+    end
+
+    function HOUND.Contact.Base:isTimedout()
+        return self:getLastSeen() > HOUND.CONTACT_TIMEOUT
+    end
+
+    function HOUND.Contact.Base:getState()
+        return self.state
+    end
+
+    function HOUND.Contact.Base:getPrimarySector()
+        return self.primarySector
+    end
+
+    function HOUND.Contact.Base:getSectors()
+        return self.threatSectors
+    end
+
+    function HOUND.Contact.Base:isInSector(sectorName)
+        return self.threatSectors[sectorName] or false
+    end
+
+    function HOUND.Contact.Base:updateDefaultSector()
+        self.threatSectors[self.primarySector] = true
+        if self.primarySector == "default" then return end
+        for k,v in pairs(self.threatSectors) do
+            if k ~= "default" and v == true then
+                self.threatSectors["default"] = false
+                return
+            end
+        end
+        self.threatSectors["default"] = true
+    end
+
+    function HOUND.Contact.Base:updateSector(sectorName,inSector,threatsSector)
+        if inSector == nil and threatsSector == nil then
+            return
+        end
+        self.threatSectors[sectorName] = threatsSector or false
+
+        if inSector and self.primarySector ~= sectorName then
+            self.primarySector = sectorName
+            self.threatSectors[sectorName] = true
+        end
+        self:updateDefaultSector()
+    end
+
+    function HOUND.Contact.Base:addSector(sectorName)
+        self.threatSectors[sectorName] = true
+        self:updateDefaultSector()
+    end
+
+    function HOUND.Contact.Base:removeSector(sectorName)
+        if self.threatSectors[sectorName] then
+            self.threatSectors[sectorName] = false
+            self:updateDefaultSector()
+        end
+    end
+
+    function HOUND.Contact.Base:isThreatsSector(sectorName)
+        return self.threatSectors[sectorName] or false
+    end
+end--- HOUND.Contact.Estimator
+do
     local l_math = math
     local PI_2 = 2*l_math.pi
 
-    HOUND.Estimator = {}
-    HOUND.Estimator.__index = HOUND.Estimator
-    HOUND.Estimator.Kalman = {}
+    HOUND.Contact.Estimator = {}
+    HOUND.Contact.Estimator.__index = HOUND.Contact.Estimator
+    HOUND.Contact.Estimator.Kalman = {}
 
-    function HOUND.Estimator.accuracyScore(err)
+    function HOUND.Contact.Estimator.accuracyScore(err)
         local score = 0
         if type(err) == "number" then
             score = HOUND.Utils.Mapping.linear(err,0,100000,1,0,true)
@@ -3200,7 +3467,7 @@ do
         end
     end
 
-    function HOUND.Estimator.Kalman.posFilter()
+    function HOUND.Contact.Estimator.Kalman.posFilter()
         local Kalman = {}
 
         Kalman.P = {
@@ -3211,7 +3478,7 @@ do
         Kalman.estimated = {}
 
         Kalman.update = function(self,datapoint)
-            if type(self.estimated.p) ~= "table" and HOUND.Utils.Geo.isDcsPoint(datapoint) then
+            if type(self.estimated.p) ~= "table" and HOUND.Utils.Dcs.isPoint(datapoint) then
                 self.estimated.p = {
                     x = datapoint.x,
                     z = datapoint.z,
@@ -3245,7 +3512,7 @@ do
         return Kalman
     end
 
-    function HOUND.Estimator.Kalman.AzFilter(noise)
+    function HOUND.Contact.Estimator.Kalman.AzFilter(noise)
         local Kalman = {}
         Kalman.P = 0.5
         Kalman.noise = noise
@@ -3279,7 +3546,7 @@ do
         return Kalman
     end
 
-    function HOUND.Estimator.Kalman.AzElFilter()
+    function HOUND.Contact.Estimator.Kalman.AzElFilter()
         local Kalman = {}
         Kalman.K = {
             Az = 0,
@@ -3347,13 +3614,13 @@ do
     local l_mist = mist
     local PI_2 = 2*l_math.pi
 
-    HOUND.Datapoint = {}
-    HOUND.Datapoint.__index = HOUND.Datapoint
-    HOUND.Datapoint.DataPointId = 0
+    HOUND.Contact.Datapoint = {}
+    HOUND.Contact.Datapoint.__index = HOUND.Contact.Datapoint
+    HOUND.Contact.Datapoint.DataPointId = 0
 
-    function HOUND.Datapoint.New(platform0, p0, az0, el0, t0, angularResolution, isPlatformStatic)
+    function HOUND.Contact.Datapoint.New(platform0, p0, az0, el0, t0, angularResolution, isPlatformStatic)
         local elintDatapoint = {}
-        setmetatable(elintDatapoint, HOUND.Datapoint)
+        setmetatable(elintDatapoint, HOUND.Contact.Datapoint)
         elintDatapoint.platformPos = p0
         elintDatapoint.az = az0
         elintDatapoint.el = el0
@@ -3368,7 +3635,7 @@ do
         elintDatapoint.kalman = nil
         elintDatapoint.processed = false
         if elintDatapoint.platformStatic then
-            elintDatapoint.kalman = HOUND.Estimator.Kalman.AzFilter(elintDatapoint.platformPrecision)
+            elintDatapoint.kalman = HOUND.Contact.Estimator.Kalman.AzFilter(elintDatapoint.platformPrecision)
             elintDatapoint:update(elintDatapoint.az)
         end
         if HOUND.DEBUG then
@@ -3377,43 +3644,43 @@ do
         return elintDatapoint
     end
 
-    function HOUND.Datapoint.isStatic(self)
+    function HOUND.Contact.Datapoint.isStatic(self)
         return self.platformStatic
     end
 
-    function HOUND.Datapoint.getPos(self)
+    function HOUND.Contact.Datapoint.getPos(self)
         return self.estimatedPos
     end
 
-    function HOUND.Datapoint.getAge(self)
+    function HOUND.Contact.Datapoint.getAge(self)
         return HOUND.Utils.absTimeDelta(self.t)
     end
 
-    function HOUND.Datapoint.get2dPoly(self)
+    function HOUND.Contact.Datapoint.get2dPoly(self)
         return self.posPolygon['2D']
     end
 
-    function HOUND.Datapoint.get3dPoly(self)
+    function HOUND.Contact.Datapoint.get3dPoly(self)
         return self.posPolygon['3D']
     end
 
-    function HOUND.Datapoint.getEllipseParams(self)
+    function HOUND.Contact.Datapoint.getEllipseParams(self)
         return self.posPolygon['EllipseParams']
     end
 
-    function HOUND.Datapoint.getErrors(self)
+    function HOUND.Contact.Datapoint.getErrors(self)
         if type(self.err) ~= "table" then
             self:calcError()
         end
         return self.err
     end
 
-    function HOUND.Datapoint.estimatePos(self)
+    function HOUND.Contact.Datapoint.estimatePos(self)
         if self.el == nil or l_math.abs(self.el) <= self.platformPrecision then return end
         return HOUND.Utils.Geo.getProjectedIP(self.platformPos,self.az,self.el)
     end
 
-    function HOUND.Datapoint.calcPolygons(self)
+    function HOUND.Contact.Datapoint.calcPolygons(self)
         if self.platformPrecision == 0 then return nil,nil end
         local maxSlant = l_math.min(250000,HOUND.Utils.Geo.EarthLOS(self.platformPos.y)*1.1)
         local poly2D = {}
@@ -3443,7 +3710,7 @@ do
                 point = HOUND.Utils.Geo.setHeight(point)
             end
 
-            if HOUND.Utils.Geo.isDcsPoint(point) and HOUND.Utils.Geo.isDcsPoint(self:getPos()) then
+            if HOUND.Utils.Dcs.isPoint(point) and HOUND.Utils.Dcs.isPoint(self:getPos()) then
                 table.insert(poly3D,point)
                 if i == numSteps/4 then
                     ellipse.minor = point
@@ -3451,11 +3718,11 @@ do
                     ellipse.major = point
                     ellipse.majorCG = l_mist.utils.get2DDist(self:getPos(),point)
                 elseif i == 3*(numSteps/4) then
-                    if HOUND.Utils.Geo.isDcsPoint(ellipse.minor) then
+                    if HOUND.Utils.Dcs.isPoint(ellipse.minor) then
                         ellipse.minor = l_mist.utils.get2DDist(ellipse.minor,point)
                     end
                 elseif i == numSteps then
-                    if HOUND.Utils.Geo.isDcsPoint(ellipse.major) then
+                    if HOUND.Utils.Dcs.isPoint(ellipse.major) then
                         ellipse.major = l_mist.utils.get2DDist(ellipse.major,point)
                         ellipse.majorCG = ellipse.majorCG / (ellipse.majorCG + l_mist.utils.get2DDist(self:getPos(),point))
                     end
@@ -3468,7 +3735,7 @@ do
         return poly2D,poly3D,ellipse
     end
 
-    function HOUND.Datapoint.calcError(self)
+    function HOUND.Contact.Datapoint.calcError(self)
         if type(self.posPolygon["EllipseParams"]) == "table" and self.posPolygon["EllipseParams"].theta then
         local ellipse = self.posPolygon['EllipseParams']
         if ellipse.theta then
@@ -3479,14 +3746,14 @@ do
                 z = l_math.max(l_math.abs(ellipse.minor/2*sinTheta), l_math.abs(ellipse.major/2*cosTheta))
             }
             self.err.score = {
-                x = HOUND.Estimator.accuracyScore(self.err.x),
-                z = HOUND.Estimator.accuracyScore(self.err.z)
+                x = HOUND.Contact.Estimator.accuracyScore(self.err.x),
+                z = HOUND.Contact.Estimator.accuracyScore(self.err.z)
             }
         end
 
         end
     end
-    function HOUND.Datapoint.update(self,newAz,predictedAz,processNoise)
+    function HOUND.Contact.Datapoint.update(self,newAz,predictedAz,processNoise)
         if not self.platformPrecision and not self.platformStatic then return end
         self.kalman:update(newAz,nil,processNoise)
         self.az = self.kalman:get()
@@ -3494,135 +3761,101 @@ do
         return self.az
     end
 
-    function HOUND.Datapoint.getId()
-        HOUND.Datapoint.DataPointId = HOUND.Datapoint.DataPointId + 1
-        return HOUND.Datapoint.DataPointId
+    function HOUND.Contact.Datapoint.getId()
+        HOUND.Contact.Datapoint.DataPointId = HOUND.Contact.Datapoint.DataPointId + 1
+        return HOUND.Contact.Datapoint.DataPointId
     end
 end
 do
-    HOUND.Contact = {}
-    HOUND.Contact.__index = HOUND.Contact
 
     local l_math = math
     local l_mist = mist
     local pi_2 = l_math.pi*2
 
-    function HOUND.Contact.New(DCS_Unit,HoundCoalition,ContactId)
-        if not DCS_Unit or type(DCS_Unit) ~= "table" or not DCS_Unit.getName or not HoundCoalition then
+    HOUND.Contact.Emitter = {}
+    HOUND.Contact.Emitter = HOUND.inheritsFrom(HOUND.Contact.Base)
+
+    function HOUND.Contact.Emitter:New(DCSobject,HoundCoalition,ContactId)
+        if not DCSobject or type(DCSobject) ~= "table" or not DCSobject.getName or not HoundCoalition then
             HOUND.Logger.warn("failed to create HOUND.Contact instance")
             return
         end
-        local elintcontact = {}
-        setmetatable(elintcontact, HOUND.Contact)
-        elintcontact.unit = DCS_Unit
-        elintcontact.uid = ContactId or DCS_Unit:getID()
-        elintcontact.DCStypeName = DCS_Unit:getTypeName()
-        elintcontact.DCSgroupName = Group.getName(DCS_Unit:getGroup())
-        elintcontact.DCSunitName = DCS_Unit:getName()
-        elintcontact.typeName = DCS_Unit:getTypeName()
-        elintcontact.isEWR = false
-        elintcontact.typeAssigned = {"Unknown"}
-        elintcontact.band = "C"
+        local instance = self:superClass():New(DCSobject,HoundCoalition)
+        setmetatable(instance, HOUND.Contact.Emitter)
+        self.__index = self
 
-        local contactUnitCategory = DCS_Unit:getDesc()["category"]
+        instance.uid = ContactId or DCSobject:getID()
+        instance.DCStypeName = DCSobject:getTypeName()
+        instance.DCSgroupName = Group.getName(DCSobject:getGroup())
+        instance.DCSobjectName = DCSobject:getName()
+        instance.typeName = DCSobject:getTypeName()
+        instance.isEWR = false
+        instance.typeAssigned = {"Unknown"}
+        instance.band = "C"
+        instance.isPrimary = false
+        instance.radarRoles = {HOUND.DB.RadarType.NONE}
+
+        local contactUnitCategory = DCSobject:getDesc()["category"]
         if contactUnitCategory and contactUnitCategory == Unit.Category.SHIP then
-            elintcontact.band = "E"
-            elintcontact.typeAssigned = {"Naval"}
+            instance.band = "E"
+            instance.typeAssigned = {"Naval"}
+            instance.radarRoles = {HOUND.DB.RadarType.NAVAL}
         end
 
-        local contactData = HOUND.DB.getRadarData(elintcontact.DCStypeName)
+        local contactData = HOUND.DB.getRadarData(instance.DCStypeName)
         if contactData  then
-            elintcontact.typeName =  contactData.Name
-            elintcontact.isEWR = contactData.isEWR
-            elintcontact.typeAssigned = contactData.Assigned
-            elintcontact.band = contactData.Band
+            instance.typeName =  contactData.Name
+            instance.isEWR = contactData.isEWR
+            instance.typeAssigned = contactData.Assigned
+            instance.band = contactData.Band
+            instance.isPrimary = contactData.isPrimary
+            instance.radarRoles = contactData.Role
         end
 
-        elintcontact.pos = {
-            p = nil,
-            grid = nil,
-            LL = {
-                lat = nil,
-                lon = nil,
-            },
-            be = {
-                brg = nil,
-                rng = nil
-            }
+        instance.uncertenty_data = nil
+        instance.maxWeaponsRange = HOUND.Utils.getSamMaxRange(DCSobject)
+        instance.detectionRange = HOUND.Utils.getRadarDetectionRange(DCSobject)
+        instance._dataPoints = {}
+        instance._markpoints = {
+            pos = HOUND.Utils.Marker.create(),
+            area = HOUND.Utils.Marker.create()
         }
-        elintcontact.uncertenty_data = nil
-        elintcontact.last_seen = timer.getAbsTime()
-        elintcontact.first_seen = timer.getAbsTime()
-        elintcontact.maxWeaponsRange = HOUND.Utils.getSamMaxRange(DCS_Unit)
-        elintcontact.detectionRange = HOUND.Utils.getRadarDetectionRange(DCS_Unit)
-        elintcontact._dataPoints = {}
-        elintcontact._markpoints = {
-            p = HOUND.Utils.Marker.create(),
-            u = HOUND.Utils.Marker.create()
-        }
-        elintcontact._platformCoalition = HoundCoalition
-        elintcontact.primarySector = "default"
-        elintcontact.threatSectors = {
-            default = true
-        }
-        elintcontact.detected_by = {}
-        elintcontact.state = HOUND.EVENTS.RADAR_NEW
-        elintcontact.preBriefed = false
-        elintcontact.unitAlive = true
-        elintcontact._kalman = HOUND.Estimator.Kalman.posFilter()
-        return elintcontact
+        instance.detected_by = {}
+        instance.state = HOUND.EVENTS.RADAR_NEW
+        instance.preBriefed = false
+        instance.unitAlive = true
+        return instance
     end
 
-    function HOUND.Contact:destroy()
+    function HOUND.Contact.Emitter:destroy()
         self:removeMarkers()
     end
 
-    function HOUND.Contact:getName()
+    function HOUND.Contact.Emitter:getName()
         return self:getType() .. " " .. self:getId()
     end
 
-    function HOUND.Contact:getType()
+    function HOUND.Contact.Emitter:getType()
         return self.typeName
     end
 
-    function HOUND.Contact:getId()
+    function HOUND.Contact.Emitter:getId()
         return self.uid%100
     end
 
-    function HOUND.Contact:getGroupName()
-        return self.DCSgroupName
-    end
-
-    function HOUND.Contact:getDcsName()
-        return self.DCSunitName
-    end
-
-    function HOUND.Contact:getDCSObject()
-        return self.unit or self.DCSunitName
-    end
-    function HOUND.Contact:getLastSeen()
-        return HOUND.Utils.absTimeDelta(self.last_seen)
-    end
-    function HOUND.Contact:getTrackId()
+    function HOUND.Contact.Emitter:getTrackId()
         local trackType = 'E'
-        if self.preBriefed then
+        if self:isAccurate() then
             trackType = 'I'
         end
         return string.format("%s-%d",trackType,self.uid)
     end
-    function HOUND.Contact:getNatoDesignation()
-        local natoDesignation = string.gsub(self:getTypeAssigned(),"(SA)-",'')
-            if natoDesignation == "Naval" then
-                natoDesignation = self:getType()
-            end
-        return natoDesignation
-    end
 
-    function HOUND.Contact:getPos()
+    function HOUND.Contact.Emitter:getPos()
         return self.pos.p
     end
 
-    function HOUND.Contact:getElev()
+    function HOUND.Contact.Emitter:getElev()
         if not self:hasPos() then return 0 end
         local step = 50
         if self:isAccurate() then
@@ -3631,68 +3864,30 @@ do
         return HOUND.Utils.getRoundedElevationFt(self.pos.elev,step)
     end
 
-    function HOUND.Contact:getUnit()
-        return self.unit
-    end
-    function HOUND.Contact:hasPos()
-        return HOUND.Utils.Geo.isDcsPoint(self.pos.p)
-    end
-
-    function HOUND.Contact:getMaxWeaponsRange()
-        return self.maxWeaponsRange
-    end
-
-    function HOUND.Contact:getTypeAssigned()
-        return table.concat(self.typeAssigned," or ")
-    end
-
-    function HOUND.Contact:getLife()
-        if self:isAlive() and (not self.unit or not self.unit.getLife) then
-            HOUND.Logger.error("something is wrong with the object for " .. self.DCSunitName)
+    function HOUND.Contact.Emitter:getLife()
+        if self:isAlive() and (not HOUND.Utils.Dcs.isUnit(self.DCSobject)) then
+            HOUND.Logger.error("something is wrong with the object for " .. self.DCSobjectName)
             self:updateDeadDCSObject()
         end
-        if self.unit and type(self.unit) == "table" and self.unit:isExist() then
-            return self.unit:getLife()
+        if HOUND.Utils.Dcs.isUnit(self.DCSobject) then
+            return self.DCSobject:getLife()
         end
         return 0
     end
-    function HOUND.Contact:isAlive()
-        return self.unitAlive
-    end
 
-    function HOUND.Contact:setDead()
-        self.unitAlive = false
+    function HOUND.Contact.Emitter:setDead()
+        self.DCSobjectAlive = false
         self:updateDeadDCSObject()
     end
 
-    function HOUND.Contact:updateDeadDCSObject()
-        self.unit = Unit.getByName(self.DCSunitName) or StaticObject.getByName(self.DCSunitName)
-        if not self.unit then
-            self.unit = self.DCSunitName
+    function HOUND.Contact.Emitter:updateDeadDCSObject()
+        self.DCSobject = Unit.getByName(self.DCSobjectName) or StaticObject.getByName(self.DCSobjectName)
+        if not self.DCSobject then
+            self.DCSobject = self.DCSobjectName
         end
     end
 
-    function HOUND.Contact:isActive()
-        return self:getLastSeen()/16 < 1.0
-    end
-
-    function HOUND.Contact:isRecent()
-        return self:getLastSeen()/120 < 1.0
-    end
-
-    function HOUND.Contact:isAccurate()
-        return self.preBriefed
-    end
-
-    function HOUND.Contact:isTimedout()
-        return self:getLastSeen() > HOUND.CONTACT_TIMEOUT
-    end
-
-    function HOUND.Contact:getState()
-        return self.state
-    end
-
-    function HOUND.Contact:CleanTimedout()
+    function HOUND.Contact.Emitter:CleanTimedout()
         if self:isTimedout() then
             self._dataPoints = {}
             self.state = HOUND.EVENTS.RADAR_ASLEEP
@@ -3700,9 +3895,9 @@ do
         return self.state
     end
 
-    function HOUND.Contact:countPlatforms(skipStatic)
+    function HOUND.Contact.Emitter:countPlatforms(skipStatic)
         local count = 0
-        if Length(self._dataPoints) == 0 then return count end
+        if HOUND.Length(self._dataPoints) == 0 then return count end
         for _,platformDataPoints in pairs(self._dataPoints) do
             if not platformDataPoints[1].staticPlatform or (not skipStatic and platformDataPoints[1].staticPlatform) then
                 count = count + 1
@@ -3711,38 +3906,38 @@ do
         return count
     end
 
-    function HOUND.Contact:countDatapoints()
+    function HOUND.Contact.Emitter:countDatapoints()
         local count = 0
-        if Length(self._dataPoints) == 0 then return count end
+        if HOUND.Length(self._dataPoints) == 0 then return count end
         for _,platformDataPoints in pairs(self._dataPoints) do
-            count = count + Length(platformDataPoints)
+            count = count + HOUND.Length(platformDataPoints)
         end
         return count
     end
 
-    function HOUND.Contact:AddPoint(datapoint)
+    function HOUND.Contact.Emitter:AddPoint(datapoint)
         self.last_seen = datapoint.t
-        if Length(self._dataPoints[datapoint.platformId]) == 0 then
+        if HOUND.Length(self._dataPoints[datapoint.platformId]) == 0 then
             self._dataPoints[datapoint.platformId] = {}
         end
 
         if datapoint.platformStatic then
-            if Length(self._dataPoints[datapoint.platformId]) == 0 then
+            if HOUND.Length(self._dataPoints[datapoint.platformId]) == 0 then
                 self._dataPoints[datapoint.platformId] = {datapoint}
                 return
             end
             local predicted = {}
-            if HOUND.Utils.Geo.isDcsPoint(self.pos.p) then
+            if HOUND.Utils.Dcs.isPoint(self.pos.p) then
                 predicted.az,predicted.el = HOUND.Utils.Elint.getAzimuth( datapoint.platformPos , self.pos.p, 0.0 )
                 if type(self.uncertenty_data) == "table" and self.uncertenty_data.minor and self.uncertenty_data.major and self.uncertenty_data.az then
-                    predicted.err = HOUND.Utils.Polygon.azMinMax(HOUND.Contact.calculatePoly(self.uncertenty_data,8,self.pos.p),datapoint.platformPos)
+                    predicted.err = HOUND.Utils.Polygon.azMinMax(HOUND.Contact.Emitter.calculatePoly(self.uncertenty_data,8,self.pos.p),datapoint.platformPos)
                 end
             end
             self._dataPoints[datapoint.platformId][1]:update(datapoint.az,predicted.az,predicted.err)
             return
         end
 
-        if Length(self._dataPoints[datapoint.platformId]) < 2 then
+        if HOUND.Length(self._dataPoints[datapoint.platformId]) < 2 then
             table.insert(self._dataPoints[datapoint.platformId], 1, datapoint)
             return
         else
@@ -3754,7 +3949,7 @@ do
             end
         end
 
-        for i=Length(self._dataPoints[datapoint.platformId]),1,-1 do
+        for i=HOUND.Length(self._dataPoints[datapoint.platformId]),1,-1 do
             if self._dataPoints[datapoint.platformId][i]:getAge() > HOUND.CONTACT_TIMEOUT then
                 table.remove(self._dataPoints[datapoint.platformId])
             else
@@ -3762,12 +3957,12 @@ do
             end
         end
         local pointsPerPlatform = l_math.ceil(HOUND.DATAPOINTS_NUM/self:countPlatforms(true))
-        while Length(self._dataPoints[datapoint.platformId]) > pointsPerPlatform do
+        while HOUND.Length(self._dataPoints[datapoint.platformId]) > pointsPerPlatform do
             table.remove(self._dataPoints[datapoint.platformId])
         end
     end
 
-    function HOUND.Contact.triangulatePoints(earlyPoint, latePoint)
+    function HOUND.Contact.Emitter.triangulatePoints(earlyPoint, latePoint)
         local p1 = earlyPoint.platformPos
         local p2 = latePoint.platformPos
 
@@ -3788,9 +3983,9 @@ do
         return pos
     end
 
-    function HOUND.Contact.getDeltaSubsetPercent(Table,referencePos,NthPercentile)
+    function HOUND.Contact.Emitter.getDeltaSubsetPercent(Table,referencePos,NthPercentile)
         local t = l_mist.utils.deepCopy(Table)
-        local len_t = Length(t)
+        local len_t = HOUND.Length(t)
         t = HOUND.Utils.Geo.setHeight(t)
         if not referencePos then
             referencePos = l_mist.getAvgPoint(t)
@@ -3810,10 +4005,10 @@ do
         return RelativeToPos
     end
 
-    function HOUND.Contact.calculateEllipse(estimatedPositions,giftWrapped,refPos)
+    function HOUND.Contact.Emitter.calculateEllipse(estimatedPositions,giftWrapped,refPos)
         local percentile = HOUND.ELLIPSE_PERCENTILE
         if giftWrapped then percentile = 1.0 end
-        local RelativeToPos = HOUND.Contact.getDeltaSubsetPercent(estimatedPositions,refPos,percentile)
+        local RelativeToPos = HOUND.Contact.Emitter.getDeltaSubsetPercent(estimatedPositions,refPos,percentile)
 
         local min = {}
         min.x = 99999
@@ -3855,7 +4050,7 @@ do
         return uncertenty_data
     end
 
-    function HOUND.Contact.calculateEllipseErrors(uncertenty_ellipse)
+    function HOUND.Contact.Emitter.calculateEllipseErrors(uncertenty_ellipse)
         if not uncertenty_ellipse.theta then return end
         local err = {}
 
@@ -3866,19 +4061,19 @@ do
         err.z = l_math.max(l_math.abs(uncertenty_ellipse.minor/2*sinTheta), l_math.abs(uncertenty_ellipse.major/2*cosTheta))
 
         err.score = {}
-        err.score.x = HOUND.Estimator.accuracyScore(err.x)
-        err.score.z = HOUND.Estimator.accuracyScore(err.z)
+        err.score.x = HOUND.Contact.Estimator.accuracyScore(err.x)
+        err.score.z = HOUND.Contact.Estimator.accuracyScore(err.z)
         return err
     end
 
-    function HOUND.Contact.calculatePos(estimatedPositions,converge)
-        if type(estimatedPositions) ~= "table" or Length(estimatedPositions) == 0 then return end
+    function HOUND.Contact.Emitter.calculatePos(estimatedPositions,converge)
+        if type(estimatedPositions) ~= "table" or HOUND.Length(estimatedPositions) == 0 then return end
         local pos = l_mist.getAvgPoint(estimatedPositions)
         if converge then
             local subList = estimatedPositions
             local subsetPos = pos
-            while (Length(subList) * HOUND.ELLIPSE_PERCENTILE) > 5 do
-                local NewsubList = HOUND.Contact.getDeltaSubsetPercent(subList,subsetPos,HOUND.ELLIPSE_PERCENTILE)
+            while (HOUND.Length(subList) * HOUND.ELLIPSE_PERCENTILE) > 5 do
+                local NewsubList = HOUND.Contact.Emitter.getDeltaSubsetPercent(subList,subsetPos,HOUND.ELLIPSE_PERCENTILE)
                 subsetPos = l_mist.getAvgPoint(NewsubList)
 
                 pos.x = pos.x + (subsetPos.x )
@@ -3890,8 +4085,8 @@ do
         return pos
     end
 
-    function HOUND.Contact:calculateExtrasPosData(pos)
-        if type(pos.p) == "table" and HOUND.Utils.Geo.isDcsPoint(pos.p) then
+    function HOUND.Contact.Emitter:calculateExtrasPosData(pos)
+        if type(pos.p) == "table" and HOUND.Utils.Dcs.isPoint(pos.p) then
             local bullsPos = coalition.getMainRefPoint(self._platformCoalition)
             pos.LL = {}
             pos.LL.lat, pos.LL.lon = coord.LOtoLL(pos.p)
@@ -3902,21 +4097,28 @@ do
         return pos
     end
 
-    function HOUND.Contact:processIntersection(targetTable,point1,point2)
+    function HOUND.Contact.Emitter:processIntersection(targetTable,point1,point2)
         local err = (point1.platformPrecision + point2.platformPrecision)/2
         if HOUND.Utils.angleDeltaRad(point1.az,point2.az) < err then return end
         local intersection = self.triangulatePoints(point1,point2)
-        if not HOUND.Utils.Geo.isDcsPoint(intersection) then return end
+        if not HOUND.Utils.Dcs.isPoint(intersection) then return end
         table.insert(targetTable,intersection)
     end
 
-    function HOUND.Contact:processData()
-        if self.preBriefed then
-            if type(self.unit) == "table" and self.unit.isExist and self.unit:isExist() then
-                local unitPos = self.unit:getPosition()
-                if l_mist.utils.get2DDist(unitPos.p,self.pos.p) < 0.25 or (l_mist.utils.get2DDist(unitPos.p,self.pos.p) >= 0.25 and not self:isActive()) then return end
-                self.preBriefed = false
-            else return end
+    function HOUND.Contact.Emitter:processData()
+        if self:getPreBriefed() then
+            if HOUND.Utils.Dcs.isUnit(self.DCSobject) and self.DCSobject:isExist()
+                then
+                    local distance = l_mist.utils.get2DDist(self.DCSobject:getPosition().p,self.pos.p)
+                    if distance <= 0.25 or not self:isActive() then return end
+                    if self:isActive() then
+                        HOUND.Logger.debug(self:getName().. " is active and moved.. not longer PB")
+                        self:setPreBriefed(false)
+                    end
+                else
+                    self.state = HOUND.EVENTS.NO_CHANGE
+                    return self.state
+            end
         end
 
         if not self:isRecent() then
@@ -3932,7 +4134,7 @@ do
         local staticClipPolygon2D = nil
 
         for _,platformDatapoints in pairs(self._dataPoints) do
-            if Length(platformDatapoints) > 0 then
+            if HOUND.Length(platformDatapoints) > 0 then
                 for _,datapoint in pairs(platformDatapoints) do
                     if datapoint:isStatic() then
                         table.insert(staticDataPoints,datapoint)
@@ -3943,7 +4145,7 @@ do
                         staticPlatformsOnly = false
                         table.insert(mobileDataPoints,datapoint)
                     end
-                    if HOUND.Utils.Geo.isDcsPoint(datapoint:getPos()) then
+                    if HOUND.Utils.Dcs.isPoint(datapoint:getPos()) then
                         local point = l_mist.utils.deepCopy(datapoint:getPos())
                         table.insert(estimatePositions,point)
                     end
@@ -3951,10 +4153,10 @@ do
                 end
             end
         end
-        local numMobilepoints = Length(mobileDataPoints)
-        local numStaticPoints = Length(staticDataPoints)
+        local numMobilepoints = HOUND.Length(mobileDataPoints)
+        local numStaticPoints = HOUND.Length(staticDataPoints)
 
-        if numMobilepoints+numStaticPoints < 2 and Length(estimatePositions) == 0 then return end
+        if numMobilepoints+numStaticPoints < 2 and HOUND.Length(estimatePositions) == 0 then return end
         if numStaticPoints > 1 then
             for i=1,numStaticPoints-1 do
                 for j=i+1,numStaticPoints do
@@ -3982,7 +4184,7 @@ do
             end
         end
 
-        if Length(estimatePositions) > 2 or (Length(estimatePositions) > 0 and staticPlatformsOnly) then
+        if HOUND.Length(estimatePositions) > 2 or (HOUND.Length(estimatePositions) > 0 and staticPlatformsOnly) then
             self.pos.p = HOUND.Utils.Cluster.weightedMean(estimatePositions)
             self.uncertenty_data = self.calculateEllipse(estimatePositions,false,self.pos.p)
             if type(staticClipPolygon2D) == "table" and ( staticPlatformsOnly) then
@@ -4015,13 +4217,13 @@ do
         return self.state
     end
 
-    function HOUND.Contact:removeMarkers()
+    function HOUND.Contact.Emitter:removeMarkers()
         for _,marker in pairs(self._markpoints) do
             marker:remove()
         end
     end
 
-    function HOUND.Contact.calculatePoly(uncertenty_data,numPoints,refPos)
+    function HOUND.Contact.Emitter.calculatePoly(uncertenty_data,numPoints,refPos)
         local polygonPoints = {}
         if type(uncertenty_data) ~= "table" or not uncertenty_data.major or not uncertenty_data.minor or not uncertenty_data.az then
             return polygonPoints
@@ -4029,7 +4231,7 @@ do
         if type(numPoints) ~= "number" then
             numPoints = 8
         end
-        if not HOUND.Utils.Geo.isDcsPoint(refPos) then
+        if not HOUND.Utils.Dcs.isPoint(refPos) then
             refPos = {x=0,y=0,z=0}
         end
         local angleStep = pi_2/numPoints
@@ -4053,7 +4255,7 @@ do
 
     end
 
-    function HOUND.Contact:drawAreaMarker(numPoints)
+    function HOUND.Contact.Emitter:drawAreaMarker(numPoints)
         if numPoints == nil then numPoints = 1 end
         if numPoints ~= 1 and numPoints ~= 4 and numPoints ~=8 and numPoints ~= 16 then
             HOUND.Logger.error("DCS limitation, only 1,4,8 or 16 points are allowed")
@@ -4089,14 +4291,14 @@ do
                 r = self.uncertenty_data.r
             }
         else
-            markArgs.pos = HOUND.Contact.calculatePoly(self.uncertenty_data,numPoints,self.pos.p)
+            markArgs.pos = HOUND.Contact.Emitter.calculatePoly(self.uncertenty_data,numPoints,self.pos.p)
         end
-        return self._markpoints.u:update(markArgs)
+        return self._markpoints.area:update(markArgs)
     end
 
-    function HOUND.Contact:updateMarker(MarkerType)
+    function HOUND.Contact.Emitter:updateMarker(MarkerType)
         if not self:hasPos() or self.uncertenty_data == nil or not self:isRecent() then return end
-        if self:isAccurate() and self._markpoints.p:isDrawn() then return end
+        if self:isAccurate() and self._markpoints.pos:isDrawn() then return end
         local markerArgs = {
             text = self.typeName .. " " .. (self.uid%100),
             pos = self.pos.p,
@@ -4105,11 +4307,11 @@ do
         if not self:isAccurate() and HOUND.USE_LEGACY_MARKERS then
             markerArgs.text = markerArgs.text .. " (" .. self.uncertenty_data.major .. "/" .. self.uncertenty_data.minor .. "@" .. self.uncertenty_data.az .. ")"
         end
-        self._markpoints.p:update(markerArgs)
+        self._markpoints.pos:update(markerArgs)
 
         if MarkerType == HOUND.MARKER.NONE or self:isAccurate() then
-            if self._markpoints.u:isDrawn() then
-                self._markpoints.u:remove()
+            if self._markpoints.area:isDrawn() then
+                self._markpoints.area:remove()
             end
             return
         end
@@ -4131,61 +4333,8 @@ do
         end
     end
 
-    function HOUND.Contact:getPrimarySector()
-        return self.primarySector
-    end
-
-    function HOUND.Contact:getSectors()
-        return self.threatSectors
-    end
-
-    function HOUND.Contact:isInSector(sectorName)
-        return self.threatSectors[sectorName] or false
-    end
-
-    function HOUND.Contact:updateDefaultSector()
-        self.threatSectors[self.primarySector] = true
-        if self.primarySector == "default" then return end
-        for k,v in pairs(self.threatSectors) do
-            if k ~= "default" and v == true then
-                self.threatSectors["default"] = false
-                return
-            end
-        end
-        self.threatSectors["default"] = true
-    end
-
-    function HOUND.Contact:updateSector(sectorName,inSector,threatsSector)
-        if inSector == nil and threatsSector == nil then
-            return
-        end
-        self.threatSectors[sectorName] = threatsSector or false
-
-        if inSector and self.primarySector ~= sectorName then
-            self.primarySector = sectorName
-            self.threatSectors[sectorName] = true
-        end
-        self:updateDefaultSector()
-    end
-
-    function HOUND.Contact:addSector(sectorName)
-        self.threatSectors[sectorName] = true
-        self:updateDefaultSector()
-    end
-
-    function HOUND.Contact:removeSector(sectorName)
-        if self.threatSectors[sectorName] then
-            self.threatSectors[sectorName] = false
-            self:updateDefaultSector()
-        end
-    end
-
-    function HOUND.Contact:isThreatsSector(sectorName)
-        return self.threatSectors[sectorName] or false
-    end
-
-    function HOUND.Contact:useUnitPos()
-        if not self.unit:isExist() then
+    function HOUND.Contact.Emitter:useUnitPos()
+        if not self.DCSobject:isExist() then
             HOUND.Logger.info("PB failed - unit does not exist")
             return
         end
@@ -4193,10 +4342,10 @@ do
         if type(self.pos.p) == "table" then
             self.state = HOUND.EVENTS.RADAR_UPDATED
         end
-        local unitPos = self.unit:getPosition()
-        self.preBriefed = true
+        local unitPos = self.DCSobject:getPosition()
+        self:setPreBriefed(true)
 
-        self.pos.p = unitPos.p
+        self.pos.p = l_mist.utils.deepCopy(unitPos.p)
         self:calculateExtrasPosData(self.pos)
 
         self.uncertenty_data = {}
@@ -4206,15 +4355,16 @@ do
         self.uncertenty_data.r  = 0.1
 
         table.insert(self.detected_by,"External")
+        self:removeMarkers()
         self:updateMarker(HOUND.MARKER.NONE)
         return self.state
     end
 
-    function HOUND.Contact:export()
+    function HOUND.Contact.Emitter:export()
         local contact = {}
         contact.typeName = self.typeName
         contact.uid = self.uid % 100
-        contact.DCSunitName = self.unit:getName()
+        contact.DCSobjectName = self.DCSobject:getName()
         if self.pos.p ~= nil and self.uncertenty_data ~= nil then
             contact.pos = self.pos.p
             contact.LL = self.pos.LL
@@ -4235,7 +4385,7 @@ end
 do
     local l_math = math
 
-    function HOUND.Contact:getTextData(utmZone,MGRSdigits)
+    function HOUND.Contact.Emitter:getTextData(utmZone,MGRSdigits)
         if self.pos.p == nil then return end
         local GridPos = ""
         if utmZone then
@@ -4253,7 +4403,7 @@ do
         return GridPos,BE
     end
 
-    function HOUND.Contact:getTtsData(utmZone,MGRSdigits)
+    function HOUND.Contact.Emitter:getTtsData(utmZone,MGRSdigits)
         if self.pos.p == nil then return end
         local phoneticGridPos = ""
         if utmZone then
@@ -4273,7 +4423,7 @@ do
         return phoneticGridPos,phoneticBulls
     end
 
-    function HOUND.Contact:generateTtsBrief(NATO)
+    function HOUND.Contact.Emitter:generateTtsBrief(NATO)
         if self.pos.p == nil or self.uncertenty_data == nil then return end
         local phoneticGridPos,phoneticBulls = self:getTtsData(false,1)
         local reportedName = self:getName()
@@ -4298,7 +4448,7 @@ do
         return str
     end
 
-    function HOUND.Contact:generateTtsReport(useDMM,refPos)
+    function HOUND.Contact.Emitter:generateTtsReport(useDMM,refPos)
         if self.pos.p == nil then return end
         useDMM = useDMM or false
 
@@ -4340,7 +4490,7 @@ do
         return msg
     end
 
-    function HOUND.Contact:generateTextReport(useDMM,refPos)
+    function HOUND.Contact.Emitter:generateTextReport(useDMM,refPos)
         if self.pos.p == nil then return end
         useDMM = useDMM or false
 
@@ -4375,14 +4525,14 @@ do
         return msg
     end
 
-    function HOUND.Contact:generateRadioItemText()
+    function HOUND.Contact.Emitter:generateRadioItemText()
         if not self:hasPos() then return end
         local GridPos,BePos = self:getTextData(true,1)
         BePos = BePos:gsub(" for ","/")
         return self:getName() .. " - BE: " .. BePos .. " (".. GridPos ..")"
     end
 
-    function HOUND.Contact:generatePopUpReport(isTTS,sectorName)
+    function HOUND.Contact.Emitter:generatePopUpReport(isTTS,sectorName)
         local msg = self:getName() .. " is now Alive"
 
         if sectorName then
@@ -4402,7 +4552,7 @@ do
         return msg .. "."
     end
 
-    function HOUND.Contact:generateDeathReport(isTTS,sectorName)
+    function HOUND.Contact.Emitter:generateDeathReport(isTTS,sectorName)
         local msg = self:getName() .. " has been destroyed"
         if sectorName then
             msg = msg .. " in " .. sectorName
@@ -4421,7 +4571,7 @@ do
         return msg .. "."
     end
 
-    function HOUND.Contact:generateIntelBrief()
+    function HOUND.Contact.Emitter:generateIntelBrief()
         local msg = ""
         if self:hasPos() then
             local GridPos,BePos = self:getTextData(true,HOUND.MGRS_PRECISION)
@@ -4430,13 +4580,160 @@ do
                 HOUND.Utils.TTS.getVerbalContactAge(self.last_seen,true,true),
                 BePos,string.format("%02.6f",self.pos.LL.lat),string.format("%03.6f",self.pos.LL.lon), GridPos,
                 HOUND.Utils.TTS.getVerbalConfidenceLevel( self.uncertenty_data.r ),
-                HOUND.Utils.Text.getTime(self.last_seen),self.DCStypeName,self.DCSunitName,self.DCSgroupName
+                HOUND.Utils.Text.getTime(self.last_seen),self.DCStypeName,self.DCSobjectName,self.DCSgroupName
             }
             msg = table.concat(msg,",")
         end
         return msg
     end
 end
+do
+    HOUND.Contact.Site = {}
+    HOUND.Contact.Site = HOUND.inheritsFrom(HOUND.Contact.Base)
+
+    local l_math = math
+    local l_mist = mist
+    local pi_2 = l_math.pi*2
+
+    function HOUND.Contact.Site:New(HoundContact,HoundCoalition,SiteId)
+        if not HoundContact or type(HoundContact) ~= "table" or not HoundContact.getGroupName or not HoundCoalition then
+            HOUND.Logger.warn("failed to create HOUND.Contact.Site instance")
+            return
+        end
+        local instance = self:superClass():New(HoundContact:getDCSObject(),HoundCoalition)
+        setmetatable(instance, HOUND.Contact.Site)
+        self.__index = self
+        instance.DCSobject = HoundContact:getDCSObject():getGroup()
+        instance.gid = SiteId or instance.DCSobject:getId()
+        instance.DCSgroupName = instance.DCSobject:getName()
+        instance.DCSobjectName = instance.DCSobject:getName()
+        instance.typeAssigned = HoundContact.typeAssigned
+
+        instance.emitters = { }
+        instance.emitters[HoundContact:getDcsName()] = HoundContact
+        instance.primaryEmitter = HoundContact
+        instance.last_seen = HoundContact:getLastSeen()
+        instance.first_seen = HoundContact.first_seen
+        instance.maxWeaponsRange = HoundContact:getMaxWeaponsRange()
+        instance.detectionRange = HoundContact:getRadarDetectionRange()
+
+        instance.state = HOUND.EVENTS.SITE_NEW
+        instance.preBriefed = HoundContact:isAccurate()
+
+        return instance
+    end
+
+    function HOUND.Contact.Site:destroy()
+        HOUND.Logger.debug("site destroy")
+    end
+
+    function HOUND.Contact.Site:getName()
+        return self:getType() .. " " .. self:getId()
+    end
+
+    function HOUND.Contact.Site:getType()
+        return self.typeName
+    end
+
+    function HOUND.Contact.Site:getId()
+        return self.gid%100
+    end
+
+    function HOUND.Contact.Site:getGroupName()
+        return self.DCSgroupName
+    end
+
+    function HOUND.Contact.Site:getDcsName()
+        return self.DCSgroupName
+    end
+
+    function HOUND.Contact.Site:getDCSObject()
+        return self.group or self.DCSgroupName
+    end
+    function HOUND.Contact.Site:getLastSeen()
+        return HOUND.Utils.absTimeDelta(self.last_seen)
+    end
+
+    function HOUND.Contact.Site:getTypeAssigned()
+        return table.concat(self.typeAssigned," or ")
+    end
+
+    function HOUND.Contact.Site:isActive()
+        return self:getLastSeen()/16 < 1.0
+    end
+
+    function HOUND.Contact.Site:isRecent()
+        return self:getLastSeen()/120 < 1.0
+    end
+
+    function HOUND.Contact.Site:isAccurate()
+        return self.preBriefed
+    end
+
+    function HOUND.Contact.Site:isTimedout()
+        return self:getLastSeen() > HOUND.CONTACT_TIMEOUT
+    end
+
+    function HOUND.Contact.Site:getState()
+        return self.state
+    end
+
+    function HOUND.Contact.Site:addEmitter(HoundEmitter)
+        self.state = HOUND.EVENTS.NO_CHANGE
+        if HoundEmitter:getGroupName() == self:getGroupName() then
+            if not self.emitters[HoundEmitter:getDcsName()] then
+                self.emitters[HoundEmitter:getDcsName()] = HoundEmitter
+                self:selectPrimaryEmitter()
+                self:updateTypeAssigned()
+                self.state = HOUND.EVENTS.SITE_UPDATED
+            end
+        end
+        return self.state
+    end
+
+    function HOUND.Contact.Site:removeEmitter(HoundEmitter)
+        self.state = HOUND.EVENTS.NO_CHANGE
+        if HoundEmitter:getGroupName() == self:getGroupName() then
+            if self.emitters[HoundEmitter:getGroupName()] then
+                self.emitters[HoundEmitter:getGroupName()] = nil
+                self:selectPrimaryEmitter()
+                self.state = HOUND.EVENTS.SITE_UPDATED
+            end
+        end
+        return self.state
+    end
+
+    function HOUND.Contact.Site:selectPrimaryEmitter()
+        local emitters_list = {}
+        for _,emitter in pairs(self.emitters) do
+            table.insert(emitters_list,emitter)
+        end
+        table.sort(emitters_list,HOUND.Utils.Sort.ContactsByPrio)
+        if self.primaryEmitter ~= emitters_list[1] then
+            self.primaryEmitter = emitters_list[1]
+            self.state = HOUND.EVENTS.SITE_UPDATED
+            return true
+        end
+        return false
+    end
+
+    function HOUND.Contact.Site:updateTypeAssigned()
+        local type = self.primaryEmitter.typeAssigned or {}
+        if HOUND.Length(type) ~= 1 then
+            for emitter in self.emitters do
+                type = HOUND.setIntersection(type,emitter.typeAssigned)
+            end
+        end
+        if self.typeAssigned ~= type then
+            self.typeAssigned = type
+            self.state = HOUND.EVENTS.SITE_UPDATED
+        end
+    end
+
+end--- HOUND.Contact.Site_comms
+do
+    local l_math = math
+end--- Hound Comms Manager (Base class)
 do
     HOUND.Comms.Manager = {}
     HOUND.Comms.Manager.__index = HOUND.Comms.Manager
@@ -4480,7 +4777,7 @@ do
 
         CommsManager.scheduler = nil
 
-        if type(settings) == "table" and Length(settings) > 0 then
+        if type(settings) == "table" and HOUND.Length(settings) > 0 then
             CommsManager:updateSettings(settings)
         end
         return CommsManager
@@ -4489,7 +4786,7 @@ do
     function HOUND.Comms.Manager:updateSettings(settings)
         for k,v in pairs(settings) do
             local k0 = tostring(k):lower()
-            if setContainsValue({"enabletts","enabletext","alerts"},k0) then
+            if HOUND.setContainsValue({"enabletts","enabletext","alerts"},k0) then
                 self.preferences[k0] = v
             else
                 self.settings[k0] = v
@@ -4519,7 +4816,7 @@ do
 
     function HOUND.Comms.Manager:getSettings(key)
         local k0 = tostring(key):lower()
-        if setContainsValue({"enabletts","enabletext","alerts"},k0) then
+        if HOUND.setContainsValue({"enabletts","enabletext","alerts"},k0) then
             return self.preferences[tostring(key):lower()]
         else
             return self.settings[tostring(key):lower()]
@@ -4528,7 +4825,7 @@ do
 
     function HOUND.Comms.Manager:setSettings(key,value)
         local k0 = tostring(key):lower()
-        if setContainsValue({"enabletts","enabletext","alerts"},k0) then
+        if HOUND.setContainsValue({"enabletts","enabletext","alerts"},k0) then
             self.preferences[k0] = value
         else
             self.settings[k0] = value
@@ -4732,7 +5029,7 @@ end
 do
 
     HOUND.Comms.InformationSystem = {}
-    HOUND.Comms.InformationSystem = inheritsFrom(HOUND.Comms.Manager)
+    HOUND.Comms.InformationSystem = HOUND.inheritsFrom(HOUND.Comms.Manager)
 
     function HOUND.Comms.InformationSystem:create(sector,houndConfig,settings)
         local instance = self:superClass():create(sector,houndConfig,settings)
@@ -4820,7 +5117,7 @@ end
 do
 
     HOUND.Comms.Controller = {}
-    HOUND.Comms.Controller = inheritsFrom(HOUND.Comms.Manager)
+    HOUND.Comms.Controller = HOUND.inheritsFrom(HOUND.Comms.Manager)
 
     function HOUND.Comms.Controller:create(sector,houndConfig,settings)
         local instance = self:superClass():create(sector,houndConfig,settings)
@@ -4838,7 +5135,7 @@ do
 end
 do
     HOUND.Comms.Notifier = {}
-    HOUND.Comms.Notifier = inheritsFrom(HOUND.Comms.Manager)
+    HOUND.Comms.Notifier = HOUND.inheritsFrom(HOUND.Comms.Manager)
 
     function HOUND.Comms.Notifier:create(sector,houndConfig,settings)
         local instance = self:superClass():create(sector,houndConfig,settings)
@@ -4866,6 +5163,7 @@ do
         local instance = {}
         instance.contacts = {}
         instance.platforms = {}
+        instance.sites = {}
         instance.settings =  HOUND.Config.get(HoundInstanceId)
         instance.coalitionId = nil
         instance.TrackIdCounter = 0
@@ -4886,6 +5184,11 @@ do
         return self.settings:getCoalition()
     end
 
+    function HOUND.ElintWorker:getNewTrackId()
+        self.TrackIdCounter = self.TrackIdCounter + 1
+        return self.TrackIdCounter
+    end
+
     function HOUND.ElintWorker:addPlatform(platformName)
         local candidate = Unit.getByName(platformName)
         if candidate == nil then
@@ -4897,7 +5200,7 @@ do
         end
 
         if candidate ~= nil and candidate:getCoalition() == self:getCoalition()
-            and not setContainsValue(self.platforms,candidate) and HOUND.DB.isValidPlatform(candidate) then
+            and not HOUND.setContainsValue(self.platforms,candidate) and HOUND.DB.isValidPlatform(candidate) then
                 table.insert(self.platforms, candidate)
                 HOUND.EventHandler.publishEvent({
                     id = HOUND.EVENTS.PLATFORM_ADDED,
@@ -4935,7 +5238,7 @@ do
     end
 
     function HOUND.ElintWorker:platformRefresh()
-        if Length(self.platforms) < 1 then return end
+        if HOUND.Length(self.platforms) < 1 then return end
         for id,platform in ipairs(self.platforms) do
             if platform:isExist() == false or platform:getLife() <1 then
                 table.remove(self.platforms, id)
@@ -4950,7 +5253,7 @@ do
     end
 
     function HOUND.ElintWorker:removeDeadPlatforms()
-        if Length(self.platforms) < 1 then return end
+        if HOUND.Length(self.platforms) < 1 then return end
         for id,platform in ipairs(self.platforms) do
             if platform:isExist() == false or platform:getLife() <1  or (platform:getCategory() ~= Object.Category.STATIC and platform:isActive() == false) then
                 table.remove(self.platforms, id)
@@ -4965,7 +5268,7 @@ do
     end
 
     function HOUND.ElintWorker:countPlatforms()
-        return Length(self.platforms)
+        return HOUND.Length(self.platforms)
     end
 
     function HOUND.ElintWorker:listPlatforms()
@@ -4974,11 +5277,6 @@ do
             table.insert(platforms,platform:getName())
         end
         return platforms
-    end
-
-    function HOUND.ElintWorker:getNewTrackId()
-        self.TrackIdCounter = self.TrackIdCounter + 1
-        return self.TrackIdCounter
     end
 
     function HOUND.ElintWorker:isContact(emitter)
@@ -4990,14 +5288,20 @@ do
         if type(emitter) == "table" and emitter.getName ~= nil then
             emitterName = emitter:getName()
         end
-        return setContains(self.contacts,emitterName)
+        return HOUND.setContains(self.contacts,emitterName)
     end
 
     function HOUND.ElintWorker:addContact(emitter)
         if emitter == nil or emitter.getName == nil then return end
         local emitterName = emitter:getName()
         if self.contacts[emitterName] ~= nil then return emitterName end
-        self.contacts[emitterName] = HOUND.Contact.New(emitter, self:getCoalition(), self:getNewTrackId())
+        self.contacts[emitterName] = HOUND.Contact.Emitter:New(emitter, self:getCoalition(), self:getNewTrackId())
+        local site = self:getSite(self.contacts[emitterName])
+        if site then
+            site:addEmitter(self.contacts[emitterName])
+        else
+            HOUND.Logger.debug("failed to create site")
+        end
         HOUND.EventHandler.publishEvent({
             id = HOUND.EVENTS.RADAR_NEW,
             initiator = emitter,
@@ -5028,6 +5332,7 @@ do
     function HOUND.ElintWorker:removeContact(emitterName)
         if not type(emitterName) == "string" then return false end
         if self.contacts[emitterName] then
+            self:getSite(self.contacts[emitterName],true):removeEmitter(self.contacts[emitterName])
             self.contacts[emitterName]:updateDeadDCSObject()
             HOUND.EventHandler.publishEvent({
                 id = HOUND.EVENTS.RADAR_DESTROYED,
@@ -5072,6 +5377,67 @@ do
         end
         local HoundContact = self:getContact(emitter)
         HoundContact:AddPoint(datapoint)
+    end
+
+    function HOUND.ElintWorker:isSite(site)
+        if site == nil then return false end
+        local groupName = nil
+        if type(site) == "string" then
+            groupName = site
+        end
+        if type(site) == "table" and site.getName ~= nil then
+            groupName = site:getName()
+        end
+        return HOUND.setContains(self.sites,groupName)
+    end
+
+    function HOUND.ElintWorker:addSite(emitter)
+        if emitter == nil or emitter.getName == nil then return end
+        local groupName = emitter:getGroupName()
+        if self.sites[groupName] ~= nil then return groupName end
+        self.sites[groupName] = HOUND.Contact.Site:New(emitter, self:getCoalition(), self:getNewTrackId())
+        HOUND.EventHandler.publishEvent({
+            id = HOUND.EVENTS.SITE_NEW,
+            initiator = emitter,
+            houndId = self.settings:getId(),
+            coalition = self.settings:getCoalition()
+        })
+        return groupName
+    end
+
+    function HOUND.ElintWorker:getSite(emitter,getOnly)
+        if emitter == nil then return nil end
+        local groupName = nil
+        if type(emitter) == "string" then
+            groupName = emitter
+        end
+        if type(emitter) == "table" and emitter.getGroupName ~= nil then
+            groupName = emitter:getGroupName()
+        end
+        if groupName ~= nil and self.sites[groupName] ~= nil then return self.sites[groupName] end
+        if not self.sites[groupName] and type(emitter) == "table" and not getOnly then
+            self:addSite(emitter)
+            return self.sites[groupName]
+        end
+        return nil
+    end
+
+    function HOUND.ElintWorker:removeSite(groupName)
+        if not type(groupName) == "string" then return false end
+        if self.sites[groupName] then
+            for emitterName,emitter in pairs(self.sites[groupName]:getRadars()) do
+                self:removeContact(emitterName)
+            end
+            self.sites[groupName]:updateDeadDCSObject()
+            HOUND.EventHandler.publishEvent({
+                id = HOUND.EVENTS.SITE_REMOVED,
+                initiator = self.sites[groupName],
+                houndId = self.settings:getId(),
+                coalition = self.settings:getCoalition()
+            })
+        end
+        self.sites[groupName] = nil
+        return true
     end
 
     function HOUND.ElintWorker:listInSector(sectorName)
@@ -5120,7 +5486,7 @@ do
             end
             return contacts
         end
-        return Length(self.contacts)
+        return HOUND.Length(self.contacts)
     end
 
     function HOUND.ElintWorker:getContacts(sectorName)
@@ -5147,11 +5513,11 @@ do
     function HOUND.ElintWorker:Sniff()
         self:removeDeadPlatforms()
 
-        if Length(self.platforms) == 0 then return end
+        if HOUND.Length(self.platforms) == 0 then return end
 
         local Radars = HOUND.Utils.Elint.getActiveRadars(self:getCoalition())
 
-        if Length(Radars) == 0 then return end
+        if HOUND.Length(Radars) == 0 then return end
         for _,RadarName in ipairs(Radars) do
             local radar = Unit.getByName(RadarName)
             local radarPos = radar:getPosition().p
@@ -5173,11 +5539,11 @@ do
                             for axis,value in pairs(platformData.pos) do
                                 platformData.pos[axis] = value + platformData.posErr[axis]
                             end
-
                         end
 
-                        local datapoint = HOUND.Datapoint.New(platform,platformData.pos, az, el, timer.getAbsTime(),sampleAngularResolution,platformData.isStatic)
+                        local datapoint = HOUND.Contact.Datapoint.New(platform,platformData.pos, az, el, timer.getAbsTime(),sampleAngularResolution,platformData.isStatic)
                         contact:AddPoint(datapoint)
+                        local site = self:getSite(contact)
                     end
                 end
             end
@@ -5185,7 +5551,7 @@ do
     end
 
     function HOUND.ElintWorker:Process()
-        if Length(self.contacts) < 1 then return end
+        if HOUND.Length(self.contacts) < 1 then return end
         for contactName, contact in pairs(self.contacts) do
             if contact ~= nil then
                 local contactState = contact:processData()
@@ -5200,13 +5566,13 @@ do
                 if self.settings:getBDA() and contact:isAlive() and contact:getLife() < 1 then
                     contact:setDead()
                 end
-                if not contact:isAlive() and contact:getLastSeen() > HOUND.CONTACT_TIMEOUT then
+                if not contact:isAlive() and not contact:getPreBriefed() and contact:getLastSeen() > HOUND.CONTACT_TIMEOUT then
                     self:removeContact(contactName)
                     contact:destroy()
                     return
                 end
 
-                if contactState then
+                if contactState and contactState ~= HOUND.EVENTS.NO_CHANGE then
                     HOUND.EventHandler.publishEvent({
                         id = contactState,
                         initiator = contact,
@@ -5272,7 +5638,7 @@ do
         }
         instance.priority = priority or 10
 
-        if settings ~= nil and type(settings) == "table" and Length(settings) > 0 then
+        if settings ~= nil and type(settings) == "table" and HOUND.Length(settings) > 0 then
             instance:updateSettings(settings)
         end
         if instance.name ~= "default" then
@@ -5285,7 +5651,7 @@ do
         for k, v in pairs(settings) do
             local k0 = tostring(k):lower()
             if type(v) == "table" and
-                setContainsValue({"controller", "atis", "notifier"}, k0) then
+                HOUND.setContainsValue({"controller", "atis", "notifier"}, k0) then
                 if not self.settings[k0] then
                     self.settings[k0] = {}
                 end
@@ -5366,7 +5732,7 @@ do
 
         callsign = string.upper(callsign or HOUND.Utils.getHoundCallsign(namePool))
 
-        while setContainsValue(self._hSettings.callsigns, callsign) do
+        while HOUND.setContainsValue(self._hSettings.callsigns, callsign) do
             callsign = HOUND.Utils.getHoundCallsign(namePool)
         end
 
@@ -5399,19 +5765,15 @@ do
             HOUND.Logger.warn("[Hound] - cannot set zone to default sector")
             return
         end
-        if type(zonecandidate) == "string" then
-            local zone = HOUND.Utils.Zone.getDrawnZone(zonecandidate)
-            if not zone and (Group.getByName(zonecandidate)) then
-                zone = mist.getGroupPoints(zonecandidate)
-            end
-            self.settings.zone = zone
-            return
-        end
+        local zone = nil
         if not zonecandidate then
-            local zone = HOUND.Utils.Zone.getDrawnZone(self.name .. " Sector")
-            if zone then
-                self.settings.zone = zone
-            end
+            zone = HOUND.Utils.Zone.getDrawnZone(self.name .. " Sector")
+        end
+        if type(zonecandidate) == "string" then
+            zone = HOUND.Utils.Zone.getDrawnZone(zonecandidate) or HOUND.Utils.Zone.getGroupRoute(zonecandidate)
+        end
+        if zone then
+            self.settings.zone = zone
         end
     end
 
@@ -5638,7 +6000,7 @@ do
         local subscribedGid = {}
         for _,player in pairs(self.comms.menu.enrolled) do
             local grpId = player.groupId
-            if not setContainsValue(subscribedGid,grpId) then
+            if not HOUND.setContainsValue(subscribedGid,grpId) then
                 table.insert(subscribedGid,grpId)
             end
         end
@@ -5646,7 +6008,7 @@ do
     end
 
     function HOUND.Sector:validateEnrolled()
-        if Length(self.comms.menu.enrolled) == 0 then return end
+        if HOUND.Length(self.comms.menu.enrolled) == 0 then return end
         for _, player in pairs(self.comms.menu.enrolled) do
             local playerUnit = Unit.getByName(player.unitName)
             if not playerUnit or not playerUnit:getPlayerName() then
@@ -5658,7 +6020,7 @@ do
     function HOUND.Sector.checkIn(args,skipAck)
         local gSelf = args["self"]
         local player = args["player"]
-        if not setContains(gSelf.comms.menu.enrolled, player) then
+        if not HOUND.setContains(gSelf.comms.menu.enrolled, player) then
             gSelf.comms.menu.enrolled[player] = player
         end
         for _,otherPlayer in pairs(gSelf:findGrpInPlayerList(player.groupId,l_mist.DBs.humansByName)) do
@@ -5715,7 +6077,7 @@ do
                 if grpMenu.check_in ~= nil then
                     grpMenu.check_in = missionCommands.removeItemForGroup(grpId,grpMenu.check_in)
                 end
-                if setContains(self.comms.menu.enrolled, player) then
+                if HOUND.setContains(self.comms.menu.enrolled, player) then
                     grpMenu.check_in =
                         missionCommands.addCommandForGroup(grpId,
                                             self.comms.controller:getCallsign() .. " (" ..
@@ -5762,7 +6124,7 @@ do
 
         self:createCheckIn()
 
-        if Length(contacts) == 0 then
+        if HOUND.Length(contacts) == 0 then
             if not self.comms.menu.noData then
                 self.comms.menu.noData = missionCommands.addCommandForCoalition(self._hSettings:getCoalition(),
                             "No radars are currently tracked",
@@ -5770,7 +6132,7 @@ do
             end
         end
 
-        if Length(contacts) > 0 then
+        if HOUND.Length(contacts) > 0 then
             if self.comms.menu.noData ~= nil then
                 missionCommands.removeItemForCoalition(self._hSettings:getCoalition(),
                 self.comms.menu.noData)
@@ -5780,7 +6142,7 @@ do
 
         local grpMenuDone = {}
         self:validateEnrolled()
-        if Length(self.comms.menu.enrolled) > 0 then
+        if HOUND.Length(self.comms.menu.enrolled) > 0 then
             for _, player in pairs(self.comms.menu.enrolled) do
                 local grpId = player.groupId
                 local grpMenu = self.comms.menu[player]
@@ -5866,7 +6228,7 @@ do
             return
         end
 
-        if setContains(dataMenu.menus[assigned].data,uid) then
+        if HOUND.setContains(dataMenu.menus[assigned].data,uid) then
             dataMenu.menus[assigned].data[uid] = missionCommands.removeItemForGroup(dataMenu.gid, dataMenu.menus[assigned].data[uid])
         end
     end
@@ -6181,17 +6543,20 @@ do
         if type(DCS_Object_Name) ~= "string" then return end
         local units = {}
         local obj = Group.getByName(DCS_Object_Name) or Unit.getByName(DCS_Object_Name)
-        if obj and obj.getUnits then
-            units = obj:getUnits()
-        elseif obj and obj.getGroup then
-            table.insert(units,obj)
-        end
         if not obj then
             HOUND.Logger.info("Cannot pre-brief " .. DCS_Object_Name .. ": object does not exist.")
             return
         end
+        if HOUND.Utils.Dcs.isGroup(obj) then
+            HOUND.Logger.debug(DCS_Object_Name .. " isGroup")
+            units = obj:getUnits()
+        elseif HOUND.Utils.Dcs.isUnit(obj) then
+            HOUND.Logger.debug(DCS_Object_Name .. " isUnit")
+            table.insert(units,obj)
+        end
+
         for _,unit in pairs(units) do
-            if unit:getCoalition() ~= self.settings:getCoalition() and unit:isExist() and setContains(HOUND.DB.Radars,unit:getTypeName()) then
+            if unit:getCoalition() ~= self.settings:getCoalition() and unit:isExist() and HOUND.setContains(HOUND.DB.Radars,unit:getTypeName()) then
                 self.contacts:setPreBriefedContact(unit)
             end
         end
@@ -6203,12 +6568,12 @@ do
         if type(radarUnit) == "string" then
             obj = Group.getByName(radarUnit) or Unit.getByName(radarUnit)
         end
-        if obj and obj.getUnits then
+        if HOUND.Utils.Dcs.isGroup(obj) then
             units = obj:getUnits()
             for _,unit in pairs(units) do
                 unit = unit:getName()
             end
-        elseif obj and obj.getGroup then
+        elseif HOUND.Utils.Dcs.isUnit(obj) then
             table.insert(units,obj:getName())
         end
         if not obj then
@@ -6328,11 +6693,11 @@ do
     end
 
     function HoundElint:countSectors(element)
-        return Length(self:listSectors(element))
+        return HOUND.Length(self:listSectors(element))
     end
 
     function HoundElint:getSector(sectorName)
-        if setContains(self.sectors,sectorName) then
+        if HOUND.setContains(self.sectors,sectorName) then
             return self.sectors[sectorName]
         end
     end
@@ -6768,7 +7133,7 @@ do
     end
 
     function HoundElint:enableMarkers(markerType)
-        if markerType and setContainsValue(HOUND.MARKER,markerType) then
+        if markerType and HOUND.setContainsValue(HOUND.MARKER,markerType) then
             self:setMarkerType(markerType)
         end
         return self.settings:setUseMarkers(true)
@@ -6779,14 +7144,14 @@ do
     end
 
     function HoundElint:setMarkerType(markerType)
-        if markerType and setContainsValue(HOUND.MARKER,markerType) then
+        if markerType and HOUND.setContainsValue(HOUND.MARKER,markerType) then
             return self.settings:setMarkerType(markerType)
         end
         return false
     end
 
     function HoundElint:setTimerInterval(setIntervalName,setValue)
-        if self.settings and setContains(self.settings.intervals,string.lower(setIntervalName)) then
+        if self.settings and HOUND.setContains(self.settings.intervals,string.lower(setIntervalName)) then
             return self.settings:setInterval(setIntervalName,setValue)
         end
         return false
@@ -6851,7 +7216,7 @@ do
 
     function HoundElint.runCycle(self)
         local runTime = timer.getAbsTime()
-        local nextRun = timer.getTime() + Gaussian(self.settings.intervals.scan,self.settings.intervals.scan/10)
+        local nextRun = timer.getTime() + HOUND.Gaussian(self.settings.intervals.scan,self.settings.intervals.scan/10)
         if self.settings:getCoalition() == nil then return nextRun end
         if not self.contacts then return nextRun end
 
@@ -7070,7 +7435,7 @@ do
             and DcsEvent.initiator:getCoalition() == self.settings:getCoalition()
             and DcsEvent.initiator.getPlayerName ~= nil
             and DcsEvent.initiator:getPlayerName() ~= nil
-            and setContains(mist.DBs.humansByName,DcsEvent.initiator:getName())
+            and HOUND.setContains(mist.DBs.humansByName,DcsEvent.initiator:getName())
             then return self:populateRadioMenu()
         end
 
@@ -7079,7 +7444,7 @@ do
             or DcsEvent.id == world.event.S_EVENT_EJECTION)
             and DcsEvent.initiator:getCoalition() == self.settings:getCoalition()
             and type(DcsEvent.initiator.getName) == "function"
-            and setContains(mist.DBs.humansByName,DcsEvent.initiator:getName())
+            and HOUND.setContains(mist.DBs.humansByName,DcsEvent.initiator:getName())
                 then return self:populateRadioMenu()
         end
     end
@@ -7098,4 +7463,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.3.4-develop-20230523 - Compiled on 2023-05-23 12:05
+-- Hound version 0.4.0-feature/site_managment-20230523 - Compiled on 2023-05-23 11:00

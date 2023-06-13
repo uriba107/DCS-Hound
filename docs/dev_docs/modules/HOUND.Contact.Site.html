@@ -1,0 +1,627 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Reference</title>
+    <link rel="stylesheet" href="../ldoc_fixed.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Hound<br> ELINT for DCS</h1>
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
+<li><a href="#Getters_and_Setters">Getters and Setters </a></li>
+<li><a href="#Class_HOUND_Contact_Site">Class HOUND.Contact.Site </a></li>
+<li><a href="#Emitter_managment">Emitter managment </a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><a href="../modules/HOUND.html">HOUND</a></li>
+  <li><a href="../modules/HOUND.Logger.html">HOUND.Logger</a></li>
+  <li><a href="../modules/HOUND.DB.html">HOUND.DB</a></li>
+  <li><a href="../modules/HOUND.Config.html">HOUND.Config</a></li>
+  <li><a href="../modules/HOUND.Utils.html">HOUND.Utils</a></li>
+  <li><a href="../modules/HOUND.EventHandler.html">HOUND.EventHandler</a></li>
+  <li><a href="../modules/HOUND.Contact.Base.html">HOUND.Contact.Base</a></li>
+  <li><a href="../modules/HOUND.Contact.Estimator.html">HOUND.Contact.Estimator</a></li>
+  <li><a href="../modules/HOUND.Contact.Datapoint.html">HOUND.Contact.Datapoint</a></li>
+  <li><a href="../modules/HOUND.Contact.Emitter.html">HOUND.Contact.Emitter</a></li>
+  <li><strong>HOUND.Contact.Site</strong></li>
+  <li><a href="../modules/HOUND.Comms.Manager.html">HOUND.Comms.Manager</a></li>
+  <li><a href="../modules/HOUND.Comms.InformationSystem.html">HOUND.Comms.InformationSystem</a></li>
+  <li><a href="../modules/HOUND.Comms.Controller.html">HOUND.Comms.Controller</a></li>
+  <li><a href="../modules/HOUND.Comms.Notifier.html">HOUND.Comms.Notifier</a></li>
+  <li><a href="../modules/HOUND.ElintWorker.html">HOUND.ElintWorker</a></li>
+  <li><a href="../modules/HOUND.ContactManager.html">HOUND.ContactManager</a></li>
+  <li><a href="../modules/HOUND.Sector.html">HOUND.Sector</a></li>
+</ul>
+<h2>Scripts</h2>
+<ul class="nowrap">
+  <li><a href="../scripts/HoundElint.html">HoundElint</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>HOUND.Contact.Site</code></h1>
+<p>HOUND.Contact.Site
+ Site class containing related functions</p>
+<p></p>
+    <h3>See also:</h3>
+    <ul>
+         <a href="../modules/HOUND.Contact.Base.html#">HOUND.Contact.Base</a>
+    </ul>
+
+
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:generateRadioItemText">HOUND.Contact.Site:generateRadioItemText ()</a></td>
+	<td class="summary">generate Text for the Radio menu item</td>
+	</tr>
+</table>
+<h2><a href="#Getters_and_Setters">Getters and Setters </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:getName">HOUND.Contact.Site:getName ()</a></td>
+	<td class="summary">Get contact name</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:getType">HOUND.Contact.Site:getType ()</a></td>
+	<td class="summary">Get contact type name</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:getId">HOUND.Contact.Site:getId ()</a></td>
+	<td class="summary">Get Site GID</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:getGroupName">HOUND.Contact.Site:getGroupName ()</a></td>
+	<td class="summary">Get Contact Group Name</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:getDcsName">HOUND.Contact.Site:getDcsName ()</a></td>
+	<td class="summary">Get the DCS unit name</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:getDCSObject">HOUND.Contact.Site:getDCSObject ()</a></td>
+	<td class="summary">Get the underlying DCS Object</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:getLastSeen">HOUND.Contact.Site:getLastSeen ()</a></td>
+	<td class="summary">Get last seen in seconds</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:getTypeAssigned">HOUND.Contact.Site:getTypeAssigned ()</a></td>
+	<td class="summary">get type assinged string</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:isActive">HOUND.Contact.Site:isActive ()</a></td>
+	<td class="summary">Check if contact is Active</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:isRecent">HOUND.Contact.Site:isRecent ()</a></td>
+	<td class="summary">check if contact is recent</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:isAccurate">HOUND.Contact.Site:isAccurate ()</a></td>
+	<td class="summary">check if contact position is accurate</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:isTimedout">HOUND.Contact.Site:isTimedout ()</a></td>
+	<td class="summary">check if contact is timed out</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:getState">HOUND.Contact.Site:getState ()</a></td>
+	<td class="summary">Get current state</td>
+	</tr>
+</table>
+<h2><a href="#Class_HOUND_Contact_Site">Class HOUND.Contact.Site </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:New">HOUND.Contact.Site:New (HoundContact, HoundCoalition[, SiteId])</a></td>
+	<td class="summary">create new HOUND.Contact.Site instance</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:destroy">HOUND.Contact.Site:destroy ()</a></td>
+	<td class="summary">Destructor function</td>
+	</tr>
+</table>
+<h2><a href="#Emitter_managment">Emitter managment </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:addEmitter">HOUND.Contact.Site:addEmitter (HoundEmitter)</a></td>
+	<td class="summary">Add emitter to site</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:removeEmitter">HOUND.Contact.Site:removeEmitter (HoundEmitter)</a></td>
+	<td class="summary">Add emitter to site</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:selectPrimaryEmitter">HOUND.Contact.Site:selectPrimaryEmitter ()</a></td>
+	<td class="summary">select primaty emitter for site</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:updateTypeAssigned">HOUND.Contact.Site:updateTypeAssigned ()</a></td>
+	<td class="summary">update site type</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:updateSector">HOUND.Contact.Site:updateSector ()</a></td>
+	<td class="summary">Update sector data</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header "><a name="Functions"></a>Functions</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HOUND.Contact.Site:generateRadioItemText"></a>
+    <strong>HOUND.Contact.Site:generateRadioItemText ()</strong>
+    </dt>
+    <dd>
+    generate Text for the Radio menu item
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        string
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Getters_and_Setters"></a>Getters and Setters </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HOUND.Contact.Site:getName"></a>
+    <strong>HOUND.Contact.Site:getName ()</strong>
+    </dt>
+    <dd>
+    Get contact name
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        String
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:getType"></a>
+    <strong>HOUND.Contact.Site:getType ()</strong>
+    </dt>
+    <dd>
+    Get contact type name
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        String
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:getId"></a>
+    <strong>HOUND.Contact.Site:getId ()</strong>
+    </dt>
+    <dd>
+    Get Site GID
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Number
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:getGroupName"></a>
+    <strong>HOUND.Contact.Site:getGroupName ()</strong>
+    </dt>
+    <dd>
+    Get Contact Group Name
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        String
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:getDcsName"></a>
+    <strong>HOUND.Contact.Site:getDcsName ()</strong>
+    </dt>
+    <dd>
+    Get the DCS unit name
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        String
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:getDCSObject"></a>
+    <strong>HOUND.Contact.Site:getDCSObject ()</strong>
+    </dt>
+    <dd>
+    Get the underlying DCS Object
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        DCS Group or DCS staticObject
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:getLastSeen"></a>
+    <strong>HOUND.Contact.Site:getLastSeen ()</strong>
+    </dt>
+    <dd>
+    Get last seen in seconds
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        number in seconds since contact was last seen
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:getTypeAssigned"></a>
+    <strong>HOUND.Contact.Site:getTypeAssigned ()</strong>
+    </dt>
+    <dd>
+    get type assinged string
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        string
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:isActive"></a>
+    <strong>HOUND.Contact.Site:isActive ()</strong>
+    </dt>
+    <dd>
+    Check if contact is Active
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        (Bool) True if seen in the last 15 seconds
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:isRecent"></a>
+    <strong>HOUND.Contact.Site:isRecent ()</strong>
+    </dt>
+    <dd>
+    check if contact is recent
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        (Bool) True if seen in the last 2 minutes
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:isAccurate"></a>
+    <strong>HOUND.Contact.Site:isAccurate ()</strong>
+    </dt>
+    <dd>
+    check if contact position is accurate
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Bool - True target is pre briefed
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:isTimedout"></a>
+    <strong>HOUND.Contact.Site:isTimedout ()</strong>
+    </dt>
+    <dd>
+    check if contact is timed out
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        (Bool) True if timed out
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:getState"></a>
+    <strong>HOUND.Contact.Site:getState ()</strong>
+    </dt>
+    <dd>
+    Get current state
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Contact state in <a href="../modules/HOUND.html#EVENTS">HOUND.EVENTS</a>
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header has-description"><a name="Class_HOUND_Contact_Site"></a>Class HOUND.Contact.Site </h2>
+
+          <div class="section-description">
+          HOUND.Contact.Site  (Extends <a href="../modules/HOUND.Contact.Base.html#">HOUND.Contact.Base</a>)
+ Site class containing related functions
+          </div>
+    <dl class="function">
+    <dt>
+    <a name = "HOUND.Contact.Site:New"></a>
+    <strong>HOUND.Contact.Site:New (HoundContact, HoundCoalition[, SiteId])</strong>
+    </dt>
+    <dd>
+    create new HOUND.Contact.Site instance
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">HoundContact</span>
+         emitter HoundContact
+        </li>
+        <li><span class="parameter">HoundCoalition</span>
+         coalition Id of Hound Instace
+        </li>
+        <li><span class="parameter">SiteId</span>
+         specify uid for the Site. if not present Group ID will be used
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        HOUND.Contact.Site instance
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:destroy"></a>
+    <strong>HOUND.Contact.Site:destroy ()</strong>
+    </dt>
+    <dd>
+    Destructor function
+
+
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Emitter_managment"></a>Emitter managment </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HOUND.Contact.Site:addEmitter"></a>
+    <strong>HOUND.Contact.Site:addEmitter (HoundEmitter)</strong>
+    </dt>
+    <dd>
+    Add emitter to site
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">HoundEmitter</span>
+         <a href="../modules/HOUND.Contact.Emitter.html#">HOUND.Contact.Emitter</a> radar to add
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        <a href="../modules/HOUND.html#EVENTS">HOUND.EVENTS</a>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:removeEmitter"></a>
+    <strong>HOUND.Contact.Site:removeEmitter (HoundEmitter)</strong>
+    </dt>
+    <dd>
+    Add emitter to site
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">HoundEmitter</span>
+         <a href="../modules/HOUND.Contact.Emitter.html#">HOUND.Contact.Emitter</a> radar to remove
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        <a href="../modules/HOUND.html#EVENTS">HOUND.EVENTS</a>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:selectPrimaryEmitter"></a>
+    <strong>HOUND.Contact.Site:selectPrimaryEmitter ()</strong>
+    </dt>
+    <dd>
+    select primaty emitter for site
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        (Bool) True if primary changed
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:updateTypeAssigned"></a>
+    <strong>HOUND.Contact.Site:updateTypeAssigned ()</strong>
+    </dt>
+    <dd>
+    update site type
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        (Bool) True if site type changed
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:updateSector"></a>
+    <strong>HOUND.Contact.Site:updateSector ()</strong>
+    </dt>
+    <dd>
+    Update sector data
+
+
+
+
+
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+<i style="float:right;">Last updated 2023-06-10 21:22:51 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

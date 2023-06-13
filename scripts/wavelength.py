@@ -16,7 +16,9 @@ bands = {
 }
 
 platforms = {
-            "Comms tower M": {"category": 0, "antenna":{"size":80, "factor":1}},
+            "Comms tower M": {"category": 0, "antenna":{"size":107, "factor":1}},
+            "Command Center": {"category": 0, "antenna":{"size":62, "factor":1}},
+            "TV tower": {"category": 0, "antenna":{"size":235, "factor":1}},
             # -- Ground Units
             "MLRS FDDM": {"category": 0, "antenna":{"size":15, "factor":1}},
             "SPK-11": {"category": 0, "antenna":{"size":15, "factor":1}},
@@ -47,8 +49,14 @@ platforms = {
             "F-16C": {"category": 2, "antenna":{"size":1.45, "factor":1}},
             "JF-17": {"category": 2, "antenna":{"size":3.25, "factor":1}},
             "EA-6B": {"category": 2, "antenna":{"size":9, "factor":1}},
+            "EA-18G": {"category": 2, "antenna":{"size":14, "factor":1}},
             "C-47": {"category": 2, "antenna":{"size":12, "factor":1}},
             "RC135RJ": {"category": 2, "antenna":{"size":40, "factor": 1}},
+            "Mirage-F1": {"category": 2,"antenna":{"size":3.7, "factor":1}},
+            "P-3C": {"category": 2, "antenna":{"size":25, "factor":1}},
+            "P-8A": {"category": 2, "antenna":{"size":35, "factor":1}},
+            "Tu-214R": {"category": 2, "antenna":{"size":40, "factor":1}},
+
         }
 
 def genBandTable():
@@ -90,11 +98,11 @@ genBandTable()
 print("\n=== ReadMe resolution data ===")
 genResolutionTable()
 
-print("\n=== Other stuff ===")
+# print("\n=== Other stuff ===")
 
 
-showRes("H",getAntennaSize(14.9,"C"))
-showRes("C",1.6)
-showRes("C",0.22*3.2)
-showRes("F",0.5)
-showRes("F",0.75)
+# showRes("H",getAntennaSize(14.9,"C"))
+# showRes("C",1.6)
+# showRes("C",0.22*3.2)
+# showRes("F",0.5)
+# showRes("F",0.75)

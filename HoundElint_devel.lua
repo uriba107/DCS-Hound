@@ -1,8 +1,10 @@
 env.info("Loading Hound Scripts dynamicly")
 
-if not HoundWorkDir then
-    HoundWorkDir = "E:\\Dropbox\\uri\\Dropbox\\DCS\\Mission Building\\HoundElint\\"
-end
+    if HoundWorkDir == nil then
+        -- HoundWorkDir = "C:\\Users\\me\\Dropbox\\DCS\\Mission Building\\HoundElint\\"
+        HoundWorkDir = "E:\\Dropbox\\uri\\Dropbox\\DCS\\Mission Building\\HoundElint\\"
+    end
+    
     assert(loadfile(HoundWorkDir..'test\\StopWatch.lua'))()
 
     assert(loadfile(HoundWorkDir..'include\\mist_4_5_113.lua'))()
@@ -17,25 +19,23 @@ end
     assert(loadfile(HoundWorkDir..'src\\110 - HoundConfig.lua'))()
     assert(loadfile(HoundWorkDir..'src\\200 - HoundUtils.lua'))()
     assert(loadfile(HoundWorkDir..'src\\210 - HoundEventHandler.lua'))()
-    assert(loadfile(HoundWorkDir..'src\\295 - HoundEstimator.lua'))()
-    assert(loadfile(HoundWorkDir..'src\\299 - HoundDatapoint.lua'))()
-    assert(loadfile(HoundWorkDir..'src\\300 - HoundContact.lua'))()
-    assert(loadfile(HoundWorkDir..'src\\301 - HoundContact_comms.lua'))()
+    assert(loadfile(HoundWorkDir..'src\\300 - HoundContactBase.lua'))()
+    assert(loadfile(HoundWorkDir..'src\\301 - HoundContactEstimator.lua'))()
+    assert(loadfile(HoundWorkDir..'src\\302 - HoundContactDatapoint.lua'))()
+    assert(loadfile(HoundWorkDir..'src\\310 - HoundContactEmitter.lua'))()
+    assert(loadfile(HoundWorkDir..'src\\311 - HoundContactEmitter_comms.lua'))()
+    assert(loadfile(HoundWorkDir..'src\\320 - HoundContactSite.lua'))()
+    assert(loadfile(HoundWorkDir..'src\\321 - HoundContactSite_comms.lua'))()
     assert(loadfile(HoundWorkDir..'src\\400 - HoundCommsManager.lua'))()
-    assert(loadfile(HoundWorkDir..'src\\410 - HoundInformationSystem.lua'))()
-    assert(loadfile(HoundWorkDir..'src\\420 - HoundController.lua'))()
-    assert(loadfile(HoundWorkDir..'src\\421 - HoundNotifier.lua'))()
+    assert(loadfile(HoundWorkDir..'src\\410 - HoundCommsInformationSystem.lua'))()
+    assert(loadfile(HoundWorkDir..'src\\420 - HoundCommsController.lua'))()
+    assert(loadfile(HoundWorkDir..'src\\421 - HoundCommsNotifier.lua'))()
     assert(loadfile(HoundWorkDir..'src\\500 - HoundElintWorker.lua'))()
+    assert(loadfile(HoundWorkDir..'src\\501 - HoundElintWorker_queries.lua'))()
     assert(loadfile(HoundWorkDir..'src\\510 - HoundContactManager.lua'))()
     assert(loadfile(HoundWorkDir..'src\\550 - HoundSector.lua'))()
     assert(loadfile(HoundWorkDir..'src\\800 - HoundElint.lua'))()
     assert(loadfile(HoundWorkDir..'src\\999 - Hound_footer.lua'))()
-
-    -- assert(loadfile(HoundWorkDir..'demo_mission\\hound_unit_test\\hound-unit-tests.lua'))()
-    -- assert(loadfile(HoundWorkDir..'demo_mission\\Caucasus_demo\\HoundElint_demo.lua'))()
-    -- assert(loadfile(HoundWorkDir..'demo_mission\\Syria_POC\\Hound_Demo_SyADFGCI.lua'))()
-    -- assert(loadfile(HoundWorkDir..'demo_mission\\Syria_HARM\\Hound_Demo_syria.lua'))()
-
 
 env.info("Loading Done")
 

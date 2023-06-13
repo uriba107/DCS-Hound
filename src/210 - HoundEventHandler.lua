@@ -7,7 +7,8 @@ do
     HOUND.EventHandler = {
         idx = 0,
         subscribers = {},
-        _internalSubscribers = {}
+        _internalSubscribers = {},
+        subscribeOn = {}
     }
 
     HOUND.EventHandler.__index = HOUND.EventHandler
@@ -24,6 +25,9 @@ do
     -- @param handler handler to remove
     function HOUND.EventHandler.removeEventHandler(handler)
         HOUND.EventHandler.subscribers[handler] = nil
+        for eventType,_ in pairs(HOUND.EventHandler.subscribeOn) do
+            HOUND.EventHandler.subscribeOn[eventType][handler] = nil
+        end
     end
 
     --- register new internal event handler
@@ -39,8 +43,20 @@ do
     -- @local
     -- @param handler handler to register
     function HOUND.EventHandler.removeInternalEventHandler(handler)
-        if setContains(HOUND.EventHandler._internalSubscribers,handler) then
+        if HOUND.setContains(HOUND.EventHandler._internalSubscribers,handler) then
             HOUND.EventHandler._internalSubscribers[handler] = nil
+        end
+    end
+
+    -- register using on pattern
+    -- @param eventType event to register
+    -- @param handler handler to register
+    function HOUND.EventHandler.on(eventType,handler)
+        if type(handler) == "function" then
+            if not HOUND.EventHandler.subscribeOn[eventType] then
+                HOUND.EventHandler.subscribeOn[eventType] = {}
+            end
+            HOUND.EventHandler.subscribeOn[eventType][handler] = handler
         end
     end
 

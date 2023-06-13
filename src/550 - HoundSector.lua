@@ -3,6 +3,8 @@
 do
     local l_mist = mist
     local l_math = math
+    local HoundUtils = HOUND.Utils
+
     --- HOUND.Sector
     -- @type HOUND.Sector
     -- @within HOUND.Sector
@@ -44,7 +46,7 @@ do
         }
         instance.priority = priority or 10
 
-        if settings ~= nil and type(settings) == "table" and Length(settings) > 0 then
+        if settings ~= nil and type(settings) == "table" and HOUND.Length(settings) > 0 then
             instance:updateSettings(settings)
         end
         if instance.name ~= "default" then
@@ -74,7 +76,7 @@ do
         for k, v in pairs(settings) do
             local k0 = tostring(k):lower()
             if type(v) == "table" and
-                setContainsValue({"controller", "atis", "notifier"}, k0) then
+                HOUND.setContainsValue({"controller", "atis", "notifier"}, k0) then
                 if not self.settings[k0] then
                     self.settings[k0] = {}
                 end
@@ -95,7 +97,7 @@ do
     function HOUND.Sector:destroy()
         self:removeRadioMenu()
         -- self:defaultEventHandler(true)
-        for _,contact in pairs(self._contacts:listAll()) do
+        for _,contact in pairs(self._contacts:listAllContacts()) do
             contact:removeSector(self.name)
         end
         return
@@ -168,10 +170,10 @@ do
         end
         if NATO == true then namePool = "NATO" end
 
-        callsign = string.upper(callsign or HOUND.Utils.getHoundCallsign(namePool))
+        callsign = string.upper(callsign or HoundUtils.getHoundCallsign(namePool))
 
-        while setContainsValue(self._hSettings.callsigns, callsign) do
-            callsign = HOUND.Utils.getHoundCallsign(namePool)
+        while HOUND.setContainsValue(self._hSettings.callsigns, callsign) do
+            callsign = HoundUtils.getHoundCallsign(namePool)
         end
 
         if self.callsign ~= nil or self.callsign ~= "HOUND" then
@@ -211,19 +213,21 @@ do
             HOUND.Logger.warn("[Hound] - cannot set zone to default sector")
             return
         end
-        if type(zonecandidate) == "string" then
-            local zone = HOUND.Utils.Zone.getDrawnZone(zonecandidate)
-            if not zone and (Group.getByName(zonecandidate)) then
-                zone = mist.getGroupPoints(zonecandidate)
-            end
-            self.settings.zone = zone
-            return
-        end
+        local zone = nil
         if not zonecandidate then
-            local zone = HOUND.Utils.Zone.getDrawnZone(self.name .. " Sector")
-            if zone then
-                self.settings.zone = zone
-            end
+            zone = HoundUtils.Zone.getDrawnZone(self.name .. " Sector")
+        end
+        if type(zonecandidate) == "string" then
+            zone = HoundUtils.Zone.getDrawnZone(zonecandidate) or HoundUtils.Zone.getGroupRoute(zonecandidate)
+            -- local zone = HoundUtils.Zone.getDrawnZone(zonecandidate)
+            -- if not zone and (Group.getByName(zonecandidate)) then
+            --     zone = mist.getGroupPoints(zonecandidate)
+            -- end
+            -- self.settings.zone = zone
+            -- return
+        end
+        if zone then
+            self.settings.zone = zone
         end
     end
 
@@ -454,7 +458,7 @@ do
         if not self:getZone() then
             effectiveSectorName = "default"
         end
-        return self._contacts:listAllbyRange(effectiveSectorName)
+        return self._contacts:listAllContactsByRange(effectiveSectorName)
     end
 
     --- count the number of contacts for the sector
@@ -469,8 +473,27 @@ do
     --- update contact for zone memberships
     -- @param contact HOUND.Contact instance
     function HOUND.Sector:updateSectorMembership(contact)
-        local inSector, threatsSector = HOUND.Utils.Polygon.threatOnSector(self.settings.zone,contact:getPos(),contact:getMaxWeaponsRange())
+        local inSector, threatsSector = HoundUtils.Polygon.threatOnSector(self.settings.zone,contact:getPos(),contact:getMaxWeaponsRange())
         contact:updateSector(self.name, inSector, threatsSector)
+    end
+
+    --- return a sorted list of all contacts for the sector
+    function HOUND.Sector:getSites()
+        local effectiveSectorName = self.name
+        if not self:getZone() then
+            effectiveSectorName = "default"
+        end
+        return self._contacts:listAllSitesByRange(effectiveSectorName)
+    end
+
+    --- count the number of contacts for the sector
+    -- @return Integer
+    function HOUND.Sector:countSites()
+        local effectiveSectorName = self.name
+        if not self:getZone() then
+            effectiveSectorName = "default"
+        end
+        return self._contacts:countSites(effectiveSectorName)
     end
 
     -------------- Radio Menu stuff -----------------------------
@@ -526,7 +549,7 @@ do
         local subscribedGid = {}
         for _,player in pairs(self.comms.menu.enrolled) do
             local grpId = player.groupId
-            if not setContainsValue(subscribedGid,grpId) then
+            if not HOUND.setContainsValue(subscribedGid,grpId) then
                 table.insert(subscribedGid,grpId)
             end
         end
@@ -536,7 +559,7 @@ do
     --- clean non existing users from subscribers
     -- @local
     function HOUND.Sector:validateEnrolled()
-        if Length(self.comms.menu.enrolled) == 0 then return end
+        if HOUND.Length(self.comms.menu.enrolled) == 0 then return end
         for _, player in pairs(self.comms.menu.enrolled) do
             local playerUnit = Unit.getByName(player.unitName)
             if not playerUnit or not playerUnit:getPlayerName() then
@@ -552,7 +575,7 @@ do
     function HOUND.Sector.checkIn(args,skipAck)
         local gSelf = args["self"]
         local player = args["player"]
-        if not setContains(gSelf.comms.menu.enrolled, player) then
+        if not HOUND.setContains(gSelf.comms.menu.enrolled, player) then
             gSelf.comms.menu.enrolled[player] = player
             -- table.insert(gSelf.comms.menu.enrolled,player)
         end
@@ -619,7 +642,7 @@ do
                 if grpMenu.check_in ~= nil then
                     grpMenu.check_in = missionCommands.removeItemForGroup(grpId,grpMenu.check_in)
                 end
-                if setContains(self.comms.menu.enrolled, player) then
+                if HOUND.setContains(self.comms.menu.enrolled, player) then
                     grpMenu.check_in =
                         missionCommands.addCommandForGroup(grpId,
                                             self.comms.controller:getCallsign() .. " (" ..
@@ -656,7 +679,7 @@ do
         end
 
         if not self.comms.controller or not self.comms.controller:isEnabled() then return end
-        local contacts = self:getContacts()
+        local sites = self:getContacts()
 
         if not self.comms.menu.root then
             self.comms.menu.root =
@@ -667,7 +690,7 @@ do
 
         self:createCheckIn()
 
-        if Length(contacts) == 0 then
+        if HOUND.Length(sites) == 0 then
             if not self.comms.menu.noData then
                 self.comms.menu.noData = missionCommands.addCommandForCoalition(self._hSettings:getCoalition(),
                             "No radars are currently tracked",
@@ -675,7 +698,7 @@ do
             end
         end
 
-        if Length(contacts) > 0 then
+        if HOUND.Length(sites) > 0 then
             if self.comms.menu.noData ~= nil then
                 missionCommands.removeItemForCoalition(self._hSettings:getCoalition(),
                 self.comms.menu.noData)
@@ -685,7 +708,7 @@ do
 
         local grpMenuDone = {}
         self:validateEnrolled()
-        if Length(self.comms.menu.enrolled) > 0 then
+        if HOUND.Length(self.comms.menu.enrolled) > 0 then
             for _, player in pairs(self.comms.menu.enrolled) do
                 local grpId = player.groupId
                 local grpMenu = self.comms.menu[player]
@@ -696,9 +719,9 @@ do
                     if not grpMenu.data then
                         grpMenu.data = {}
                         grpMenu.data.gid = grpId
-                        -- grpMenu.data.callsign = HOUND.Utils.getFormationCallsign(Unit.getByName(player.unitName))
+                        -- grpMenu.data.callsign = HoundUtils.getFormationCallsign(Unit.getByName(player.unitName))
                         grpMenu.data.player = player
-                        grpMenu.data.useDMM = HOUND.Utils.isDMM(player.type)
+                        grpMenu.data.useDMM = HoundUtils.isDMM(player.type)
                         grpMenu.data.menus = {}
                     end
                     for _,typeAssigned in pairs(grpMenu.data.menus) do
@@ -708,7 +731,7 @@ do
                         end
                     end
                     local dataMenu = grpMenu.data
-                    for _, contact in ipairs(contacts) do
+                    for _, contact in ipairs(sites) do
                         local typeAssigned = contact:getTypeAssigned()
                         if contact.pos.p ~= nil then
                             if not dataMenu.menus[typeAssigned] then
@@ -780,7 +803,7 @@ do
             return
         end
 
-        if setContains(dataMenu.menus[assigned].data,uid) then
+        if HOUND.setContains(dataMenu.menus[assigned].data,uid) then
             dataMenu.menus[assigned].data[uid] = missionCommands.removeItemForGroup(dataMenu.gid, dataMenu.menus[assigned].data[uid])
         end
     end
@@ -789,6 +812,15 @@ do
     --- Event handeling
     -- @section events
 
+    --- Check if sector can notify
+    function HOUND.Sector:isNotifiying()
+        local controller = self.comms.controller
+        local notifier = self.comms.notifier
+        if not controller and not notifier then return false end
+        if (not controller or not controller:getSettings("alerts") or not controller:isEnabled()) and (not notifier or not notifier:isEnabled())
+             then return false end
+        return true
+    end
     --- create randome annouce
     -- @param[opt] index of requested announce
     -- @return string Announcement
@@ -807,12 +839,11 @@ do
 
     --- Send dead emitter notification
     -- @param contact HounContact instace
-    function HOUND.Sector:notifyDeadEmitter(contact)
+    function HOUND.Sector:notifyEmitterDead(contact)
+        if not self:isNotifiying() then return end
+
         local controller = self.comms.controller
         local notifier = self.comms.notifier
-        if not controller and not notifier then return end
-        if (not controller or not controller:getSettings("alerts") or not controller:isEnabled()) and (not notifier or not notifier:isEnabled())
-             then return end
 
         local contactPrimarySector = contact:getPrimarySector()
         if self.name ~= "default" and self.name ~= contactPrimarySector then return end
@@ -841,13 +872,11 @@ do
 
     --- Send new emitter notification
     -- @param contact HounContact instace
-    function HOUND.Sector:notifyNewEmitter(contact)
+    function HOUND.Sector:notifyEmitterNew(contact)
+        if not self:isNotifiying() then return end
+
         local controller = self.comms.controller
         local notifier = self.comms.notifier
-
-        if not controller and not notifier then return end
-        if (not controller or not controller:isEnabled() or not controller:getSettings("alerts")) and (not notifier or not notifier:isEnabled())
-             then return end
 
         local contactPrimarySector = contact:getPrimarySector()
         if self.name ~= "default" and self.name ~= contactPrimarySector then return end
@@ -876,6 +905,108 @@ do
         end
     end
 
+    --- Notify a site was reclassified
+    -- @param site @{HOUND.Contact.Site} instace
+    function HOUND.Sector:notifySiteIdentified(site)
+        if not self:isNotifiying() then return end
+
+        local controller = self.comms.controller
+        local notifier = self.comms.notifier
+
+        local sitePrimarySector = site:getPrimarySector()
+        if self.name ~= "default" and self.name ~= sitePrimarySector then return end
+
+        if self.name == sitePrimarySector then
+            sitePrimarySector = nil
+        end
+
+        local announce = self:getTransmissionAnnounce()
+        local enrolledGid = self:getSubscribedGroups()
+
+        local msg = {coalition = self._hSettings:getCoalition(), priority = 2 , gid=enrolledGid}
+
+        if (controller and controller:getSettings("enableText")) or (notifier and notifier:getSettings("enableText"))  then
+            msg.txt = self.callsign .. " Reports " .. site:generateIdentReport(false,sitePrimarySector)
+        end
+        if (controller and controller:getSettings("enableTTS")) or (notifier and notifier:getSettings("enableTTS")) then
+            msg.tts = announce .. site:generateIdentReport(true,sitePrimarySector)
+        end
+
+        if controller and controller:isEnabled() and controller:getSettings("alerts") then
+            controller:addMessageObj(msg)
+        end
+
+        if notifier and notifier:isEnabled() then
+            notifier:addMessageObj(msg)
+        end
+    end
+    --- Notify a site was created
+    -- @param site @{HOUND.Contact.Site} instace
+    function HOUND.Sector:notifySiteNew(site)
+        if not self:isNotifiying() then return end
+
+        local controller = self.comms.controller
+        local notifier = self.comms.notifier
+
+        local sitePrimarySector = site:getPrimarySector()
+        if self.name ~= "default" and self.name ~= sitePrimarySector then return end
+
+        if self.name == sitePrimarySector then
+            sitePrimarySector = nil
+        end
+
+        local announce = self:getTransmissionAnnounce()
+        local enrolledGid = self:getSubscribedGroups()
+
+        local msg = {coalition = self._hSettings:getCoalition(), priority = 2 , gid=enrolledGid}
+        if (controller and controller:getSettings("enableText")) or (notifier and notifier:getSettings("enableText"))  then
+            msg.txt = self.callsign .. " Reports " .. site:generatePopUpReport(false,sitePrimarySector)
+        end
+        if (controller and controller:getSettings("enableTTS")) or (notifier and notifier:getSettings("enableTTS")) then
+            msg.tts = announce .. site:generatePopUpReport(true,sitePrimarySector)
+        end
+        if controller and controller:isEnabled() and controller:getSettings("alerts") then
+            controller:addMessageObj(msg)
+        end
+
+        if notifier and notifier:isEnabled() then
+            notifier:addMessageObj(msg)
+        end
+
+    end
+    --- Notify a site was destroyed
+    -- @param site @{HOUND.Contact.Site} instace
+    function HOUND.Sector:notifySiteDead(site)
+        if not self:isNotifiying() then return end
+
+        local controller = self.comms.controller
+        local notifier = self.comms.notifier
+
+        local sitePrimarySector = site:getPrimarySector()
+        if self.name ~= "default" and self.name ~= sitePrimarySector then return end
+
+        if self.name == sitePrimarySector then
+            sitePrimarySector = nil
+        end
+
+        local announce = self:getTransmissionAnnounce()
+        local enrolledGid = self:getSubscribedGroups()
+
+        local msg = {coalition = self._hSettings:getCoalition(), priority = 3 , gid=enrolledGid}
+        if (controller and controller:getSettings("enableText")) or (notifier and notifier:getSettings("enableText"))  then
+            msg.txt = self.callsign .. " Reports " .. site:generateDeadReport(false,sitePrimarySector)
+        end
+        if (controller and controller:getSettings("enableTTS")) or (notifier and notifier:getSettings("enableTTS")) then
+            msg.tts = announce .. site:generateDeadReport(true,sitePrimarySector)
+        end
+        if controller and controller:isEnabled() and controller:getSettings("alerts") then
+            controller:addMessageObj(msg)
+        end
+
+        if notifier and notifier:isEnabled() then
+            notifier:addMessageObj(msg)
+        end
+    end
     --- Generate Atis message for sector
     -- @local
     -- @param loopData HoundInfomationSystem loop table
@@ -918,7 +1049,7 @@ do
 
         local reportId
         reportId, loopData.reportIdx =
-            HOUND.Utils.getReportId(loopData.reportIdx)
+            HoundUtils.getReportId(loopData.reportIdx)
 
         local header = self.callsign
         local footer = reportId .. "."
@@ -931,7 +1062,7 @@ do
             footer = "you have " .. footer
         end
         header = header .. reportId .. " " ..
-                                    HOUND.Utils.TTS.getTtsTime() .. ". "
+                                    HoundUtils.TTS.getTtsTime() .. ". "
 
         local msgObj = {
             coalition = self._hSettings:getCoalition(),
@@ -956,13 +1087,13 @@ do
 
         if requester ~= nil then
             msgObj.gid = requester.groupId
-            useDMM =  HOUND.Utils.isDMM(requester.type)
+            useDMM =  HoundUtils.isDMM(requester.type)
         end
 
         if gSelf.comms.controller:isEnabled() then
             msgObj.tts = contact:generateTtsReport(useDMM)
             if requester ~= nil then
-                msgObj.tts = HOUND.Utils.getFormationCallsign(requester,gSelf._hSettings:getCallsignOverride()) .. ", " .. gSelf.callsign .. ", " ..
+                msgObj.tts = HoundUtils.getFormationCallsign(requester,gSelf._hSettings:getCallsignOverride()) .. ", " .. gSelf.callsign .. ", " ..
                                  msgObj.tts
             end
             if gSelf.comms.controller:getSettings("enableText") == true then
@@ -978,7 +1109,7 @@ do
     function HOUND.Sector:TransmitCheckInAck(player)
         if not player then return end
         local msgObj = {priority = 1,coalition = self._hSettings:getCoalition(), gid = player.groupId}
-        local msg = HOUND.Utils.getFormationCallsign(player,self._hSettings:getCallsignOverride()) .. ", " .. self.callsign .. ", Roger. "
+        local msg = HoundUtils.getFormationCallsign(player,self._hSettings:getCallsignOverride()) .. ", " .. self.callsign .. ", Roger. "
         if self:countContacts() > 0 then
             msg = msg .. "Tasking is available."
         else
@@ -997,7 +1128,7 @@ do
     function HOUND.Sector:TransmitCheckOutAck(player)
         if not player then return end
         local msgObj = {priority = 1,coalition = self._hSettings:getCoalition(), gid = player.groupId}
-        local msg = HOUND.Utils.getFormationCallsign(player,self._hSettings:getCallsignOverride()) .. ", " .. self.callsign .. ", copy checking out. "
+        local msg = HoundUtils.getFormationCallsign(player,self._hSettings:getCallsignOverride()) .. ", " .. self.callsign .. ", copy checking out. "
         msgObj.tts = msg .. "Frequency change approved."
         msgObj.txt = msg
         if self.comms.controller:isEnabled() then

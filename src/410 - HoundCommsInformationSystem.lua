@@ -7,7 +7,7 @@ do
 
     HOUND.Comms.InformationSystem = {}
     -- HOUND.Comms.InformationSystem.__index = HOUND.Comms.InformationSystem
-    HOUND.Comms.InformationSystem = inheritsFrom(HOUND.Comms.Manager)
+    HOUND.Comms.InformationSystem = HOUND.inheritsFrom(HOUND.Comms.Manager)
 
     --- HOUND.Comms.InformationSystem create
     -- @string sector name of parent sector

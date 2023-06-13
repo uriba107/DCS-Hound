@@ -35,6 +35,7 @@
 <li><a href="#Tables">Tables</a></li>
 <li><a href="#General_functions">General functions </a></li>
 <li><a href="#Value_mapping_Functions">Value mapping Functions </a></li>
+<li><a href="#DCS_object_functions">DCS object functions </a></li>
 <li><a href="#Geo_Function">Geo Function </a></li>
 <li><a href="#Marker_Functions">Marker Functions </a></li>
 <li><a href="#HOUND_Utils_Marker_instance">HOUND.Utils.Marker.instance</a></li>
@@ -58,9 +59,11 @@
   <li><a href="../modules/HOUND.Config.html">HOUND.Config</a></li>
   <li><strong>HOUND.Utils</strong></li>
   <li><a href="../modules/HOUND.EventHandler.html">HOUND.EventHandler</a></li>
-  <li><a href="../modules/HOUND.Estimator.html">HOUND.Estimator</a></li>
-  <li><a href="../modules/HOUND.Datapoint.html">HOUND.Datapoint</a></li>
-  <li><a href="../modules/HOUND.Contact.html">HOUND.Contact</a></li>
+  <li><a href="../modules/HOUND.Contact.Base.html">HOUND.Contact.Base</a></li>
+  <li><a href="../modules/HOUND.Contact.Estimator.html">HOUND.Contact.Estimator</a></li>
+  <li><a href="../modules/HOUND.Contact.Datapoint.html">HOUND.Contact.Datapoint</a></li>
+  <li><a href="../modules/HOUND.Contact.Emitter.html">HOUND.Contact.Emitter</a></li>
+  <li><a href="../modules/HOUND.Contact.Site.html">HOUND.Contact.Site</a></li>
   <li><a href="../modules/HOUND.Comms.Manager.html">HOUND.Comms.Manager</a></li>
   <li><a href="../modules/HOUND.Comms.InformationSystem.html">HOUND.Comms.InformationSystem</a></li>
   <li><a href="../modules/HOUND.Comms.Controller.html">HOUND.Comms.Controller</a></li>
@@ -118,20 +121,16 @@
 	<td class="summary">return avarage azimuth</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.getMagVar">HOUND.Utils.getMagVar (DCSpoint)</a></td>
+	<td class="summary">Return magnetic variation in point</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#HOUND.Utils.PointClusterTilt">HOUND.Utils.PointClusterTilt (points[, MagNorth[, refPos]])</a></td>
 	<td class="summary">return the tilt of a point cluster</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Utils.RandomAngle">HOUND.Utils.RandomAngle ()</a></td>
 	<td class="summary">returns a random angle</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.getSamMaxRange">HOUND.Utils.getSamMaxRange (DCS_Unit)</a></td>
-	<td class="summary">return maximum weapon range in the group of DCS Unit</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.getRadarDetectionRange">HOUND.Utils.getRadarDetectionRange (DCS_Unit)</a></td>
-	<td class="summary">return Radar detection Range for provided unit</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Utils.getRoundedElevationFt">HOUND.Utils.getRoundedElevationFt (elev[, resolution])</a></td>
@@ -202,6 +201,33 @@
 	<td class="summary">Map values on a curve</td>
 	</tr>
 </table>
+<h2><a href="#DCS_object_functions">DCS object functions </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Dcs.isPoint">HOUND.Utils.Dcs.isPoint (point)</a></td>
+	<td class="summary">check if point is DCS point</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Dcs.isUnit">HOUND.Utils.Dcs.isUnit (obj)</a></td>
+	<td class="summary">check if object is DCS Unit</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Dcs.isGroup">HOUND.Utils.Dcs.isGroup (obj)</a></td>
+	<td class="summary">check if object is DCS Group</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Dcs.isStaticObject">HOUND.Utils.Dcs.isStaticObject (obj)</a></td>
+	<td class="summary">check if object is DCS static object</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Dcs.getSamMaxRange">HOUND.Utils.Dcs.getSamMaxRange (DCS_Unit)</a></td>
+	<td class="summary">return maximum weapon range in the group of DCS Unit</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Dcs.getRadarDetectionRange">HOUND.Utils.Dcs.getRadarDetectionRange (DCS_Unit)</a></td>
+	<td class="summary">return Radar detection Range for provided unit</td>
+	</tr>
+</table>
 <h2><a href="#Geo_Function">Geo Function </a></h2>
 <table class="function_list">
 	<tr>
@@ -213,10 +239,6 @@
 	<td class="name" nowrap><a href="#HOUND.Utils.Geo.EarthLOS">HOUND.Utils.Geo.EarthLOS (h0[, h1])</a></td>
 	<td class="summary">Returns maximum horizon distance given heigh above the earth of two points
  if only one observer hight is provided, result would be maximum view distance to Sea Level</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.Geo.isDcsPoint">HOUND.Utils.Geo.isDcsPoint (point)</a></td>
-	<td class="summary">check if point is DCS point</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Utils.Geo.getProjectedIP">HOUND.Utils.Geo.getProjectedIP (p0, az, el)</a></td>
@@ -308,8 +330,12 @@
 	<td class="summary">Transmit message using STTS (private)</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.TTS.TransmitSTTS">HOUND.Utils.TTS.TransmitSTTS (msg, coalitionID, args[, transmitterPos])</a></td>
+	<td class="summary">Transmit message using STTS</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#HOUND.Utils.TTS.TransmitGRPC">HOUND.Utils.TTS.TransmitGRPC (msg, coalitionID, args[, transmitterPos])</a></td>
-	<td class="summary">Transmit message using gRPC.tts (private)</td>
+	<td class="summary">Transmit message using gRPC.tts</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Utils.TTS.getTtsTime">HOUND.Utils.TTS.getTtsTime ([timestamp])</a></td>
@@ -403,6 +429,10 @@
 	<td class="summary">Get zone from drawing\
  (supported types are freeForm Polygon, rectangle and Oval)</td>
 	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Zone.getGroupRoute">HOUND.Utils.Zone.getGroupRoute (GroupName)</a></td>
+	<td class="summary">get polygon defined by group waypoints</td>
+	</tr>
 </table>
 <h2><a href="#Polygon_functions">Polygon functions </a></h2>
 <table class="function_list">
@@ -457,20 +487,6 @@
 	<td class="name" nowrap><a href="#HOUND.Utils.Cluster.weightedMean">HOUND.Utils.Cluster.weightedMean (origPoints[, initPos[, threashold[, maxIttr]]])</a></td>
 	<td class="summary">find the weighted mean of a points cluster (meanShift)</td>
 	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.Cluster.kmeans">HOUND.Utils.Cluster.kmeans (data, nclusters, init)</a></td>
-	<td class="summary">K-means++ algorithm
- <a href=https://rosettacode.org/wiki/K-means%2B%2B_clustering#Lua>Source of implementation</a></td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#contacts">contacts</a></td>
-	<td class="summary">convert contacts to centroieds for meanShift</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#contacts">contacts</a></td>
-	<td class="summary">Mean-shift algorithem to group radars to sites
- http://www.chioka.in/meanshift-algorithm-for-the-rest-of-us-python/</td>
-	</tr>
 </table>
 <h2><a href="#Sort_Functions">Sort Functions </a></h2>
 <table class="function_list">
@@ -481,6 +497,10 @@
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Utils.Sort.ContactsById">HOUND.Utils.Sort.ContactsById (a, b)</a></td>
 	<td class="summary">Sort contacts by ID</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Sort.ContactsByPrio">HOUND.Utils.Sort.ContactsByPrio (a, b)</a></td>
+	<td class="summary">sort contacts by Priority (primary first)</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Utils.Sort.sectorsByPriorityLowFirst">HOUND.Utils.Sort.sectorsByPriorityLowFirst (a, b)</a></td>
@@ -628,7 +648,7 @@
     <h3>Returns:</h3>
     <ol>
 
-        Bool True if initial ID was updated
+        (Bool) True if initial ID was updated
     </ol>
 
 
@@ -726,6 +746,31 @@
 
 </dd>
     <dt>
+    <a name = "HOUND.Utils.getMagVar"></a>
+    <strong>HOUND.Utils.getMagVar (DCSpoint)</strong>
+    </dt>
+    <dd>
+    Return magnetic variation in point
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">DCSpoint</span>
+         point
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Magentic variation in radians
+    </ol>
+
+
+
+
+</dd>
+    <dt>
     <a name = "HOUND.Utils.PointClusterTilt"></a>
     <strong>HOUND.Utils.PointClusterTilt (points[, MagNorth[, refPos]])</strong>
     </dt>
@@ -771,56 +816,6 @@
     <ol>
 
         random angle in radians between 0 and 2*pi
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Utils.getSamMaxRange"></a>
-    <strong>HOUND.Utils.getSamMaxRange (DCS_Unit)</strong>
-    </dt>
-    <dd>
-    return maximum weapon range in the group of DCS Unit
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">DCS_Unit</span>
-         DCS unit - in Hound context unit with emitting radar
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        maximum weapon range in meters of the DCS Group the emitter is part of
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Utils.getRadarDetectionRange"></a>
-    <strong>HOUND.Utils.getRadarDetectionRange (DCS_Unit)</strong>
-    </dt>
-    <dd>
-    return Radar detection Range for provided unit
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">DCS_Unit</span>
-         DCS Unit with radars sensor
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        Unit radar detection range agains airborne targers in meters
     </ol>
 
 
@@ -1301,6 +1296,160 @@
 
 </dd>
 </dl>
+    <h2 class="section-header "><a name="DCS_object_functions"></a>DCS object functions </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HOUND.Utils.Dcs.isPoint"></a>
+    <strong>HOUND.Utils.Dcs.isPoint (point)</strong>
+    </dt>
+    <dd>
+    check if point is DCS point
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">point</span>
+         DCS point candidate
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        (Bool) True if is valid point
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.Dcs.isUnit"></a>
+    <strong>HOUND.Utils.Dcs.isUnit (obj)</strong>
+    </dt>
+    <dd>
+    check if object is DCS Unit
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">obj</span>
+         DCS Object canidate
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        (Bool) True if object is unit
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.Dcs.isGroup"></a>
+    <strong>HOUND.Utils.Dcs.isGroup (obj)</strong>
+    </dt>
+    <dd>
+    check if object is DCS Group
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">obj</span>
+         DCS Object canidate
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        (Bool) True if object is Group
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.Dcs.isStaticObject"></a>
+    <strong>HOUND.Utils.Dcs.isStaticObject (obj)</strong>
+    </dt>
+    <dd>
+    check if object is DCS static object
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">obj</span>
+         DCS Object canidate
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        (Bool) True if object is static object
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.Dcs.getSamMaxRange"></a>
+    <strong>HOUND.Utils.Dcs.getSamMaxRange (DCS_Unit)</strong>
+    </dt>
+    <dd>
+    return maximum weapon range in the group of DCS Unit
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">DCS_Unit</span>
+         DCS unit - in Hound context unit with emitting radar
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        maximum weapon range in meters of the DCS Group the emitter is part of
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.Dcs.getRadarDetectionRange"></a>
+    <strong>HOUND.Utils.Dcs.getRadarDetectionRange (DCS_Unit)</strong>
+    </dt>
+    <dd>
+    return Radar detection Range for provided unit
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">DCS_Unit</span>
+         DCS Unit with radars sensor
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Unit radar detection range agains airborne targers in meters
+    </ol>
+
+
+
+
+</dd>
+</dl>
     <h2 class="section-header "><a name="Geo_Function"></a>Geo Function </h2>
 
     <dl class="function">
@@ -1357,31 +1506,6 @@
     <ol>
 
         distance maximum LOS distance in meters
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Utils.Geo.isDcsPoint"></a>
-    <strong>HOUND.Utils.Geo.isDcsPoint (point)</strong>
-    </dt>
-    <dd>
-    check if point is DCS point
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">point</span>
-         DCS point candidate
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        Bool True if is valid point
     </ol>
 
 
@@ -1510,7 +1634,7 @@
     <h3>Returns:</h3>
     <ol>
 
-        Bool True if initial ID was updated
+        (Bool) True if initial ID was updated
     </ol>
 
 
@@ -1815,7 +1939,7 @@
     <h3>Returns:</h3>
     <ol>
 
-        Bool true if TTS is available
+        (Bool) True if TTS is available
     </ol>
 
 
@@ -1883,11 +2007,46 @@
 
 </dd>
     <dt>
+    <a name = "HOUND.Utils.TTS.TransmitSTTS"></a>
+    <strong>HOUND.Utils.TTS.TransmitSTTS (msg, coalitionID, args[, transmitterPos])</strong>
+    </dt>
+    <dd>
+    Transmit message using STTS
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">msg</span>
+         The message to transmit
+        </li>
+        <li><span class="parameter">coalitionID</span>
+         Coalition to recive transmission
+        </li>
+        <li><span class="parameter">args</span>
+         STTS settings in hash table (minimum required is {freq=})
+        </li>
+        <li><span class="parameter">transmitterPos</span>
+         DCS Position point for transmitter
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        currently estimated speechTime
+    </ol>
+
+
+
+
+</dd>
+    <dt>
     <a name = "HOUND.Utils.TTS.TransmitGRPC"></a>
     <strong>HOUND.Utils.TTS.TransmitGRPC (msg, coalitionID, args[, transmitterPos])</strong>
     </dt>
     <dd>
-    Transmit message using gRPC.tts (private)
+    Transmit message using gRPC.tts
 
 
     <h3>Parameters:</h3>
@@ -2438,6 +2597,31 @@
 
 
 </dd>
+    <dt>
+    <a name = "HOUND.Utils.Zone.getGroupRoute"></a>
+    <strong>HOUND.Utils.Zone.getGroupRoute (GroupName)</strong>
+    </dt>
+    <dd>
+    get polygon defined by group waypoints
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">GroupName</span>
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table of points if group exists or nil
+    </ol>
+
+
+
+
+</dd>
 </dl>
     <h2 class="section-header "><a name="Polygon_functions"></a>Polygon functions </h2>
 
@@ -2466,9 +2650,9 @@
     <h3>Returns:</h3>
     <ol>
         <li>
-        Bool True if point is in polygon</li>
+        (Bool) True if point is in polygon</li>
         <li>
-        Bool True if radius around point intersects polygon</li>
+        (Bool) True if radius around point intersects polygon</li>
     </ol>
 
 
@@ -2754,85 +2938,6 @@
 
 
 </dd>
-    <dt>
-    <a name = "HOUND.Utils.Cluster.kmeans"></a>
-    <strong>HOUND.Utils.Cluster.kmeans (data, nclusters, init)</strong>
-    </dt>
-    <dd>
-    K-means++ algorithm
- <a href=https://rosettacode.org/wiki/K-means%2B%2B_clustering#Lua>Source of implementation</a>
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">data</span>
-         Datapoints
-        </li>
-        <li><span class="parameter">nclusters</span>
-         Number of clusters to create
-        </li>
-        <li><span class="parameter">init</span>
-         Initilization method. Valid values are ["kmeans++","random"]
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-        <li>
-        centers (table)</li>
-        <li>
-        cluster (table)</li>
-        <li>
-        J loss value</li>
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "contacts"></a>
-    <strong>contacts</strong>
-    </dt>
-    <dd>
-    convert contacts to centroieds for meanShift
-
-
-    <ul>
-        <li><span class="parameter">contacts</span>
-         list of HOUND.Contact instances to evaluate
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "contacts"></a>
-    <strong>contacts</strong>
-    </dt>
-    <dd>
-    Mean-shift algorithem to group radars to sites
- http://www.chioka.in/meanshift-algorithm-for-the-rest-of-us-python/
-
-
-    <ul>
-        <li><span class="parameter">contacts</span>
-         list of HOUND.Contact instances to cluster
-        </li>
-        <li><span class="parameter">iterations</span>
-         maximum nuber of itteratoins to run
-         (<em>optional</em>)
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
 </dl>
     <h2 class="section-header "><a name="Sort_Functions"></a>Sort Functions </h2>
 
@@ -2848,10 +2953,10 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">a</span>
-         <a href="../modules/HOUND.Contact.html#">HOUND.Contact</a> instance
+         <a href="../modules/HOUND.Contact.Emitter.html#">HOUND.Contact.Emitter</a> instance
         </li>
         <li><span class="parameter">b</span>
-         <a href="../modules/HOUND.Contact.html#">HOUND.Contact</a> Instance
+         <a href="../modules/HOUND.Contact.Emitter.html#">HOUND.Contact.Emitter</a> Instance
         </li>
     </ul>
 
@@ -2880,10 +2985,10 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">a</span>
-         <a href="../modules/HOUND.Contact.html#">HOUND.Contact</a> instance
+         <a href="../modules/HOUND.Contact.Emitter.html#">HOUND.Contact.Emitter</a> instance
         </li>
         <li><span class="parameter">b</span>
-         <a href="../modules/HOUND.Contact.html#">HOUND.Contact</a> Instance
+         <a href="../modules/HOUND.Contact.Emitter.html#">HOUND.Contact.Emitter</a> Instance
         </li>
     </ul>
 
@@ -2898,6 +3003,38 @@
     <h3>Usage:</h3>
     <ul>
         <pre class="example"><span class="global">table</span>.sort(unSorted,HOUND.Utils.Sort.ContactsById)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.Sort.ContactsByPrio"></a>
+    <strong>HOUND.Utils.Sort.ContactsByPrio (a, b)</strong>
+    </dt>
+    <dd>
+    sort contacts by Priority (primary first)
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+         <a href="../modules/HOUND.Contact.Emitter.html#">HOUND.Contact.Emitter</a> instance
+        </li>
+        <li><span class="parameter">b</span>
+         <a href="../modules/HOUND.Contact.Emitter.html#">HOUND.Contact.Emitter</a> Instance
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Bool
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="global">table</span>.sort(unSorted,HOUND.Utils.Sort.ContactsByPrio)</pre>
     </ul>
 
 </dd>
@@ -3054,7 +3191,11 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+<<<<<<< HEAD
 <i style="float:right;">Last updated 2023-05-23 15:05:11 </i>
+=======
+<i style="float:right;">Last updated 2023-06-10 21:22:51 </i>
+>>>>>>> develop-0.4.0
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

@@ -83,6 +83,20 @@ do
         ['L'] = 0.005996,
     }
 
+    --- Radar types ENUM
+    -- @table HOUND.DB.RadarType
+    -- @field Radar type in hex
+    -- @usage ['EWR'] = 0x01
+    HOUND.DB.RadarType = {
+        ['NONE'] = 0x00,
+        ['EWR'] = 0x01,
+        ['RANGEFINDER'] = 0x02,
+        ['ANTISHIP'] = 0x04,
+        ['SEARCH'] = 0x08,
+        ['TRACK'] = 0x10,
+        ['NAVAL'] = 0x20
+    }
+
     --- Hound callsigns
     -- @table HOUND.DB.CALLSIGNS
     -- @field NATO list of RC-135 callsigns (source: https://henney.com/chm/callsign.htm)

@@ -47,7 +47,7 @@ do
     -- end
 
     function HOUND.Logger.setBaseLevel(level)
-        if setContainsValue(HOUND.Logger.LEVEL,level) then
+        if HOUND.setContainsValue(HOUND.Logger.LEVEL,level) then
             HOUND.Logger.level = level
         end
     end
