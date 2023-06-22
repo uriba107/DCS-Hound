@@ -512,7 +512,7 @@ do
             self.state = HOUND.EVENTS.RADAR_DETECTED
             self:calculateExtrasPosData(self.pos)
         end
-
+        self:queueEvent(self.state)
         return self.state
     end
 

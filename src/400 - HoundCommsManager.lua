@@ -249,6 +249,18 @@ do
             self.loop.msg = obj
             return
         end
+        if obj.gid and type(obj.gid) ~= "table" then
+            obj.gid = {obj.gid}
+        end
+        if obj.contactId ~= nil then
+            for id,queueObj in ipairs(self._queue[obj.priority]) do
+                if obj.gid == queueObj.gid and obj.contactId == queueObj.contactId then
+                    self._queue[obj.priority][id].txt = obj.txt
+                    self._queue[obj.priority][id].tts = obj.tts
+                    return
+                end
+            end
+        end
         table.insert(self._queue[obj.priority],obj)
     end
 
@@ -313,6 +325,7 @@ do
         local msgObj = gSelf:getNextMsg()
         local readTime = gSelf.settings.interval
         if msgObj == nil then return timer.getTime() + readTime end
+
         local transmitterPos = gSelf:getTransmitterPos()
 
         if transmitterPos == false then
@@ -331,17 +344,14 @@ do
             HoundUtils.TTS.Transmit(msgObj.tts,msgObj.coalition,gSelf.settings,transmitterPos)
             readTime = HoundUtils.TTS.getReadTime(msgObj.tts,gSelf.settings.speed)
             -- env.info("TTS msg: " .. msgObj.tts)
+
         end
 
         if gSelf.enabled and gSelf.preferences.enabletext and msgObj.txt ~= nil then
             readTime =  HoundUtils.TTS.getReadTime(msgObj.tts,gSelf.settings.speed) or HoundUtils.TTS.getReadTime(msgObj.txt,gSelf.settings.speed)
             if msgObj.gid then
-                if type(msgObj.gid) == "table" then
-                    for _,gid in ipairs(msgObj.gid) do
-                        trigger.action.outTextForGroup(gid,msgObj.txt,readTime+2)
-                    end
-                else
-                    trigger.action.outTextForGroup(msgObj.gid,msgObj.txt,readTime+2)
+                for _,gid in ipairs(msgObj.gid) do
+                    trigger.action.outTextForGroup(gid,msgObj.txt,readTime+2)
                 end
             else
                 trigger.action.outTextForCoalition(msgObj.coalition,msgObj.txt,readTime+2)

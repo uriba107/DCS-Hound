@@ -33,8 +33,7 @@ do
         instance.DCSobjectName = instance.DCSobject:getName()
         instance.typeAssigned = HoundContact.typeAssigned
 
-        instance.emitters = { }
-        instance.emitters[HoundContact:getDcsName()] = HoundContact
+        instance.emitters = { HoundContact }
         instance.primaryEmitter = HoundContact
         instance.last_seen = HoundContact:getLastSeen()
         instance.first_seen = HoundContact.first_seen
@@ -58,13 +57,15 @@ do
     --- Get contact name
     -- @return String
     function HOUND.Contact.Site:getName()
-        return self:getType() .. " " .. self:getId()
+        -- return self:getType() .. " " .. self:getId()
+        return string.format("S%03d",self:getId())
+
     end
 
     --- Get contact type name
     -- @return String
     function HOUND.Contact.Site:getType()
-        return self.typeName
+        return self.typeAssigned
     end
 
     --- Get Site GID
@@ -126,12 +127,22 @@ do
         return self:getLastSeen() > HOUND.CONTACT_TIMEOUT
     end
 
+    --- check if primary contact is EWR
+    -- @return Bool - True primary is EWR
+    function HOUND.Contact.Site:isEWR()
+        return self:getPrimary().isEWR
+    end
     --- Get current state
     -- @return Contact state in @{HOUND.EVENTS}
     function HOUND.Contact.Site:getState()
         return self.state
     end
 
+    --- get current extimted position of primary
+    -- @return DCS point - estimated position
+    function HOUND.Contact.Site:getPos()
+        return self:getPrimary():getPos() or nil
+    end
     --- Emitter managment
     -- @section Emitters
 
@@ -140,13 +151,13 @@ do
     -- @return @{HOUND.EVENTS}
     function HOUND.Contact.Site:addEmitter(HoundEmitter)
         self.state = HOUND.EVENTS.NO_CHANGE
-        if HoundEmitter:getGroupName() == self:getGroupName() then
-            if not self.emitters[HoundEmitter:getDcsName()] then
-                self.emitters[HoundEmitter:getDcsName()] = HoundEmitter
+        if HoundEmitter:getGroupName() == self:getGroupName() and
+            not HOUND.setContainsValue(self.emitters,HoundEmitter) then
+                table.insert(self.emitters,HoundEmitter)
                 self:selectPrimaryEmitter()
                 self:updateTypeAssigned()
+                self:updateSector()
                 self.state = HOUND.EVENTS.SITE_UPDATED
-            end
         end
         return self.state
     end
@@ -157,15 +168,20 @@ do
     function HOUND.Contact.Site:removeEmitter(HoundEmitter)
         self.state = HOUND.EVENTS.NO_CHANGE
         if HoundEmitter:getGroupName() == self:getGroupName() then
-            if self.emitters[HoundEmitter:getGroupName()] then
-                self.emitters[HoundEmitter:getGroupName()] = nil
-                self:selectPrimaryEmitter()
-                self.state = HOUND.EVENTS.SITE_UPDATED
+            for idx,emitter in ipairs(self.emitters) do
+                if emitter == HoundEmitter then
+                    table.remove(self.emitters,idx)
+                    self:selectPrimaryEmitter()
+                    self.state = HOUND.EVENTS.SITE_UPDATED
+                    break
+                end
             end
         end
         return self.state
     end
 
+    --- Get site's primary emitter
+    -- @return @{HOUND.Contact.Emitter}
     function HOUND.Contact.Site:getPrimary()
         if not self.primaryEmitter then
             self:selectPrimaryEmitter()
@@ -173,19 +189,24 @@ do
         return self.primaryEmitter
     end
 
+    --- get Dict with all emitters in site
+    -- @return #table @{HOUND.Contact.Emitter}
     function HOUND.Contact.Site:getEmitters()
         return self.emitters
     end
+
+    --- re-sort emitters
+    -- @local
+    function HOUND.Contact.Site:sortEmitters()
+        table.sort(self.emitters,HoundUtils.Sort.ContactsByPrio)
+    end
+
     --- select primaty emitter for site
     -- @return (Bool) True if primary changed
     function HOUND.Contact.Site:selectPrimaryEmitter()
-        local emitters_list = {}
-        for _,emitter in pairs(self.emitters) do
-            table.insert(emitters_list,emitter)
-        end
-        table.sort(emitters_list,HoundUtils.Sort.ContactsByPrio)
-        if self.primaryEmitter ~= emitters_list[1] then
-            self.primaryEmitter = emitters_list[1]
+        self:sortEmitters()
+        if self.primaryEmitter ~= self.emitters[1] then
+            self.primaryEmitter = self.emitters[1]
             self.state = HOUND.EVENTS.SITE_UPDATED
             return true
         end
@@ -203,13 +224,9 @@ do
         end
         if self:getTypeAssigned() ~= table.concat(type," or ") then
             self.typeAssigned = type
+
             if self.state ~= HOUND.EVENTS.SITE_NEW then
-                HOUND.EventHandler.publishEvent({
-                    id = HOUND.EVENTS.SITE_CLASSIFIED,
-                    initiator = self,
-                    houndId = self.settings:getId(),
-                    coalition = self.settings:getCoalition()
-                })
+               self:queueEvent(HOUND.EVENTS.SITE_CLASSIFIED)
             end
             self.state = HOUND.EVENTS.SITE_UPDATED
         end
@@ -217,7 +234,19 @@ do
 
     --- Update sector data
     function HOUND.Contact.Site:updateSector()
-        self.threatSectors = self:getPrimary().threatSectors
+        local primary = self:getPrimary()
+        self.threatSectors = primary.threatSectors
+        self.primarySector = primary.primarySector
         self:updateDefaultSector()
+    end
+
+    function HOUND.Contact.Site:processData()
+        self:updateSector()
+    end
+
+    function HOUND.Contact.Site:update()
+        self:selectPrimaryEmitter()
+        self:updateTypeAssigned()
+        self:updateSector()
     end
 end

@@ -31,6 +31,7 @@ do
     -- @field FORCE_MANAGE_MARKERS Force Hound to use internal counter for markIds (default is false).
     -- @field USE_LEGACY_MARKERS Force Hound to use normal markers for radar positions (default is true)
     -- @field TTS_ENGINE Hound will use the table to determin TTS engine priority
+    -- @field MENU_PAGE_LENGTH Number of Items Hound will put in a menu before starting a new menu page
 
     HOUND = {
         VERSION = "0.4.0-TRUNK",
@@ -44,7 +45,8 @@ do
         MIST_VERSION = tonumber(table.concat({mist.majorVersion,mist.minorVersion},".")),
         FORCE_MANAGE_MARKERS = false,
         USE_LEGACY_MARKERS = true,
-        TTS_ENGINE = {'GRPC','STTS'}
+        TTS_ENGINE = {'GRPC','STTS'},
+        MENU_PAGE_LENGTH = 9
     }
 
     --- Map Markers ENUM
@@ -260,13 +262,17 @@ do
                    math.cos(2 * math.pi * math.random()) + mean
     end
 
-    -- function StDev()
-    --     local sum, sumsq, k = 0, 0, 0
-    --     return function(n)
-    --         sum, sumsq, k = sum + n, sumsq + n ^ 2, k + 1
-    --         return math.sqrt((sumsq / k) - (sum / k) ^ 2)
-    --     end
-    -- end
+    --- reverse table lookup
+    -- @local
+    -- @param #tbl table
+    -- @param value to search
+    -- @return the key wher value was found
+    function HOUND.reverseLookup(tbl,value)
+        if type(tbl) ~= "table" or type(value) == "nil" then return end
+        for k,v in pairs(tbl) do
+            if v == value then return k end
+        end
+    end
 
     --- Split String on delimited
     -- @local
@@ -283,17 +289,5 @@ do
             table.insert(chunks, substring)
         end
         return chunks
-    end
-
-    --- reverse tble lookup 
-    -- @local
-    -- @param #tbl table
-    -- @param value to search
-    -- @return the key wher value was found
-    function HOUND.reverseLookup(tbl,value)
-        if type(tbl) ~= "table" or type(value) == "nil" then return end
-        for k,v in pairs(tbl) do
-            if v == value then return k end
-        end
     end
 end

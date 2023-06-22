@@ -171,7 +171,7 @@ do
 
     --- generate Text for the Radio menu item
     -- @return string
-    function HOUND.Contact.Emitter:generateRadioItemText()
+    function HOUND.Contact.Emitter:getRadioItemText()
         if not self:hasPos() then return end
         local GridPos,BePos = self:getTextData(true,1)
         BePos = BePos:gsub(" for ","/")
@@ -183,7 +183,12 @@ do
     -- @param sectorName string Name of primary sector if present function will only return sector data
     -- @return string. compiled message
     function HOUND.Contact.Emitter:generatePopUpReport(isTTS,sectorName)
-        local msg = self:getName() .. " is now Alive"
+        local msg = self:getName()
+        if self:isAccurate() then
+            msg = msg .. " has been reported"
+        else
+            msg = msg .. " is now Alive"
+        end
 
         if sectorName then
             msg = msg .. " in " .. sectorName

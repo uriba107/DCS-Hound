@@ -970,7 +970,7 @@ do
         args.volume = args.volume or "1.0"
         args.name = args.name or "Hound"
         args.gender = args.gender or "female"
-
+        HOUND.Logger.debug(msg)
         if (l_grpc ~= nil and type(l_grpc.tts) == "function" and not HOUND.IGNORE_GRPC_TTS) then
             -- HOUND.Logger.debug("gRPC TTS message")
             return HOUND.Utils.TTS.TransmitGRPC(msg,coalitionID,args,transmitterPos)
@@ -981,7 +981,6 @@ do
             end
         end
 
-    end
     --- Transmit message using STTS
     -- @local
     -- @param msg The message to transmit
@@ -1217,7 +1216,8 @@ do
         local retval = ""
         str = string.upper(tostring(str))
         for i=1, string.len(str) do
-            retval = retval .. HOUND.DB.PHONETICS[string.sub(str, i, i)] .. " "
+            local char = HOUND.DB.PHONETICS[string.sub(str, i, i)] or ""
+            retval = retval .. char .. " "
         end
         return retval:match( "^%s*(.-)%s*$" ) -- return and strip trailing whitespaces
     end
@@ -1915,6 +1915,9 @@ do
         end
         if a.first_seen ~= b.first_seen then
             return a.first_seen > b.first_seen
+        end
+        if getmetatable(a) == HOUND.Contact.Site then
+            return a.gid < b.gid
         end
         return a.uid < b.uid
     end

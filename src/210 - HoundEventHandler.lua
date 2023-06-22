@@ -79,7 +79,9 @@ do
     --- publish event to subscribers
     -- @local
     function HOUND.EventHandler.publishEvent(event)
-        event.time = timer.getTime()
+        if not event.time then
+            event.time = timer.getTime()
+        end
         HOUND.EventHandler.onHoundEvent(event)
         -- return event.idx
     end

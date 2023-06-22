@@ -179,12 +179,13 @@ do
         else
             HOUND.Logger.debug("failed to create site")
         end
-        HOUND.EventHandler.publishEvent({
-            id = HOUND.EVENTS.RADAR_NEW,
-            initiator = emitter,
-            houndId = self.settings:getId(),
-            coalition = self.settings:getCoalition()
-        })
+        self.contacts[emitterName]:queueEvent(HOUND.EVENTS.RADAR_NEW)
+        -- HOUND.EventHandler.publishEvent({
+        --     id = HOUND.EVENTS.RADAR_NEW,
+        --     initiator = emitter,
+        --     houndId = self.settings:getId(),
+        --     coalition = self.settings:getCoalition()
+        -- })
         return emitterName
     end
 
@@ -198,10 +199,12 @@ do
         if type(emitter) == "string" then
             emitterName = emitter
         end
-        if type(emitter) == "table" and emitter.getName ~= nil then
+        if HoundUtils.Dcs.isUnit(emitter) then
             emitterName = emitter:getName()
         end
-
+        if getmetatable(emitter) == HOUND.Contact.Emitter then
+            emitterName = emitter:getDcsName()
+        end
         if emitterName ~= nil and self.contacts[emitterName] ~= nil then return self.contacts[emitterName] end
         if not self.contacts[emitterName] and type(emitter) == "table" and not getOnly then
             self:addContact(emitter)
@@ -300,12 +303,7 @@ do
         local groupName = emitter:getGroupName()
         if self.sites[groupName] ~= nil then return groupName end
         self.sites[groupName] = HOUND.Contact.Site:New(emitter, self:getCoalition(), self:getNewTrackId())
-        HOUND.EventHandler.publishEvent({
-            id = HOUND.EVENTS.SITE_NEW,
-            initiator = emitter,
-            houndId = self.settings:getId(),
-            coalition = self.settings:getCoalition()
-        })
+        self.sites[groupName]:queueEvent(HOUND.EVENTS.SITE_CREATED)
         return groupName
     end
 
@@ -387,13 +385,13 @@ do
             local radarPos = radar:getPosition().p
             radarPos.y = radarPos.y + radar:getDesc()["box"]["max"]["y"] -- use vehicle bounting box for height
             local _,isRadarTracking = radar:getRadar()
-            if HOUND.DEBUG then
-                if HoundUtils.Dcs.isUnit(isRadarTracking) then
-                    HOUND.Logger.debug(RadarName .. " is tracking " .. isRadarTracking:getName())
-                else
-                    HOUND.Logger.debug(RadarName .. " is not tracking anyone ")
-                end
-            end
+            -- if HOUND.DEBUG then
+            --     if HoundUtils.Dcs.isUnit(isRadarTracking) then
+            --         HOUND.Logger.debug(RadarName .. " is tracking " .. isRadarTracking:getName())
+            --     else
+            --         HOUND.Logger.debug(RadarName .. " is not tracking anyone ")
+            --     end
+            -- end
             isRadarTracking = HoundUtils.Dcs.isUnit(isRadarTracking)
 
             for _,platform in ipairs(self.platforms) do
@@ -401,7 +399,7 @@ do
 
                 if HoundUtils.Geo.checkLOS(platformData.pos, radarPos) then
                     local contact = self:getContact(radar)
-                    HOUND.Logger.debug(RadarName .. " transmits on " .. HOUND.reverseLookup(HOUND.DB.Bands,contact.band[isRadarTracking]) .." Band")
+                    -- HOUND.Logger.debug(RadarName .. " transmits on " .. HOUND.reverseLookup(HOUND.DB.Bands,contact.band[isRadarTracking]) .." Band")
                     local sampleAngularResolution = HOUND.DB.getSensorPrecision(platform,contact.band[isRadarTracking])
                     if sampleAngularResolution < l_math.rad(10.0) then
                         local az,el = HoundUtils.Elint.getAzimuth( platformData.pos, radarPos, sampleAngularResolution )
@@ -417,7 +415,6 @@ do
 
                         local datapoint = HOUND.Contact.Datapoint.New(platform,platformData.pos, az, el, timer.getAbsTime(),sampleAngularResolution,platformData.isStatic)
                         contact:AddPoint(datapoint)
-                        local site = self:getSite(contact)
                     end
                 end
             end
@@ -432,7 +429,6 @@ do
         for contactName, contact in pairs(self.contacts) do
             if contact ~= nil then
                 local contactState = contact:processData()
-
                 if contactState == HOUND.EVENTS.RADAR_DETECTED then
                     if self.settings:getUseMarkers() then contact:updateMarker(self.settings:getMarkerType()) end
                 end
@@ -451,12 +447,25 @@ do
 
                 -- publish event (in case of destroyed radar, event is handled by the notify function)
                 if contactState and contactState ~= HOUND.EVENTS.NO_CHANGE then
-                    HOUND.EventHandler.publishEvent({
-                        id = contactState,
-                        initiator = contact,
-                        houndId = self.settings:getId(),
-                        coalition = self.settings:getCoalition()
-                    })
+                    local contactEvents = contact:getEventQueue()
+                    while #contactEvents > 0 do
+                        local event = table.remove(contactEvents,1)
+                        event.houndId = self.settings:getId()
+                        event.coalition = self.settings:getCoalition()
+                        HOUND.EventHandler.publishEvent(event)
+                    end
+                end                
+            end
+        end
+        for siteName, site in pairs(self.sites) do
+            if site ~= nil then
+                site:processData()
+                local siteEvents = site:getEventQueue()
+                while #siteEvents > 0 do
+                    local event = table.remove(siteEvents,1)
+                    event.houndId = self.settings:getId()
+                    event.coalition = self.settings:getCoalition()
+                    HOUND.EventHandler.publishEvent(event)
                 end
             end
         end

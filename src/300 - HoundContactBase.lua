@@ -8,9 +8,9 @@ do
     HOUND.Contact.Base = {}
     HOUND.Contact.Base.__index = HOUND.Contact.Base
 
-    local l_math = math
-    local l_mist = mist
-    local pi_2 = l_math.pi*2
+    -- local l_math = math
+    -- local l_mist = mist
+    -- local pi_2 = l_math.pi*2
     local HoundUtils = HOUND.Utils
 
     --- create new HOUND.Contact instance
@@ -54,6 +54,7 @@ do
         }
         instance.state = nil
         instance.preBriefed = false
+        instance.events = {}
 
         return instance
     end
@@ -175,6 +176,23 @@ do
         return self.state
     end
 
+    --- Queue new event
+    -- @param eventId @{HOUND.EVENTS}
+    function HOUND.Contact.Base:queueEvent(eventId)
+        if eventId == HOUND.EVENTS.NO_CHANGE then return end
+        local event = {
+            id = eventId,
+            initiator = self,
+            time = timer.getTime()
+        }
+        table.insert(self.events,event)
+    end
+
+    --- get event queue
+    -- @return table of event skeletons
+    function HOUND.Contact.Base:getEventQueue()
+        return self.events
+    end
     --- Sector Mangment
     -- @section sectors
 

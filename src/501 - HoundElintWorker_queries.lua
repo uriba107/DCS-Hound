@@ -120,7 +120,7 @@ do
     -- @return sorted list of @{HOUND.Contact.Emitter}
     function HOUND.ElintWorker:sortSites(sortFunc,sectorName)
         if type(sortFunc) ~= "function" then return end
-        local sorted = self:geSites(sectorName)
+        local sorted = self:getSites(sectorName)
         table.sort(sorted, sortFunc)
         return sorted
     end

@@ -1271,40 +1271,23 @@ do
             for _,sector in pairs(sectors) do
                 sector:updateSectorMembership(houndEvent.initiator)
             end
-            if self:isRunning() then
-                for _,sector in pairs(sectors) do
-                    sector:notifyEmitterNew(houndEvent.initiator)
-                end
-            end
         end
 
-        if houndEvent.id == HOUND.EVENTS.RADAR_DESTROYED then
-            if self:isRunning() then
-                for _,sector in pairs(sectors) do
+        if self:isRunning() then
+            for _,sector in pairs(sectors) do
+                -- if houndEvent.id == HOUND.EVENTS.RADAR_DETECTED then
+                --     sector:notifyEmitterNew(houndEvent.initiator)
+                -- end
+                if houndEvent.id == HOUND.EVENTS.RADAR_DESTROYED then
                     sector:notifyEmitterDead(houndEvent.initiator)
                 end
-            end
-        end
-
-        if houndEvent.id == HOUND.EVENTS.SITE_CREATED then
-            if self:isRunning() then
-                for _,sector in pairs(sectors) do
+                if houndEvent.id == HOUND.EVENTS.SITE_CREATED then
                     sector:notifySiteNew(houndEvent.initiator)
                 end
-            end
-        end
-
-        if houndEvent.id == HOUND.EVENTS.SITE_CLASSIFIED then
-            if self:isRunning() then
-                for _,sector in pairs(sectors) do
+                if houndEvent.id == HOUND.EVENTS.SITE_CLASSIFIED then
                     sector:notifySiteIdentified(houndEvent.initiator)
                 end
-            end
-        end
-
-        if houndEvent.id == HOUND.EVENTS.SITE_REMOVED then
-            if self:isRunning() then
-                for _,sector in pairs(sectors) do
+                if houndEvent.id == HOUND.EVENTS.SITE_REMOVED then
                     sector:notifySiteDead(houndEvent.initiator)
                 end
             end
