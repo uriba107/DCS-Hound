@@ -1,3 +1,14 @@
+--- List of extra functions that are not in use in Hound but might be useful in the future
+
+--- Calculate stdev
+function HOUND.StDev()
+      local sum, sumsq, k = 0, 0, 0
+      return function(n)
+          sum, sumsq, k = sum + n, sumsq + n ^ 2, k + 1
+          return math.sqrt((sumsq / k) - (sum / k) ^ 2)
+      end
+  end
+    
 --- K-means++ algorithm
 -- <a href=https://rosettacode.org/wiki/K-means%2B%2B_clustering#Lua>Source of implementation</a>
 -- @param data Datapoints
