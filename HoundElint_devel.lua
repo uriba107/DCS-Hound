@@ -34,6 +34,7 @@ env.info("Loading Hound Scripts dynamicly")
     assert(loadfile(HoundWorkDir..'src\\501 - HoundElintWorker_queries.lua'))()
     assert(loadfile(HoundWorkDir..'src\\510 - HoundContactManager.lua'))()
     assert(loadfile(HoundWorkDir..'src\\550 - HoundSector.lua'))()
+    assert(loadfile(HoundWorkDir..'src\\551 - HoundSector_menu.lua'))()
     assert(loadfile(HoundWorkDir..'src\\800 - HoundElint.lua'))()
     assert(loadfile(HoundWorkDir..'src\\999 - Hound_footer.lua'))()
 

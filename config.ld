@@ -25,5 +25,6 @@ file.exclude = {
 'src/501 - HoundElintWorker_queries.lua',
 'src/510 - HoundContactManager.lua',
 'src/550 - HoundSector.lua',
+'src/551 - HoundSector_menu.lua',
 'src/999 - Hound_footer.lua',
 }
