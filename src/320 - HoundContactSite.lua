@@ -39,7 +39,7 @@ do
         instance.first_seen = HoundContact.first_seen
         instance.maxWeaponsRange = HoundContact:getMaxWeaponsRange()
         instance.detectionRange = HoundContact:getRadarDetectionRange()
-
+        instance.isEWR = HoundContact.isEWR
         instance.state = HOUND.EVENTS.SITE_NEW
         instance.preBriefed = HoundContact:isAccurate()
 
@@ -127,11 +127,6 @@ do
         return self:getLastSeen() > HOUND.CONTACT_TIMEOUT
     end
 
-    --- check if primary contact is EWR
-    -- @return Bool - True primary is EWR
-    function HOUND.Contact.Site:isEWR()
-        return self:getPrimary().isEWR
-    end
     --- Get current state
     -- @return Contact state in @{HOUND.EVENTS}
     function HOUND.Contact.Site:getState()
@@ -207,6 +202,7 @@ do
         self:sortEmitters()
         if self.primaryEmitter ~= self.emitters[1] then
             self.primaryEmitter = self.emitters[1]
+            self.isEWR = self.primaryEmitter.isEWR
             self.state = HOUND.EVENTS.SITE_UPDATED
             return true
         end

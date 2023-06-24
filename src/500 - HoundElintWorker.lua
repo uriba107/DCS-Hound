@@ -454,10 +454,10 @@ do
                         event.coalition = self.settings:getCoalition()
                         HOUND.EventHandler.publishEvent(event)
                     end
-                end                
+                end
             end
         end
-        for siteName, site in pairs(self.sites) do
+        for _, site in pairs(self.sites) do
             if site ~= nil then
                 site:processData()
                 local siteEvents = site:getEventQueue()

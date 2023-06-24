@@ -299,19 +299,28 @@ do
         lu.assertEquals(self.houndBlue:countPreBriefedContacts(),1)
         local elint = self.houndBlue.contacts
         lu.assertIsTrue(getmetatable(elint)==HOUND.ElintWorker)
-        local sa5_sr = elint:getContact('SA-5_SAIPAN-1',true)
-        local sa5_tr = elint:getContact('SA-5_SAIPAN-2',true)
-        lu.assertIsTrue(getmetatable(sa5_sr)==HOUND.Contact.Emitter)
-        lu.assertIsNil(sa5_tr)
-        local sa5_site = elint:getSite('SA-5_SAIPAN')
-        lu.assertIsTrue(getmetatable(sa5_site)==HOUND.Contact.Site)
-        lu.assertEquals(sa5_sr,sa5_site:getPrimary())
-        self.houndBlue:preBriefedContact('SA-5_SAIPAN')
+        self.houndBlue:preBriefedContact('SA-3_TINIAN-1')
+        local sa3_sr = elint:getContact('SA-3_TINIAN-1',true)
+        local sa3_tr = elint:getContact('SA-3_TINIAN-2',true)
         lu.assertEquals(self.houndBlue:countPreBriefedContacts(),2)
-        sa5_tr = elint:getContact('SA-5_SAIPAN-2',true)
-        lu.assertIsTrue(getmetatable(sa5_tr)==HOUND.Contact.Emitter)
-        lu.assertNotEquals(sa5_sr,sa5_site:getPrimary())
-        lu.assertEquals(sa5_tr,sa5_site:getPrimary())
+
+        lu.assertIsTrue(getmetatable(sa3_sr)==HOUND.Contact.Emitter)
+        lu.assertIsNil(sa3_tr)
+        local sa3_site = elint:getSite('SA-3_TINIAN')
+        lu.assertIsTrue(getmetatable(sa3_site)==HOUND.Contact.Site)
+        lu.assertEquals(sa3_sr,sa3_site:getPrimary())
+
+        lu.assertEquals("SA-2 or SA-3 or SA-5",sa3_site:getTypeAssigned())
+
+        self.houndBlue:preBriefedContact('SA-3_TINIAN')
+        lu.assertEquals(self.houndBlue:countPreBriefedContacts(),3)
+        sa3_tr = elint:getContact('SA-3_TINIAN-2',true)
+        lu.assertIsTrue(getmetatable(sa3_tr)==HOUND.Contact.Emitter)
+        lu.assertNotEquals(sa3_sr,sa3_site:getPrimary())
+        lu.assertEquals(sa3_tr,sa3_site:getPrimary())
+        lu.assertEquals("SA-3",sa3_site:getTypeAssigned())
+
+
     end
     
     function TestHoundFunctional:Test_02_base_09_human_elint()

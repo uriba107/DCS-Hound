@@ -504,5 +504,15 @@ do
             },
             ['Primary'] = true
         }
-
+    --- Iron Dome
+    HOUND.DB.Radars['ELM2048_MMR'] = {
+        ['Name'] = "Iron Dome",
+        ['Assigned'] = {"Iron Dome"},
+        ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
+        ['Band'] = {
+            [true] = HOUND.DB.Bands.F,
+            [false] = HOUND.DB.Bands.E
+        },
+        ['Primary'] = true
+    }
 end

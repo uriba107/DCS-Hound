@@ -40,8 +40,9 @@ do
             controller = nil,
             atis = nil,
             notifier = nil,
+            enrolled = {},
             menu = {
-                root = nil , enrolled = {}, check_in = {}, data = {},noData = nil
+                root = nil ,noData = nil
             }
         }
         instance.priority = priority or 10
@@ -506,23 +507,24 @@ do
     -- @param self HOUND.Sector
     -- @local
     function HOUND.Sector.removeRadioMenu(self)
-        for _,menu in pairs(self.comms.menu.data) do
-            if menu ~= nil then
-                missionCommands.removeItem(menu)
-            end
-        end
-        for _,menu in pairs(self.comms.menu.check_in) do
-            if menu ~= nil then
-                missionCommands.removeItem(menu)
-            end
-        end
+        -- for menuName,menu in pairs(self.comms.menu) do
+        --     if menu ~= nil and menuName ~= "root" then
+        --         missionCommands.removeItem(menu)
+        --     end
+        -- end
+        -- for _,menu in pairs(self.comms.menu.check_in) do
+        --     if menu ~= nil then
+        --         missionCommands.removeItem(menu)
+        --     end
+        -- end
         if self.comms.menu.root ~= nil then
             missionCommands.removeItem(self.comms.menu.root)
         end
+        self.comms.menu = {}
         self.comms.menu.root = nil
         self.comms.enrolled = {}
-        self.comms.menu.data = {}
-        self.comms.menu.check_in = {}
+        -- self.comms.menu.data = {}
+        -- self.comms.menu.check_in = {}
     end
 
     --- find group in enrolled
@@ -532,7 +534,7 @@ do
     -- @local
     function HOUND.Sector:findGrpInPlayerList(grpId,playersList)
         if not playersList or type(playersList) ~= "table" then
-            playersList = self.comms.menu.enrolled
+            playersList = self.comms.enrolled
         end
         local playersInGrp = {}
         for _,player in pairs(playersList) do
@@ -548,7 +550,7 @@ do
     -- @local
     function HOUND.Sector:getSubscribedGroups()
         local subscribedGid = {}
-        for _,player in pairs(self.comms.menu.enrolled) do
+        for _,player in pairs(self.comms.enrolled) do
             local grpId = player.groupId
             if not HOUND.setContainsValue(subscribedGid,grpId) then
                 table.insert(subscribedGid,grpId)
@@ -560,11 +562,11 @@ do
     --- clean non existing users from subscribers
     -- @local
     function HOUND.Sector:validateEnrolled()
-        if HOUND.Length(self.comms.menu.enrolled) == 0 then return end
-        for _, player in pairs(self.comms.menu.enrolled) do
+        if HOUND.Length(self.comms.enrolled) == 0 then return end
+        for _, player in pairs(self.comms.enrolled) do
             local playerUnit = Unit.getByName(player.unitName)
             if not playerUnit or not playerUnit:getPlayerName() then
-                self.comms.menu.enrolled[player] = nil
+                self.comms.enrolled[player] = nil
             end
         end
     end
@@ -576,13 +578,15 @@ do
     function HOUND.Sector.checkIn(args,skipAck)
         local gSelf = args["self"]
         local player = args["player"]
-        if not HOUND.setContains(gSelf.comms.menu.enrolled, player) then
-            gSelf.comms.menu.enrolled[player] = player
-            -- table.insert(gSelf.comms.menu.enrolled,player)
+        if not HOUND.setContains(gSelf.comms.enrolled, player) then
+            gSelf.comms.enrolled[player] = player
+            HOUND.Logger.debug("added player: " .. mist.utils.tableShow(player))
+            -- table.insert(gSelf.comms.enrolled,player)
         end
         for _,otherPlayer in pairs(gSelf:findGrpInPlayerList(player.groupId,l_mist.DBs.humansByName)) do
-            gSelf.comms.menu.enrolled[otherPlayer] = otherPlayer
+            gSelf.comms.enrolled[otherPlayer] = otherPlayer
         end
+        HOUND.Logger.debug(l_mist.utils.tableShow(gSelf.comms.enrolled))
         gSelf:populateRadioMenu()
         if not skipAck then
             gSelf:TransmitCheckInAck(player)
@@ -597,11 +601,11 @@ do
     function HOUND.Sector.checkOut(args,skipAck,onlyPlayer)
         local gSelf = args["self"]
         local player = args["player"]
-        gSelf.comms.menu.enrolled[player] = nil
+        gSelf.comms.enrolled[player] = nil
 
         if not onlyPlayer then
             for _,otherPlayer in pairs(gSelf:findGrpInPlayerList(player.groupId)) do
-                gSelf.comms.menu.enrolled[otherPlayer] = nil
+                gSelf.comms.enrolled[otherPlayer] = nil
             end
         end
         gSelf:populateRadioMenu()
@@ -893,13 +897,13 @@ do
             local sortedSites = self:getSites()
             for _, site in pairs(sortedSites) do
                 if site:getPos() ~= nil then
-                    if not site:isEWR() or
-                        (AtisPreferences.reportewr and site:isEWR()) then
+                    if not site.isEWR or
+                        (AtisPreferences.reportewr and site.isEWR) then
                         body = body ..
                                     site:generateTtsBrief(
                                         self._hSettings:getNATO()) .. " "
                     end
-                    if (not AtisPreferences.reportewr and site:isEWR()) then
+                    if (not AtisPreferences.reportewr and site.isEWR) then
                         numberEWR = numberEWR + 1
                     end
                 end

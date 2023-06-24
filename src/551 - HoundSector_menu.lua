@@ -35,12 +35,12 @@ do
     -- @local
     function HOUND.Sector:createCheckIn()
         -- unsubscribe disconnected users
-        for _,player in pairs(self.comms.menu.enrolled) do
+        for _,player in pairs(self.comms.enrolled) do
             local playerUnit = Unit.getByName(player.unitName)
             if playerUnit then
                 local humanOccupied = playerUnit:getPlayerName()
                 if not humanOccupied then
-                    self.comms.menu.enrolled[player] = nil
+                    self.comms.enrolled[player] = nil
                 end
             end
         end
@@ -62,7 +62,7 @@ do
                     grpMenu.items.check_in = missionCommands.removeItemForGroup(grpId,grpMenu.items.check_in)
                 end
 
-                if HOUND.setContains(self.comms.menu.enrolled, player) then
+                if HOUND.setContains(self.comms.enrolled, player) then
                     grpMenu.items.check_in =
                         missionCommands.addCommandForGroup(grpId,
                                             self.comms.controller:getCallsign() .. " (" ..
@@ -136,7 +136,7 @@ do
 
         local grpMenuDone = {}
         self:validateEnrolled()
-        if HOUND.Length(self.comms.menu.enrolled) > 0 then
+        if HOUND.Length(self.comms.enrolled) > 0 then
             if HOUND.Length(sitesData) and not HOUND.setContains(sitesData.noData) then
                 -- do all the caching needed
                 for _,siteData in ipairs(sitesData) do
@@ -147,7 +147,7 @@ do
             end
 
             -- start building menues
-            for _, player in pairs(self.comms.menu.enrolled) do
+            for _, player in pairs(self.comms.enrolled) do
                 local grpId = player.groupId
                 local grpMenu = self.comms.menu[player]
 
@@ -191,7 +191,7 @@ do
         if HOUND.Length(menu.objs) > 0 then
             for objName,obj in pairs (menu.objs) do
                 menu.objs[objName]=self:removeMenuItems(obj,grpId)
-            end   
+            end
         end
         if HOUND.Length(menu.items) > 0 then
             for itemName,item in pairs(menu.items) do
@@ -226,26 +226,16 @@ do
         if not menu.objs then
             menu.objs = {}
         end
-        HOUND.Logger.debug("menu: " .. mist.utils.tableShow(menu))
         if HOUND.Length(menu.pages) == 0 and type(parent) == "table" then
             table.insert(menu.pages,parent)
         end
-        HOUND.Logger.debug("length of pages is "..#menu.pages)
-        HOUND.Logger.debug("length of items is "..HOUND.Length(menu.items))
 
-        -- if #menu.pages > 0 and type(parent) == "table" then
-        --     if menu.pages[1] ~= parent then
-        --         menu.pages[1] = parent
-        --     end
-        -- end
         local totalItems = (HOUND.Length(menu.items) + #menu.pages)-1
-        HOUND.Logger.debug("I have " .. totalItems % #menu.pages .. " Items in current page " .. #menu.pages)
         if (totalItems == HOUND.MENU_PAGE_LENGTH) or (totalItems % #menu.pages) == HOUND.MENU_PAGE_LENGTH then
             -- menu.items['page_'..#menu.pages+1] = missionCommands.addSubMenuForGroup(grpId,"More (Page " .. #menu.pages+1 .. ")", menu.pages['page_'..#menu.pages])
             -- table.insert(menu.pages,menu.items['page_'..#menu.pages+1])
             table.insert(menu.pages,missionCommands.addSubMenuForGroup(grpId,"More (Page " .. #menu.pages+1 .. ")", menu.pages[#menu.pages]))
         end
-        HOUND.Logger.debug("page returned is " .. mist.utils.tableShow(menu.pages[#menu.pages]))
         return menu.pages[#menu.pages]
     end
 

@@ -44,7 +44,8 @@ do
     -- Elint_blue:enablePlatformPosErrors()
 
     local callsignOverride = {
-        Uzi = "Tulip"
+        Uzi = "Tulip",
+        Chevy = "*"
     }
 
     Elint_blue:setCallsignOverride(callsignOverride)
@@ -265,23 +266,22 @@ do
     --     local pos = unit:getPosition().p
     --     env.info("Hight of ".. unit:getTypeName() .. " is " .. unit:getDesc()["box"]["max"]["y"])
     -- end
-    local balloon = StaticObject.getByName('BALLOON_ANCHOR')
-    env.info(mist.utils.tableShow(balloon:getDesc()))
+    -- local balloon = StaticObject.getByName('BALLOON_ANCHOR')
+    -- env.info(mist.utils.tableShow(balloon:getDesc()))
     
-    for cid,v in pairs(_G.env.mission.coalition.blue.country) do
-        if cid ~= nil and type(v) == "table" then
-            env.info("CID: " .. cid)
-            for k,v1 in pairs(v) do
-                if k == "name" then
-                    env.info("name: " .. v1)
-                end
-                -- if k == "static" then
-                --     for _,obj in pairs(v1) do
-                --         env.info(mist.utils.tableShow(obj))
-                --     end
-                -- end
-            end
-        end
-
-    end
+    -- for cid,v in pairs(_G.env.mission.coalition.blue.country) do
+    --     if cid ~= nil and type(v) == "table" then
+    --         env.info("CID: " .. cid)
+    --         for k,v1 in pairs(v) do
+    --             if k == "name" then
+    --                 env.info("name: " .. v1)
+    --             end
+    --             -- if k == "static" then
+    --             --     for _,obj in pairs(v1) do
+    --             --         env.info(mist.utils.tableShow(obj))
+    --             --     end
+    --             -- end
+    --         end
+    --     end
+    -- end
 end

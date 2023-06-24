@@ -325,6 +325,7 @@ do
     -- @return Formation callsign string
     function HOUND.Utils.getFormationCallsign(player,override,flightMember)
         local callsign = ""
+        local DCS_Unit = Unit.getByName(player.unitName)
         if type(player) ~= "table" then return callsign end
         if type(flightMember) == "table" and override == nil then
             override,flightMember = flightMember,override
@@ -338,7 +339,11 @@ do
 
         if type(override) == "table" then
             if HOUND.setContains(override,formationCallsign) then
-                callsign = callsign:gsub(formationCallsign,override[formationCallsign])
+                local override = override[formationCallsign]
+                if override == "*" then
+                    override = DCS_Unit:getGroup():getName() or formationCallsign
+                end
+                callsign = callsign:gsub(formationCallsign,override)
                 return string.upper(callsign:match( "^%s*(.-)%s*$" ))
             end
         end
@@ -922,9 +927,9 @@ do
     --- Check if TTS agent is available (private)
     -- @return (Bool) True if TTS is available
     function HOUND.Utils.TTS.isAvailable()
-        if (l_grpc ~= nil and type(l_grpc.tts) == "function" and not HOUND.IGNORE_GRPC_TTS)  then
-            -- do checks for DCS-gRPC for now KISS
-            return true
+        for _,engine in ipairs(HOUND.TTS_ENGINE) do
+            if engine == "GRPC" and (l_grpc ~= nil and type(l_grpc.tts) == "function") then return true end
+            if engine == "STTS" and STTS ~= nil then return true end
         end
         return false
     end
@@ -965,21 +970,24 @@ do
         if not HOUND.Utils.TTS.isAvailable() then return end
         if msg == nil then return end
         if coalitionID == nil then return end
-
+        
         if args.freq == nil then return end
         args.volume = args.volume or "1.0"
         args.name = args.name or "Hound"
         args.gender = args.gender or "female"
-        HOUND.Logger.debug(msg)
-        if (l_grpc ~= nil and type(l_grpc.tts) == "function" and not HOUND.IGNORE_GRPC_TTS) then
-            -- HOUND.Logger.debug("gRPC TTS message")
-            return HOUND.Utils.TTS.TransmitGRPC(msg,coalitionID,args,transmitterPos)
-        end
+
+        for _,engine in ipairs(HOUND.TTS_ENGINE) do
+            if engine == "GRPC" and (l_grpc ~= nil and type(l_grpc.tts) == "function") then
+                -- HOUND.Logger.debug("gRPC TTS message")
+                return HOUND.Utils.TTS.TransmitGRPC(msg,coalitionID,args,transmitterPos)
+            end
 
             if engine == "STTS" and STTS ~= nil then
+                -- HOUND.Logger.debug("STTS message")
                 return HOUND.Utils.TTS.TransmitSTTS(msg,coalitionID,args,transmitterPos)
             end
         end
+    end
 
     --- Transmit message using STTS
     -- @local
@@ -1470,7 +1478,7 @@ do
         return zoneNames
     end
 
-    --- Get zone from drawing\
+    --- Get zone from drawing
     -- (supported types are freeForm Polygon, rectangle and Oval)
     -- @param zoneName
     -- @return table of points

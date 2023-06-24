@@ -1257,10 +1257,17 @@ do
     --- EventHandler functions
     -- @section eventHandler
 
+    --- builtin prototype for onHoundEvent function
+    -- this function does NOTHING out of the box. put you own code here if needed
+    -- @param HoundEven incoming event
+    function HoundElint:onHoundEvent(houndEvent)
+        return nil
+    end
+
     --- built in onHoundEvent function
     -- @param houndEvent incoming event
     -- @local
-    function HoundElint:onHoundEvent(houndEvent)
+    function HoundElint:onHoundInternalEvent(houndEvent)
         if houndEvent.houndId ~= self.settings:getId() then return end
         if houndEvent.id == HOUND.EVENTS.HOUND_DISABLED then return end
 
@@ -1272,7 +1279,9 @@ do
                 sector:updateSectorMembership(houndEvent.initiator)
             end
         end
-
+        if houndEvent.id == HOUND.EVENTS.SITE_CREATED or houndEvent.id == HOUND.EVENTS.SITE_CLASSIFIED then
+            self:populateRadioMenu()
+        end
         if self:isRunning() then
             for _,sector in pairs(sectors) do
                 -- if houndEvent.id == HOUND.EVENTS.RADAR_DETECTED then
@@ -1291,6 +1300,7 @@ do
                     sector:notifySiteDead(houndEvent.initiator)
                 end
             end
+
         end
     end
 

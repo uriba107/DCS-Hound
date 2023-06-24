@@ -214,7 +214,7 @@ do
         return count
     end
 
-    --- check if set contains a provided key
+    --- check if set contains a provided key (case sensitive)
     -- @local
     -- @param set Hash table to check
     -- @param key to check

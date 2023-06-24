@@ -63,8 +63,11 @@ do
     --- Execute event on all registeres subscribers
     function HOUND.EventHandler.onHoundEvent(event)
         for _, handler in pairs(HOUND.EventHandler._internalSubscribers) do
-            if handler.onHoundEvent and type(handler.onHoundEvent) == "function" then
-                if handler and handler.settings then
+            if handler and handler.settings then
+                if handler.onHoundInternalEvent and type(handler.onHoundInternalEvent) == "function" then
+                    handler:onHoundInternalEvent(event)
+                end
+                if handler.onHoundEvent and type(handler.onHoundEvent) == "function" then
                     handler:onHoundEvent(event)
                 end
             end

@@ -62,6 +62,7 @@ do
         ['A-10C'] = true,
         ['A-10C_2'] = true,
         ['AH-64D_BLK_II'] = true,
+        ['F-15ESE'] = true,
     }
 
     --- Band vs wavelength

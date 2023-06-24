@@ -121,9 +121,9 @@ do
         local phoneticGridPos,phoneticBulls = primary:getTtsData(false,1)
         local reportedName = self:getName()
         if NATO then
-            reportedName = self:getNatoDesignation()
+            reportedName = ""
         end
-        local str = reportedName
+        local str = reportedName .. " " .. self:getNatoDesignation()
         if primary:isAccurate() then
             str = str .. ", reported"
         else
