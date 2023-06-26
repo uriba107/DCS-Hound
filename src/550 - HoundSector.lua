@@ -518,7 +518,7 @@ do
         --     end
         -- end
         if self.comms.menu.root ~= nil then
-            missionCommands.removeItem(self.comms.menu.root)
+            missionCommands.removeItemForCoalition(self._hSettings:getCoalition(),self.comms.menu.root)
         end
         self.comms.menu = {}
         self.comms.menu.root = nil

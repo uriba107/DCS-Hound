@@ -322,7 +322,7 @@ do
         -- @return (Bool) True if menu was removed
         instance.removeRadioMenu = function (self)
             if self.radioMenu.root ~= nil then
-                missionCommands.removeItem(self.radioMenu.root)
+                missionCommands.removeItemForCoalition(self:getCoalition(),self.radioMenu.root)
                 self.radioMenu.root = nil
                 return true
             end

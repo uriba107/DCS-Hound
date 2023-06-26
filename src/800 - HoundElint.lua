@@ -161,10 +161,12 @@ do
 
     --- set/create a pre Briefed contacts
     -- @param DCS_Object_Name name of DCS Unit or Group to add
-    function HoundElint:preBriefedContact(DCS_Object_Name)
+    -- @param [opt] codeName Optional name for site created 
+    function HoundElint:preBriefedContact(DCS_Object_Name,codeName)
         if type(DCS_Object_Name) ~= "string" then return end
         local units = {}
         local obj = Group.getByName(DCS_Object_Name) or Unit.getByName(DCS_Object_Name)
+        local grpName = DCS_Object_Name
         if not obj then
             HOUND.Logger.info("Cannot pre-brief " .. DCS_Object_Name .. ": object does not exist.")
             return
@@ -173,11 +175,18 @@ do
             units = obj:getUnits()
         elseif HoundUtils.Dcs.isUnit(obj) then
             table.insert(units,obj)
+            grpName = obj:getGroup():getName()
         end
 
         for _,unit in pairs(units) do
             if unit:getCoalition() ~= self.settings:getCoalition() and unit:isExist() and HOUND.setContains(HOUND.DB.Radars,unit:getTypeName()) then
                 self.contacts:setPreBriefedContact(unit)
+            end
+        end
+        if type(codeName) == "string" then
+            local site = self.contacts:getSite(grpName,true)
+            if site then
+                site:setName(codeName)
             end
         end
     end
@@ -1019,7 +1028,7 @@ do
     -- @return (Bool) True if no errors
     function HoundElint:setRadioMenuParent(parent)
         local retval = self.settings:setRadioMenuParent(parent)
-        if retval == true then
+        if retval == true and self:isRunning() then
             self:populateRadioMenu()
         end
         return retval or false
@@ -1103,7 +1112,7 @@ do
     --- Trigger building of radio menu in all sectors
     -- @local
     function HoundElint:populateRadioMenu()
-        if not self.contacts or self.contacts:countContacts() == 0 or self.settings:getCoalition() == nil then
+        if not self:isRunning() or not self.contacts or self.contacts:countContacts() == 0 or self.settings:getCoalition() == nil then
             return
         end
         local sectors = self:getSectors()
@@ -1141,7 +1150,6 @@ do
             trigger.action.outTextForCoalition(self.settings:getCoalition(),
                                            "Hound ELINT system is now Operating", 10)
         end
-        -- self:defaultEventHandler()
         env.info("Hound is now on")
         HOUND.EventHandler.publishEvent({
             id = HOUND.EVENTS.HOUND_ENABLED,
@@ -1154,7 +1162,6 @@ do
     --- Turn Hound system off
     -- @bool[opt] notify if True a text notification will be printed in 3d world
     function HoundElint:systemOff(notify)
-        -- self:defaultEventHandler(false)
         if self.elintTaskID ~= nil then
             timer.removeFunction(self.elintTaskID)
         end
@@ -1185,7 +1192,7 @@ do
     -- @param[opt] legacyExport if true function will return output as before 0.4
     -- @return table of all contact tracked for integration with external tools
     function HoundElint:getContacts(legacyExport)
-        if legacyExport then
+        if not legacyExport then
             local contacts = {
                 ewr = { contacts = {}
                     },
@@ -1279,9 +1286,6 @@ do
                 sector:updateSectorMembership(houndEvent.initiator)
             end
         end
-        if houndEvent.id == HOUND.EVENTS.SITE_CREATED or houndEvent.id == HOUND.EVENTS.SITE_CLASSIFIED then
-            self:populateRadioMenu()
-        end
         if self:isRunning() then
             for _,sector in pairs(sectors) do
                 -- if houndEvent.id == HOUND.EVENTS.RADAR_DETECTED then
@@ -1300,7 +1304,9 @@ do
                     sector:notifySiteDead(houndEvent.initiator)
                 end
             end
-
+            if houndEvent.id == HOUND.EVENTS.SITE_CREATED or houndEvent.id == HOUND.EVENTS.SITE_CLASSIFIED then
+                self:populateRadioMenu()
+            end
         end
     end
 

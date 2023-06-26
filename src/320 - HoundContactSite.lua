@@ -54,14 +54,20 @@ do
     --- Getters and Setters
     -- @section settings
 
-    --- Get contact name
+    --- Get site name
     -- @return String
     function HOUND.Contact.Site:getName()
         -- return self:getType() .. " " .. self:getId()
-        return string.format("S%03d",self:getId())
-
+        return self.name or string.format("S%03d",self:getId())
     end
-
+    --- set Site Name
+    -- @param requestedName requested name
+    function HOUND.Contact.Site:setName(requestedName)
+        if type(requestedName) == "string" or type(requestedName) == "nil" then
+            self.name = requestedName
+        end
+        
+    end
     --- Get contact type name
     -- @return String
     function HOUND.Contact.Site:getType()
