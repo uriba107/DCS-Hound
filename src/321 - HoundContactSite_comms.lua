@@ -51,7 +51,7 @@ do
                 ['dcsName'] = emitter:getDcsName(),
                 ['txt'] = emitter:getRadioItemText()
             }
-            if emitter == self.primaryEmitter then
+            if emitter == self.primaryEmitter and emitterEntry.txt then
                 emitterEntry.txt = "(*) " .. emitterEntry.txt
             end
             table.insert(items['emitters'],emitterEntry)
@@ -77,6 +77,52 @@ do
                     msg = msg .. ", bullseye " .. BePos .. ", grid ".. GridPos
                 else
                     GridPos,BePos = primary:getTextData(true,1)
+                    msg = msg .. " BE: " .. BePos .. " (grid ".. GridPos ..")"
+                end
+            end
+        end
+        return msg .. "."
+    end
+
+    --- generate Radar dead report
+    -- @param isTTS Bool. If true message will be for TTS. False will make a text message
+    -- @param sectorName string Name of primary sector if present function will only return sector data
+    -- @return string. compiled message
+    function HOUND.Contact.Site:generateDeathReport(isTTS,sectorName)
+        local msg = self:getName() ..  ", identified as " .. self:getNatoDesignation() .. " has been destroyed"
+        if sectorName then
+            msg = msg .. " in " .. sectorName
+        else
+            if self:hasPos() then
+                local GridPos,BePos
+                if isTTS then
+                    GridPos,BePos = self:getTtsData(true,1)
+                    msg = msg .. ", bullseye " .. BePos .. ", grid ".. GridPos
+                else
+                    GridPos,BePos = self:getTextData(true,1)
+                    msg = msg .. " BE: " .. BePos .. " (grid ".. GridPos ..")"
+                end
+            end
+        end
+        return msg .. "."
+    end
+
+    --- generate Radar dead report
+    -- @param isTTS Bool. If true message will be for TTS. False will make a text message
+    -- @param sectorName string Name of primary sector if present function will only return sector data
+    -- @return string. compiled message
+    function HOUND.Contact.Site:generateAsleepReport(isTTS,sectorName)
+        local msg = self:getName() ..  ", identified as " .. self:getNatoDesignation() .. " is asleep"
+        if sectorName then
+            msg = msg .. " in " .. sectorName
+        else
+            if self:hasPos() then
+                local GridPos,BePos
+                if isTTS then
+                    GridPos,BePos = self:getTtsData(true,1)
+                    msg = msg .. ", bullseye " .. BePos .. ", grid ".. GridPos
+                else
+                    GridPos,BePos = self:getTextData(true,1)
                     msg = msg .. " BE: " .. BePos .. " (grid ".. GridPos ..")"
                 end
             end

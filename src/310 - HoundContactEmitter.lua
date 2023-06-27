@@ -70,10 +70,7 @@ do
         instance.maxWeaponsRange = HoundUtils.Dcs.getSamMaxRange(DCSobject)
         instance.detectionRange = HoundUtils.Dcs.getRadarDetectionRange(DCSobject)
         instance._dataPoints = {}
-        instance._markpoints = {
-            pos = HoundUtils.Marker.create(),
-            area = HoundUtils.Marker.create()
-        }
+
         instance.detected_by = {}
         instance.state = HOUND.EVENTS.RADAR_NEW
         instance.preBriefed = false
@@ -519,14 +516,6 @@ do
     --- Marker managment
     -- @section markers
 
-    --- Remove all contact's F10 map markers
-    -- @local
-    function HOUND.Contact.Emitter:removeMarkers()
-        for _,marker in pairs(self._markpoints) do
-            marker:remove()
-        end
-    end
-
     --- calculate uncertenty Polygon from data
     -- @local
     -- @param uncertenty_data uncertenty data table
@@ -620,7 +609,8 @@ do
         local markerArgs = {
             text = self.typeName .. " " .. (self.uid%100),
             pos = self.pos.p,
-            coalition = self._platformCoalition
+            coalition = self._platformCoalition,
+            useLegacyMarker = HOUND.USE_LEGACY_MARKERS
         }
         if not self:isAccurate() and HOUND.USE_LEGACY_MARKERS then
             markerArgs.text = markerArgs.text .. " (" .. self.uncertenty_data.major .. "/" .. self.uncertenty_data.minor .. "@" .. self.uncertenty_data.az .. ")"

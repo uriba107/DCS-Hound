@@ -1300,8 +1300,8 @@ do
                 if houndEvent.id == HOUND.EVENTS.SITE_CLASSIFIED then
                     sector:notifySiteIdentified(houndEvent.initiator)
                 end
-                if houndEvent.id == HOUND.EVENTS.SITE_REMOVED then
-                    sector:notifySiteDead(houndEvent.initiator)
+                if houndEvent.id == HOUND.EVENTS.SITE_REMOVED or houndEvent.id == HOUND.EVENTS.SITE_ASLEEP then
+                    sector:notifySiteDead(houndEvent.initiator,(houndEvent.id == HOUND.EVENTS.SITE_REMOVED))
                 end
             end
             if houndEvent.id == HOUND.EVENTS.SITE_CREATED or houndEvent.id == HOUND.EVENTS.SITE_CLASSIFIED then

@@ -360,8 +360,11 @@ do
     -- update all emitters
     function HOUND.ElintWorker:UpdateMarkers()
         if self.settings:getUseMarkers() then
-            for _, contact in pairs(self.contacts) do
+            for _,contact in pairs(self.contacts) do
                 contact:updateMarker(self.settings:getMarkerType())
+            end
+            for _,site in pairs(self.sites) do
+                site:updateMarker(self.settings:getMarkerType())
             end
         end
     end

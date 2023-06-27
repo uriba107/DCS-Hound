@@ -9,8 +9,8 @@ do
     HOUND.Contact.Site = {}
     HOUND.Contact.Site = HOUND.inheritsFrom(HOUND.Contact.Base)
 
-    -- local l_math = math
-    -- local l_mist = mist
+    local l_math = math
+    local l_mist = mist
     -- local pi_2 = l_math.pi*2
     local HoundUtils = HOUND.Utils
 
@@ -142,8 +142,9 @@ do
     --- get current extimted position of primary
     -- @return DCS point - estimated position
     function HOUND.Contact.Site:getPos()
-        return self:getPrimary():getPos() or nil
+        return self.pos.p or nil
     end
+    
     --- Emitter managment
     -- @section Emitters
 
@@ -158,6 +159,7 @@ do
                 self:selectPrimaryEmitter()
                 self:updateTypeAssigned()
                 self:updateSector()
+
                 self.state = HOUND.EVENTS.SITE_UPDATED
         end
         return self.state
@@ -172,9 +174,11 @@ do
             for idx,emitter in ipairs(self.emitters) do
                 if emitter == HoundEmitter then
                     table.remove(self.emitters,idx)
-                    self:selectPrimaryEmitter()
+                    if #self.emitters > 0 then
+                        self:selectPrimaryEmitter()
+                    end
                     self.state = HOUND.EVENTS.SITE_UPDATED
-                    break
+                    break                        
                 end
             end
         end
@@ -219,8 +223,8 @@ do
     -- @return (Bool) True if site type changed
     function HOUND.Contact.Site:updateTypeAssigned()
         local type = self.primaryEmitter.typeAssigned or {}
-        if HOUND.Length(type) ~= 1 then
-            for emitter in self.emitters do
+        if HOUND.Length(type) > 1 then
+            for _,emitter in ipairs(self.emitters) do
                 type = HOUND.setIntersection(type,emitter.typeAssigned)
             end
         end
@@ -234,6 +238,12 @@ do
         end
     end
 
+    --- update stored site pos
+    function HOUND.Contact.Site:updatePos()
+        if self.primaryEmitter:hasPos() then
+            self.pos.p = l_mist.utils.deepCopy(self.primaryEmitter:getPos())
+        end
+    end
     --- Update sector data
     function HOUND.Contact.Site:updateSector()
         local primary = self:getPrimary()
@@ -243,12 +253,106 @@ do
     end
 
     function HOUND.Contact.Site:processData()
-        self:updateSector()
+        self:update()
     end
 
     function HOUND.Contact.Site:update()
-        self:selectPrimaryEmitter()
-        self:updateTypeAssigned()
-        self:updateSector()
+        -- update stats
+        if #self.emitters > 0 then
+            self:selectPrimaryEmitter()
+            self:updateTypeAssigned()
+            self:updatePos()
+            self:updateSector()
+            local isPB = false
+            for _,emitter in ipairs(self.emitters) do
+                self.last_seen = l_math.max(self.last_seen,emitter.last_seen)
+                self.maxWeaponsRange = l_math.max(self.maxWeaponsRange,emitter:getMaxWeaponsRange())
+                self.detectionRange = l_math.max(self.detectionRange,emitter:getRadarDetectionRange())
+                isPB = isPB or emitter:isAccurate()
+            end
+            self:setPreBriefed(isPB)
+        end
+        if self:isTimedout() then
+            self.state = HOUND.EVENTS.SITE_ASLEEP
+            self:queueEvent(self.state)
+        end
+    end
+
+
+    --- Marker managment
+    -- @section markers
+
+    --- Draw marker Polygon
+    -- @local
+    -- @int numPoints number of points to draw (only 1,4,8 and 16 are valid)
+    function HOUND.Contact.Site:drawAreaMarker(numPoints)
+        if numPoints == nil then numPoints = 1 end
+        if numPoints ~= 1 and numPoints ~= 4 and numPoints ~=8 and numPoints ~= 16 then
+            HOUND.Logger.error("DCS limitation, only 1,4,8 or 16 points are allowed")
+            numPoints = 1
+            end
+
+        -- setup the marker
+        local alpha = HoundUtils.Mapping.linear(l_math.floor(HoundUtils.absTimeDelta(self.last_seen)),0,HOUND.CONTACT_TIMEOUT,0.5,0.1,true)
+        local fillColor = {0,0,0,0}
+        local lineColor = {0,255,0,alpha}
+        local lineType = 4
+        if (HoundUtils.absTimeDelta(self.last_seen) < 15) then
+            lineType = 3
+        end
+        if self._platformCoalition == coalition.side.BLUE then
+            fillColor[1] = 1
+            lineColor[1] = 1
+        end
+
+        if self._platformCoalition == coalition.side.RED then
+            fillColor[3] = 1
+            lineColor[3] = 1
+        end
+
+        local markArgs = {
+            fillColor = fillColor,
+            lineColor = lineColor,
+            coalition = self._platformCoalition,
+            lineType = lineType
+        }
+        if numPoints == 1 then
+            markArgs.pos = {
+                p = self:getPos(),
+                r = self.maxWeaponsRange
+            }
+        else
+            markArgs.pos = HOUND.Contact.Emitter.calculatePoly(self.uncertenty_data,numPoints,self.pos.p)
+        end
+        return self._markpoints.area:update(markArgs)
+    end
+
+    --- Update marker positions
+    -- @param MarkerType type of marker to use
+    function HOUND.Contact.Site:updateMarker(MarkerType)
+        HOUND.Logger.debug(self:getName() .. " pos type: " .. type(self:getPos()))
+        HOUND.Logger.debug(mist.utils.tableShow({not self:getPos(),type(self.maxWeaponsRange),not self:isRecent()}))
+
+        if not self:getPos() or type(self.maxWeaponsRange) ~= "number" or not self:isRecent() then return end
+        -- if self:isAccurate() and self._markpoints.pos:isDrawn() then return end
+        local markerArgs = {
+            text = self:getName() .. " (" .. self:getNatoDesignation().. ")",
+            pos = self:getPos(),
+            coalition = self._platformCoalition
+        }
+        HOUND.Logger.debug(self:getName() .. ": " .. mist.utils.tableShow(markerArgs))
+        self._markpoints.pos:update(markerArgs)
+
+        if MarkerType == HOUND.MARKER.NONE then
+            if self._markpoints.area:isDrawn() then
+                self._markpoints.area:remove()
+            end
+            return
+        end
+
+        if MarkerType > HOUND.MARKER.NONE then
+            self:drawAreaMarker()
+        end
+
     end
 end

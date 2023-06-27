@@ -819,9 +819,8 @@ do
             local fontSize = args.fontSize or 16
             -- if type(fillColor) ~= "table" or type(lineColor) ~= "table" or type(text) ~= "string" then return false end
             self.id = HOUND.Utils.Marker.getId()
-
             if HOUND.Utils.Dcs.isPoint(pos) then
-                if HOUND.USE_LEGACY_MARKERS then
+                if args.useLegacyMarker then
                     self.type = HOUND.Utils.Marker.Type.POINT
                     trigger.action.markToCoalition(self.id, text, pos, coalition,true)
                     return true

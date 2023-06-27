@@ -244,8 +244,8 @@ do
     -- @param a Table
     -- @param b Table
     -- @return Table
-    function HOUND.setIntersection (a,b)
-        local res = Set.new{}
+    function HOUND.setIntersection(a,b)
+        local res = {}
         for k in pairs(a) do
           res[k] = b[k]
         end

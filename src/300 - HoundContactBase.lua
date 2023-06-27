@@ -55,7 +55,10 @@ do
         instance.state = nil
         instance.preBriefed = false
         instance.events = {}
-
+        instance._markpoints = {
+            pos = HoundUtils.Marker.create(),
+            area = HoundUtils.Marker.create()
+        }
         return instance
     end
 
@@ -268,5 +271,16 @@ do
     -- @return (Bool) True if contact thretens sector
     function HOUND.Contact.Base:isThreatsSector(sectorName)
         return self.threatSectors[sectorName] or false
+    end
+
+    --- Marker managment
+    -- @section markers
+
+    --- Remove all contact's F10 map markers
+    -- @local
+    function HOUND.Contact.Base:removeMarkers()
+        for _,marker in pairs(self._markpoints) do
+            marker:remove()
+        end
     end
 end

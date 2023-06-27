@@ -786,7 +786,8 @@ do
     end
     --- Notify a site was destroyed
     -- @param site @{HOUND.Contact.Site} instace
-    function HOUND.Sector:notifySiteDead(site)
+    -- @param isDead True is site is removed, false if just asleep
+    function HOUND.Sector:notifySiteDead(site,isDead)
         if not self:isNotifiying() then return end
 
         local controller = self.comms.controller
@@ -804,13 +805,16 @@ do
 
         local msg = {coalition = self._hSettings:getCoalition(), priority = 3 , gid=enrolledGid}
         msg.contactId = site:getId()
-
-        -- if (controller and controller:getSettings("enableText")) or (notifier and notifier:getSettings("enableText"))  then
-            msg.txt = self.callsign .. " Reports " .. site:generateDeadReport(false,sitePrimarySector)
-        -- end
-        -- if (controller and controller:getSettings("enableTTS")) or (notifier and notifier:getSettings("enableTTS")) then
-            msg.tts = announce .. site:generateDeadReport(true,sitePrimarySector)
-        -- end
+        local body = {}
+        if isDead then
+            body.txt = site:generateDeadReport(false,sitePrimarySector)
+            body.tts = site:generateDeadReport(true,sitePrimarySector)
+        else
+            body.txt = site:generateAsleepReport(false,sitePrimarySector)
+            body.tts = site:generateAsleepReport(true,sitePrimarySector)
+        end
+        msg.txt = self.callsign .. " Reports " .. body.txt
+        msg.tts = announce .. body.tts
         if controller and controller:isEnabled() and controller:getSettings("alerts") then
             controller:addMessageObj(msg)
         end
