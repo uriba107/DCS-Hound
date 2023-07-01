@@ -33,6 +33,7 @@ do
         instance.preferences = {
             useMarkers = true,
             markerType = HOUND.MARKER.CIRCLE,
+            markSites = true,
             hardcore = false,
             detectDeadRadars = true,
             NatoBrevity = false,
@@ -133,6 +134,25 @@ do
         instance.setUseMarkers = function(self,value)
             if type(value) == "boolean" then
                 self.preferences.useMarkers = value
+                return true
+            end
+            return false
+        end
+        --- Mark sites getter
+        -- @within HOUND.Config.instance
+        -- @param self config instance
+        -- @return (Bool) True if sites should be marked
+        instance.getMarkSites = function (self)
+            return self.preferences.markSites
+        end
+        --- Mark sites setter
+        -- @within HOUND.Config.instance
+        -- @param self config instance
+        -- @bool value set this value
+        -- @return (Bool) True if change was made
+        instance.setMarkSites = function(self,value)
+            if type(value) == "boolean" then
+                self.preferences.markSites = value
                 return true
             end
             return false

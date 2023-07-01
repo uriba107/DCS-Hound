@@ -2,6 +2,7 @@
 -- @module HOUND.Contact.Site
 do
     -- local l_math = math
+    local l_mist = mist
     local HoundUtils = HOUND.Utils
 
     --- return Information used in Text messages primary emitter
@@ -47,14 +48,16 @@ do
             ['emitters'] = {}
         }
         for _,emitter in ipairs(self.emitters) do
-            local emitterEntry = {
-                ['dcsName'] = emitter:getDcsName(),
-                ['txt'] = emitter:getRadioItemText()
-            }
-            if emitter == self.primaryEmitter and emitterEntry.txt then
-                emitterEntry.txt = "(*) " .. emitterEntry.txt
+            if emitter:hasPos() then
+                local emitterEntry = {
+                    ['dcsName'] = emitter:getDcsName(),
+                    ['txt'] = emitter:getRadioItemText()
+                }
+                if emitter == self.primaryEmitter then
+                    emitterEntry.txt = "(*) " .. emitterEntry.txt
+                end
+                table.insert(items['emitters'],emitterEntry)
             end
-            table.insert(items['emitters'],emitterEntry)
         end
         return items
     end
@@ -185,5 +188,40 @@ do
         end
         str = str .. "."
         return str
+    end
+
+    --- Generate Intel brief Message (for export)
+    -- @return string - compiled multi-line message for site
+    function HOUND.Contact.Site:generateIntelBrief()
+        -- SiteId,SiteType,(TrackId,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accuracy,DCS type,DCS Unit),DCS Group
+        if #self.emitters == 0 then return end
+        local items = {}
+
+        for _,emitter in ipairs(self.emitters) do
+            local body = emitter:generateIntelBrief()
+            if body ~= "" then
+                local entry = table.concat({self:getName(),self:getNatoDesignation(),body,self.DCSobjectName},",")
+                table.insert(items,entry)
+            end
+        end
+        return items
+    end
+
+    --- Generate contact export object
+    -- @return exported object
+    function HOUND.Contact.Site:export()
+        local report = {
+            name = self:getName(),
+            DCSobjectName = self:getDcsName(),
+            gid = self.gid % 100,
+            Type = self:getNatoDesignation(),
+            last_seen = self.last_seen,
+            emitters = {}
+        }
+        if #self.emitters == 0 then return report end
+        for _,emitter in ipairs(self.emitters) do
+            table.insert(report.emitters,emitter:export())
+        end
+        return l_mist.utils.deepCopy(report)
     end
 end

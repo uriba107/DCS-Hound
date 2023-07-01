@@ -303,7 +303,7 @@ do
         local groupName = emitter:getGroupName()
         if self.sites[groupName] ~= nil then return groupName end
         self.sites[groupName] = HOUND.Contact.Site:New(emitter, self:getCoalition(), self:getNewTrackId())
-        self.sites[groupName]:queueEvent(HOUND.EVENTS.SITE_CREATED)
+        self.sites[groupName]:queueEvent(HOUND.EVENTS.SITE_NEW)
         return groupName
     end
 
@@ -363,8 +363,10 @@ do
             for _,contact in pairs(self.contacts) do
                 contact:updateMarker(self.settings:getMarkerType())
             end
+        end
+        if self.settings:getMarkSites() then
             for _,site in pairs(self.sites) do
-                site:updateMarker(self.settings:getMarkerType())
+                site:updateMarker(HOUND.MARKER.NONE)
             end
         end
     end
@@ -433,7 +435,12 @@ do
             if contact ~= nil then
                 local contactState = contact:processData()
                 if contactState == HOUND.EVENTS.RADAR_DETECTED then
-                    if self.settings:getUseMarkers() then contact:updateMarker(self.settings:getMarkerType()) end
+                    if self.settings:getUseMarkers() then
+                        contact:updateMarker(self.settings:getMarkerType())
+                    end
+                    -- if self.settings:getMarkSites() then
+                    --     self:getSite(contact,true):updateMarker(HOUND.MARKER.NONE)
+                    -- end
                 end
 
                 if contact:isTimedout() then

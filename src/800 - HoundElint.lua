@@ -161,7 +161,7 @@ do
 
     --- set/create a pre Briefed contacts
     -- @param DCS_Object_Name name of DCS Unit or Group to add
-    -- @param [opt] codeName Optional name for site created 
+    -- @param[opt] codeName Optional name for site created
     function HoundElint:preBriefedContact(DCS_Object_Name,codeName)
         if type(DCS_Object_Name) ~= "string" then return end
         local units = {}
@@ -909,6 +909,7 @@ do
     -- @section HoundElint
 
     --- enable Markers for Hound Instance (default)
+    -- @param[opt] markerType change marker type to use
     -- @return (Bool) True if changed
     function HoundElint:enableMarkers(markerType)
         if markerType and HOUND.setContainsValue(HOUND.MARKER,markerType) then
@@ -922,6 +923,19 @@ do
 
     function HoundElint:disableMarkers()
         return self.settings:setUseMarkers(false)
+    end
+
+    --- enable Site Markers for Hound Instance (default)
+    -- @return (Bool) True if changed
+    function HoundElint:enableSiteMarkers()
+        return self.settings:setMarkSites(true)
+    end
+
+    --- disable Site Markers for Hound Instance
+    -- @return (Bool) True if changed
+
+    function HoundElint:disableSiteMarkers()
+        return self.settings:setMarkSites(false)
     end
 
     --- Set marker type for Hound instance
@@ -1115,11 +1129,13 @@ do
         if not self:isRunning() or not self.contacts or self.contacts:countContacts() == 0 or self.settings:getCoalition() == nil then
             return
         end
+        local menuTimer = StopWatch:Start("Draw Menus " .. timer.getAbsTime())
         local sectors = self:getSectors()
         table.sort(sectors,HoundUtils.Sort.sectorsByPriorityLowLast)
         for _,sector in pairs(sectors) do
             sector:populateRadioMenu()
         end
+        menuTimer:Stop()
     end
 
     --- Update the system state (on/off)
@@ -1189,38 +1205,46 @@ do
     -- @section export
 
     --- get an exported list of all contacts tracked by the instance
-    -- @param[opt] legacyExport if true function will return output as before 0.4
     -- @return table of all contact tracked for integration with external tools
-    function HoundElint:getContacts(legacyExport)
-        if not legacyExport then
-            local contacts = {
-                ewr = { contacts = {}
-                    },
-                sam = {
-                        contacts = {}
-                    }
-                }
-            for _,emitter in pairs(self.contacts:listAllContacts()) do
-                local contact = emitter:export()
-                if contact ~= nil then
-                    if emitter.isEWR then
-                        table.insert(contacts.ewr.contacts,contact)
-                    else
-                        table.insert(contacts.sam.contacts,contact)
-                    end
+    function HoundElint:getContacts()
+        local contacts = {
+            ewr = { contacts = {} },
+            sam = { contacts = {} }
+            }
+        for _,emitter in pairs(self.contacts:listAllContacts()) do
+            local contact = emitter:export()
+            if contact ~= nil then
+                if emitter.isEWR then
+                    table.insert(contacts.ewr.contacts,contact)
+                else
+                    table.insert(contacts.sam.contacts,contact)
                 end
             end
-            contacts.ewr.count = #contacts.ewr.contacts or 0
-            contacts.sam.count = #contacts.sam.contacts or 0
-            return contacts
         end
-        local contacts = {}
-        -- for _,site in pairs(self.contacts:listAllSites()) do
-        --     local contact = site:export()
-        --     if contact ~= nil then
-        --
-        --     end
-        -- end
+        contacts.ewr.count = #contacts.ewr.contacts or 0
+        contacts.sam.count = #contacts.sam.contacts or 0
+        return contacts
+    end
+
+    --- get an exported list of all sites tracked by the instance
+    -- @return table of all contact tracked for integration with external tools
+    function HoundElint:getSites()
+        local contacts = {
+            ewr = { sites = {} },
+            sam = { sites = {} }
+        }
+        for _,site in pairs(self.contacts:listAllSites()) do
+            local contact = site:export()
+            if contact ~= nil then
+                if site.isEWR then
+                    table.insert(contacts.ewr.sites,contact)
+                else
+                    table.insert(contacts.sam.sites,contact)
+                end
+            end
+        end
+        contacts.ewr.count = #contacts.ewr.sites or 0
+        contacts.sam.count = #contacts.sam.sites or 0
         return contacts
     end
 
@@ -1238,13 +1262,15 @@ do
         end
         local currentGameTime = HoundUtils.Text.getTime()
         local csvFile = io.open(lfs.writedir() .. filename, "w+")
-        csvFile:write("TrackId,NatoDesignation,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accuracy,lastSeen,DCStype,DCSunit,DCSgroup,ReportGenerated\n")
+        csvFile:write("SiteId,SiteNatoDesignation,TrackId,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accuracy,lastSeen,DCStype,DCSunit,DCSgroup,ReportGenerated\n")
         csvFile:flush()
-        for _,emitter in pairs(self.contacts:listAllContactsByRange()) do
-            local entry = emitter:generateIntelBrief()
-            if entry ~= "" then
-                csvFile:write(entry .. "," .. currentGameTime .."\n")
-                csvFile:flush()
+        for _,site in pairs(self.contacts:listAllSitesByRange()) do
+            local siteItems = site:generateIntelBrief()
+            if #siteItems > 0 then
+                for _,item in ipairs(siteItems) do
+                    csvFile:write(item .. "," .. currentGameTime .."\n")
+                    csvFile:flush()
+                end
             end
         end
         csvFile:close()
@@ -1266,7 +1292,7 @@ do
 
     --- builtin prototype for onHoundEvent function
     -- this function does NOTHING out of the box. put you own code here if needed
-    -- @param HoundEven incoming event
+    -- @param houndEvent incoming event
     function HoundElint:onHoundEvent(houndEvent)
         return nil
     end
@@ -1306,6 +1332,9 @@ do
             end
             if houndEvent.id == HOUND.EVENTS.SITE_CREATED or houndEvent.id == HOUND.EVENTS.SITE_CLASSIFIED then
                 self:populateRadioMenu()
+                if self.settings:getMarkSites() then
+                    houndEvent.initiator:updateMarker(HOUND.MARKER.NONE)
+                end
             end
         end
     end

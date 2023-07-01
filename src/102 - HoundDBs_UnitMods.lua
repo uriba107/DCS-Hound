@@ -504,7 +504,7 @@ do
             },
             ['Primary'] = true
         }
-    --- Iron Dome
+    -- Iron Dome Mod
     HOUND.DB.Radars['ELM2048_MMR'] = {
         ['Name'] = "Iron Dome",
         ['Assigned'] = {"Iron Dome"},

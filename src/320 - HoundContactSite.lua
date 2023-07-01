@@ -24,10 +24,10 @@ do
             HOUND.Logger.warn("failed to create HOUND.Contact.Site instance")
             return
         end
-        local instance = self:superClass():New(HoundContact:getDCSObject(),HoundCoalition)
+        local instance = self:superClass():New(HoundContact:getDcsObject(),HoundCoalition)
         setmetatable(instance, HOUND.Contact.Site)
         self.__index = self
-        instance.DCSobject = HoundContact:getDCSObject():getGroup()
+        instance.DCSobject = HoundContact:getDcsObject():getGroup()
         instance.gid = SiteId or instance.DCSobject:getId()
         instance.DCSgroupName = instance.DCSobject:getName()
         instance.DCSobjectName = instance.DCSobject:getName()
@@ -58,7 +58,12 @@ do
     -- @return String
     function HOUND.Contact.Site:getName()
         -- return self:getType() .. " " .. self:getId()
-        return self.name or string.format("S%03d",self:getId())
+        local prefix = 'T'
+        if self.isEWR then
+            prefix = 'S'
+        end
+
+        return self.name or string.format("%s%03d",prefix,self:getId())
     end
     --- set Site Name
     -- @param requestedName requested name
@@ -66,7 +71,6 @@ do
         if type(requestedName) == "string" or type(requestedName) == "nil" then
             self.name = requestedName
         end
-        
     end
     --- Get contact type name
     -- @return String
@@ -77,7 +81,7 @@ do
     --- Get Site GID
     -- @return Number
     function HOUND.Contact.Site:getId()
-        return self.gid%100
+        return self.gid%1000
     end
 
     --- Get Contact Group Name
@@ -94,7 +98,7 @@ do
 
     --- Get the underlying DCS Object
     -- @return DCS Group or DCS staticObject
-    function HOUND.Contact.Site:getDCSObject()
+    function HOUND.Contact.Site:getDcsObject()
         return self.group or self.DCSgroupName
     end
     --- Get last seen in seconds
@@ -144,7 +148,7 @@ do
     function HOUND.Contact.Site:getPos()
         return self.pos.p or nil
     end
-    
+
     --- Emitter managment
     -- @section Emitters
 
@@ -178,7 +182,7 @@ do
                         self:selectPrimaryEmitter()
                     end
                     self.state = HOUND.EVENTS.SITE_UPDATED
-                    break                        
+                    break
                 end
             end
         end
@@ -241,7 +245,11 @@ do
     --- update stored site pos
     function HOUND.Contact.Site:updatePos()
         if self.primaryEmitter:hasPos() then
+            local noPos = (self.pos.p == nil)
             self.pos.p = l_mist.utils.deepCopy(self.primaryEmitter:getPos())
+            if noPos and self.pos.p ~= nil then
+                self:queueEvent(HOUND.EVENTS.SITE_CREATED)
+            end
         end
     end
     --- Update sector data
@@ -295,7 +303,7 @@ do
         -- setup the marker
         local alpha = HoundUtils.Mapping.linear(l_math.floor(HoundUtils.absTimeDelta(self.last_seen)),0,HOUND.CONTACT_TIMEOUT,0.5,0.1,true)
         local fillColor = {0,0,0,0}
-        local lineColor = {0,255,0,alpha}
+        local lineColor = {0,0.2,0,alpha}
         local lineType = 4
         if (HoundUtils.absTimeDelta(self.last_seen) < 15) then
             lineType = 3
@@ -330,9 +338,6 @@ do
     --- Update marker positions
     -- @param MarkerType type of marker to use
     function HOUND.Contact.Site:updateMarker(MarkerType)
-        HOUND.Logger.debug(self:getName() .. " pos type: " .. type(self:getPos()))
-        HOUND.Logger.debug(mist.utils.tableShow({not self:getPos(),type(self.maxWeaponsRange),not self:isRecent()}))
-
         if not self:getPos() or type(self.maxWeaponsRange) ~= "number" or not self:isRecent() then return end
         -- if self:isAccurate() and self._markpoints.pos:isDrawn() then return end
         local markerArgs = {
@@ -340,7 +345,6 @@ do
             pos = self:getPos(),
             coalition = self._platformCoalition
         }
-        HOUND.Logger.debug(self:getName() .. ": " .. mist.utils.tableShow(markerArgs))
         self._markpoints.pos:update(markerArgs)
 
         if MarkerType == HOUND.MARKER.NONE then

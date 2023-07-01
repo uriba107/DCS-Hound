@@ -233,16 +233,16 @@ do
     --- Generate Intel brief Message (for export)
     -- @return string - compiled message
     function HOUND.Contact.Emitter:generateIntelBrief()
-        -- TrackId,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accuracy,DCS type,DCS Unit,DCS Group
+        -- TrackId,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accuracy,DCS type,DCS Unit
         local msg = ""
         if self:hasPos() then
             local GridPos,BePos = self:getTextData(true,HOUND.MGRS_PRECISION)
             msg = {
-                self:getTrackId(),self:getNatoDesignation(),self:getType(),
+                self:getTrackId(),self:getType(),
                 HoundUtils.TTS.getVerbalContactAge(self.last_seen,true,true),
                 BePos,string.format("%02.6f",self.pos.LL.lat),string.format("%03.6f",self.pos.LL.lon), GridPos,
                 HoundUtils.TTS.getVerbalConfidenceLevel( self.uncertenty_data.r ),
-                HoundUtils.Text.getTime(self.last_seen),self.DCStypeName,self.DCSobjectName,self.DCSgroupName
+                HoundUtils.Text.getTime(self.last_seen),self.DCStypeName,self.DCSobjectName
             }
             msg = table.concat(msg,",")
         end

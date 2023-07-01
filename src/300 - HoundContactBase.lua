@@ -81,7 +81,7 @@ do
 
     --- Get the underlying DCS Object
     -- @return DCS Unit or DCS staticObject
-    function HOUND.Contact.Base:getDCSObject()
+    function HOUND.Contact.Base:getDcsObject()
         return self.DCSobject or self.DCSobjectName
     end
     --- Get last seen in seconds

@@ -348,7 +348,6 @@ do
             end
         end
 
-        local DCS_Unit = Unit.getByName(player.unitName)
         if not DCS_Unit then return string.upper(callsign:match( "^%s*(.-)%s*$" )) end
 
         local playerName = DCS_Unit:getPlayerName()
@@ -969,7 +968,7 @@ do
         if not HOUND.Utils.TTS.isAvailable() then return end
         if msg == nil then return end
         if coalitionID == nil then return end
-        
+
         if args.freq == nil then return end
         args.volume = args.volume or "1.0"
         args.name = args.name or "Hound"

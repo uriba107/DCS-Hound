@@ -28,7 +28,7 @@ do
     -- @field CONTACT_TIMEOUT Timout for emitter to be silent before being dropped from contacts
     -- @field MGRS_PRECISION Number of digits in MGRS conversion
     -- @field EXTENDED_INFO Hound will add more in depth uncertenty info to controller messages (default is true)
-    -- @field FORCE_MANAGE_MARKERS Force Hound to use internal counter for markIds (default is false).
+    -- @field FORCE_MANAGE_MARKERS Force Hound to use internal counter for markIds (default is true).
     -- @field USE_LEGACY_MARKERS Force Hound to use normal markers for radar positions (default is true)
     -- @field TTS_ENGINE Hound will use the table to determin TTS engine priority
     -- @field MENU_PAGE_LENGTH Number of Items Hound will put in a menu before starting a new menu page
@@ -43,7 +43,7 @@ do
         MGRS_PRECISION = 5,
         EXTENDED_INFO = true,
         MIST_VERSION = tonumber(table.concat({mist.majorVersion,mist.minorVersion},".")),
-        FORCE_MANAGE_MARKERS = false,
+        FORCE_MANAGE_MARKERS = true,
         USE_LEGACY_MARKERS = true,
         TTS_ENGINE = {'GRPC','STTS'},
         MENU_PAGE_LENGTH = 9

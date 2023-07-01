@@ -266,9 +266,12 @@ However if a PB concat moves more then 100m from it's original position the spec
 
 you can mark Unit or Group, only valid Hound Radars will be added (it will not add units it will not normally track). if a group was passed and in contains more then one valid radar, all of the radars will be added
 
+In addition, you can provide an optional "code name" for a PB site, which will be it's name in reports and in comms menu.
+
 ```lua
     HoundInstance:preBriefedContact('UNIT_NAME')
     HoundInstance:preBriefedContact('GROUP_NAME')
+    HoundInstance:preBriefedContact('GROUP2_NAME',"ANTELOPE")
 
 ```
 ---
@@ -277,7 +280,7 @@ you can mark Unit or Group, only valid Hound Radars will be added (it will not a
 ## Per-instance Settings
 These are settings that are configurable per Hound instance.
 ### Map markers
-Hound uses Map markers to indicate the estimated position of the radar tracket. It's a product of the system, and only contains data user can get from the system in other ways (equvilant to making marks on a paper map).
+Hound uses Map markers to indicate the estimated position of the tracked radar. It's a product of the system, and only contains data user can get from the system in other ways (equvilant to making marks on a paper map).
 Map markers are enabled by default. In addition, if radar went offline, the marker fill will fade slowly over time until it reaches a minimum value on contact timeout (thee time in which all past contact datapoints are deleted).
 
 However, some mission designers may want to disable the markers. 
@@ -293,6 +296,10 @@ The type of marker is set per Hound instance.
 ```lua
     HoundInstance:setMarkerType(HOUND.MARKER.POLYGON)
 ```
+You can save a line and change marker type while enabling the markers
+```lua
+    HoundInstance:enableMarkers(HOUND.MARKER.POLYGON)
+```
 
 the available marker types are:
 |  HOUND.MARKER | Description |
@@ -304,6 +311,15 @@ the available marker types are:
 | POLYGON | ellipse will be drawn as a 16 sides polygon |
 
 `Note: More points causes higher CPU usage. CIRCLE is default`
+
+In addition to the radar markers there is an additional simpler site marker. The site marker only adds the site designation and current SAM classification.
+it is used in conjunction with the Map markers to help locate the radar you want in the menu system.
+The site markers are enabled by default and are disabled seperatly from the normal map markers.
+
+```lua
+    HoundInstance:disableSiteMarkers()
+    HoundInstance:enableSiteMarkers()
+```
 
 #### Living with other marker spawning scripts
 Hound does it best to play nice with other Marker generating scripts.
@@ -373,8 +389,10 @@ Hound supports 3 types of callsignes in this order
 
 ```lua
     -- Use callsign "Tulip" to all flights set to Uzi
+    -- '*' is a reserverd case. every formation with '*' callsign used will be group name. useful if you plan to have multiple overrides and limited number of DCS callsignes
     local callsignOverride = {
-        Uzi = "Tulip"
+        Uzi = "Tulip",
+        Enfield = "*"
     }
     HoundInstance:setCallsignOverride(callsignOverride)
 ```
@@ -806,12 +824,12 @@ Introduced with Hound 0.2 you now have Hound event handling. This for example al
 | RADAR_DESTROYED  | 12 |
 | RADAR_ALIVE  | 13 |
 | RADAR_ASLEEP  | 14 |
-| SITE_NEW  | 15 (RESERVED)|
-| SITE_CREATED  | 16 (RESERVED)|
-| SITE_UPDATED  | 17 (RESERVED)|
-| SITE_REMOVED  | 18 (RESERVED)|
-| SITE_ALIVE  | 19 (RESERVED) |
-| SITE_ASLEEP |  20 (RESERVED) |
+| SITE_NEW  | 15 |
+| SITE_CREATED  | 16 |
+| SITE_UPDATED  | 17 |
+| SITE_REMOVED  | 18 |
+| SITE_ALIVE  | 19  |
+| SITE_ASLEEP |  20  |
 
 Event structure is as follows
 ```lua
@@ -871,24 +889,37 @@ HoundInstance:setTimerInterval("display",180)
 ## Exports
 Current implementation suports two types of export. LUA and CSV.
 ### LUA Export
+#### Site export
 ```lua
-HoudnInstace:getContacts()
+HoudnInstace:getSites()
 ```
 Calling this function will return a LUA table
 ```lua
  {
     ewr = { 
             count = 0,
-            contacts = {}
+            sites = {}
           },
     sam = {
             count = 0,
-            contacts = {}
+            sites = {}
           }
 }
 ```
-Each contact will be added to the apropriate category and count will be updated to match number of contacts in each categoty.
-data structure of each record will follow this pattern.
+
+each site entry is a lua table
+```lua
+{
+    name = <String (Hound Site Name)>,
+    DCSobjectName = MString (Dcs Group Name)>,
+    gid = <int (3 digits)> ,
+    Type = <String>,
+    last_seen = <float (time last spotted by platform in seconds, timer.getAbsTime)>,
+    emitters = { <Table (emitter entries, see below)}
+}
+```
+
+Each emitter entry will follow the following struct.
 ```lua
 {
     typeName = <String ("straight flush","P-19")> 
@@ -912,6 +943,28 @@ data structure of each record will follow this pattern.
     end
 }
 ```
+
+#### Contacts export (legacy)
+This function will dump a table only containing contacts with no actual grouping 
+```lua
+HoudnInstace:getContacts()
+```
+Calling this function will return a LUA table
+```lua
+ {
+    ewr = { 
+            count = 0,
+            contacts = {}
+          },
+    sam = {
+            count = 0,
+            contacts = {}
+          }
+}
+```
+Each contact will be added to the apropriate category and count will be updated to match number of contacts in each categoty.
+entry structure will look the same as emitter entry of SiteExport
+
 
 ### CSV export
 ```lua
