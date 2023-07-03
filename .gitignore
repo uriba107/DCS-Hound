@@ -6,3 +6,4 @@ logo
 not_working
 test
 src/.ignore
+*.DS_Store

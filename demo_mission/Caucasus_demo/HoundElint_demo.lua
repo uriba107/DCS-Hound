@@ -12,11 +12,11 @@ do
     Elint_blue:preBriefedContact('PB-test-1')
     Elint_blue:systemOn()
 
-    Elint_blue:addPlatform("ELINT_C17")
-    Elint_blue:addPlatform("ELINT_C130")
-    -- Elint_blue:addPlatform("Kokotse_Elint")
-    -- Elint_blue:addPlatform("Khvamli_Elint")
-    -- Elint_blue:addPlatform("Migariya_Elint")
+    -- Elint_blue:addPlatform("ELINT_C17")
+    -- Elint_blue:addPlatform("ELINT_C130")
+    Elint_blue:addPlatform("Kokotse_Elint")
+    Elint_blue:addPlatform("Khvamli_Elint")
+    Elint_blue:addPlatform("Migariya_Elint")
     -- Elint_blue:addPlatform("Cow")
 
     tts_args = {
@@ -67,7 +67,7 @@ do
     end
 
     function testing.getContacts(hound)
-        env.info(mist.utils.tableShow(hound:getContacts()))
+        env.info(mist.utils.tableShow(hound:getSites()))
         hound:dumpIntelBrief()
     end
 
@@ -205,16 +205,7 @@ do
     -- missionCommands.addCommand("Add transmitter",testing.Menu,testing.addTransmitter,{houndCommsInstance=Elint_blue.controller,unit_name="Migariya_Elint"})
     -- missionCommands.addCommand("Destroy transmitter",testing.Menu,Unit.destroy,	Unit.getByName("Migariya_Elint"))
     -- missionCommands.addCommand("Remove transmitter",testing.Menu,testing.removeTransmitter,Elint_blue.controller)
-    -- missionCommands.addCommand("Get Contacts",testing.Menu,testing.getContacts,Elint_blue)
-    -- missionCommands.addCommand("Add test Marker",testing.Menu,testing.AddMarker)
-    -- missionCommands.addCommand("Toggle marker Counter",testing.Menu,testing.toggleMarkers)
-    -- missionCommands.addCommand("unit data",testing.Menu,testing.GrpData,'Elint')
-    -- missionCommands.addCommand("test gRPC",testing.Menu,testing.GRPCtts,'testing 1,2,3...')
-    -- missionCommands.addCommand("atis volume down",testing.Menu,testing.decreaseAtisVolume,Elint_blue)
-    -- missionCommands.addCommand("atis volume up",testing.Menu,testing.increaseAtisVolume,Elint_blue)
-    -- missionCommands.addCommand("unit data",testing.Menu,testing.GrpData,'Elint')
-    -- missionCommands.addCommand("unit data",testing.Menu,testing.UnitDrawArgs,'EMPTY_VIPER')
-
+    missionCommands.addCommand("Get Contacts",testing.Menu,testing.getContacts,Elint_blue)
 
 end
 

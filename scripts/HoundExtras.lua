@@ -286,7 +286,7 @@ function HOUND.Contact.Emitter.calculatePos(estimatedPositions,converge)
         local subList = estimatedPositions
         local subsetPos = pos
         while (HOUND.Length(subList) * HOUND.ELLIPSE_PERCENTILE) > 5 do
-            local NewsubList = HOUND.Contact.Emitter.getDeltaSubsetPercent(subList,subsetPos,HOUND.ELLIPSE_PERCENTILE)
+            local NewsubList = HOUND.Utils.Cluster.getDeltaSubsetPercent(subList,subsetPos,HOUND.ELLIPSE_PERCENTILE)
             subsetPos = l_mist.getAvgPoint(NewsubList)
 
             pos.x = pos.x + (subsetPos.x )

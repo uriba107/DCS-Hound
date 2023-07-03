@@ -390,13 +390,7 @@ do
             local radarPos = radar:getPosition().p
             radarPos.y = radarPos.y + radar:getDesc()["box"]["max"]["y"] -- use vehicle bounting box for height
             local _,isRadarTracking = radar:getRadar()
-            -- if HOUND.DEBUG then
-            --     if HoundUtils.Dcs.isUnit(isRadarTracking) then
-            --         HOUND.Logger.debug(RadarName .. " is tracking " .. isRadarTracking:getName())
-            --     else
-            --         HOUND.Logger.debug(RadarName .. " is not tracking anyone ")
-            --     end
-            -- end
+
             isRadarTracking = HoundUtils.Dcs.isUnit(isRadarTracking)
 
             for _,platform in ipairs(self.platforms) do
@@ -404,7 +398,6 @@ do
 
                 if HoundUtils.Geo.checkLOS(platformData.pos, radarPos) then
                     local contact = self:getContact(radar)
-                    -- HOUND.Logger.debug(RadarName .. " transmits on " .. HOUND.reverseLookup(HOUND.DB.Bands,contact.band[isRadarTracking]) .." Band")
                     local sampleAngularResolution = HOUND.DB.getSensorPrecision(platform,contact.band[isRadarTracking])
                     if sampleAngularResolution < l_math.rad(10.0) then
                         local az,el = HoundUtils.Elint.getAzimuth( platformData.pos, radarPos, sampleAngularResolution )

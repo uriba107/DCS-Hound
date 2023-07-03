@@ -284,47 +284,17 @@ do
         return pos
     end
 
-    --- Get a list of Nth elements centerd around a position from table of positions.
-    -- @local
-    -- @param Table A List of positions
-    -- @param referencePos Point in relations to all points are evaluated
-    -- @param NthPercentile Percintile of which Datapoints are taken (0.6=60%)
-    -- @return List
-    function HOUND.Contact.Emitter.getDeltaSubsetPercent(Table,referencePos,NthPercentile)
-        local t = l_mist.utils.deepCopy(Table)
-        local len_t = HOUND.Length(t)
-        t = HoundUtils.Geo.setHeight(t)
-        if not referencePos then
-            referencePos = l_mist.getAvgPoint(t)
-        end
-        for _,pt in ipairs(t) do
-            pt.dist = l_mist.utils.get2DDist(referencePos,pt)
-        end
-        table.sort(t,function(a,b) return a.dist < b.dist end)
-
-        local percentile = l_math.floor(len_t*NthPercentile)
-        local NumToUse = l_math.max(l_math.min(2,len_t),percentile)
-        -- if len_t <= 4 then
-        --     NumToUse = len_t
-        -- end
-        local RelativeToPos = {}
-        for i = 1, NumToUse  do
-            table.insert(RelativeToPos,l_mist.vec.sub(t[i],referencePos))
-        end
-
-        return RelativeToPos
-    end
 
     --- Calculate Cotact's Ellipse of uncertenty
     -- @local
     -- @param estimatedPositions List of estimated positions
-    -- @param[opt] giftWrapped pass true if estimatedPosition is just a giftWrap polygon point set (closed polygon, not a point cluster)
     -- @param[opt] refPos reference position to use for computing the uncertenty ellipse. (will use cluster avarage if none provided)
+    -- @param[opt] giftWrapped pass true if estimatedPosition is just a giftWrap polygon point set (closed polygon, not a point cluster)
     -- @return None (updates self.uncertenty_data)
-    function HOUND.Contact.Emitter.calculateEllipse(estimatedPositions,giftWrapped,refPos)
+    function HOUND.Contact.Emitter.calculateEllipse(estimatedPositions,refPos,giftWrapped)
         local percentile = HOUND.ELLIPSE_PERCENTILE
         if giftWrapped then percentile = 1.0 end
-        local RelativeToPos = HOUND.Contact.Emitter.getDeltaSubsetPercent(estimatedPositions,refPos,percentile)
+        local RelativeToPos = HoundUtils.Cluster.getDeltaSubsetPercent(estimatedPositions,refPos,percentile,true)
 
         local min = {}
         min.x = 99999
@@ -482,9 +452,17 @@ do
 
         if HOUND.Length(estimatePositions) > 2 or (HOUND.Length(estimatePositions) > 0 and staticPlatformsOnly) then
             self.pos.p = HoundUtils.Cluster.weightedMean(estimatePositions,self.pos.p)
-            self.uncertenty_data = self.calculateEllipse(estimatePositions,false,self.pos.p)
+
+            if HOUND.Length(estimatePositions) > 10 then
+                -- local posSubset = HoundUtils.Cluster.getDeltaSubsetPercent(estimatePositions,self.pos.p,HOUND.ELLIPSE_PERCENTILE)
+                self.pos.p = HoundUtils.Cluster.weightedMean(
+                    HoundUtils.Cluster.getDeltaSubsetPercent(estimatePositions,self.pos.p,HOUND.ELLIPSE_PERCENTILE),
+                    self.pos.p)
+            end
+
+            self.uncertenty_data = self.calculateEllipse(estimatePositions,self.pos.p)
             if type(staticClipPolygon2D) == "table" and ( staticPlatformsOnly) then
-                self.uncertenty_data = self.calculateEllipse(staticClipPolygon2D,true,self.pos.p)
+                self.uncertenty_data = self.calculateEllipse(staticClipPolygon2D,self.pos.p,true)
             end
 
             self.uncertenty_data.az = l_mist.utils.round(l_math.deg((self.uncertenty_data.theta+l_mist.getNorthCorrection(self.pos.p)+pi_2)%pi_2))
@@ -553,7 +531,6 @@ do
         HoundUtils.Geo.setHeight(polygonPoints)
 
         return polygonPoints
-
     end
 
     --- Draw marker Polygon

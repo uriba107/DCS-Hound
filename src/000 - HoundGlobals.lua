@@ -36,7 +36,7 @@ do
     HOUND = {
         VERSION = "0.4.0-TRUNK",
         DEBUG = true,
-        ELLIPSE_PERCENTILE = 0.75,
+        ELLIPSE_PERCENTILE = 0.6,
         DATAPOINTS_NUM = 30,
         DATAPOINTS_INTERVAL = 30,
         CONTACT_TIMEOUT = 900,

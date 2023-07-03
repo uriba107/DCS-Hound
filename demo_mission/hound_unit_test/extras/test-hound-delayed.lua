@@ -24,7 +24,7 @@ do
 
         timer.scheduleFunction(delayTest,"Platforms: 2 | sectors: 3 (Z:2 ,C:2 ,A: 2 ,N:1) | Sites: 4 | Contacts: 6 (A:2 ,PB:6)",timer.getTime()+45)
         timer.scheduleFunction(delayMove,nil,timer.getTime()+60)
-    
+
     end
 
     function TestHoundFunctional:Test_1mDelay_01_Sector()
@@ -53,6 +53,8 @@ do
         local tor = Group.getByName("TOR_SAIPAN")
         tor:enableEmission(true)
         timer.scheduleFunction(delayTest,"Platforms: 2 | sectors: 3 (Z:2 ,C:2 ,A: 2 ,N:1) | Sites: 4 | Contacts: 6 (A:3 ,PB:5)",timer.getTime()+45)
-
+    end
+    function TestHoundFunctional:Test_5mDelay_01_exports()
+        self.houndBlue:dumpIntelBrief()
     end
 end

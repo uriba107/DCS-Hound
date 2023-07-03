@@ -1336,6 +1336,11 @@ do
                     houndEvent.initiator:updateMarker(HOUND.MARKER.NONE)
                 end
             end
+            if houndEvent.id == HOUND.EVENTS.RADAR_DETECTED then
+                if self.settings:getUseMarkers() then
+                    houndEvent.initiator:updateMarker(HOUND.MARKER.NONE)
+                end
+            end
         end
     end
 

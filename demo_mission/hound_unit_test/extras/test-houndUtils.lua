@@ -98,6 +98,7 @@ do
         
         local unit = Unit.getByName("TOR_SAIPAN-1")
         local group = Group.getByName("SA-5_SAIPAN")
+        local static= StaticObject.getByName("StaticTower")
 
         lu.assertIsFalse(HOUND.Utils.Dcs.isGroup(nil))
         lu.assertIsFalse(HOUND.Utils.Dcs.isGroup("SA-5_SAIPAN"))
@@ -108,6 +109,13 @@ do
         lu.assertIsFalse(HOUND.Utils.Dcs.isUnit("SA-5_SAIPAN"))
         lu.assertIsFalse(HOUND.Utils.Dcs.isUnit(group))
         lu.assertIsTrue(HOUND.Utils.Dcs.isUnit(unit))
+
+        lu.assertIsTrue(HOUND.Utils.Dcs.isStaticObject(static))
+        lu.assertIsFalse(HOUND.Utils.Dcs.isStaticObject("StaticTower"))
+        lu.assertIsFalse(HOUND.Utils.Dcs.isStaticObject(group))
+        lu.assertIsFalse(HOUND.Utils.Dcs.isStaticObject(unit))
+
+
     end
     function TestHoundUtils:TestGeo()
 

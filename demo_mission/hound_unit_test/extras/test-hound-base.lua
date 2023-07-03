@@ -80,10 +80,18 @@ do
 
         lu.assertEquals(self.houndBlue:countPlatforms(),2)
         lu.assertItemsEquals(self.houndBlue:listPlatforms(),{"ELINT_BLUE_C17_WEST","ELINT_BLUE_C17_EAST"})
+        lu.assertIsFalse(self.houndBlue:removePlatform("StaticTower"))
+
+        lu.assertIsTrue(self.houndBlue:addPlatform("StaticTower"))
+        lu.assertEquals(self.houndBlue:countPlatforms(),3)
+        lu.assertItemsEquals(self.houndBlue:listPlatforms(),{"ELINT_BLUE_C17_WEST","ELINT_BLUE_C17_EAST","StaticTower"})
 
         lu.assertIsTrue(self.houndBlue:setMarkerType(HOUND.MARKER.POLYGON))
         lu.assertEquals(self.houndBlue.settings.preferences.markerType,HOUND.MARKER.POLYGON)
 
+        lu.assertIsTrue(self.houndBlue:removePlatform("StaticTower"))
+        lu.assertEquals(self.houndBlue:countPlatforms(),2)
+        lu.assertItemsEquals(self.houndBlue:listPlatforms(),{"ELINT_BLUE_C17_WEST","ELINT_BLUE_C17_EAST"})
         self.houndBlue:systemOn()
         lu.assertIsTrue(self.houndBlue:isRunning())
     end
@@ -292,7 +300,6 @@ do
         lu.assertEquals(self.houndBlue:countPreBriefedContacts(),1)
         self.houndBlue:preBriefedContact('fakeUnitName')
         lu.assertEquals(self.houndBlue:countPreBriefedContacts(),1)
-
     end
 
     function TestHoundFunctional:Test_02_base_08_sites()
@@ -303,26 +310,26 @@ do
         local sa3_sr = elint:getContact('SA-3_TINIAN-1',true)
         local sa3_tr = elint:getContact('SA-3_TINIAN-2',true)
         lu.assertEquals(self.houndBlue:countPreBriefedContacts(),2)
-
         lu.assertIsTrue(getmetatable(sa3_sr)==HOUND.Contact.Emitter)
         lu.assertIsNil(sa3_tr)
         local sa3_site = elint:getSite('SA-3_TINIAN')
         lu.assertIsTrue(getmetatable(sa3_site)==HOUND.Contact.Site)
         lu.assertEquals(sa3_sr,sa3_site:getPrimary())
-
         lu.assertEquals("SA-2 or SA-3 or SA-5",sa3_site:getTypeAssigned())
-
-        self.houndBlue:preBriefedContact('SA-3_TINIAN')
+        lu.assertEquals(sa3_site:getName(),"T004")
+        lu.assertEquals(sa3_site:generatePopUpReport(false,"Tinian"),"T004, identified as 2 or 3 or 5, is now Alive in Tinian.")
+        self.houndBlue:preBriefedContact('SA-3_TINIAN',"Non La")
         lu.assertEquals(self.houndBlue:countPreBriefedContacts(),3)
+        lu.assertEquals(sa3_site:getName(),"Non La")
         sa3_tr = elint:getContact('SA-3_TINIAN-2',true)
         lu.assertIsTrue(getmetatable(sa3_tr)==HOUND.Contact.Emitter)
         lu.assertNotEquals(sa3_sr,sa3_site:getPrimary())
         lu.assertEquals(sa3_tr,sa3_site:getPrimary())
         lu.assertEquals("SA-3",sa3_site:getTypeAssigned())
-
-
+        lu.assertEquals(sa3_site:generatePopUpReport(false,"Tinian"),"Non La, identified as 3, is now Alive in Tinian.")
+        lu.assertNotEquals(sa3_site:getName(),"T004")
     end
-    
+
     function TestHoundFunctional:Test_02_base_09_human_elint()
         humanElint = {}
         humanElint.HoundInstance =  self.houndBlue

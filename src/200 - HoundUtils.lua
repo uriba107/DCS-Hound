@@ -1894,6 +1894,38 @@ do
         return l_mist.utils.deepCopy(current_mean)
     end
 
+    --- Get a list of Nth elements centerd around a position from table of positions.
+    -- @param Table A List of positions
+    -- @param referencePos Point in relations to all points are evaluated
+    -- @param NthPercentile Percintile of which Datapoints are taken (0.6=60%)
+    -- @param returnRelative If true returning array will contain relative positions to referencePos 
+    -- @return List
+    function HOUND.Utils.Cluster.getDeltaSubsetPercent(Table,referencePos,NthPercentile,returnRelative)
+        local t = l_mist.utils.deepCopy(Table)
+        local len_t = HOUND.Length(t)
+        t = HOUND.Utils.Geo.setHeight(t)
+        if not referencePos then
+            referencePos = l_mist.getAvgPoint(t)
+        end
+        for _,pt in ipairs(t) do
+            pt.dist = l_mist.utils.get2DDist(referencePos,pt)
+        end
+        table.sort(t,function(a,b) return a.dist < b.dist end)
+
+        local percentile = l_math.floor(len_t*NthPercentile)
+        local NumToUse = l_math.max(l_math.min(2,len_t),percentile)
+        local returnTable = {}
+        for i = 1, NumToUse  do
+            table.insert(returnTable,t[i])
+        end
+        if returnRelative then
+            for i = 1,#returnTable do
+                returnTable[i] = l_mist.vec.sub(returnTable[i],referencePos)
+            end
+        end
+
+        return returnTable
+    end
 
     --- Sort Functions
     -- @section Sort

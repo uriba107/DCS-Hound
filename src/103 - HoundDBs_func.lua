@@ -57,18 +57,17 @@ do
     -- @local
     -- @param DCS_Unit platform unit
     -- @return platform data
-    function HOUND.DB.getPlatformData(DCS_Unit)
-        if type(DCS_Unit) ~= "table" or not DCS_Unit.getTypeName or not DCS_Unit.getCategory then return end
-        -- if not HOUND.DB.isValidPlatform(DCS_Unit) then return end
+    function HOUND.DB.getPlatformData(DcsObject)
+        if not HOUND.Utils.Dcs.isUnit(DcsObject) and not HOUND.Utils.Dcs.isStaticObject(DcsObject) then return end
 
         local platformData={
-            pos = l_mist.utils.deepCopy(DCS_Unit:getPosition().p),
+            pos = l_mist.utils.deepCopy(DcsObject:getPosition().p),
             isStatic = false,
             isAerial = false,
         }
 
-        local mainCategory = DCS_Unit:getCategory()
-        local typeName = DCS_Unit:getTypeName()
+        local mainCategory = DcsObject:getCategory()
+        local typeName = DcsObject:getTypeName()
         local DbInfo = HOUND.DB.Platform[mainCategory][typeName]
 
         local errorDist = DbInfo.ins_error or 0
@@ -76,20 +75,21 @@ do
         platformData.posErr.y = 0
         platformData.ApertureSize = (DbInfo.antenna.size * DbInfo.antenna.factor) or 0
 
-        if DCS_Unit:getCategory() == Object.Category.STATIC then
+        local VerticalOffset = DcsObject:getDesc()["box"]["max"]["y"] or (DbInfo.antenna.size)
+        if DcsObject:getCategory() == Object.Category.STATIC then
             platformData.isStatic = true
-            -- platformData.pos.y = platformData.pos.y + DCS_Unit:getDesc()["box"]["max"]["y"]
+            platformData.pos.y = platformData.pos.y + VerticalOffset/2
         else
-            local PlatformUnitCategory = DCS_Unit:getDesc()["category"]
+            local PlatformUnitCategory = DcsObject:getDesc()["category"]
             if PlatformUnitCategory == Unit.Category.HELICOPTER or PlatformUnitCategory == Unit.Category.AIRPLANE then
                 platformData.isAerial = true
             end
-            -- if PlatformUnitCategory == Unit.Category.GROUND_UNIT then
-            --     platformData.pos.y = platformData.pos.y + DCS_Unit:getDesc()["box"]["max"]["y"]
-            -- end
+            if PlatformUnitCategory == Unit.Category.GROUND_UNIT then
+                platformData.pos.y = platformData.pos.y + VerticalOffset
+            end
         end
         if not platformData.isAerial then
-            platformData.pos.y = platformData.pos.y + DCS_Unit:getDesc()["box"]["max"]["y"]
+            platformData.pos.y = platformData.pos.y + VerticalOffset
         end
         return platformData
     end
@@ -106,14 +106,14 @@ do
         return wavelength/antenna_size
     end
 
-    --- get Effective Aperture size for unit
+    --- get Effective Aperture size for platform
     -- @local
-    -- @param DCS_Unit Unit requested (used as platform)
+    -- @param DcsObject Unit requested (used as platform)
     -- @return Effective aperture size in meters
-    function HOUND.DB.getApertureSize(DCS_Unit)
-        if type(DCS_Unit) ~= "table" or not DCS_Unit.getTypeName or not DCS_Unit.getCategory then return 0 end
-        local mainCategory = DCS_Unit:getCategory()
-        local typeName = DCS_Unit:getTypeName()
+    function HOUND.DB.getApertureSize(DcsObject)
+        if not HOUND.Utils.Dcs.isUnit(DcsObject) and not HOUND.Utils.Dcs.isStaticObject(DcsObject) then return 0 end
+        local mainCategory = DcsObject:getCategory()
+        local typeName = DcsObject:getTypeName()
         if HOUND.setContains(HOUND.DB.Platform,mainCategory) then
             if HOUND.setContains(HOUND.DB.Platform[mainCategory],typeName) then
                 return HOUND.DB.Platform[mainCategory][typeName].antenna.size *  HOUND.DB.Platform[mainCategory][typeName].antenna.factor
@@ -127,7 +127,7 @@ do
     -- @param DCS_Unit Radar unit
     -- @return Char radar band
     function HOUND.DB.getEmitterBand(DCS_Unit)
-        if type(DCS_Unit) ~= "table" or not DCS_Unit.getTypeName then return HOUND.DB.Bands.C end
+        if not HOUND.Utils.Dcs.isUnit(DCS_Unit) then return HOUND.DB.Bands.C end
         local typeName = DCS_Unit:getTypeName()
         if HOUND.setContains(HOUND.DB.Radars,typeName) then
             return HOUND.DB.Radars[typeName].Band[false]

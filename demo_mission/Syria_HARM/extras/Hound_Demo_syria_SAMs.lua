@@ -1,4 +1,6 @@
-    --------------------------- MISSION LOGIC ---------------------------
+do
+
+--------------------------- MISSION LOGIC ---------------------------
     HOUND_MISSION = {}
     function HOUND_MISSION.randomTemplate(templates)
         if type(templates) ~= "table" then return nil end
@@ -161,3 +163,4 @@
     end
 
     HOUND_MISSION.MANPADS.updateMenu()
+end

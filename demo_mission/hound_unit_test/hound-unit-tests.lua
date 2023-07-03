@@ -3,6 +3,7 @@ do
         HoundWorkDir = "E:\\Dropbox\\uri\\Dropbox\\DCS\\Mission Building\\HoundElint\\"
     end
     -- assert(loadfile(HoundWorkDir..'include\\DCS-SimpleTextToSpeech.lua'))()
+    -- HOUND.TTS_ENGINE = {'STTS'}
 
     function UserSpaceLogging(msg)
         trigger.action.outText(msg,10)
