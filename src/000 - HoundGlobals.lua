@@ -32,7 +32,6 @@ do
     -- @field USE_LEGACY_MARKERS Force Hound to use normal markers for radar positions (default is true)
     -- @field TTS_ENGINE Hound will use the table to determin TTS engine priority
     -- @field MENU_PAGE_LENGTH Number of Items Hound will put in a menu before starting a new menu page
-
     HOUND = {
         VERSION = "0.4.0-TRUNK",
         DEBUG = true,

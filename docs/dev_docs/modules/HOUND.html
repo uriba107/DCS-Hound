@@ -1,0 +1,672 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Reference</title>
+    <link rel="stylesheet" href="../ldoc_fixed.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Hound<br> ELINT for DCS</h1>
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Tables">Tables</a></li>
+<li><a href="#Global_functions">Global functions </a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><strong>HOUND</strong></li>
+  <li><a href="../modules/HOUND.Logger.html">HOUND.Logger</a></li>
+  <li><a href="../modules/HOUND.DB.html">HOUND.DB</a></li>
+  <li><a href="../modules/HOUND.Config.html">HOUND.Config</a></li>
+  <li><a href="../modules/HOUND.Utils.html">HOUND.Utils</a></li>
+  <li><a href="../modules/HOUND.EventHandler.html">HOUND.EventHandler</a></li>
+  <li><a href="../modules/HOUND.Contact.Base.html">HOUND.Contact.Base</a></li>
+  <li><a href="../modules/HOUND.Contact.Estimator.html">HOUND.Contact.Estimator</a></li>
+  <li><a href="../modules/HOUND.Contact.Datapoint.html">HOUND.Contact.Datapoint</a></li>
+  <li><a href="../modules/HOUND.Contact.Emitter.html">HOUND.Contact.Emitter</a></li>
+  <li><a href="../modules/HOUND.Contact.Site.html">HOUND.Contact.Site</a></li>
+  <li><a href="../modules/HOUND.Comms.Manager.html">HOUND.Comms.Manager</a></li>
+  <li><a href="../modules/HOUND.Comms.InformationSystem.html">HOUND.Comms.InformationSystem</a></li>
+  <li><a href="../modules/HOUND.Comms.Controller.html">HOUND.Comms.Controller</a></li>
+  <li><a href="../modules/HOUND.Comms.Notifier.html">HOUND.Comms.Notifier</a></li>
+  <li><a href="../modules/HOUND.ElintWorker.html">HOUND.ElintWorker</a></li>
+  <li><a href="../modules/HOUND.ContactManager.html">HOUND.ContactManager</a></li>
+  <li><a href="../modules/HOUND.Sector.html">HOUND.Sector</a></li>
+</ul>
+<h2>Scripts</h2>
+<ul class="nowrap">
+  <li><a href="../scripts/HoundElint.html">HoundElint</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>HOUND</code></h1>
+<p>Hound
+ Elint system for DCS</p>
+<p></p>
+    <h3>Info:</h3>
+    <ul>
+        <li><strong>Copyright</strong>: uri_ba 2020-2021</li>
+        <li><strong>Author</strong>: uri_ba</li>
+    </ul>
+
+
+<h2><a href="#Tables">Tables</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HOUND">HOUND</a></td>
+	<td class="summary">HOUND global settings
+ Global settings and paramters</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#MARKER">MARKER</a></td>
+	<td class="summary">Map Markers ENUM</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#EVENTS">EVENTS</a></td>
+	<td class="summary">Hound Events</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#EVENTS.EVENT">EVENTS.EVENT</a></td>
+	<td class="summary">Event structure</td>
+	</tr>
+</table>
+<h2><a href="#Global_functions">Global functions </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#setMgrsPresicion">setMgrsPresicion (value)</a></td>
+	<td class="summary">set default MGRS presicion for grid calls</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#showExtendedInfo">showExtendedInfo (value)</a></td>
+	<td class="summary">set detailed messages to include or exclude extended tracking data
+ if true, will read and display extended ellipse info and tracking times.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#addEventHandler">addEventHandler (handler)</a></td>
+	<td class="summary">register new event handler (global)</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#removeEventHandler">removeEventHandler (handler)</a></td>
+	<td class="summary">deregister event handler (global)</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#inheritsFrom">inheritsFrom (baseClass)</a></td>
+	<td class="summary">helper code for class inheritance</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Length">Length (T)</a></td>
+	<td class="summary">get Length of a table</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#setContains">setContains (set, key)</a></td>
+	<td class="summary">check if set contains a provided key (case sensitive)</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#setContainsValue">setContainsValue (set, value)</a></td>
+	<td class="summary">check if table contains a provided</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#setIntersection">setIntersection (a, b)</a></td>
+	<td class="summary">return set intersection product</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Gaussian">Gaussian (mean, sigma)</a></td>
+	<td class="summary">return Gaussian random number</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#reverseLookup">reverseLookup (tbl, value)</a></td>
+	<td class="summary">reverse table lookup</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#string.split">string.split (str[, delim])</a></td>
+	<td class="summary">Split String on delimited</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header "><a name="Tables"></a>Tables</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HOUND"></a>
+    <strong>HOUND</strong>
+    </dt>
+    <dd>
+    HOUND global settings
+ Global settings and paramters
+
+
+    <h3>Fields:</h3>
+    <ul>
+        <li><span class="parameter">VERSION</span>
+         Hound Version
+        </li>
+        <li><span class="parameter">DEBUG</span>
+         Hound will do extended debug output to log (for development)
+        </li>
+        <li><span class="parameter">ELLIPSE_PERCENTILE</span>
+         Defines the percentile of datapoints used to calculate uncertenty ellipse
+        </li>
+        <li><span class="parameter">DATAPOINTS_NUM</span>
+         Number of datapoints per platform a contact keeps (FIFO)
+        </li>
+        <li><span class="parameter">DATAPOINTS_INTERVAL</span>
+         Time between stored data points
+        </li>
+        <li><span class="parameter">CONTACT_TIMEOUT</span>
+         Timout for emitter to be silent before being dropped from contacts
+        </li>
+        <li><span class="parameter">MGRS_PRECISION</span>
+         Number of digits in MGRS conversion
+        </li>
+        <li><span class="parameter">EXTENDED_INFO</span>
+         Hound will add more in depth uncertenty info to controller messages (default is true)
+        </li>
+        <li><span class="parameter">FORCE_MANAGE_MARKERS</span>
+         Force Hound to use internal counter for markIds (default is true).
+        </li>
+        <li><span class="parameter">USE_LEGACY_MARKERS</span>
+         Force Hound to use normal markers for radar positions (default is true)
+        </li>
+        <li><span class="parameter">TTS_ENGINE</span>
+         Hound will use the table to determin TTS engine priority
+        </li>
+        <li><span class="parameter">MENU_PAGE_LENGTH</span>
+         Number of Items Hound will put in a menu before starting a new menu page
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "MARKER"></a>
+    <strong>MARKER</strong>
+    </dt>
+    <dd>
+    Map Markers ENUM
+
+
+    <h3>Fields:</h3>
+    <ul>
+        <li><span class="parameter">NONE</span>
+         no ellipse is drawn
+        </li>
+        <li><span class="parameter">CIRCLE</span>
+         a circle of uncertenty will be drawn
+        </li>
+        <li><span class="parameter">DIAMOND</span>
+         a diamond will be drawn with 4 points representing uncertenty ellipse
+        </li>
+        <li><span class="parameter">OCTAGON</span>
+         ellipse will be drawn with 8 points (diamon with midpoints)
+        </li>
+        <li><span class="parameter">POLYGON</span>
+         ellipse will be drawn as a 16 sides polygon
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "EVENTS"></a>
+    <strong>EVENTS</strong>
+    </dt>
+    <dd>
+    Hound Events
+
+
+    <h3>Fields:</h3>
+    <ul>
+        <li><span class="parameter">NO_CHANGE</span>
+         nothing changed in the object
+        </li>
+        <li><span class="parameter">HOUND_ENABLED</span>
+         Hound Event
+        </li>
+        <li><span class="parameter">HOUND_DISABLED</span>
+         Hound Event
+        </li>
+        <li><span class="parameter">PLATFORM_ADDED</span>
+         Hound Event
+        </li>
+        <li><span class="parameter">PLATFORM_REMOVED</span>
+         Hound Event
+        </li>
+        <li><span class="parameter">PLATFORM_DESTROYED</span>
+         Hound Event
+        </li>
+        <li><span class="parameter">RADAR_NEW</span>
+         Hound Event
+        </li>
+        <li><span class="parameter">RADAR_DETECTED</span>
+         Hound Event
+        </li>
+        <li><span class="parameter">RADAR_UPDATED</span>
+         Hound Event
+        </li>
+        <li><span class="parameter">RADAR_DESTROYED</span>
+         Hound Event
+        </li>
+        <li><span class="parameter">RADAR_ALIVE</span>
+         Hound Event
+        </li>
+        <li><span class="parameter">RADAR_ASLEEP</span>
+         Hound Event
+        </li>
+        <li><span class="parameter">SITE_NEW</span>
+         Hound Event
+        </li>
+        <li><span class="parameter">SITE_CREATED</span>
+         Hound Event
+        </li>
+        <li><span class="parameter">SITE_UPDATED</span>
+         Hound Event
+        </li>
+        <li><span class="parameter">SITE_CLASSIFIED</span>
+         Hound Event
+        </li>
+        <li><span class="parameter">SITE_REMOVED</span>
+         Hound Event
+        </li>
+        <li><span class="parameter">SITE_ALIVE</span>
+         Hound Event
+        </li>
+        <li><span class="parameter">SITE_ASLEEP</span>
+         Hound Event
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "EVENTS.EVENT"></a>
+    <strong>EVENTS.EVENT</strong>
+    </dt>
+    <dd>
+    Event structure
+
+
+    <h3>Fields:</h3>
+    <ul>
+        <li><span class="parameter">id</span>
+         event enum from HOUND.EVENTS
+        </li>
+        <li><span class="parameter">houndId</span>
+         Hound Instace ID that emitted the event
+        </li>
+        <li><span class="parameter">coalition</span>
+         coalition ID of the Hound Instance that emitted the event
+        </li>
+        <li><span class="parameter">initiator</span>
+         DCS Unit or HoundContact Subclass that triggered the event
+        </li>
+        <li><span class="parameter">time</span>
+         of event
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Global_functions"></a>Global functions </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "setMgrsPresicion"></a>
+    <strong>setMgrsPresicion (value)</strong>
+    </dt>
+    <dd>
+    set default MGRS presicion for grid calls
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">value</span>
+         (Int) Requested value. allowed values 1-5, default is 3
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "showExtendedInfo"></a>
+    <strong>showExtendedInfo (value)</strong>
+    </dt>
+    <dd>
+    set detailed messages to include or exclude extended tracking data
+ if true, will read and display extended ellipse info and tracking times.  (default)
+ if false, will skip that information. only the shortened info will be used
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">value</span>
+         (Bool) Requested state
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "addEventHandler"></a>
+    <strong>addEventHandler (handler)</strong>
+    </dt>
+    <dd>
+    register new event handler (global)
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">handler</span>
+         handler to register
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="../modules/HOUND.html#EVENTS">HOUND.EVENTS</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "removeEventHandler"></a>
+    <strong>removeEventHandler (handler)</strong>
+    </dt>
+    <dd>
+    deregister event handler (global)
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">handler</span>
+         handler to remove
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="../modules/HOUND.html#EVENTS">HOUND.EVENTS</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "inheritsFrom"></a>
+    <strong>inheritsFrom (baseClass)</strong>
+    </dt>
+    <dd>
+    helper code for class inheritance
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">baseClass</span>
+         Base class to inherit from
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Length"></a>
+    <strong>Length (T)</strong>
+    </dt>
+    <dd>
+    get Length of a table
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">T</span>
+         table
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        length of T
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "setContains"></a>
+    <strong>setContains (set, key)</strong>
+    </dt>
+    <dd>
+    check if set contains a provided key (case sensitive)
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">set</span>
+         Hash table to check
+        </li>
+        <li><span class="parameter">key</span>
+         to check
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Bool. True if key exists in set
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "setContainsValue"></a>
+    <strong>setContainsValue (set, value)</strong>
+    </dt>
+    <dd>
+    check if table contains a provided
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">set</span>
+         Table to check
+        </li>
+        <li><span class="parameter">value</span>
+         Value to check
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Bool. True if value exists in set
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "setIntersection"></a>
+    <strong>setIntersection (a, b)</strong>
+    </dt>
+    <dd>
+    return set intersection product
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+         Table
+        </li>
+        <li><span class="parameter">b</span>
+         Table
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Table
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Gaussian"></a>
+    <strong>Gaussian (mean, sigma)</strong>
+    </dt>
+    <dd>
+    return Gaussian random number
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">mean</span>
+         Mean value (i.e center of the gausssian curve)
+        </li>
+        <li><span class="parameter">sigma</span>
+         amount of variance in the random value
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        random number in gaussian space
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "reverseLookup"></a>
+    <strong>reverseLookup (tbl, value)</strong>
+    </dt>
+    <dd>
+    reverse table lookup
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">tbl</span>
+         table
+        </li>
+        <li><span class="parameter">value</span>
+         to search
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        the key wher value was found
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "string.split"></a>
+    <strong>string.split (str[, delim])</strong>
+    </dt>
+    <dd>
+    Split String on delimited
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">str</span>
+         Input string
+        </li>
+        <li><span class="parameter">delim</span>
+         Delimited (default is space)
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table of substrings
+    </ol>
+
+
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+<i style="float:right;">Last updated 2023-07-03 20:57:16 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

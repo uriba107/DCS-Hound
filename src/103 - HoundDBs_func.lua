@@ -55,7 +55,7 @@ do
 
     --- Get Platform data
     -- @local
-    -- @param DCS_Unit platform unit
+    -- @param DcsObject platform unit
     -- @return platform data
     function HOUND.DB.getPlatformData(DcsObject)
         if not HOUND.Utils.Dcs.isUnit(DcsObject) and not HOUND.Utils.Dcs.isStaticObject(DcsObject) then return end

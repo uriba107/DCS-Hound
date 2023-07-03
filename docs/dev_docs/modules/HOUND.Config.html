@@ -1,0 +1,1075 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Reference</title>
+    <link rel="stylesheet" href="../ldoc_fixed.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Hound<br> ELINT for DCS</h1>
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
+<li><a href="#HOUND_Config">HOUND.Config</a></li>
+<li><a href="#HOUND_Config_instance">HOUND.Config.instance</a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><a href="../modules/HOUND.html">HOUND</a></li>
+  <li><a href="../modules/HOUND.Logger.html">HOUND.Logger</a></li>
+  <li><a href="../modules/HOUND.DB.html">HOUND.DB</a></li>
+  <li><strong>HOUND.Config</strong></li>
+  <li><a href="../modules/HOUND.Utils.html">HOUND.Utils</a></li>
+  <li><a href="../modules/HOUND.EventHandler.html">HOUND.EventHandler</a></li>
+  <li><a href="../modules/HOUND.Contact.Base.html">HOUND.Contact.Base</a></li>
+  <li><a href="../modules/HOUND.Contact.Estimator.html">HOUND.Contact.Estimator</a></li>
+  <li><a href="../modules/HOUND.Contact.Datapoint.html">HOUND.Contact.Datapoint</a></li>
+  <li><a href="../modules/HOUND.Contact.Emitter.html">HOUND.Contact.Emitter</a></li>
+  <li><a href="../modules/HOUND.Contact.Site.html">HOUND.Contact.Site</a></li>
+  <li><a href="../modules/HOUND.Comms.Manager.html">HOUND.Comms.Manager</a></li>
+  <li><a href="../modules/HOUND.Comms.InformationSystem.html">HOUND.Comms.InformationSystem</a></li>
+  <li><a href="../modules/HOUND.Comms.Controller.html">HOUND.Comms.Controller</a></li>
+  <li><a href="../modules/HOUND.Comms.Notifier.html">HOUND.Comms.Notifier</a></li>
+  <li><a href="../modules/HOUND.ElintWorker.html">HOUND.ElintWorker</a></li>
+  <li><a href="../modules/HOUND.ContactManager.html">HOUND.ContactManager</a></li>
+  <li><a href="../modules/HOUND.Sector.html">HOUND.Sector</a></li>
+</ul>
+<h2>Scripts</h2>
+<ul class="nowrap">
+  <li><a href="../scripts/HoundElint.html">HoundElint</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>HOUND.Config</code></h1>
+<p>HOUND.Config
+ Hound config singleton</p>
+<p></p>
+
+
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#instance.setNATO">instance.setNATO (self, value)</a></td>
+	<td class="summary">NATO setter</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#instance.setUseNATOCallsigns">instance.setUseNATOCallsigns (self, value)</a></td>
+	<td class="summary">NATO callsign setter</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#instance.setOnScreenDebug">instance.setOnScreenDebug (self, value)</a></td>
+	<td class="summary">On screen Debug output setter</td>
+	</tr>
+</table>
+<h2><a href="#HOUND_Config">HOUND.Config</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Config.get">HOUND.Config.get (HoundInstanceId)</a></td>
+	<td class="summary">return config for specific Hound instance</td>
+	</tr>
+</table>
+<h2><a href="#HOUND_Config_instance">HOUND.Config.instance</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#instance.getId">instance.getId (self)</a></td>
+	<td class="summary">get hound ID</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#instance.getCoalition">instance.getCoalition (self)</a></td>
+	<td class="summary">get hound coalition ID</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#instance.setCoalition">instance.setCoalition (self, coalitionId)</a></td>
+	<td class="summary">set hound coalition ID</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#instance.setInterval">instance.setInterval (self, intervalName, setVal)</a></td>
+	<td class="summary">set intervals</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#instance.getMarkerType">instance.getMarkerType (self)</a></td>
+	<td class="summary">get marker type</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#instance.setMarkerType">instance.setMarkerType (self, markerType)</a></td>
+	<td class="summary">set marker type</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#instance.getUseMarkers">instance.getUseMarkers (self)</a></td>
+	<td class="summary">use marker getter</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#instance.setUseMarkers">instance.setUseMarkers (self, value)</a></td>
+	<td class="summary">use markers setter</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#instance.getMarkSites">instance.getMarkSites (self)</a></td>
+	<td class="summary">Mark sites getter</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#instance.setMarkSites">instance.setMarkSites (self, value)</a></td>
+	<td class="summary">Mark sites setter</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#instance.getBDA">instance.getBDA (self)</a></td>
+	<td class="summary">BDA getter</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#instance.setBDA">instance.setBDA (self, value)</a></td>
+	<td class="summary">BDA setter</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#instance.getNATO">instance.getNATO (self)</a></td>
+	<td class="summary">NATO getter</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#instance.getUseNATOCallsigns">instance.getUseNATOCallsigns (self)</a></td>
+	<td class="summary">NATO callsign getter</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#instance.getAtisUpdateInterval">instance.getAtisUpdateInterval (self)</a></td>
+	<td class="summary">Atis Update Interval getter</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#instance.setAtisUpdateInterval">instance.setAtisUpdateInterval (self, value)</a></td>
+	<td class="summary">Atis Update Interval setter</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#instance.getPosErr">instance.getPosErr (self)</a></td>
+	<td class="summary">Position error getter</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#instance.setPosErr">instance.setPosErr (self, value)</a></td>
+	<td class="summary">Platform Position error setter</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#instance.getHardcore">instance.getHardcore (self)</a></td>
+	<td class="summary">Platform Hardcore mode getter</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#instance.setHardcore">instance.setHardcore (self, value)</a></td>
+	<td class="summary">Platform Hardcore mode setter</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#instance.getOnScreenDebug">instance.getOnScreenDebug (self)</a></td>
+	<td class="summary">On screen Debug Output getter</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#instance.getCallsignOverride">instance.getCallsignOverride (self)</a></td>
+	<td class="summary">Callsign override table getter</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#instance.setCallsignOverride">instance.setCallsignOverride (self, value)</a></td>
+	<td class="summary">Callsign override table setter</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#instance.getRadioMenu">instance.getRadioMenu (self)</a></td>
+	<td class="summary">return root radio menu for hound instance
+ will create one if needed</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#instance.removeRadioMenu">instance.removeRadioMenu (self)</a></td>
+	<td class="summary">Remove radio menu root</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#instance.getRadioMenuParent">instance.getRadioMenuParent (self)</a></td>
+	<td class="summary">return parent for the root menu</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#instance.setRadioMenuParent">instance.setRadioMenuParent (self, parent)</a></td>
+	<td class="summary">set user defined parent menu for Hound instance
+ must be set <b>BEFORE</b> calling <code>getRadioMenu()</code></td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header "><a name="Functions"></a>Functions</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "instance.setNATO"></a>
+    <strong>instance.setNATO (self, value)</strong>
+    </dt>
+    <dd>
+    NATO setter
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+         config instance
+        </li>
+        <li><span class="parameter">value</span>
+            <span class="types"><span class="type">bool</span></span>
+         set this value
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        (Bool) True if change was made
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "instance.setUseNATOCallsigns"></a>
+    <strong>instance.setUseNATOCallsigns (self, value)</strong>
+    </dt>
+    <dd>
+    NATO callsign setter
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+         config instance
+        </li>
+        <li><span class="parameter">value</span>
+            <span class="types"><span class="type">bool</span></span>
+         set this value
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        (Bool) True if change was made
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "instance.setOnScreenDebug"></a>
+    <strong>instance.setOnScreenDebug (self, value)</strong>
+    </dt>
+    <dd>
+    On screen Debug output setter
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+         config instance
+        </li>
+        <li><span class="parameter">value</span>
+            <span class="types"><span class="type">bool</span></span>
+         set this value
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        (Bool) True if change was made
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="HOUND_Config"></a>HOUND.Config</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HOUND.Config.get"></a>
+    <strong>HOUND.Config.get (HoundInstanceId)</strong>
+    </dt>
+    <dd>
+    return config for specific Hound instance
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">HoundInstanceId</span>
+         Hound instance ID
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        config map for specific hound instace
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="HOUND_Config_instance"></a>HOUND.Config.instance</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "instance.getId"></a>
+    <strong>instance.getId (self)</strong>
+    </dt>
+    <dd>
+    get hound ID
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Int Hound instance Id
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "instance.getCoalition"></a>
+    <strong>instance.getCoalition (self)</strong>
+    </dt>
+    <dd>
+    get hound coalition ID
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Int Hound instance coalition Id
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "instance.setCoalition"></a>
+    <strong>instance.setCoalition (self, coalitionId)</strong>
+    </dt>
+    <dd>
+    set hound coalition ID
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+         config instance
+        </li>
+        <li><span class="parameter">coalitionId</span>
+         coalition enum
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        (Bool) True if coalition was changed
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "instance.setInterval"></a>
+    <strong>instance.setInterval (self, intervalName, setVal)</strong>
+    </dt>
+    <dd>
+    set intervals
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+         config instance
+        </li>
+        <li><span class="parameter">intervalName</span>
+         interval to update
+        </li>
+        <li><span class="parameter">setVal</span>
+         set value (in seconds)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "instance.getMarkerType"></a>
+    <strong>instance.getMarkerType (self)</strong>
+    </dt>
+    <dd>
+    get marker type
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+         config instance
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        ENUM markerType
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="../modules/HOUND.html#MARKER">HOUND.MARKER</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "instance.setMarkerType"></a>
+    <strong>instance.setMarkerType (self, markerType)</strong>
+    </dt>
+    <dd>
+    set marker type
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+         config instance
+        </li>
+        <li><span class="parameter">markerType</span>
+         MarkerType enum
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        (Bool) True if change was made
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="../modules/HOUND.html#MARKER">HOUND.MARKER</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "instance.getUseMarkers"></a>
+    <strong>instance.getUseMarkers (self)</strong>
+    </dt>
+    <dd>
+    use marker getter
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+         config instance
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        (Bool) True if markers to be used
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "instance.setUseMarkers"></a>
+    <strong>instance.setUseMarkers (self, value)</strong>
+    </dt>
+    <dd>
+    use markers setter
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+         config instance
+        </li>
+        <li><span class="parameter">value</span>
+            <span class="types"><span class="type">bool</span></span>
+         set this value
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        (Bool) True if change was made
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "instance.getMarkSites"></a>
+    <strong>instance.getMarkSites (self)</strong>
+    </dt>
+    <dd>
+    Mark sites getter
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+         config instance
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        (Bool) True if sites should be marked
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "instance.setMarkSites"></a>
+    <strong>instance.setMarkSites (self, value)</strong>
+    </dt>
+    <dd>
+    Mark sites setter
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+         config instance
+        </li>
+        <li><span class="parameter">value</span>
+            <span class="types"><span class="type">bool</span></span>
+         set this value
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        (Bool) True if change was made
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "instance.getBDA"></a>
+    <strong>instance.getBDA (self)</strong>
+    </dt>
+    <dd>
+    BDA getter
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+         config instance
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        (Bool) True if BDA will be done
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "instance.setBDA"></a>
+    <strong>instance.setBDA (self, value)</strong>
+    </dt>
+    <dd>
+    BDA setter
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+         config instance
+        </li>
+        <li><span class="parameter">value</span>
+            <span class="types"><span class="type">bool</span></span>
+         set this value
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        (Bool) True if change was made
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "instance.getNATO"></a>
+    <strong>instance.getNATO (self)</strong>
+    </dt>
+    <dd>
+    NATO getter
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+         config instance
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        (Bool) True if NATO brevity is used
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "instance.getUseNATOCallsigns"></a>
+    <strong>instance.getUseNATOCallsigns (self)</strong>
+    </dt>
+    <dd>
+    NATO callsign getter
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+         config instance
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        (Bool) True if NATO callsignes will be used
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "instance.getAtisUpdateInterval"></a>
+    <strong>instance.getAtisUpdateInterval (self)</strong>
+    </dt>
+    <dd>
+    Atis Update Interval getter
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+         config instance
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Int current AtisUpdateInterval
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "instance.setAtisUpdateInterval"></a>
+    <strong>instance.setAtisUpdateInterval (self, value)</strong>
+    </dt>
+    <dd>
+    Atis Update Interval setter
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+         config instance
+        </li>
+        <li><span class="parameter">value</span>
+            <span class="types"><span class="type">int</span></span>
+         set update interval in seconds
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        (Bool) True if change was made
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "instance.getPosErr"></a>
+    <strong>instance.getPosErr (self)</strong>
+    </dt>
+    <dd>
+    Position error getter
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+         config instance
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        (Bool) True if platform position error is used
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "instance.setPosErr"></a>
+    <strong>instance.setPosErr (self, value)</strong>
+    </dt>
+    <dd>
+    Platform Position error setter
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+         config instance
+        </li>
+        <li><span class="parameter">value</span>
+            <span class="types"><span class="type">bool</span></span>
+         true if you want to use platform position error
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        (Bool) True if change was made
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "instance.getHardcore"></a>
+    <strong>instance.getHardcore (self)</strong>
+    </dt>
+    <dd>
+    Platform Hardcore mode getter
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+         config instance
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        (Bool) True if enabled
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "instance.setHardcore"></a>
+    <strong>instance.setHardcore (self, value)</strong>
+    </dt>
+    <dd>
+    Platform Hardcore mode setter
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+         config instance
+        </li>
+        <li><span class="parameter">value</span>
+            <span class="types"><span class="type">bool</span></span>
+         desired state
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        (Bool) True if change was made
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "instance.getOnScreenDebug"></a>
+    <strong>instance.getOnScreenDebug (self)</strong>
+    </dt>
+    <dd>
+    On screen Debug Output getter
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+         config instance
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        (Bool) True if Debug output will be used
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "instance.getCallsignOverride"></a>
+    <strong>instance.getCallsignOverride (self)</strong>
+    </dt>
+    <dd>
+    Callsign override table getter
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+         config instance
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table of current callsign overrides
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "instance.setCallsignOverride"></a>
+    <strong>instance.setCallsignOverride (self, value)</strong>
+    </dt>
+    <dd>
+    Callsign override table setter
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+         config instance
+        </li>
+        <li><span class="parameter">value</span>
+         table of callsign overrides
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        (Bool) True if change was made
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "instance.getRadioMenu"></a>
+    <strong>instance.getRadioMenu (self)</strong>
+    </dt>
+    <dd>
+    return root radio menu for hound instance
+ will create one if needed
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+         config instance
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        root menu entity
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "instance.removeRadioMenu"></a>
+    <strong>instance.removeRadioMenu (self)</strong>
+    </dt>
+    <dd>
+    Remove radio menu root
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+         HOUND.Config instance
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        (Bool) True if menu was removed
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "instance.getRadioMenuParent"></a>
+    <strong>instance.getRadioMenuParent (self)</strong>
+    </dt>
+    <dd>
+    return parent for the root menu
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        parent menu or nil if none set (root menu will be in root F10 meun)
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "instance.setRadioMenuParent"></a>
+    <strong>instance.setRadioMenuParent (self, parent)</strong>
+    </dt>
+    <dd>
+    set user defined parent menu for Hound instance
+ must be set <b>BEFORE</b> calling <code>getRadioMenu()</code>
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+         HOUND.Config instance
+        </li>
+        <li><span class="parameter">parent</span>
+         desired parent menu
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> servicesMenu = missionCommands.addSubMenuForCoalition(
+         coalition.side.BLUE, <span class="string">'AWACS, Tankers and ELINT..'</span>)
+HOUND.Config:setRadioMenuParent(servicesMenu)
+</pre>
+    </ul>
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+<i style="float:right;">Last updated 2023-07-03 20:57:16 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

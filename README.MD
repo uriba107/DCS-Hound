@@ -79,6 +79,8 @@ Table of Contents
   * [Performace Tuning](#performace-tuning)
   * [Exports](#exports)
     * [LUA Export](#lua-export)
+      * [Site export](#site-export)
+      * [Contacts export (legacy)](#contacts-export-legacy)
     * [CSV export](#csv-export)
   * [Desanitize DCS Scripting Engine](#desanitize-dcs-scripting-engine)
 * [Known Issues](#known-issues)
@@ -338,9 +340,12 @@ However if a PB concat moves more then 100m from it's original position the spec
 
 you can mark Unit or Group, only valid Hound Radars will be added (it will not add units it will not normally track). if a group was passed and in contains more then one valid radar, all of the radars will be added
 
+In addition, you can provide an optional "code name" for a PB site, which will be it's name in reports and in comms menu.
+
 ```lua
     HoundInstance:preBriefedContact('UNIT_NAME')
     HoundInstance:preBriefedContact('GROUP_NAME')
+    HoundInstance:preBriefedContact('GROUP2_NAME',"ANTELOPE")
 
 ```
 ---
@@ -349,7 +354,7 @@ you can mark Unit or Group, only valid Hound Radars will be added (it will not a
 ## Per-instance Settings
 These are settings that are configurable per Hound instance.
 ### Map markers
-Hound uses Map markers to indicate the estimated position of the radar tracket. It's a product of the system, and only contains data user can get from the system in other ways (equvilant to making marks on a paper map).
+Hound uses Map markers to indicate the estimated position of the tracked radar. It's a product of the system, and only contains data user can get from the system in other ways (equvilant to making marks on a paper map).
 Map markers are enabled by default. In addition, if radar went offline, the marker fill will fade slowly over time until it reaches a minimum value on contact timeout (thee time in which all past contact datapoints are deleted).
 
 However, some mission designers may want to disable the markers. 
@@ -365,6 +370,10 @@ The type of marker is set per Hound instance.
 ```lua
     HoundInstance:setMarkerType(HOUND.MARKER.POLYGON)
 ```
+You can save a line and change marker type while enabling the markers
+```lua
+    HoundInstance:enableMarkers(HOUND.MARKER.POLYGON)
+```
 
 the available marker types are:
 |  HOUND.MARKER | Description |
@@ -376,6 +385,15 @@ the available marker types are:
 | POLYGON | ellipse will be drawn as a 16 sides polygon |
 
 `Note: More points causes higher CPU usage. CIRCLE is default`
+
+In addition to the radar markers there is an additional simpler site marker. The site marker only adds the site designation and current SAM classification.
+it is used in conjunction with the Map markers to help locate the radar you want in the menu system.
+The site markers are enabled by default and are disabled seperatly from the normal map markers.
+
+```lua
+    HoundInstance:disableSiteMarkers()
+    HoundInstance:enableSiteMarkers()
+```
 
 #### Living with other marker spawning scripts
 Hound does it best to play nice with other Marker generating scripts.
@@ -445,8 +463,10 @@ Hound supports 3 types of callsignes in this order
 
 ```lua
     -- Use callsign "Tulip" to all flights set to Uzi
+    -- '*' is a reserverd case. every formation with '*' callsign used will be group name. useful if you plan to have multiple overrides and limited number of DCS callsignes
     local callsignOverride = {
-        Uzi = "Tulip"
+        Uzi = "Tulip",
+        Enfield = "*"
     }
     HoundInstance:setCallsignOverride(callsignOverride)
 ```
@@ -878,12 +898,12 @@ Introduced with Hound 0.2 you now have Hound event handling. This for example al
 | RADAR_DESTROYED  | 12 |
 | RADAR_ALIVE  | 13 |
 | RADAR_ASLEEP  | 14 |
-| SITE_NEW  | 15 (RESERVED)|
-| SITE_CREATED  | 16 (RESERVED)|
-| SITE_UPDATED  | 17 (RESERVED)|
-| SITE_REMOVED  | 18 (RESERVED)|
-| SITE_ALIVE  | 19 (RESERVED) |
-| SITE_ASLEEP |  20 (RESERVED) |
+| SITE_NEW  | 15 |
+| SITE_CREATED  | 16 |
+| SITE_UPDATED  | 17 |
+| SITE_REMOVED  | 18 |
+| SITE_ALIVE  | 19  |
+| SITE_ASLEEP |  20  |
 
 Event structure is as follows
 ```lua
@@ -943,24 +963,37 @@ HoundInstance:setTimerInterval("display",180)
 ## Exports
 Current implementation suports two types of export. LUA and CSV.
 ### LUA Export
+#### Site export
 ```lua
-HoudnInstace:getContacts()
+HoudnInstace:getSites()
 ```
 Calling this function will return a LUA table
 ```lua
  {
     ewr = { 
             count = 0,
-            contacts = {}
+            sites = {}
           },
     sam = {
             count = 0,
-            contacts = {}
+            sites = {}
           }
 }
 ```
-Each contact will be added to the apropriate category and count will be updated to match number of contacts in each categoty.
-data structure of each record will follow this pattern.
+
+each site entry is a lua table
+```lua
+{
+    name = <String (Hound Site Name)>,
+    DCSobjectName = MString (Dcs Group Name)>,
+    gid = <int (3 digits)> ,
+    Type = <String>,
+    last_seen = <float (time last spotted by platform in seconds, timer.getAbsTime)>,
+    emitters = { <Table (emitter entries, see below)}
+}
+```
+
+Each emitter entry will follow the following struct.
 ```lua
 {
     typeName = <String ("straight flush","P-19")> 
@@ -985,6 +1018,28 @@ data structure of each record will follow this pattern.
 }
 ```
 
+#### Contacts export (legacy)
+This function will dump a table only containing contacts with no actual grouping 
+```lua
+HoudnInstace:getContacts()
+```
+Calling this function will return a LUA table
+```lua
+ {
+    ewr = { 
+            count = 0,
+            contacts = {}
+          },
+    sam = {
+            count = 0,
+            contacts = {}
+          }
+}
+```
+Each contact will be added to the apropriate category and count will be updated to match number of contacts in each categoty.
+entry structure will look the same as emitter entry of SiteExport
+
+
 ### CSV export
 ```lua
 HoundInstance:dumpIntelBrief()
@@ -996,24 +1051,24 @@ HoundInstance:dumpIntelBrief("custom_name.csv")
 ```
 CSV structure:
 ```
-TrackId,NatoDesignation,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accuracy,lastSeen,DCStype,DCSunit,DCSgroup,ReportGenerated
+SiteId,SiteNatoDesignation,TrackId,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accuracy,lastSeen,DCStype,DCSunit,DCSgroup,ReportGenerated
 ```
 
 Sample data
 ```csv
-TrackId,NatoDesignation,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accuracy,lastSeen,DCStype,DCSunit,DCSgroup,ReportGenerated
-I-1,2,Fan-song,Down,187/78,33.721733,35.800634,36S YC 5951 3482,Precise,1700,SNR_75V,SYR_SA-2_TR,SYR_SA-2,1705
-I-2,2 or 3,Flat Face,Active,187/78,33.723213,35.799935,36S YC 5944 3498,Precise,1705,p-19 s-125 sr,SYR_SA-2_SR,SYR_SA-2,1705
-E-12,11 or 17,Snow Drift,Active,186/77,33.734985,35.821898,36S YC 6144 3634,High,1705,SA-11 Buk SR 9S18M1,SYRIA gnd 3 unit1,SYRIA gnd 3,1705
-E-10,6,Straight Flush,Active,189/84,33.622484,35.727605,36S YC 5303 2363,High,1705,Kub 1S91 str,SYRIA gnd 2 unit1,SYRIA gnd 2,1705
-E-11,6,Straight Flush,Active,181/71,33.845855,35.952393,36S YC 7318 4898,Very High,1705,Kub 1S91 str,SYRIA gnd 1 unit1,SYRIA gnd 1,1705
-E-9,EWR,Box Spring,Active,185/96,33.418094,35.864466,36S YC 6636 130,Very Low,1705,1L13 EWR,EWR-SKYNET-1,EWR-SKYNET-0,1705
-I-3,EWR,Box Spring,Active,147/60,34.207544,36.618624,37S BT 8059 8773,Precise,1705,1L13 EWR,EWR-SKYNET-4-1,EWR-SKYNET-4,1705
-I-4,EWR,Box Spring,Active,191/81,33.678493,35.704000,36S YC 5068 2979,Precise,1705,1L13 EWR,EWR-SKYNET-1-1,EWR-SKYNET-1,1705
-I-5,EWR,Box Spring,Active,170/44,34.301650,36.114852,37S BT 3446 9937,Precise,1705,1L13 EWR,EWR-SKYNET-5-1,EWR-SKYNET-5,1705
-I-6,EWR,Box Spring,Active,200/75,33.820852,35.486437,36S YC 3012 4507,Precise,1705,1L13 EWR,EWR-SKYNET-6-1,EWR-SKYNET-6,1705
-I-7,EWR,Box Spring,Active,185/64,33.950048,35.878007,36S YC 6597 6034,Precise,1705,1L13 EWR,EWR-SKYNET-2-1,EWR-SKYNET-2,1705
-I-8,EWR,Box Spring,Active,183/52,34.151685,35.911686,36S YC 6845 8280,Precise,1705,1L13 EWR,EWR-SKYNET-3-1,EWR-SKYNET-3,17050
+SiteId,SiteNatoDesignation,TrackId,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accuracy,lastSeen,DCStype,DCSunit,DCSgroup,ReportGenerated
+T002,2,I-1,Fan-song,Asleep,187/78,33.721733,35.800634,36S YC 5951 3482,Precise,1700,SNR_75V,SYR_SA-2_TR,SYR_SA-2,1730
+T002,2,I-3,Flat Face,Active,187/78,33.723213,35.799935,36S YC 5944 3498,Precise,1730,p-19 s-125 sr,SYR_SA-2_SR,SYR_SA-2,1730
+T021,6,E-20,Straight Flush,Active,018/0,35.022129,35.900628,36S YD 6465 7934,Unactionable,1730,Kub 1S91 str,SYRIA gnd 2 unit1,SYRIA gnd 2,1730
+T019,6,E-18,Straight Flush,Active,217/0,35.020751,35.899614,36S YD 6456 7918,Unactionable,1730,Kub 1S91 str,SYRIA gnd 3 unit1,SYRIA gnd 3,1730
+T023,6,E-22,Straight Flush,Active,032/0,35.021980,35.900600,36S YD 6465 7932,Unactionable,1730,Kub 1S91 str,SYRIA gnd 1 unit1,SYRIA gnd 1,1730
+S009,EWR,I-8,Box Spring,Active,170/44,34.301650,36.114852,37S BT 3446 9937,Precise,1730,1L13 EWR,EWR-SKYNET-5-1,EWR-SKYNET-5,1730
+S015,EWR,I-14,Box Spring,Active,183/52,34.151685,35.911686,36S YC 6845 8280,Precise,1730,1L13 EWR,EWR-SKYNET-3-1,EWR-SKYNET-3,1730
+S007,EWR,I-6,Box Spring,Active,191/81,33.678493,35.704000,36S YC 5068 2979,Precise,1730,1L13 EWR,EWR-SKYNET-1-1,EWR-SKYNET-1,1730
+S011,EWR,I-10,Box Spring,Active,200/75,33.820852,35.486437,36S YC 3012 4507,Precise,1730,1L13 EWR,EWR-SKYNET-6-1,EWR-SKYNET-6,1730
+S005,EWR,I-4,Box Spring,Active,147/60,34.207544,36.618624,37S BT 8059 8773,Precise,1730,1L13 EWR,EWR-SKYNET-4-1,EWR-SKYNET-4,1730
+S017,EWR,E-16,Box Spring,Active,054/0,35.023404,35.902730,36S YD 6484 7949,Unactionable,1730,1L13 EWR,EWR-SKYNET-1,EWR-SKYNET-0,1730
+S013,EWR,I-12,Box Spring,Active,185/64,33.950048,35.878007,36S YC 6597 6034,Precise,1730,1L13 EWR,EWR-SKYNET-2-1,EWR-SKYNET-2,1730
 ```
 
 **NOTE**: This function requires you do [de-sanitize](#desanitize-dcs-scripting-engine) `io` and `lfs` modules in DCS scripting engine.

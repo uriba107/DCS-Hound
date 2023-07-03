@@ -1,0 +1,1776 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Reference</title>
+    <link rel="stylesheet" href="../ldoc_fixed.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Hound<br> ELINT for DCS</h1>
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Class_HOUND_Sector">Class HOUND.Sector </a></li>
+<li><a href="#getters_and_setters">getters and setters </a></li>
+<li><a href="#Controller_Functions">Controller Functions </a></li>
+<li><a href="#ATIS_Functions">ATIS Functions </a></li>
+<li><a href="#Notifier_Functions">Notifier Functions </a></li>
+<li><a href="#Contact_Functions">Contact Functions </a></li>
+<li><a href="#Radio_Menu">Radio Menu </a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><a href="../modules/HOUND.html">HOUND</a></li>
+  <li><a href="../modules/HOUND.Logger.html">HOUND.Logger</a></li>
+  <li><a href="../modules/HOUND.DB.html">HOUND.DB</a></li>
+  <li><a href="../modules/HOUND.Config.html">HOUND.Config</a></li>
+  <li><a href="../modules/HOUND.Utils.html">HOUND.Utils</a></li>
+  <li><a href="../modules/HOUND.EventHandler.html">HOUND.EventHandler</a></li>
+  <li><a href="../modules/HOUND.Contact.Base.html">HOUND.Contact.Base</a></li>
+  <li><a href="../modules/HOUND.Contact.Estimator.html">HOUND.Contact.Estimator</a></li>
+  <li><a href="../modules/HOUND.Contact.Datapoint.html">HOUND.Contact.Datapoint</a></li>
+  <li><a href="../modules/HOUND.Contact.Emitter.html">HOUND.Contact.Emitter</a></li>
+  <li><a href="../modules/HOUND.Contact.Site.html">HOUND.Contact.Site</a></li>
+  <li><a href="../modules/HOUND.Comms.Manager.html">HOUND.Comms.Manager</a></li>
+  <li><a href="../modules/HOUND.Comms.InformationSystem.html">HOUND.Comms.InformationSystem</a></li>
+  <li><a href="../modules/HOUND.Comms.Controller.html">HOUND.Comms.Controller</a></li>
+  <li><a href="../modules/HOUND.Comms.Notifier.html">HOUND.Comms.Notifier</a></li>
+  <li><a href="../modules/HOUND.ElintWorker.html">HOUND.ElintWorker</a></li>
+  <li><a href="../modules/HOUND.ContactManager.html">HOUND.ContactManager</a></li>
+  <li><strong>HOUND.Sector</strong></li>
+</ul>
+<h2>Scripts</h2>
+<ul class="nowrap">
+  <li><a href="../scripts/HoundElint.html">HoundElint</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>HOUND.Sector</code></h1>
+<p>HOUND.Sector</p>
+<p></p>
+
+
+<h2><a href="#Class_HOUND_Sector">Class HOUND.Sector </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector.create">HOUND.Sector.create (HoundId, name[, settings[, priority]])</a></td>
+	<td class="summary">Create sectors</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:updateSettings">HOUND.Sector:updateSettings (settings)</a></td>
+	<td class="summary">Update sectore settings</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:destroy">HOUND.Sector:destroy ()</a></td>
+	<td class="summary">Sector "Destructor"
+ cleans up everyting needed for sector to safly be removed</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:updateServices">HOUND.Sector:updateServices ()</a></td>
+	<td class="summary">Update internal services with settings stored in the sector.</td>
+	</tr>
+</table>
+<h2><a href="#getters_and_setters">getters and setters </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:getName">HOUND.Sector:getName ()</a></td>
+	<td class="summary">get name</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:getPriority">HOUND.Sector:getPriority ()</a></td>
+	<td class="summary">get priority</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:setCallsign">HOUND.Sector:setCallsign (callsign[, NATO])</a></td>
+	<td class="summary">set callsign for sector</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:getCallsign">HOUND.Sector:getCallsign ()</a></td>
+	<td class="summary">get callsign for sector</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:getZone">HOUND.Sector:getZone ()</a></td>
+	<td class="summary">get zone polygon</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:hasZone">HOUND.Sector:hasZone ()</a></td>
+	<td class="summary">has zone</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:setZone">HOUND.Sector:setZone (zonecandidate)</a></td>
+	<td class="summary">Set zone in sector</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:removeZone">HOUND.Sector:removeZone ()</a></td>
+	<td class="summary">Remove Zone settings from sector</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:setTransmitter">HOUND.Sector:setTransmitter (userTransmitter)</a></td>
+	<td class="summary">sets transmitter to sector</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:updateTransmitter">HOUND.Sector:updateTransmitter ()</a></td>
+	<td class="summary">updates all available comms with transmitter on file</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:removeTransmitter">HOUND.Sector:removeTransmitter ()</a></td>
+	<td class="summary">removes transmitter from sector</td>
+	</tr>
+</table>
+<h2><a href="#Controller_Functions">Controller Functions </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:enableController">HOUND.Sector:enableController ([userSettings])</a></td>
+	<td class="summary">enable controller</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:disableController">HOUND.Sector:disableController ()</a></td>
+	<td class="summary">disable controller</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:removeController">HOUND.Sector:removeController ()</a></td>
+	<td class="summary">remove controller completly from sector</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:getControllerFreq">HOUND.Sector:getControllerFreq ()</a></td>
+	<td class="summary">get controller frequencies</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:hasController">HOUND.Sector:hasController ()</a></td>
+	<td class="summary">checks for controller in sector</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:isControllerEnabled">HOUND.Sector:isControllerEnabled ()</a></td>
+	<td class="summary">checks if controller is enabled for the sector</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:transmitOnController">HOUND.Sector:transmitOnController (msg)</a></td>
+	<td class="summary">Transmit custom TTS message on controller</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:enableText">HOUND.Sector:enableText ()</a></td>
+	<td class="summary">enable controller text for sector</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:disableText">HOUND.Sector:disableText ()</a></td>
+	<td class="summary">disable controller text for sector</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:enableAlerts">HOUND.Sector:enableAlerts ()</a></td>
+	<td class="summary">enable controller Alerts for sector</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:disableAlerts">HOUND.Sector:disableAlerts ()</a></td>
+	<td class="summary">disable controller  for sector</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:enableTTS">HOUND.Sector:enableTTS ()</a></td>
+	<td class="summary">enable Controller tts for sector</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:disableTTS">HOUND.Sector:disableTTS ()</a></td>
+	<td class="summary">disable Controller tts for sector</td>
+	</tr>
+</table>
+<h2><a href="#ATIS_Functions">ATIS Functions </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:enableAtis">HOUND.Sector:enableAtis (userSettings)</a></td>
+	<td class="summary">enable ATIS in sector</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:disableAtis">HOUND.Sector:disableAtis ()</a></td>
+	<td class="summary">disable ATIS in sector</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:removeAtis">HOUND.Sector:removeAtis ()</a></td>
+	<td class="summary">remove ATIS from sector</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:getAtisFreq">HOUND.Sector:getAtisFreq ()</a></td>
+	<td class="summary">get ATIS frequencies</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:reportEWR">HOUND.Sector:reportEWR (state)</a></td>
+	<td class="summary">Set ATIS EWR report state</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:hasAtis">HOUND.Sector:hasAtis ()</a></td>
+	<td class="summary">checks for atis in sector</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:isAtisEnabled">HOUND.Sector:isAtisEnabled ()</a></td>
+	<td class="summary">checks if ats is enabled for the sector</td>
+	</tr>
+</table>
+<h2><a href="#Notifier_Functions">Notifier Functions </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:enableNotifier">HOUND.Sector:enableNotifier ([userSettings])</a></td>
+	<td class="summary">enable Notifier in sector</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:disableNotifier">HOUND.Sector:disableNotifier ()</a></td>
+	<td class="summary">disable notifier in sector</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:removeNotifier">HOUND.Sector:removeNotifier ()</a></td>
+	<td class="summary">remove notifier in sector</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:getNotifierFreq">HOUND.Sector:getNotifierFreq ()</a></td>
+	<td class="summary">get Notifier frequencies</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:hasNotifier">HOUND.Sector:hasNotifier ()</a></td>
+	<td class="summary">checks sector for notifier</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:isNotifierEnabled">HOUND.Sector:isNotifierEnabled ()</a></td>
+	<td class="summary">checks if ats is enabled for the sector</td>
+	</tr>
+</table>
+<h2><a href="#Contact_Functions">Contact Functions </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:getContacts">HOUND.Sector:getContacts ()</a></td>
+	<td class="summary">return a sorted list of all contacts for the sector</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:countContacts">HOUND.Sector:countContacts ()</a></td>
+	<td class="summary">count the number of contacts for the sector</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:updateSectorMembership">HOUND.Sector:updateSectorMembership (contact)</a></td>
+	<td class="summary">update contact for zone memberships</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:getSites">HOUND.Sector:getSites ()</a></td>
+	<td class="summary">return a sorted list of all contacts for the sector</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:countSites">HOUND.Sector:countSites ()</a></td>
+	<td class="summary">count the number of contacts for the sector</td>
+	</tr>
+</table>
+<h2><a href="#Radio_Menu">Radio Menu </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector.removeRadioMenu">HOUND.Sector.removeRadioMenu (self)</a></td>
+	<td class="summary">remove all radio menus for</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:findGrpInPlayerList">HOUND.Sector:findGrpInPlayerList (grpId[, playersList])</a></td>
+	<td class="summary">find group in enrolled</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:getSubscribedGroups">HOUND.Sector:getSubscribedGroups ()</a></td>
+	<td class="summary">get subscribed groups</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:validateEnrolled">HOUND.Sector:validateEnrolled ()</a></td>
+	<td class="summary">clean non existing users from subscribers</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector.checkIn">HOUND.Sector.checkIn (args[, skipAck])</a></td>
+	<td class="summary">check in player to controller</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector.checkOut">HOUND.Sector.checkOut (args[, skipAck[, onlyPlayer]])</a></td>
+	<td class="summary">check out player's group from controller</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:isNotifiying">HOUND.Sector:isNotifiying ()</a></td>
+	<td class="summary">Check if sector can notify</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:getTransmissionAnnounce">HOUND.Sector:getTransmissionAnnounce ([index])</a></td>
+	<td class="summary">create randome annouce</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:notifyEmitterDead">HOUND.Sector:notifyEmitterDead (contact)</a></td>
+	<td class="summary">Send dead emitter notification</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:notifyEmitterNew">HOUND.Sector:notifyEmitterNew (contact)</a></td>
+	<td class="summary">Send new emitter notification</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:notifySiteIdentified">HOUND.Sector:notifySiteIdentified (site)</a></td>
+	<td class="summary">Notify a site was reclassified</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:notifySiteNew">HOUND.Sector:notifySiteNew (site)</a></td>
+	<td class="summary">Notify a site was created</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:notifySiteDead">HOUND.Sector:notifySiteDead (site, isDead)</a></td>
+	<td class="summary">Notify a site was destroyed</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:generateAtis">HOUND.Sector:generateAtis (loopData, AtisPreferences)</a></td>
+	<td class="summary">Generate Atis message for sector</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector.TransmitSamReport">HOUND.Sector.TransmitSamReport (args)</a></td>
+	<td class="summary">transmit SAM report</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:TransmitCheckInAck">HOUND.Sector:TransmitCheckInAck (player)</a></td>
+	<td class="summary">transmit checkin message</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:TransmitCheckOutAck">HOUND.Sector:TransmitCheckOutAck (player)</a></td>
+	<td class="summary">transmit checkout message</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:getRadioItemsText">HOUND.Sector:getRadioItemsText ()</a></td>
+	<td class="summary">generate menu cache</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:createCheckIn">HOUND.Sector:createCheckIn ()</a></td>
+	<td class="summary">create check menu items for players</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:populateRadioMenu">HOUND.Sector:populateRadioMenu ()</a></td>
+	<td class="summary">Populate sector radio menu</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:removeMenuItems">HOUND.Sector:removeMenuItems (menu, grpId)</a></td>
+	<td class="summary">recursivly clean out a menu</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:getMenuPage">HOUND.Sector:getMenuPage (menu, grpId, parent)</a></td>
+	<td class="summary">Handle menu pagination</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:getMenuObj">HOUND.Sector:getMenuObj ()</a></td>
+	<td class="summary">get new menu object</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:addSiteRadioItems">HOUND.Sector:addSiteRadioItems (typeMenu, requester, siteData)</a></td>
+	<td class="summary">create site menu item</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:removeSiteRadioItems">HOUND.Sector:removeSiteRadioItems (typeMenu, requester, siteData)</a></td>
+	<td class="summary">remove radar menu items</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header has-description"><a name="Class_HOUND_Sector"></a>Class HOUND.Sector </h2>
+
+          <div class="section-description">
+          HOUND.Sector
+          </div>
+    <dl class="function">
+    <dt>
+    <a name = "HOUND.Sector.create"></a>
+    <strong>HOUND.Sector.create (HoundId, name[, settings[, priority]])</strong>
+    </dt>
+    <dd>
+    Create sectors
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">HoundId</span>
+         Hound Instance ID
+        </li>
+        <li><span class="parameter">name</span>
+         Sector name
+        </li>
+        <li><span class="parameter">settings</span>
+         Sector settings table
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">priority</span>
+         Priority for the sector
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:updateSettings"></a>
+    <strong>HOUND.Sector:updateSettings (settings)</strong>
+    </dt>
+    <dd>
+    Update sectore settings
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">settings</span>
+         table of settings for internal services
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> sectorSettings = {
+     atis = {
+         freq = <span class="number">123.45</span>
+     },
+     controller = {
+         freq = <span class="number">234.56</span>
+     },
+     notifier = {
+         freq = <span class="number">243.00</span>
+     }
+ }
+ sector:updateSettings(sectorSettings)
+</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:destroy"></a>
+    <strong>HOUND.Sector:destroy ()</strong>
+    </dt>
+    <dd>
+    Sector "Destructor"
+ cleans up everyting needed for sector to safly be removed
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        nil is returned
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:updateServices"></a>
+    <strong>HOUND.Sector:updateServices ()</strong>
+    </dt>
+    <dd>
+    Update internal services with settings stored in the sector.
+
+
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="getters_and_setters"></a>getters and setters </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HOUND.Sector:getName"></a>
+    <strong>HOUND.Sector:getName ()</strong>
+    </dt>
+    <dd>
+    get name
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        string name of sector
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:getPriority"></a>
+    <strong>HOUND.Sector:getPriority ()</strong>
+    </dt>
+    <dd>
+    get priority
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Int priority of sector
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:setCallsign"></a>
+    <strong>HOUND.Sector:setCallsign (callsign[, NATO])</strong>
+    </dt>
+    <dd>
+    set callsign for sector
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">callsign</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Requested Callsign
+        </li>
+        <li><span class="parameter">NATO</span>
+            <span class="types"><span class="type">bool</span></span>
+         Use NATO pool for callsignes
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:getCallsign"></a>
+    <strong>HOUND.Sector:getCallsign ()</strong>
+    </dt>
+    <dd>
+    get callsign for sector
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        string Callsign for current sector
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:getZone"></a>
+    <strong>HOUND.Sector:getZone ()</strong>
+    </dt>
+    <dd>
+    get zone polygon
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table of points or nil
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:hasZone"></a>
+    <strong>HOUND.Sector:hasZone ()</strong>
+    </dt>
+    <dd>
+    has zone
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Bool. True if sector has zone
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:setZone"></a>
+    <strong>HOUND.Sector:setZone (zonecandidate)</strong>
+    </dt>
+    <dd>
+    Set zone in sector
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">zonecandidate</span>
+         (String) DCS group name, or a drawn map freeform Polygon. sector borders will be group waypoints or polygon points
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:removeZone"></a>
+    <strong>HOUND.Sector:removeZone ()</strong>
+    </dt>
+    <dd>
+    Remove Zone settings from sector
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:setTransmitter"></a>
+    <strong>HOUND.Sector:setTransmitter (userTransmitter)</strong>
+    </dt>
+    <dd>
+    sets transmitter to sector
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">userTransmitter</span>
+         (String) Name of the Unit that would be transmitting
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:updateTransmitter"></a>
+    <strong>HOUND.Sector:updateTransmitter ()</strong>
+    </dt>
+    <dd>
+    updates all available comms with transmitter on file
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:removeTransmitter"></a>
+    <strong>HOUND.Sector:removeTransmitter ()</strong>
+    </dt>
+    <dd>
+    removes transmitter from sector
+
+
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Controller_Functions"></a>Controller Functions </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HOUND.Sector:enableController"></a>
+    <strong>HOUND.Sector:enableController ([userSettings])</strong>
+    </dt>
+    <dd>
+    enable controller
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">userSettings</span>
+         contoller settings
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:disableController"></a>
+    <strong>HOUND.Sector:disableController ()</strong>
+    </dt>
+    <dd>
+    disable controller
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:removeController"></a>
+    <strong>HOUND.Sector:removeController ()</strong>
+    </dt>
+    <dd>
+    remove controller completly from sector
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:getControllerFreq"></a>
+    <strong>HOUND.Sector:getControllerFreq ()</strong>
+    </dt>
+    <dd>
+    get controller frequencies
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:hasController"></a>
+    <strong>HOUND.Sector:hasController ()</strong>
+    </dt>
+    <dd>
+    checks for controller in sector
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        true if Sector has controller
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:isControllerEnabled"></a>
+    <strong>HOUND.Sector:isControllerEnabled ()</strong>
+    </dt>
+    <dd>
+    checks if controller is enabled for the sector
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        true if Sector controller is enabled
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:transmitOnController"></a>
+    <strong>HOUND.Sector:transmitOnController (msg)</strong>
+    </dt>
+    <dd>
+    Transmit custom TTS message on controller
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">msg</span>
+         string to broadcast
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:enableText"></a>
+    <strong>HOUND.Sector:enableText ()</strong>
+    </dt>
+    <dd>
+    enable controller text for sector
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:disableText"></a>
+    <strong>HOUND.Sector:disableText ()</strong>
+    </dt>
+    <dd>
+    disable controller text for sector
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:enableAlerts"></a>
+    <strong>HOUND.Sector:enableAlerts ()</strong>
+    </dt>
+    <dd>
+    enable controller Alerts for sector
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:disableAlerts"></a>
+    <strong>HOUND.Sector:disableAlerts ()</strong>
+    </dt>
+    <dd>
+    disable controller  for sector
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:enableTTS"></a>
+    <strong>HOUND.Sector:enableTTS ()</strong>
+    </dt>
+    <dd>
+    enable Controller tts for sector
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:disableTTS"></a>
+    <strong>HOUND.Sector:disableTTS ()</strong>
+    </dt>
+    <dd>
+    disable Controller tts for sector
+
+
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="ATIS_Functions"></a>ATIS Functions </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HOUND.Sector:enableAtis"></a>
+    <strong>HOUND.Sector:enableAtis (userSettings)</strong>
+    </dt>
+    <dd>
+    enable ATIS in sector
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">userSettings</span>
+         ATIS settings array
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:disableAtis"></a>
+    <strong>HOUND.Sector:disableAtis ()</strong>
+    </dt>
+    <dd>
+    disable ATIS in sector
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:removeAtis"></a>
+    <strong>HOUND.Sector:removeAtis ()</strong>
+    </dt>
+    <dd>
+    remove ATIS from sector
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:getAtisFreq"></a>
+    <strong>HOUND.Sector:getAtisFreq ()</strong>
+    </dt>
+    <dd>
+    get ATIS frequencies
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:reportEWR"></a>
+    <strong>HOUND.Sector:reportEWR (state)</strong>
+    </dt>
+    <dd>
+    Set ATIS EWR report state
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">state</span>
+            <span class="types"><span class="type">bool</span></span>
+         True will report EWR
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:hasAtis"></a>
+    <strong>HOUND.Sector:hasAtis ()</strong>
+    </dt>
+    <dd>
+    checks for atis in sector
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        true if Sector has atis
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:isAtisEnabled"></a>
+    <strong>HOUND.Sector:isAtisEnabled ()</strong>
+    </dt>
+    <dd>
+    checks if ats is enabled for the sector
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        true if Sector ats is enabled
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Notifier_Functions"></a>Notifier Functions </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HOUND.Sector:enableNotifier"></a>
+    <strong>HOUND.Sector:enableNotifier ([userSettings])</strong>
+    </dt>
+    <dd>
+    enable Notifier in sector
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">userSettings</span>
+         table of settings for Notifier
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:disableNotifier"></a>
+    <strong>HOUND.Sector:disableNotifier ()</strong>
+    </dt>
+    <dd>
+    disable notifier in sector
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:removeNotifier"></a>
+    <strong>HOUND.Sector:removeNotifier ()</strong>
+    </dt>
+    <dd>
+    remove notifier in sector
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        true if Sector has notifier
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:getNotifierFreq"></a>
+    <strong>HOUND.Sector:getNotifierFreq ()</strong>
+    </dt>
+    <dd>
+    get Notifier frequencies
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:hasNotifier"></a>
+    <strong>HOUND.Sector:hasNotifier ()</strong>
+    </dt>
+    <dd>
+    checks sector for notifier
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:isNotifierEnabled"></a>
+    <strong>HOUND.Sector:isNotifierEnabled ()</strong>
+    </dt>
+    <dd>
+    checks if ats is enabled for the sector
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        true if Sector ats is enabled
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Contact_Functions"></a>Contact Functions </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HOUND.Sector:getContacts"></a>
+    <strong>HOUND.Sector:getContacts ()</strong>
+    </dt>
+    <dd>
+    return a sorted list of all contacts for the sector
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:countContacts"></a>
+    <strong>HOUND.Sector:countContacts ()</strong>
+    </dt>
+    <dd>
+    count the number of contacts for the sector
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:updateSectorMembership"></a>
+    <strong>HOUND.Sector:updateSectorMembership (contact)</strong>
+    </dt>
+    <dd>
+    update contact for zone memberships
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">contact</span>
+         HOUND.Contact instance
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:getSites"></a>
+    <strong>HOUND.Sector:getSites ()</strong>
+    </dt>
+    <dd>
+    return a sorted list of all contacts for the sector
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:countSites"></a>
+    <strong>HOUND.Sector:countSites ()</strong>
+    </dt>
+    <dd>
+    count the number of contacts for the sector
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Integer
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Radio_Menu"></a>Radio Menu </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HOUND.Sector.removeRadioMenu"></a>
+    <strong>HOUND.Sector.removeRadioMenu (self)</strong>
+    </dt>
+    <dd>
+    remove all radio menus for
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+         HOUND.Sector
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:findGrpInPlayerList"></a>
+    <strong>HOUND.Sector:findGrpInPlayerList (grpId[, playersList])</strong>
+    </dt>
+    <dd>
+    find group in enrolled
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">grpId</span>
+         GroupId (int)
+        </li>
+        <li><span class="parameter">playersList</span>
+         list of mist.DB units to find all the group members in
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        list of enrolled players in grp
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:getSubscribedGroups"></a>
+    <strong>HOUND.Sector:getSubscribedGroups ()</strong>
+    </dt>
+    <dd>
+    get subscribed groups
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        list of groupsId
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:validateEnrolled"></a>
+    <strong>HOUND.Sector:validateEnrolled ()</strong>
+    </dt>
+    <dd>
+    clean non existing users from subscribers
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector.checkIn"></a>
+    <strong>HOUND.Sector.checkIn (args[, skipAck])</strong>
+    </dt>
+    <dd>
+    check in player to controller
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">args</span>
+         table {self=&ltHOUND.Sector&gt,player=&ltplayer&gt}
+        </li>
+        <li><span class="parameter">skipAck</span>
+         Bool if true do not reply with ack to player
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector.checkOut"></a>
+    <strong>HOUND.Sector.checkOut (args[, skipAck[, onlyPlayer]])</strong>
+    </dt>
+    <dd>
+    check out player's group from controller
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">args</span>
+         table {self=&ltHOUND.Sector&gt,player=&ltplayer&gt}
+        </li>
+        <li><span class="parameter">skipAck</span>
+         Bool if true do not reply with ack to player
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">onlyPlayer</span>
+         Bool. if true, only the player and not his flight (eg. slot change for player)
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:isNotifiying"></a>
+    <strong>HOUND.Sector:isNotifiying ()</strong>
+    </dt>
+    <dd>
+    Check if sector can notify
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:getTransmissionAnnounce"></a>
+    <strong>HOUND.Sector:getTransmissionAnnounce ([index])</strong>
+    </dt>
+    <dd>
+    create randome annouce
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">index</span>
+         of requested announce
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        string Announcement
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:notifyEmitterDead"></a>
+    <strong>HOUND.Sector:notifyEmitterDead (contact)</strong>
+    </dt>
+    <dd>
+    Send dead emitter notification
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">contact</span>
+         HounContact instace
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:notifyEmitterNew"></a>
+    <strong>HOUND.Sector:notifyEmitterNew (contact)</strong>
+    </dt>
+    <dd>
+    Send new emitter notification
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">contact</span>
+         HounContact instace
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:notifySiteIdentified"></a>
+    <strong>HOUND.Sector:notifySiteIdentified (site)</strong>
+    </dt>
+    <dd>
+    Notify a site was reclassified
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">site</span>
+         <a href="../modules/HOUND.Contact.Site.html#">HOUND.Contact.Site</a> instace
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:notifySiteNew"></a>
+    <strong>HOUND.Sector:notifySiteNew (site)</strong>
+    </dt>
+    <dd>
+    Notify a site was created
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">site</span>
+         <a href="../modules/HOUND.Contact.Site.html#">HOUND.Contact.Site</a> instace
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:notifySiteDead"></a>
+    <strong>HOUND.Sector:notifySiteDead (site, isDead)</strong>
+    </dt>
+    <dd>
+    Notify a site was destroyed
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">site</span>
+         <a href="../modules/HOUND.Contact.Site.html#">HOUND.Contact.Site</a> instace
+        </li>
+        <li><span class="parameter">isDead</span>
+         True is site is removed, false if just asleep
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:generateAtis"></a>
+    <strong>HOUND.Sector:generateAtis (loopData, AtisPreferences)</strong>
+    </dt>
+    <dd>
+    Generate Atis message for sector
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">loopData</span>
+         HoundInfomationSystem loop table
+        </li>
+        <li><span class="parameter">AtisPreferences</span>
+         HoundInfomationSystem settings table
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector.TransmitSamReport"></a>
+    <strong>HOUND.Sector.TransmitSamReport (args)</strong>
+    </dt>
+    <dd>
+    transmit SAM report
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">args</span>
+         table {self=&ltHOUND.Sector&gt,contact=&ltHOUND.Contact&gt,requester=&ltplayer&gt}
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:TransmitCheckInAck"></a>
+    <strong>HOUND.Sector:TransmitCheckInAck (player)</strong>
+    </dt>
+    <dd>
+    transmit checkin message
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">player</span>
+         Player entity
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:TransmitCheckOutAck"></a>
+    <strong>HOUND.Sector:TransmitCheckOutAck (player)</strong>
+    </dt>
+    <dd>
+    transmit checkout message
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">player</span>
+         Player entity
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:getRadioItemsText"></a>
+    <strong>HOUND.Sector:getRadioItemsText ()</strong>
+    </dt>
+    <dd>
+    generate menu cache
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        #table radio items text
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:createCheckIn"></a>
+    <strong>HOUND.Sector:createCheckIn ()</strong>
+    </dt>
+    <dd>
+    create check menu items for players
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:populateRadioMenu"></a>
+    <strong>HOUND.Sector:populateRadioMenu ()</strong>
+    </dt>
+    <dd>
+    Populate sector radio menu
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:removeMenuItems"></a>
+    <strong>HOUND.Sector:removeMenuItems (menu, grpId)</strong>
+    </dt>
+    <dd>
+    recursivly clean out a menu
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">menu</span>
+
+        </li>
+        <li><span class="parameter">grpId</span>
+         GroupId to remove from
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:getMenuPage"></a>
+    <strong>HOUND.Sector:getMenuPage (menu, grpId, parent)</strong>
+    </dt>
+    <dd>
+    Handle menu pagination
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">menu</span>
+         to paginate
+        </li>
+        <li><span class="parameter">grpId</span>
+         group Id for menus
+        </li>
+        <li><span class="parameter">parent</span>
+         root menu if required
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        reference to the current page to use
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:getMenuObj"></a>
+    <strong>HOUND.Sector:getMenuObj ()</strong>
+    </dt>
+    <dd>
+    get new menu object
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:addSiteRadioItems"></a>
+    <strong>HOUND.Sector:addSiteRadioItems (typeMenu, requester, siteData)</strong>
+    </dt>
+    <dd>
+    create site menu item
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">typeMenu</span>
+         table containg the assigned type menu
+        </li>
+        <li><span class="parameter">requester</span>
+         MIST player object
+        </li>
+        <li><span class="parameter">siteData</span>
+         #table of site from menu cache
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:removeSiteRadioItems"></a>
+    <strong>HOUND.Sector:removeSiteRadioItems (typeMenu, requester, siteData)</strong>
+    </dt>
+    <dd>
+    remove radar menu items
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">typeMenu</span>
+         table contaning a menu structure for the group
+        </li>
+        <li><span class="parameter">requester</span>
+         mist human player object
+        </li>
+        <li><span class="parameter">siteData</span>
+         #table of site from menu cache
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+<i style="float:right;">Last updated 2023-07-03 20:57:16 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>
