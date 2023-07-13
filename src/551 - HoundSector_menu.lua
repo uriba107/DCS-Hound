@@ -4,7 +4,6 @@
 do
     local l_mist = mist
     -------------- Radio Menu stuff -----------------------------
-
     --- Radio Menu
     -- @section menu
 
@@ -28,8 +27,6 @@ do
         end
         return menuItems
     end
-
-
 
     --- create check menu items for players
     -- @local
@@ -113,8 +110,6 @@ do
                                                self.name,
                                                self._hSettings:getRadioMenu())
         end
-
-
 
         self:createCheckIn()
         local sitesData = self:getRadioItemsText()

@@ -21,7 +21,7 @@ do
 
     --- check if canidate Object is a valid platform
     -- @param candidate DCS Object (Unit or Static Object)
-    -- @return Bool. True if object is valid platform
+    -- @return[type=bool] True if object is valid platform
     function HOUND.DB.isValidPlatform(candidate)
         if (not HOUND.Utils.Dcs.isUnit(candidate) and not HOUND.Utils.Dcs.isStaticObject(candidate)) or not candidate:isExist()
              then return false
@@ -75,7 +75,11 @@ do
         platformData.posErr.y = 0
         platformData.ApertureSize = (DbInfo.antenna.size * DbInfo.antenna.factor) or 0
 
-        local VerticalOffset = DcsObject:getDesc()["box"]["max"]["y"] or (DbInfo.antenna.size)
+        local VerticalOffset = DbInfo.antenna.size
+        local objHitBox = DcsObject:getDesc()["box"]
+        if objHitBox then
+            VerticalOffset = objHitBox["max"]["y"]
+        end
         if DcsObject:getCategory() == Object.Category.STATIC then
             platformData.isStatic = true
             platformData.pos.y = platformData.pos.y + VerticalOffset/2
@@ -124,22 +128,26 @@ do
 
     --- Get emitter Band
     -- @local
-    -- @param DCS_Unit Radar unit
+    -- @param DcsUnit Radar unit
     -- @return Char radar band
-    function HOUND.DB.getEmitterBand(DCS_Unit)
-        if not HOUND.Utils.Dcs.isUnit(DCS_Unit) then return HOUND.DB.Bands.C end
-        local typeName = DCS_Unit:getTypeName()
+    function HOUND.DB.getEmitterBand(DcsUnit)
+        if not HOUND.Utils.Dcs.isUnit(DcsUnit) then return HOUND.DB.Bands.C end
+        local typeName = DcsUnit:getTypeName()
+        local _,isTracking = DcsUnit:getRadar()
         if HOUND.setContains(HOUND.DB.Radars,typeName) then
-            return HOUND.DB.Radars[typeName].Band[false]
+            return HOUND.DB.Radars[typeName].Band[HOUND.Utils.Dcs.isUnit(isTracking)]
         end
         return HOUND.DB.Bands.C
     end
 
     --- Elint Function - Get sensor precision
     -- @param platform Instance of DCS Unit which is the detecting platform
-    -- @param emitterBand Radar Band (frequency) of radar (A-L)
+    -- @param emitterBand Radar Band (frequency) of radar (A-L) or DCS Unit
     -- @return angular resolution in Radians of platform against specific Radar frequency
     function HOUND.DB.getSensorPrecision(platform,emitterBand)
+        if HOUND.Utils.Dcs.isUnit(emitterBand) then
+            emitterBand = HOUND.DB.getEmitterBand(emitterBand)
+        end
         return HOUND.DB.getDefraction(emitterBand,HOUND.DB.getApertureSize(platform)) or l_math.rad(20.0) -- precision
     end
 end

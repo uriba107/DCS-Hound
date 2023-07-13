@@ -40,7 +40,7 @@ do
         elintDatapoint.az = az0
         elintDatapoint.el = el0
         elintDatapoint.t = tonumber(t0)
-        elintDatapoint.platformId = platform0:getID()
+        elintDatapoint.platformId = tonumber(platform0:getID())
         elintDatapoint.platformName = platform0:getName()
         elintDatapoint.platformStatic = isPlatformStatic or false
         elintDatapoint.platformPrecision = angularResolution or l_math.rad(20)
@@ -60,7 +60,7 @@ do
     end
 
     --- check if platform is static
-    -- @return (Bool) True if platform is static
+    -- @return[type=Bool] True if platform is static
     function HOUND.Contact.Datapoint.isStatic(self)
         return self.platformStatic
     end
@@ -107,12 +107,7 @@ do
     --- Estimate contact position from Datapoint information only
     -- @local
     function HOUND.Contact.Datapoint.estimatePos(self)
-        if self.el == nil or l_math.abs(self.el) <= self.platformPrecision then return end
-        -- local maxSlant = HoundUtils.Geo.EarthLOS(self.platformPos.y)*0.8
-        -- local point = HoundUtils.Geo.getProjectedIP(self.platformPos,self.az,self.el)
-        -- if not HoundUtils.Dcs.isPoint(point) then
-        --     point = {x=maxSlant*l_math.cos(self.az) + self.platformPos.x,z=maxSlant*l_math.sin(self.az) + self.platformPos.z}
-        -- end
+        if self.el == nil or self.platformStatic or l_math.abs(self.el) <= self.platformPrecision then return end
         return HoundUtils.Geo.getProjectedIP(self.platformPos,self.az,self.el)
     end
 

@@ -106,7 +106,7 @@ do
     -- @section Settings
 
     --- is comm instance enabled
-    -- @return (Bool) True if enabled
+    -- @return[type=Bool] True if enabled
     function HOUND.Comms.Manager:isEnabled()
         return self.enabled
     end

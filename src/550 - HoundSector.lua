@@ -155,7 +155,7 @@ do
     end
 
     --- get priority
-    -- @return Int priority of sector
+    -- @return[type=int] priority of sector
     function HOUND.Sector:getPriority()
         return self.priority
     end
@@ -202,7 +202,7 @@ do
     end
 
     --- has zone
-    -- @return Bool. True if sector has zone
+    -- @return[type=bool] True if sector has zone
     function HOUND.Sector:hasZone()
         return self:getZone() ~= nil
     end
@@ -489,7 +489,7 @@ do
     end
 
     --- count the number of contacts for the sector
-    -- @return Integer
+    -- @return[type=int] Number of contacts
     function HOUND.Sector:countSites()
         local effectiveSectorName = self.name
         if not self:getZone() then
@@ -580,13 +580,12 @@ do
         local player = args["player"]
         if not HOUND.setContains(gSelf.comms.enrolled, player) then
             gSelf.comms.enrolled[player] = player
-            HOUND.Logger.debug("added player: " .. mist.utils.tableShow(player))
+            -- HOUND.Logger.debug("added player: " .. mist.utils.tableShow(player))
             -- table.insert(gSelf.comms.enrolled,player)
         end
         for _,otherPlayer in pairs(gSelf:findGrpInPlayerList(player.groupId,l_mist.DBs.humansByName)) do
             gSelf.comms.enrolled[otherPlayer] = otherPlayer
         end
-        HOUND.Logger.debug(l_mist.utils.tableShow(gSelf.comms.enrolled))
         gSelf:populateRadioMenu()
         if not skipAck then
             gSelf:TransmitCheckInAck(player)
@@ -807,8 +806,8 @@ do
         msg.contactId = site:getId()
         local body = {}
         if isDead then
-            body.txt = site:generateDeadReport(false,sitePrimarySector)
-            body.tts = site:generateDeadReport(true,sitePrimarySector)
+            body.txt = site:generateDeathReport(false,sitePrimarySector)
+            body.tts = site:generateDeathReport(true,sitePrimarySector)
         else
             body.txt = site:generateAsleepReport(false,sitePrimarySector)
             body.tts = site:generateAsleepReport(true,sitePrimarySector)
@@ -964,9 +963,7 @@ do
         local coalitionId = gSelf._hSettings:getCoalition()
         local msgObj = {coalition = coalitionId, priority = 1}
         local useDMM = false
-        if not contact then
-            HOUND.Logger.debug("failed to get contact " .. args["contact"])
-        end
+
         if contact.isEWR then msgObj.priority = 2 end
 
         if requester ~= nil then
@@ -978,8 +975,7 @@ do
             msgObj.contactId = contact:getId()
             msgObj.tts = contact:generateTtsReport(useDMM)
             if requester ~= nil then
-                msgObj.tts = HoundUtils.getFormationCallsign(requester,gSelf._hSettings:getCallsignOverride()) .. ", " .. gSelf.callsign .. ", " ..
-                                 msgObj.tts
+                msgObj.tts = HoundUtils.getFormationCallsign(requester,gSelf._hSettings:getCallsignOverride()) .. ", " .. gSelf.callsign .. ", " .. msgObj.tts
             end
             if gSelf.comms.controller:getSettings("enableText") == true then
                 msgObj.txt = contact:generateTextReport(useDMM)

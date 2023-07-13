@@ -62,7 +62,7 @@ do
     -- @see HOUND.Utils.Marker.setInitialId
     -- @local
     -- @param startId Number to start counting from
-    -- @return (Bool) True if initial ID was updated
+    -- @return[type=Bool] True if initial ID was updated
     function HOUND.Utils.setInitialMarkId(startId)
         return HOUND.Utils.Marker.setInitialId(startId)
     end
@@ -209,6 +209,7 @@ do
             "Good Luck!",
             "Happy Hunting!",
             "Please send my regards.",
+            "Come back with E T A, T O T, and B D A.",
             " "
         }
         return response[l_math.max(1,l_math.min(l_math.ceil(timer.getAbsTime() % HOUND.Length(response)),HOUND.Length(response)))]
@@ -325,7 +326,7 @@ do
     -- @return Formation callsign string
     function HOUND.Utils.getFormationCallsign(player,override,flightMember)
         local callsign = ""
-        local DCS_Unit = Unit.getByName(player.unitName)
+        local DcsUnit = Unit.getByName(player.unitName)
         if type(player) ~= "table" then return callsign end
         if type(flightMember) == "table" and override == nil then
             override,flightMember = flightMember,override
@@ -341,16 +342,16 @@ do
             if HOUND.setContains(override,formationCallsign) then
                 local override = override[formationCallsign]
                 if override == "*" then
-                    override = DCS_Unit:getGroup():getName() or formationCallsign
+                    override = DcsUnit:getGroup():getName() or formationCallsign
                 end
                 callsign = callsign:gsub(formationCallsign,override)
                 return string.upper(callsign:match( "^%s*(.-)%s*$" ))
             end
         end
 
-        if not DCS_Unit then return string.upper(callsign:match( "^%s*(.-)%s*$" )) end
+        if not DcsUnit then return string.upper(callsign:match( "^%s*(.-)%s*$" )) end
 
-        local playerName = DCS_Unit:getPlayerName()
+        local playerName = DcsUnit:getPlayerName()
         playerName = playerName:match("%a+%s%d+[?%p%s*]%d*")
         if playerName then
             callsign = playerName
@@ -390,33 +391,33 @@ do
     end
 
     --- Unit use DMM
-    -- @param DCS_Unit DCS Unit or typeName string
-    function HOUND.Utils.isDMM(DCS_Unit)
-        if not DCS_Unit then return false end
+    -- @param DcsUnit DCS Unit or typeName string
+    function HOUND.Utils.isDMM(DcsUnit)
+        if not DcsUnit then return false end
         local typeName = nil
-        if type(DCS_Unit) == "string" then
-            typeName = DCS_Unit
+        if type(DcsUnit) == "string" then
+            typeName = DcsUnit
         end
-        if type(DCS_Unit) == "Table" and DCS_Unit.getTypeName then
-            typeName = DCS_Unit:getTypeName()
+        if type(DcsUnit) == "Table" and DcsUnit.getTypeName then
+            typeName = DcsUnit:getTypeName()
         end
         return HOUND.setContains(HOUND.DB.useDecMin,typeName)
     end
 
     --- does unit has payload (placeholder)
-    -- @param DCS_Unit DCS unit
+    -- @param DcsUnit DCS unit
     -- @param payloadName Name of payload
-    -- @return Bool always true
-    function HOUND.Utils.hasPayload(DCS_Unit,payloadName)
+    -- @return[type=bool] always true
+    function HOUND.Utils.hasPayload(DcsUnit,payloadName)
         -- TODO: add implementation
         return true
     end
 
     --- does unit has task (placeholder)
-    -- @param DCS_Unit DCS unit
+    -- @param DcsUnit DCS unit
     -- @param taskName Name of task
-    -- @return Bool always true
-    function HOUND.Utils.hasTask(DCS_Unit,taskName)
+    -- @return[type=bool] always true
+    function HOUND.Utils.hasTask(DcsUnit,taskName)
         -- TODO: add implementation
         return true
     end
@@ -513,7 +514,7 @@ do
 
     ---  check if point is DCS point
     -- @param point DCS point candidate
-    -- @return (Bool) True if is valid point
+    -- @return[type=Bool] True if is valid point
     function HOUND.Utils.Dcs.isPoint(point)
         if type(point) ~= "table" then return false end
         return (type(point.x) == "number") and (type(point.z) == "number")
@@ -521,7 +522,7 @@ do
 
     --- check if object is DCS Unit
     -- @param obj DCS Object canidate
-    -- @return (Bool) True if object is unit
+    -- @return[type=Bool] True if object is unit
     function HOUND.Utils.Dcs.isUnit(obj)
         if type(obj) ~= "table" then return false end
         return getmetatable(obj) == Unit
@@ -529,7 +530,7 @@ do
 
     --- check if object is DCS Group
     -- @param obj DCS Object canidate
-    -- @return (Bool) True if object is Group
+    -- @return[type=Bool] True if object is Group
     function HOUND.Utils.Dcs.isGroup(obj)
         if type(obj) ~= "table" then return false end
         return getmetatable(obj) == Group
@@ -537,20 +538,29 @@ do
 
     --- check if object is DCS static object
     -- @param obj DCS Object canidate
-    -- @return (Bool) True if object is static object
+    -- @return[type=Bool] True if object is static object
     function HOUND.Utils.Dcs.isStaticObject(obj)
         if type(obj) ~= "table" then return false end
         return getmetatable(obj) == StaticObject
     end
 
+    --- check if Unit is tracking anything with it's radar
+    -- @param DcsUnit
+    -- @return[type=bool] True if tracking
+    function HOUND.Utils.Dcs.isRadarTracking(DcsUnit)
+        if not HOUND.Utils.Dcs.isUnit(DcsUnit) then return false end
+        local _,isTracking = DcsUnit:getRadar()
+        return HOUND.Utils.Dcs.isUnit(isTracking)
+    end
+
     --- return maximum weapon range in the group of DCS Unit
-    -- @param DCS_Unit DCS unit - in Hound context unit with emitting radar
+    -- @param DcsUnit DCS unit - in Hound context unit with emitting radar
     -- @return maximum weapon range in meters of the DCS Group the emitter is part of
 
-    function HOUND.Utils.Dcs.getSamMaxRange(DCS_Unit)
+    function HOUND.Utils.Dcs.getSamMaxRange(DcsUnit)
         local maxRng = 0
-        if DCS_Unit ~= nil then
-            local units = DCS_Unit:getGroup():getUnits()
+        if DcsUnit ~= nil then
+            local units = DcsUnit:getGroup():getUnits()
             for _, unit in ipairs(units) do
                 local weapons = unit:getAmmo()
                 if weapons ~= nil then
@@ -566,13 +576,13 @@ do
     end
 
     --- return Radar detection Range for provided unit
-    -- @param DCS_Unit DCS Unit with radars sensor
+    -- @param DcsUnit DCS Unit with radars sensor
     -- @return Unit radar detection range agains airborne targers in meters
 
-    function HOUND.Utils.Dcs.getRadarDetectionRange(DCS_Unit)
+    function HOUND.Utils.Dcs.getRadarDetectionRange(DcsUnit)
         -- TODO: fix for ships
         local detectionRange = 0
-        local unit_sensors = DCS_Unit:getSensors()
+        local unit_sensors = DcsUnit:getSensors()
         if not unit_sensors then return detectionRange end
         if not HOUND.setContains(unit_sensors,Unit.SensorType.RADAR) then return detectionRange end
         for _,radar in pairs(unit_sensors[Unit.SensorType.RADAR]) do
@@ -586,6 +596,21 @@ do
             end
         end
         return detectionRange
+    end
+
+    --- return all radar units in group
+    -- @param DcsGroup DCS Group
+    -- @return[type=table] Table of radar units in group
+    function HOUND.Utils.Dcs.getRadarUnitsInGroup(DcsGroup)
+        local radarUnits = {}
+        if HOUND.Utils.Dcs.isGroup(DcsGroup) then
+            for _,unit in ipairs(DcsGroup:getUnits()) do
+                if unit:hasSensors(Unit.SensorType.RADAR) then
+                    table.insert(radarUnits,unit)
+                end
+            end
+        end
+        return radarUnits
     end
 
     --- Geo Function
@@ -690,7 +715,7 @@ do
     --- Set New initial marker Id
     -- @local
     -- @param startId Number to start counting from
-    -- @return (Bool) True if initial ID was updated
+    -- @return[type=Bool] True if initial ID was updated
     function HOUND.Utils.Marker.setInitialId(startId)
         if type(startId) ~= "number" then
             HOUND.Logger.error("Failed to set Initial marker Id. Value provided was not a number")
@@ -734,7 +759,7 @@ do
             if type(text) == "string" and self.id > 0 then
                 if self.type == HOUND.Utils.Marker.Type.TEXT then
                     -- text = "¤ « " .. text
-                    text = "⇙ « " .. text
+                    text = "⇙ " .. text
                 end
                 trigger.action.setMarkupText(self.id,text)
             end
@@ -783,7 +808,7 @@ do
         --- Check if marpoint is drawn
         -- @within HOUND.Utils.Marker.instance
         -- @param self Hound Marker instance
-        -- @return Bool - True if marker is drawn
+        -- @return[type=bool] - True if marker is drawn
         instance.isDrawn = function(self)
             return (self.id > 0)
         end
@@ -923,7 +948,7 @@ do
     -- @section TTS
 
     --- Check if TTS agent is available (private)
-    -- @return (Bool) True if TTS is available
+    -- @return[type=Bool] True if TTS is available
     function HOUND.Utils.TTS.isAvailable()
         for _,engine in ipairs(HOUND.TTS_ENGINE) do
             if engine == "GRPC" and (l_grpc ~= nil and type(l_grpc.tts) == "function") then return true end
@@ -976,7 +1001,7 @@ do
 
         for _,engine in ipairs(HOUND.TTS_ENGINE) do
             if engine == "GRPC" and (l_grpc ~= nil and type(l_grpc.tts) == "function") then
-                -- HOUND.Logger.debug("gRPC TTS message")
+                -- HOUND.Logger.debug("gRPC TTS message: "..msg)
                 return HOUND.Utils.TTS.TransmitGRPC(msg,coalitionID,args,transmitterPos)
             end
 
@@ -1086,13 +1111,10 @@ do
             ssml_msg = table.concat({"<voice",ssml_voice,">",ssml_msg,"</voice>"},"")
         end
 
-        -- HOUND.Logger.debug(ssml_msg)
-
         local freqs = string.split(args.freq,",")
 
         for _,freq in ipairs(freqs) do
             -- HOUND.Logger.debug("transmitting on "..freq)
-
             freq = math.ceil(freq * 1000000)
             l_grpc.tts(ssml_msg, freq, grpc_ttsArgs)
             -- break -- for debugging. only transmit once
@@ -1554,8 +1576,8 @@ do
     -- @param polygon Table of point reprasenting a polygon
     -- @param point DCS position (x,z)
     -- @param radius Radius in Meters around point to test
-    -- @return (Bool) True if point is in polygon
-    -- @return (Bool) True if radius around point intersects polygon
+    -- @return[type=Bool] True if point is in polygon
+    -- @return[type=Bool] True if radius around point intersects polygon
     function HOUND.Utils.Polygon.threatOnSector(polygon,point, radius)
         if type(polygon) ~= "table" or HOUND.Length(polygon) < 3 or not HOUND.Utils.Dcs.isPoint(l_mist.utils.makeVec3(polygon[1])) then
             return
@@ -1898,7 +1920,7 @@ do
     -- @param Table A List of positions
     -- @param referencePos Point in relations to all points are evaluated
     -- @param NthPercentile Percintile of which Datapoints are taken (0.6=60%)
-    -- @param returnRelative If true returning array will contain relative positions to referencePos 
+    -- @param returnRelative If true returning array will contain relative positions to referencePos
     -- @return List
     function HOUND.Utils.Cluster.getDeltaSubsetPercent(Table,referencePos,NthPercentile,returnRelative)
         local t = l_mist.utils.deepCopy(Table)
@@ -1933,7 +1955,7 @@ do
     --- Sort contacts by engament range
     -- @param a @{HOUND.Contact.Emitter} instance
     -- @param b @{HOUND.Contact.Emitter} Instance
-    -- @return Bool
+    -- @return[type=bool]
     -- @usage table.sort(unSorted,HOUND.Utils.Sort.ContactsByRange)
     function HOUND.Utils.Sort.ContactsByRange(a,b)
         if a.isEWR ~= b.isEWR then
@@ -1963,7 +1985,7 @@ do
     --- Sort contacts by ID
     -- @param a @{HOUND.Contact.Emitter} instance
     -- @param b @{HOUND.Contact.Emitter} Instance
-    -- @return Bool
+    -- @return[type=bool]
     -- @usage table.sort(unSorted,HOUND.Utils.Sort.ContactsById)
     function HOUND.Utils.Sort.ContactsById(a,b)
         if  a.uid ~= b.uid then
@@ -1975,7 +1997,7 @@ do
     --- sort contacts by Priority (primary first)
     -- @param a @{HOUND.Contact.Emitter} instance
     -- @param b @{HOUND.Contact.Emitter} Instance
-    -- @return Bool
+    -- @return[type=bool]
     -- @usage table.sort(unSorted,HOUND.Utils.Sort.ContactsByPrio)
     function HOUND.Utils.Sort.ContactsByPrio(a,b)
         if a.isPrimary ~= b.isPrimary then
@@ -1997,7 +2019,7 @@ do
     --- sort sectors by priority (low first)
     -- @param a @{HOUND.Sector} instance
     -- @param b @{HOUND.Sector} Instance
-    -- @return Bool
+    -- @return[type=bool]
     -- @usage table.sort(unSorted,HOUND.Utils.Sort.sectorsByPriorityLowFirst)
     function HOUND.Utils.Sort.sectorsByPriorityLowFirst(a,b)
         return a:getPriority() > b:getPriority()
@@ -2006,7 +2028,7 @@ do
     --- sort sectors by priority (Low last)
     -- @param a @{HOUND.Sector} instance
     -- @param b @{HOUND.Sector} Instance
-    -- @return Bool
+    -- @return[type=bool]
     -- @usage table.sort(unSorted,HOUND.Utils.Sort.sectorsByPriorityLowLast)
     function HOUND.Utils.Sort.sectorsByPriorityLowLast(a,b)
         return a:getPriority() < b:getPriority()

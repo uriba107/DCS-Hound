@@ -7,7 +7,7 @@ do
     -- @section Query
 
     --- list all contact is a sector
-    -- @param[opt] sectorName String name or sector to filter by
+    -- @param[type=?string] sectorName name or sector to filter by
     function HOUND.ElintWorker:listContactsInSector(sectorName)
         local emitters = {}
         for _,emitter in ipairs(self.contacts) do
@@ -20,7 +20,7 @@ do
     end
 
     --- Return all contacts managed by this instance regardless of sector
-    -- @param[opt] sectorName String name or sector to filter by
+    -- @param[type=?string] sectorName name or sector to filter by
     function HOUND.ElintWorker:listAllContacts(sectorName)
         if sectorName then
             local contacts = {}
@@ -40,7 +40,7 @@ do
     end
 
     --- return number of contacts tracked
-    -- @param[opt] sectorName String name or sector to filter by
+    -- @param[type=?string] sectorName name or sector to filter by
     function HOUND.ElintWorker:countContacts(sectorName)
         if sectorName then
             local contacts = 0
@@ -55,7 +55,7 @@ do
     end
 
     --- return list of contacts
-    -- @param[opt] sectorName String. sector to filter by
+    -- @param[type=?string] sectorName sector to filter by
     -- @return list of @{HOUND.Contact.Emitter}
     function HOUND.ElintWorker:getContacts(sectorName)
         local contacts = {}
@@ -73,7 +73,7 @@ do
 
     --- return a sorted list of contacts
     -- @param sortFunc Function to sort by
-    -- @param[opt] sectorName String. sector to filter by
+    -- @param[type=?string] sectorName sector to filter by
     -- @return sorted list of @{HOUND.Contact.Emitter}
     function HOUND.ElintWorker:sortContacts(sortFunc,sectorName)
         if type(sortFunc) ~= "function" then return end
@@ -83,7 +83,7 @@ do
     end
 
     --- return number of contacts tracked
-    -- @param[opt] sectorName String name or sector to filter by
+    -- @param[type=?string] sectorName name or sector to filter by
     function HOUND.ElintWorker:countSites(sectorName)
         if sectorName then
             local sites = 0
@@ -98,7 +98,7 @@ do
     end
 
     --- return list of contacts
-    -- @param[opt] sectorName String. sector to filter by
+    -- @param[type=?string] sectorName sector to filter by
     -- @return list of @{HOUND.Contact.Site}
     function HOUND.ElintWorker:getSites(sectorName)
         local sites = {}
@@ -116,7 +116,7 @@ do
 
     --- return a sorted list of contacts
     -- @param sortFunc Function to sort by
-    -- @param[opt] sectorName String. sector to filter by
+    -- @param[type=?string] sectorName sector to filter by
     -- @return sorted list of @{HOUND.Contact.Emitter}
     function HOUND.ElintWorker:sortSites(sortFunc,sectorName)
         if type(sortFunc) ~= "function" then return end
@@ -126,7 +126,7 @@ do
     end
 
     --- Return all contacts managed by this instance regardless of sector
-    -- @param[opt] sectorName String name or sector to filter by
+    -- @param[type=?string] sectorName name or sector to filter by
     function HOUND.ElintWorker:listAllSites(sectorName)
         if sectorName then
             local sites = {}

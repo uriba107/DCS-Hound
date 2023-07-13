@@ -217,7 +217,7 @@ do
     -- @local
     -- @param set Hash table to check
     -- @param key to check
-    -- @return Bool. True if key exists in set
+    -- @return[type=bool] True if key exists in set
     function HOUND.setContains(set, key)
         if not set or not key then return false end
         return set[key] ~= nil
@@ -227,7 +227,7 @@ do
     -- @local
     -- @param set Table to check
     -- @param value Value to check
-    -- @return Bool. True if value exists in set
+    -- @return[type=bool] True if value exists in set
     function HOUND.setContainsValue(set,value)
         if not set or not value then return false end
         for _,v in pairs(set) do

@@ -166,7 +166,7 @@ do
         },
         ['SA-11 Buk SR 9S18M1'] = {
             ['Name'] = "Snow Drift",
-            ['Assigned'] = {"SA-11","SA-17"},
+            ['Assigned'] = {"SA-11"},
             ['Role'] = {HOUND.DB.RadarType.SEARCH},
             ['Band'] = {
                 [true] = HOUND.DB.Bands.G,
@@ -196,7 +196,7 @@ do
         },
         ['Strela-1 9P31'] = {
             ['Name'] = "SA-9",
-            ['Assigned'] = {"SA-9"},
+            ['Assigned'] = {"Strela"},
             ['Role'] = {HOUND.DB.RadarType.RANGEFINDER},
             ['Band'] = {
                 [true] = HOUND.DB.Bands.K,
@@ -206,7 +206,7 @@ do
         },
         ['Strela-10M3'] = {
             ['Name'] = "SA-13",
-            ['Assigned'] = {"SA-13"},
+            ['Assigned'] = {"Strela"},
             ['Role'] = {HOUND.DB.RadarType.RANGEFINDER},
             ['Band'] = {
                 [true] = HOUND.DB.Bands.J,
@@ -428,7 +428,7 @@ do
         },
         -- Naval Assets --
         ['Type_052B'] = {
-            ['Name'] = "Type 052B (DD)",
+            ['Name'] = "Luyang-1 (DD)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = {
@@ -438,7 +438,7 @@ do
             ['Primary'] = true
         },
         ['Type_052C'] = {
-            ['Name'] = "Type 052C (DD)",
+            ['Name'] = "Luyang-2 (DD)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = {
@@ -448,7 +448,7 @@ do
             ['Primary'] = true
         },
         ['Type_054A'] = {
-            ['Name'] = "Type 054A (DD)",
+            ['Name'] = "Jiangkai (FF)",
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = {
@@ -457,18 +457,9 @@ do
             },
             ['Primary'] = true
         },
-        ['Type_071'] = {
-            ['Name'] = "Type 071",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.E,
-                [false] = HOUND.DB.Bands.E
-            },
-            ['Primary'] = true
-        },
+
         ['Type_093'] = {
-            ['Name'] = "Type 093",
+            ['Name'] = "Shang Submarine",
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = {
@@ -740,7 +731,17 @@ do
         },
         -- None Combat vessels
         ['BDK-775'] = {
-            ['Name'] = "Ropucha",
+            ['Name'] = "Ropucha (LS)",
+            ['Assigned'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.E,
+                [false] = HOUND.DB.Bands.E
+            },
+            ['Primary'] = true
+        },
+        ['Type_071'] = {
+            ['Name'] = "Yuzhao transport",
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = {

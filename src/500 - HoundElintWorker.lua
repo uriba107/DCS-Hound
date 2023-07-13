@@ -48,7 +48,7 @@ do
 
     --- add platform
     -- @string platformName DCS Unit Name of platform to be added
-    -- @return Bool. True if requested platform was added. else false
+    -- @return[type=bool] True if requested platform was added. else false
     function HOUND.ElintWorker:addPlatform(platformName)
         local candidate = Unit.getByName(platformName)
         if candidate == nil then
@@ -76,7 +76,7 @@ do
 
     --- remove specificd platform
     -- @param platformName DCS Unit name to remove
-    -- @return Bool. true if removed, else false
+    -- @return[type=bool] true if removed, else false
     function HOUND.ElintWorker:removePlatform(platformName)
         local candidate = Unit.getByName(platformName)
         if candidate == nil then
@@ -133,7 +133,7 @@ do
     end
 
     --- count number of platforms
-    -- @return Int number of platforms
+    -- @return[type=int] number of platforms
     function HOUND.ElintWorker:countPlatforms()
         return HOUND.Length(self.platforms)
     end
@@ -152,7 +152,7 @@ do
     -- @section Contacts
 
     --- return if contact exists in the system
-    -- @return Bool return True if unit is in the system
+    -- @return[type=bool] return True if unit is in the system
     function HOUND.ElintWorker:isContact(emitter)
         if emitter == nil then return false end
         local emitterName = nil
@@ -180,12 +180,6 @@ do
             HOUND.Logger.debug("failed to create site")
         end
         self.contacts[emitterName]:queueEvent(HOUND.EVENTS.RADAR_NEW)
-        -- HOUND.EventHandler.publishEvent({
-        --     id = HOUND.EVENTS.RADAR_NEW,
-        --     initiator = emitter,
-        --     houndId = self.settings:getId(),
-        --     coalition = self.settings:getCoalition()
-        -- })
         return emitterName
     end
 
@@ -215,20 +209,26 @@ do
 
     --- remove Contact from tracking
     -- @string emitterName DCS unit Name to remove
-    -- @return Bool. true if removed.
+    -- @return[type=bool] true if removed.
     function HOUND.ElintWorker:removeContact(emitterName)
+        if type(emitterName) == "table" and getmetatable(emitterName) == HOUND.Contact.Emitter then
+            emitterName = emitterName:getDcsName()
+        end
         if not type(emitterName) == "string" then return false end
         if self.contacts[emitterName] then
-            self:getSite(self.contacts[emitterName],true):removeEmitter(self.contacts[emitterName])
-            self.contacts[emitterName]:updateDeadDCSObject()
-            HOUND.EventHandler.publishEvent({
-                id = HOUND.EVENTS.RADAR_DESTROYED,
-                initiator = self.contacts[emitterName],
-                houndId = self.settings:getId(),
-                coalition = self.settings:getCoalition()
-            })
-        end
+            local site = self:getSite(self.contacts[emitterName]:getDcsGroupName(),true)
+            if site then
+                site:removeEmitter(self.contacts[emitterName])
+            end
 
+            self.contacts[emitterName]:updateDeadDcsObject()
+            -- HOUND.EventHandler.publishEvent({
+            --     id = HOUND.EVENTS.RADAR_DESTROYED,
+            --     initiator = self.contacts[emitterName],
+            --     houndId = self.settings:getId(),
+            --     coalition = self.settings:getCoalition()
+            -- })
+        end
         self.contacts[emitterName] = nil
         return true
     end
@@ -257,7 +257,7 @@ do
     end
     --- is contact is tracked
     -- @param emitter DCS Unit/UID of requested emitter
-    -- @return Bool if Unit is being tracked by current HoundWorker instance.
+    -- @return[type=bool] if Unit is being tracked by current HoundWorker instance.
     function HOUND.ElintWorker:isTracked(emitter)
         if emitter == nil then return false end
         if type(emitter) =="string" and self.contacts[emitter] ~= nil then return true end
@@ -265,23 +265,23 @@ do
         return false
     end
 
-    --- add datapoint to emitter
-    -- @param emitter DCS UNIT with radar
-    -- @param datapoint @{HOUND.Contact.Datapoint} instance
-    function HOUND.ElintWorker:addDatapointToEmitter(emitter,datapoint)
-        if not self:isTracked(emitter) then
-            self:addContact(emitter)
-        end
-        local HoundContact = self:getContact(emitter)
-        HoundContact:AddPoint(datapoint)
-    end
+    -- --- add datapoint to emitter
+    -- -- @param emitter DCS UNIT with radar
+    -- -- @param datapoint @{HOUND.Contact.Datapoint} instance
+    -- function HOUND.ElintWorker:addDatapointToEmitter(emitter,datapoint)
+    --     if not self:isTracked(emitter) then
+    --         self:addContact(emitter)
+    --     end
+    --     local HoundContact = self:getContact(emitter)
+    --     HoundContact:AddPoint(datapoint)
+    -- end
 
     --- Site functions
     -- @section Sites
 
     --- return if site exists in the system
     -- @param site group name
-    -- @return Bool return True if group is in the system
+    -- @return[type=bool] return True if group is in the system
     function HOUND.ElintWorker:isSite(site)
         if site == nil then return false end
         local groupName = nil
@@ -300,7 +300,7 @@ do
     -- @return Name of added group
     function HOUND.ElintWorker:addSite(emitter)
         if emitter == nil or emitter.getName == nil then return end
-        local groupName = emitter:getGroupName()
+        local groupName = emitter:getDcsGroupName()
         if self.sites[groupName] ~= nil then return groupName end
         self.sites[groupName] = HOUND.Contact.Site:New(emitter, self:getCoalition(), self:getNewTrackId())
         self.sites[groupName]:queueEvent(HOUND.EVENTS.SITE_NEW)
@@ -318,10 +318,12 @@ do
             groupName = emitter
         end
         if HOUND.Utils.Dcs.isGroup(emitter) then
-            groupName:getName()
+            groupName = emitter:getName()
+        elseif HOUND.Utils.Dcs.isUnit(emitter) then
+            groupName = Group.getName(emitter:getGroup())
         end
         if getmetatable(emitter) == HOUND.Contact.Emitter then
-            groupName = emitter:getGroupName()
+            groupName = emitter:getDcsGroupName()
         end
         if groupName ~= nil and self.sites[groupName] ~= nil then return self.sites[groupName] end
         if not self.sites[groupName] and type(emitter) == "table" and not getOnly then
@@ -333,21 +335,12 @@ do
 
     --- remove Site from tracking
     -- @string groupName DCS group Name to remove
-    -- @return Bool. true if removed.
+    -- @return[type=bool] true if removed.
     function HOUND.ElintWorker:removeSite(groupName)
-        if not type(groupName) == "string" then return false end
-        if self.sites[groupName] then
-            for emitterName,_ in pairs(self.sites[groupName]:getRadars()) do
-                self:removeContact(emitterName)
-            end
-            self.sites[groupName]:updateDeadDCSObject()
-            HOUND.EventHandler.publishEvent({
-                id = HOUND.EVENTS.SITE_REMOVED,
-                initiator = self.sites[groupName],
-                houndId = self.settings:getId(),
-                coalition = self.settings:getCoalition()
-            })
+        if type(groupName) == "table" and getmetatable(groupName) == HOUND.Contact.Site then
+            groupName = groupName:getDcsName()
         end
+        if not type(groupName) == "string" then return false end
         self.sites[groupName] = nil
         return true
     end
@@ -436,16 +429,14 @@ do
                     -- end
                 end
 
-                if contact:isTimedout() then
+                if contact:isTimedout() and not contact:getPreBriefed() then
                     contactState = contact:CleanTimedout()
                 end
                 if self.settings:getBDA() and contact:isAlive() and contact:getLife() < 1 then
                     contact:setDead()
                 end
-                if not contact:isAlive() and not contact:getPreBriefed() and contact:getLastSeen() > HOUND.CONTACT_TIMEOUT then
-                    self:removeContact(contactName)
+                if not contact:isAlive() and contact:getLastSeen() > 60 then
                     contact:destroy()
-                    return
                 end
 
                 -- publish event (in case of destroyed radar, event is handled by the notify function)
@@ -453,6 +444,7 @@ do
                     local contactEvents = contact:getEventQueue()
                     while #contactEvents > 0 do
                         local event = table.remove(contactEvents,1)
+                        -- HOUND.Logger.onScreenDebug(contact:getDcsName() .. " has triggered " .. HOUND.reverseLookup(HOUND.EVENTS,event.id),5)
                         event.houndId = self.settings:getId()
                         event.coalition = self.settings:getCoalition()
                         HOUND.EventHandler.publishEvent(event)
@@ -466,6 +458,7 @@ do
                 local siteEvents = site:getEventQueue()
                 while #siteEvents > 0 do
                     local event = table.remove(siteEvents,1)
+                    -- HOUND.Logger.onScreenDebug(site:getDcsName() .. " has triggered " .. HOUND.reverseLookup(HOUND.EVENTS,event.id),5)
                     event.houndId = self.settings:getId()
                     event.coalition = self.settings:getCoalition()
                     HOUND.EventHandler.publishEvent(event)

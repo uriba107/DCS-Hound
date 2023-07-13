@@ -180,7 +180,7 @@ do
 
     --- generate PopUp report
     -- @param isTTS Bool. If true message will be for TTS. False will make a text message
-    -- @param sectorName string Name of primary sector if present function will only return sector data
+    -- @param[type=string] sectorName Name of primary sector if present function will only return sector data
     -- @return string. compiled message
     function HOUND.Contact.Emitter:generatePopUpReport(isTTS,sectorName)
         local msg = self:getName()
@@ -209,7 +209,7 @@ do
 
     --- generate Radar dead report
     -- @param isTTS Bool. If true message will be for TTS. False will make a text message
-    -- @param sectorName string Name of primary sector if present function will only return sector data
+    -- @param[type=string] sectorName Name of primary sector if present function will only return sector data
     -- @return string. compiled message
     function HOUND.Contact.Emitter:generateDeathReport(isTTS,sectorName)
         local msg = self:getName() .. " has been destroyed"
@@ -242,7 +242,7 @@ do
                 HoundUtils.TTS.getVerbalContactAge(self.last_seen,true,true),
                 BePos,string.format("%02.6f",self.pos.LL.lat),string.format("%03.6f",self.pos.LL.lon), GridPos,
                 HoundUtils.TTS.getVerbalConfidenceLevel( self.uncertenty_data.r ),
-                HoundUtils.Text.getTime(self.last_seen),self.DCStypeName,self.DCSobjectName
+                HoundUtils.Text.getTime(self.last_seen),self.DcsTypeName,self.DcsObjectName
             }
             msg = table.concat(msg,",")
         end

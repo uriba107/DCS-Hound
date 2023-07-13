@@ -64,10 +64,10 @@ do
 
     --- generate PopUp report
     -- @param isTTS Bool. If true message will be for TTS. False will make a text message
-    -- @param sectorName string Name of primary sector if present function will only return sector data
+    -- @param[type=string] sectorName Name of primary sector if present function will only return sector data
     -- @return string. compiled message
     function HOUND.Contact.Site:generatePopUpReport(isTTS,sectorName)
-        local msg = self:getName() .. ", identified as " .. self:getNatoDesignation() .. ", is now Alive"
+        local msg = self:getName() .. ", identified as " .. self:getNatoDesignation() .. ", is active"
 
         if sectorName then
             msg = msg .. " in " .. sectorName
@@ -89,10 +89,10 @@ do
 
     --- generate Radar dead report
     -- @param isTTS Bool. If true message will be for TTS. False will make a text message
-    -- @param sectorName string Name of primary sector if present function will only return sector data
+    -- @param[type=string] sectorName Name of primary sector if present function will only return sector data
     -- @return string. compiled message
     function HOUND.Contact.Site:generateDeathReport(isTTS,sectorName)
-        local msg = self:getName() ..  ", identified as " .. self:getNatoDesignation() .. " has been destroyed"
+        local msg = self:getName() ..  ", identified as " .. self:getNatoDesignation() .. " is down"
         if sectorName then
             msg = msg .. " in " .. sectorName
         else
@@ -112,7 +112,7 @@ do
 
     --- generate Radar dead report
     -- @param isTTS Bool. If true message will be for TTS. False will make a text message
-    -- @param sectorName string Name of primary sector if present function will only return sector data
+    -- @param[type=string] sectorName Name of primary sector if present function will only return sector data
     -- @return string. compiled message
     function HOUND.Contact.Site:generateAsleepReport(isTTS,sectorName)
         local msg = self:getName() ..  ", identified as " .. self:getNatoDesignation() .. " is asleep"
@@ -133,9 +133,9 @@ do
         return msg .. "."
     end
 
-    --- generate ident report
+    --- generate Ident report
     -- @param isTTS Bool. If true message will be for TTS. False will make a text message
-    -- @param sectorName string Name of primary sector if present function will only return sector data
+    -- @param[type=string] sectorName Name of primary sector if present function will only return sector data
     -- @return string. compiled message
     function HOUND.Contact.Site:generateIdentReport(isTTS,sectorName)
         local msg = self:getName()
@@ -163,7 +163,6 @@ do
     --- Generate TTS brief for the Site (for ATIS)
     -- @param NATO (bool) True will generate NATO Brevity brief
     -- @return string containing
-
     function HOUND.Contact.Site:generateTtsBrief(NATO)
         local primary = self:getPrimary()
         if getmetatable(primary) ~= HOUND.Contact.Emitter or primary.pos.p == nil or primary.uncertenty_data == nil then return end
@@ -200,19 +199,19 @@ do
         for _,emitter in ipairs(self.emitters) do
             local body = emitter:generateIntelBrief()
             if body ~= "" then
-                local entry = table.concat({self:getName(),self:getNatoDesignation(),body,self.DCSobjectName},",")
+                local entry = table.concat({self:getName(),self:getNatoDesignation(),body,self.DcsObjectName},",")
                 table.insert(items,entry)
             end
         end
         return items
     end
 
-    --- Generate contact export object
+    --- Generate Site export object
     -- @return exported object
     function HOUND.Contact.Site:export()
         local report = {
             name = self:getName(),
-            DCSobjectName = self:getDcsName(),
+            DcsObjectName = self:getDcsName(),
             gid = self.gid % 100,
             Type = self:getNatoDesignation(),
             last_seen = self.last_seen,

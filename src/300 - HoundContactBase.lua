@@ -14,19 +14,19 @@ do
     local HoundUtils = HOUND.Utils
 
     --- create new HOUND.Contact instance
-    -- @param DCSObject emitter DCS Unit
+    -- @param DcsObject emitter DCS Unit
     -- @param HoundCoalition coalition Id of Hound Instace
     -- @return HOUND.Contact instance
-    function HOUND.Contact.Base:New(DCSObject,HoundCoalition)
-        if not DCSObject or type(DCSObject) ~= "table" or not DCSObject.getName or not HoundCoalition then
+    function HOUND.Contact.Base:New(DcsObject,HoundCoalition)
+        if not DcsObject or type(DcsObject) ~= "table" or not DcsObject.getName or not HoundCoalition then
             HOUND.Logger.warn("failed to create HOUND.Contact instance")
             return
         end
         local instance = {}
         setmetatable(instance, HOUND.Contact.Base)
-        instance.DCSobject = DCSObject
-        instance.DCSgroupName = nil
-        instance.DCSobjectName = nil
+        instance.DcsObject = DcsObject
+        instance.DcsGroupName = nil
+        instance.DcsObjectName = nil
         instance.typeAssigned = {"Unknown"}
 
         instance.pos = {
@@ -69,20 +69,20 @@ do
 
     --- Get Contact Group Name
     -- @return String
-    function HOUND.Contact.Base:getGroupName()
-        return self.DCSgroupName
+    function HOUND.Contact.Base:getDcsGroupName()
+        return self.DcsGroupName
     end
 
     --- Get the DCS unit name
     -- @return String
     function HOUND.Contact.Base:getDcsName()
-        return self.DCSobjectName
+        return self.DcsObjectName
     end
 
     --- Get the underlying DCS Object
     -- @return DCS Unit or DCS staticObject
     function HOUND.Contact.Base:getDcsObject()
-        return self.DCSobject or self.DCSobjectName
+        return self.DcsObject or self.DcsObjectName
     end
     --- Get last seen in seconds
     -- @return number in seconds since contact was last seen
@@ -93,10 +93,10 @@ do
     --- get DCS Object instane assoiciated with contact
     -- @return DCS object (unit or group)
     function HOUND.Contact.Base:getObject()
-        return self.DCSobject
+        return self.DcsObject
     end
     --- check if contact has estimated position
-    -- @return (Bool) True if contact has estimated position
+    -- @return[type=Bool] True if contact has estimated position
     function HOUND.Contact.Base:hasPos()
         return HoundUtils.Dcs.isPoint(self.pos.p)
     end
@@ -129,38 +129,32 @@ do
         return natoDesignation
     end
 
-    --- check if contact DCS Unit is still alive
-    -- @return Boolean
-    function HOUND.Contact.Base:isAlive()
-        return self.DCSobjectAlive
-    end
-
     --- Check if contact is Active
-    -- @return (Bool) True if seen in the last 15 seconds
+    -- @return[type=Bool] True if seen in the last 15 seconds
     function HOUND.Contact.Base:isActive()
         return self:getLastSeen()/16 < 1.0
     end
 
     --- check if contact is recent
-    -- @return (Bool) True if seen in the last 2 minutes
+    -- @return[type=Bool] True if seen in the last 2 minutes
     function HOUND.Contact.Base:isRecent()
         return self:getLastSeen()/120 < 1.0
     end
 
     --- check if contact position is accurate
-    -- @return Bool - True target is pre briefed
+    -- @return[type=bool] - True target is pre briefed
     function HOUND.Contact.Base:isAccurate()
         return self.preBriefed
     end
 
     --- get preBriefed status
-    -- @return Bool - True if target is prebriefed
+    -- @return[type=bool] - True if target is prebriefed
     function HOUND.Contact.Base:getPreBriefed()
         return self.preBriefed
     end
 
     --- set preBriefed status
-    -- @return Bool - True if target is prebriefed
+    -- @return[type=bool] - True if target is prebriefed
     function HOUND.Contact.Base:setPreBriefed(state)
         if type(state) == "boolean" then
             self.preBriefed = state
@@ -168,7 +162,7 @@ do
     end
 
     --- check if contact is timed out
-    -- @return (Bool) True if timed out
+    -- @return[type=Bool] True if timed out
     function HOUND.Contact.Base:isTimedout()
         return self:getLastSeen() > HOUND.CONTACT_TIMEOUT
     end
@@ -212,7 +206,7 @@ do
     end
 
     --- check if threatens sector
-    -- @param sectorName
+    -- @param[type=string] sectorName
     -- @return Boot True if theat
     function HOUND.Contact.Base:isInSector(sectorName)
         return self.threatSectors[sectorName] or false
@@ -268,7 +262,7 @@ do
 
     --- check if contact in names sector
     -- @string sectorName name of sector
-    -- @return (Bool) True if contact thretens sector
+    -- @return[type=Bool] True if contact thretens sector
     function HOUND.Contact.Base:isThreatsSector(sectorName)
         return self.threatSectors[sectorName] or false
     end

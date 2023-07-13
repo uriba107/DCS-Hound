@@ -18,24 +18,25 @@ do
 
 
     --- create new HOUND.Contact instance
-    -- @param DCSobject emitter DCS Unit
+    -- @param DcsObject emitter DCS Unit
     -- @param HoundCoalition coalition Id of Hound Instace
     -- @param[opt] ContactId specify uid for the contact. if not present Unit ID will be used
     -- @return HOUND.Contact instance
-    function HOUND.Contact.Emitter:New(DCSobject,HoundCoalition,ContactId)
-        if not DCSobject or type(DCSobject) ~= "table" or not DCSobject.getName or not HoundCoalition then
+    function HOUND.Contact.Emitter:New(DcsObject,HoundCoalition,ContactId)
+        if not DcsObject or type(DcsObject) ~= "table" or not DcsObject.getName or not HoundCoalition then
             HOUND.Logger.warn("failed to create HOUND.Contact instance")
             return
         end
-        local instance = self:superClass():New(DCSobject,HoundCoalition)
+        local instance = self:superClass():New(DcsObject,HoundCoalition)
         setmetatable(instance, HOUND.Contact.Emitter)
         self.__index = self
 
-        instance.uid = ContactId or DCSobject:getID()
-        instance.DCStypeName = DCSobject:getTypeName()
-        instance.DCSgroupName = Group.getName(DCSobject:getGroup())
-        instance.DCSobjectName = DCSobject:getName()
-        instance.typeName = DCSobject:getTypeName()
+        instance.uid = ContactId or tonumber(DcsObject:getID())
+        instance.DcsTypeName = DcsObject:getTypeName()
+        instance.DcsGroupName = Group.getName(DcsObject:getGroup())
+        instance.DcsObjectName = DcsObject:getName()
+        instance.DcsObjectAlive = true
+        instance.typeName = DcsObject:getTypeName()
         instance.isEWR = false
         instance.typeAssigned = {"Unknown"}
         instance.band = {
@@ -45,7 +46,7 @@ do
         instance.isPrimary = false
         instance.radarRoles = {HOUND.DB.RadarType.SEARCH}
 
-        local contactUnitCategory = DCSobject:getDesc()["category"]
+        local contactUnitCategory = DcsObject:getDesc()["category"]
         if contactUnitCategory and contactUnitCategory == Unit.Category.SHIP then
             instance.band = {
                 [false] = HOUND.DB.Bands.E,
@@ -55,7 +56,7 @@ do
             instance.radarRoles = {HOUND.DB.RadarType.NAVAL}
         end
 
-        local contactData = HOUND.DB.getRadarData(instance.DCStypeName)
+        local contactData = HOUND.DB.getRadarData(instance.DcsTypeName)
         if contactData  then
             instance.typeName =  contactData.Name
             instance.isEWR = contactData.isEWR
@@ -67,8 +68,8 @@ do
         end
 
         instance.uncertenty_data = nil
-        instance.maxWeaponsRange = HoundUtils.Dcs.getSamMaxRange(DCSobject)
-        instance.detectionRange = HoundUtils.Dcs.getRadarDetectionRange(DCSobject)
+        instance.maxWeaponsRange = HoundUtils.Dcs.getSamMaxRange(DcsObject)
+        instance.detectionRange = HoundUtils.Dcs.getRadarDetectionRange(DcsObject)
         instance._dataPoints = {}
 
         instance.detected_by = {}
@@ -81,6 +82,7 @@ do
     --- Destructor function
     function HOUND.Contact.Emitter:destroy()
         self:removeMarkers()
+        self:queueEvent(HOUND.EVENTS.RADAR_DESTROYED)
     end
 
     --- Getters and Setters
@@ -121,7 +123,7 @@ do
     end
 
     --- get current estimated position elevation
-    -- @return Integer Elevation in ft.
+    -- @return[type=int] Elevation in ft.
     function HOUND.Contact.Emitter:getElev()
         if not self:hasPos() then return 0 end
         local step = 50
@@ -133,36 +135,37 @@ do
 
     --- get unit health
     function HOUND.Contact.Emitter:getLife()
-        if self:isAlive() and (not self.DCSobject or not self.DCSobject.getLife) then
-            HOUND.Logger.error("something is wrong with the object for " .. self.DCSobjectName)
-            self:updateDeadDCSObject()
+        if self:isAlive() and (not HoundUtils.Dcs.isUnit(self.DcsObject)) then
+            HOUND.Logger.error("something is wrong with the object for " .. self.DcsObjectName)
+            -- self:updateDeadDcsObject()
+            self:setDead()
         end
-        if self.DCSobject and type(self.DCSobject) == "table" and self.DCSobject:isExist() then
-            return self.DCSobject:getLife()
+        if self.DcsObject and type(self.DcsObject) == "table" and self.DcsObject:isExist() then
+            return self.DcsObject:getLife()
         end
         return 0
     end
 
-    -- --- check if contact DCS Unit is still alive
-    -- -- @return Boolean
-    -- function HOUND.Contact.Emitter:isAlive()
-    --     return self.DCSobjectAlive
-    -- end
+    --- check if contact DCS Unit is still alive
+    -- @return[type=bool] True if object is considered Alive
+    function HOUND.Contact.Emitter:isAlive()
+        return self.DcsObjectAlive
+    end
 
     --- set internal alive flag to false
     -- This is internal function ment to be called on "S_EVENT_DEAD"
     -- unit will be changed to Unit.name because DCS will remove the unit at the end of the event.
     function HOUND.Contact.Emitter:setDead()
-        self.DCSobjectAlive = false
-        self:updateDeadDCSObject()
+        self.DcsObjectAlive = false
+        self:updateDeadDcsObject()
     end
 
     --- update the internal DCS Object
     -- Since March 2022, Dead units are converted to staticObject on delayed death
-    function HOUND.Contact.Emitter:updateDeadDCSObject()
-        self.DCSobject = Unit.getByName(self.DCSobjectName) or StaticObject.getByName(self.DCSobjectName)
-        if not self.DCSobject then
-            self.DCSobject = self.DCSobjectName
+    function HOUND.Contact.Emitter:updateDeadDcsObject()
+        self.DcsObject = Unit.getByName(self.DcsObjectName) or StaticObject.getByName(self.DcsObjectName)
+        if not self.DcsObject then
+            self.DcsObject = self.DcsObjectName
         end
     end
 
@@ -368,9 +371,9 @@ do
     -- @return HoundEvent id (@{HOUND.EVENTS})
     function HOUND.Contact.Emitter:processData()
         if self:getPreBriefed() then
-            if type(self.DCSobject) == "table" and type(self.DCSobject.isExist) == "function" and self.DCSobject:isExist()
+            if type(self.DcsObject) == "table" and type(self.DcsObject.isExist) == "function" and self.DcsObject:isExist()
                 then
-                    local unitPos = self.DCSobject:getPosition()
+                    local unitPos = self.DcsObject:getPosition()
                     if l_mist.utils.get2DDist(unitPos.p,self.pos.p) < 0.25 then return end
                     -- HOUND.Logger.debug(self:getName().. " has moved")
                     -- HOUND.Logger.debug("3D: ".. l_mist.utils.get3DDist(unitPos.p,self.pos.p) .. " | 2D: "..l_mist.utils.get2DDist(unitPos.p,self.pos.p))
@@ -623,7 +626,7 @@ do
 
     --- Use DCS Unit Position as contact position
     function HOUND.Contact.Emitter:useUnitPos()
-        if not self.DCSobject:isExist() then
+        if not self.DcsObject:isExist() then
             HOUND.Logger.info("PB failed - unit does not exist")
             return
         end
@@ -631,7 +634,7 @@ do
         if type(self.pos.p) == "table" then
             self.state = HOUND.EVENTS.RADAR_UPDATED
         end
-        local unitPos = self.DCSobject:getPosition()
+        local unitPos = self.DcsObject:getPosition()
         self:setPreBriefed(true)
 
         self.pos.p = l_mist.utils.deepCopy(unitPos.p)
@@ -654,7 +657,7 @@ do
         local contact = {}
         contact.typeName = self.typeName
         contact.uid = self.uid % 100
-        contact.DCSobjectName = self.DCSobject:getName()
+        contact.DcsObjectName = self.DcsObject:getName()
         if self.pos.p ~= nil and self.uncertenty_data ~= nil then
             contact.pos = self.pos.p
             contact.LL = self.pos.LL

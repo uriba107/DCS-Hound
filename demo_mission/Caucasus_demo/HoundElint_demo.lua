@@ -90,18 +90,31 @@ do
         HOUND.FORCE_MANAGE_MARKERS = not HOUND.FORCE_MANAGE_MARKERS
     end
 
-    function testing.boom(unit)
-        local pos = unit:getPoint()
-        local life0 = unit:getLife0()
-        local life = unit:getLife()
-        local ittr = 1
-        while life > 1 and ittr < 10 do
-            local pwr = math.max(0.0055,(life-1)/life0)
-            env.info(ittr .. " | unit has " .. unit:getLife() .. " started with " .. life0 .. "explody power: " .. pwr)
-            trigger.action.explosion(pos,pwr)
-            life = unit:getLife()
-            ittr = ittr+1
-        end 
+    function testing.boom(DcsObject)
+        local units = {}
+        if getmetatable(DcsObject) == Unit then
+            table.insert(units,DcsObject)
+        end
+        if getmetatable(DcsObject) == Group then
+            units = DcsObject:getUnits()
+        end
+
+        for _,unit in ipairs(units) do
+            local pos = unit:getPoint()
+            local life0 = unit:getLife0()
+            local life = unit:getLife()
+            local ittr = 1
+            while life > 1 and ittr < 10 do
+                local pwr = math.max(0.0055,(life-1)/life0)
+                env.info(ittr .. " | unit has " .. unit:getLife() .. " HP, started with " .. life0 .. " explody power: " .. pwr)
+                trigger.action.explosion(pos,pwr)
+                life = unit:getLife()
+                ittr = ittr+1
+            end
+            if ittr > 1 then
+                return -- only destroy one unit
+            end
+        end
     end
 
     function testing.badaBoom(pos)
@@ -199,6 +212,7 @@ do
     missionCommands.addCommand("Mark PB",testing.Menu,testing.markPB,"PB-test-3")
 
     missionCommands.addCommand("Toggle SA-3 Activation",testing.Menu,testing.toggleGroup,"SA-3_late")
+    missionCommands.addCommand("BlowUp SA3",testing.Menu,testing.boom,Group.getByName("SA-3"))
     -- missionCommands.addCommand("Destroy C17",testing.Menu,Unit.destroy,Unit.getByName("ELINT_C17"))
     -- missionCommands.addCommand("Remove C17",testing.Menu,testing.removePlatform,{houndInstance=Elint_blue,unit_name="ELINT_C17"})
     missionCommands.addCommand("Spawn platform",testing.Menu,testing.spawnPlatform,Elint_blue)

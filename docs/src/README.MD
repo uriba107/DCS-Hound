@@ -54,7 +54,7 @@ for more information of desanitization process, look [here](#desanitize-dcs-scri
 ``` NOTE the order of scripts - it's important ```  
 on a "ONCE" type action with "time more 1" condition, add the scripts in the following order
 1. `MIST`
-2. `DCS-SimpleTextToSpeech` (if TTS via STTS is desired - gRPC is implemented globally)
+2. `DCS-SimpleTextToSpeech` (if TTS via STTS is desired - gRPC is implemented globally. I mission Includes MOOSE Framework, it includes STTS internally)
 3. `HoundElint.lua`
 
 ### some screenshot as hints
@@ -103,10 +103,12 @@ More examples are available in the [demo missions](./demo_mission/).
         modulation = "AM,AM,FM",
         gender = "male"
     }
+
     local atis_args = {
         freq = "253.000,124.000",
         modulation = "AM,AM"
     }
+
     HoundBlue:enableController("Lebanon",controller_args)
     HoundBlue:enableAtis("Lebanon",atis_args)
     HoundBlue:enableNotifier("default")
@@ -174,6 +176,7 @@ More examples are available in the [demo missions](./demo_mission/).
 | P-3C (MAM)   |  0.92 / 0.10  | A |
 | P-8A (CLP)   |  0.65 / 0.07  | A |
 | TU-214R (CLP)  |  0.57 / 0.06  | A |
+| Shavit (IDF)   |  0.76 / 0.08  | A |
 
 ### Ground Units
 | Platform  | Accuracy Deg. (C/H Bands) | Min. Band |
@@ -197,7 +200,6 @@ it is controlled by the `onScreenDebug` function. this output is disabled by def
 -- to disable
     HoundBlue:onScreenDebug(false)
 ```
-
 
 # Deep Dive
 ## Hound structure
@@ -864,7 +866,7 @@ to remove use
     HOUND.removeEventHandler(CustomHoundScript)
 ```
 `NOTE: Event handlers are global so make sure you validate coalition or houndId as the event might be from a different Instance from a different coalition`
-`RADAR_DESTROYED event is delayed from the DCS Unit destroyed event, so unit is gone by then. unit field in a dead contact is unitName not unit object like on other events. Try and use initiator.DCSgroupName whenever possible`
+`RADAR_DESTROYED event is delayed from the DCS Unit destroyed event, so unit is gone by then. unit field in a dead contact is unitName not unit object like on other events. Try and use initiator.DcsGroupName whenever possible`
 
 ---
 # Appendix
@@ -911,7 +913,7 @@ each site entry is a lua table
 ```lua
 {
     name = <String (Hound Site Name)>,
-    DCSobjectName = MString (Dcs Group Name)>,
+    DcsObjectName = MString (Dcs Group Name)>,
     gid = <int (3 digits)> ,
     Type = <String>,
     last_seen = <float (time last spotted by platform in seconds, timer.getAbsTime)>,
@@ -924,7 +926,7 @@ Each emitter entry will follow the following struct.
 {
     typeName = <String ("straight flush","P-19")> 
     uid = <int (2 digits)> 
-    DCSobjectName = <String (Name of actual DCS Unit)>
+    DcsObjectName = <String (Name of actual DCS Unit)>
     maxWeaponsRange = <Int (Max range of group weapons in Meters)>
     last_seen = <float (time last spotted by platform in seconds, timer.getAbsTime)>
     detected_by = <table (list of platform names that detected contact)>
@@ -977,12 +979,12 @@ HoundInstance:dumpIntelBrief("custom_name.csv")
 ```
 CSV structure:
 ```
-SiteId,SiteNatoDesignation,TrackId,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accuracy,lastSeen,DCStype,DCSunit,DCSgroup,ReportGenerated
+SiteId,SiteNatoDesignation,TrackId,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accuracy,lastSeen,DcsType,DcsUnit,DcsGroup,ReportGenerated
 ```
 
 Sample data
 ```csv
-SiteId,SiteNatoDesignation,TrackId,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accuracy,lastSeen,DCStype,DCSunit,DCSgroup,ReportGenerated
+SiteId,SiteNatoDesignation,TrackId,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accuracy,lastSeen,DcsType,DcsUnit,DcsGroup,ReportGenerated
 T002,2,I-1,Fan-song,Asleep,187/78,33.721733,35.800634,36S YC 5951 3482,Precise,1700,SNR_75V,SYR_SA-2_TR,SYR_SA-2,1730
 T002,2,I-3,Flat Face,Active,187/78,33.723213,35.799935,36S YC 5944 3498,Precise,1730,p-19 s-125 sr,SYR_SA-2_SR,SYR_SA-2,1730
 T021,6,E-20,Straight Flush,Active,018/0,35.022129,35.900628,36S YD 6465 7934,Unactionable,1730,Kub 1S91 str,SYRIA gnd 2 unit1,SYRIA gnd 2,1730
@@ -1044,7 +1046,9 @@ If you are upgrading from 0.1 please note that some changes will be required.
 From 0.2 to 0.3 there was an internal change and all classes (except form `HoundElint`) where wrapped into `HOUND` class (rather then several independent classes).
   *  HoundEventHandler now called HOUND.EventHandler please make sure to update you scripts
 ## 0.3.x to 0.4.x
-
+  * [Site markers](#map-markers) are toggled seperatly then the normal map markers. If you really want nothing, you need to add `HoundInstance:disableSiteMarkers()` to your Hound setup.
+  * HOUND.Contact class has been refactord and split to multiple classes. if you call HOUND.Contact directly in custom scripts you'll need to rename it to HOUND.Contact.Emitter
+  * Export has been refactord to suport new site groupings, see [exports](#exports)
 
 # Full Documentation
   * [Main script Documentation](https://uriba107.github.io/DCS-Hound/) - all the options available for the avarage mission builder, even those I didn't write here
@@ -1055,12 +1059,10 @@ From 0.2 to 0.3 there was an internal change and all classes (except form `Hound
 # Special thanks
   * __Grimes__ - For [MIST](https://github.com/mrSkortch/MissionScriptingTools) and because Without the [Hoggit Wiki](https://wiki.hoggitworld.com/) we would all be fumbling in the dark.
   * __[flywaldair](https://github.com/walder)__ - Hound was initially inspired by [Skynet IADS](https://github.com/walder/Skynet-IADS).
-  * __[Ciribob](https://github.com/ciribob)__ - without his help, support and acceptence of wierd merge requests. none of this would have been possible.
-  * __[rkusa](https://github.com/rkusa)__,__[rurounijones](https://github.com/rurounijones)__,__[Binary](https://discord.com/users/Binary#0001)__ and everyone involved for [DCS-gRPC](https://github.com/DCS-gRPC/rust-server).
+  * __[Ciribob](https://github.com/ciribob)__ - without his help, support and acceptence of wierd merge requests. Hound would have never been possible.
+  * __[rkusa](https://github.com/rkusa)__,__[rurounijones](https://github.com/rurounijones)__ and everyone involved for [DCS-gRPC](https://github.com/DCS-gRPC/rust-server).
   *  __[Pene](https://github.com/Penecruz)__, for being a sport and trying out all manner of builds. And to the rest of the __[DCS ANZUS](https://discord.gg/mCQw9Wm5Qq)__ for allowing him to keep doing that :)
   * __Nikos__, __[Jester](https://github.com/hbjonsson)__, __[davidp57](https://github.com/davidp57)__ and all the rest - For the feeback and suggestions pushing Hound even further
 
 And a very special thanks is (and will always be) reserved to those who choose to click the button below :) 
-
-[![Toss A coin to your witcher](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/donate?business=RDGX965BT5MT4&no_recurring=1&item_name=Thank+you+for+choosing+this+way+to+show+your+appreciation%21+&currency_code=USD)  
-[Bonus track](https://www.youtube.com/watch?v=waMkFIzvDpE)
+[![Donate with PayPal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/donate?business=RDGX965BT5MT4&no_recurring=1&item_name=Thank+you+for+choosing+this+way+to+show+your+appreciation%21+&currency_code=USD)  

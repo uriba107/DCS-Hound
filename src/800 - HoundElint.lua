@@ -14,8 +14,8 @@ do
     -- @section HoundElint
 
     --- create HoundElint instance.
-    -- @param platformName Platform name or coalition enum
-    -- @return HoundElint Instance
+    -- @param[type=int] platformName Platform name or coalition enum
+    -- @return[type=table] HoundElint Instance
     function HoundElint:create(platformName)
         if not platformName then
             HOUND.Logger.error("Failed to initialize Hound instace. Please provide coalition")
@@ -64,20 +64,20 @@ do
     end
 
     --- get Hound instance ID
-    -- @return Int Hound ID
+    -- @return[type=Int] Int Hound ID
     function HoundElint:getId()
         return self.settings:getId()
     end
 
     --- get Hound instance Coalition
-    -- @return coalition enum of current hound instance
+    -- @return[type=int] coalition enum of current hound instance
     function HoundElint:getCoalition()
         return self.settings:getCoalition()
     end
 
     --- set coalition for Hound Instance (Internal)
-    -- @param side coalition side enum
-    -- @return Bool. True if coalition was set
+    -- @param[type=int] side coalition side enum
+    -- @return[type=bool] Bool. True if coalition was set
     function HoundElint:setCoalition(side)
         if side == coalition.side.BLUE or side == coalition.side.RED then
             return self.settings:setCoalition(side)
@@ -86,8 +86,8 @@ do
     end
 
     --- set onScreenDebug
-    -- @param value Bool
-    -- @return (Bool) True if chaned
+    -- @param[type=bool] value to set
+    -- @return[type=Bool] True if chaned
     function HoundElint:onScreenDebug(value)
         return self.settings:setOnScreenDebug(value)
     end
@@ -97,26 +97,26 @@ do
 
     --- add platform from hound instance
     -- @string platformName Unit name for platform to add
-    -- @return bool. True if successfuly added
+    -- @return[type=bool] True if successfuly added
     function HoundElint:addPlatform(platformName)
         return self.contacts:addPlatform(platformName)
     end
 
     --- Remove platform from hound instance
     -- @string platformName Unit name for platform to remove
-    -- @return bool. True if successfuly removed
+    -- @return[type=bool] True if successfuly removed
     function HoundElint:removePlatform(platformName)
         return self.contacts:removePlatform(platformName)
     end
 
     --- count Platforms
-    -- @return Int number of assigned platforms
+    -- @return[type=int] number of assigned platforms
     function HoundElint:countPlatforms()
         return self.contacts:countPlatforms()
     end
 
     --- list platforms
-    -- @return list of platfoms
+    -- @return[type=table] list of platfoms
     function HoundElint:listPlatforms()
         return self.contacts:listPlatforms()
     end
@@ -125,15 +125,15 @@ do
     -- @section contacts
 
     --- count contacts
-    -- @param[opt] sectorName String name or sector to filter by
-    -- @return Int number of contacts currently tracked
+    -- @param[type=?string] sectorName String name or sector to filter by
+    -- @return[type=int] number of contacts currently tracked
     function HoundElint:countContacts(sectorName)
         return self.contacts:countContacts(sectorName)
     end
 
     --- count Active contacts
-    -- @param[opt] sectorName String name or sector to filter by
-    -- @return Int number of contacts currently Transmitting
+    -- @param[type=?string] sectorName String name or sector to filter by
+    -- @return[type=Int] number of contacts currently Transmitting
     function HoundElint:countActiveContacts(sectorName)
         local activeContactCount = 0
         local contacts =  self.contacts:getContacts(sectorName)
@@ -146,8 +146,8 @@ do
     end
 
     --- count preBriefed contacts
-    -- @param[opt] sectorName String name or sector to filter by
-    -- @return Int number of contacts currently in PB status
+    -- @param[type=?string] sectorName String name or sector to filter by
+    -- @return[type=int] number of contacts currently in PB status
     function HoundElint:countPreBriefedContacts(sectorName)
         local pbContactCount = 0
         local contacts =  self.contacts:getContacts(sectorName)
@@ -160,7 +160,7 @@ do
     end
 
     --- set/create a pre Briefed contacts
-    -- @param DCS_Object_Name name of DCS Unit or Group to add
+    -- @param[type=string] DCS_Object_Name name of DCS Unit or Group to add
     -- @param[opt] codeName Optional name for site created
     function HoundElint:preBriefedContact(DCS_Object_Name,codeName)
         if type(DCS_Object_Name) ~= "string" then return end
@@ -192,7 +192,7 @@ do
     end
 
     --- Mark Radar as dead
-    -- @param radarUnit DCS Unit, DCS Group or Unit/Group name to mark as dead
+    -- @param[type=string|table] radarUnit DCS Unit, DCS Group or Unit/Group name to mark as dead
     function HoundElint:markDeadContact(radarUnit)
         local units={}
         local obj = radarUnit
@@ -224,8 +224,8 @@ do
     end
 
     --- count sites
-    -- @param[opt] sectorName String name or sector to filter by
-    -- @return Int number of contacts currently tracked
+    -- @param[type=?string] sectorName name or sector to filter by
+    -- @return[type=int] number of contacts currently tracked
     function HoundElint:countSites(sectorName)
         return self.contacts:countSites(sectorName)
     end
@@ -234,10 +234,10 @@ do
     -- @section sectors
 
     --- Add named sector
-    -- @param sectorName name of sector to add
+    -- @param[type=string] sectorName name of sector to add
     -- @param[opt] sectorSettings table of sector settings
     -- @param[opt] priority Sector priority (lower is higher)
-    -- @return Bool. True if sector successfully added
+    -- @return[type=bool] True if sector successfully added
     function HoundElint:addSector(sectorName,sectorSettings,priority)
         if type(sectorName) ~= "string" then return false end
         if string.lower(sectorName) == "default" or string.lower(sectorName) == "all" then
@@ -257,8 +257,8 @@ do
     end
 
     --- Remove Named sector
-    -- @param sectorName name of sector to add
-    -- @return Bool. True if sector successfully added
+    -- @param[type=string] sectorName name of sector to add
+    -- @return[type=bool] True if sector successfully added
     function HoundElint:removeSector(sectorName)
         if sectorName == nil then return false end
         self.sectors[sectorName] = self.sectors[sectorName]:destroy()
@@ -269,10 +269,10 @@ do
     end
 
     --- Update named sector settings
-    -- @string sectorName name of sector (nil == "default")
+    -- @param[type=string|nil] sectorName name of sector (nil == "default")
     -- @tab sectorSettings sector settings
-    -- @string[opt] subSettingName update specific setting ("controller", "atis", "notifier")
-    -- @return Bool. False if an error occurred, true otherwise
+    -- @param[type=?string] subSettingName update specific setting ("controller", "atis", "notifier")
+    -- @return[type=bool] False if an error occurred, true otherwise
     function HoundElint:updateSectorSettings(sectorName,sectorSettings,subSettingName)
         if sectorName == nil then sectorName = "default" end
         if not self.sectors[sectorName] then
@@ -295,7 +295,7 @@ do
     end
 
     --- list all sectors
-    -- @string[opt] element list only sectors with specified element. Valid options are "controller", "atis", "notifier" and "zone"
+    -- @param[type=?string] element list only sectors with specified element. Valid options are "controller", "atis", "notifier" and "zone"
     -- @return list of sector names
     function HoundElint:listSectors(element)
         local sectors = {}
@@ -324,7 +324,7 @@ do
     end
 
     --- get all sectors
-    -- @string[opt] element list only sectors with specified element. Valid options are "controller", "atis", "notifier" and "zone"
+    -- @param[type=?string] element list only sectors with specified element. Valid options are "controller", "atis", "notifier" and "zone"
     -- @return list of HOUND.Sector instances
     function HoundElint:getSectors(element)
         local sectors = {}
@@ -353,8 +353,8 @@ do
     end
 
     --- return number of sectors
-    -- @string[opt] element count only sectors with specified element ("controller"/"atis"/"notifier"/"zone")
-    -- @return Int. number of sectors
+    -- @param[type=?string] element count only sectors with specified element ("controller"/"atis"/"notifier"/"zone")
+    -- @return[type=int]. number of sectors
     function HoundElint:countSectors(element)
         return HOUND.Length(self:listSectors(element))
     end
@@ -372,7 +372,7 @@ do
     -- @section Controller
 
     --- enable controller in sector
-    -- @string[opt] sectorName name of sector in which a controller is enabled (default is "default") - "all" enable controller on all sectors
+    -- @param[type=?string] sectorName name of sector in which a controller is enabled (default is "default") - "all" enable controller on all sectors
     -- @tab[opt] settings controller settings to apply (if "all" is used, setting will be dropped)
     function HoundElint:enableController(sectorName,settings)
         if type(sectorName) == "table" and settings == nil then
@@ -393,7 +393,7 @@ do
     end
 
     --- disable controller in sector
-    -- @string[opt] sectorName Name of sector to act on. default is "default". all will disable all controllers
+    -- @param[type=?string] sectorName Name of sector to act on. default is "default". all will disable all controllers
     function HoundElint:disableController(sectorName)
         if sectorName == nil then
             sectorName = "default"
@@ -409,7 +409,7 @@ do
     end
 
     --- remove controller in sector
-    -- @string[opt] sectorName Name of sector to act on. default is "default". all will disable all controllers
+    -- @param[type=?string] sectorName Name of sector to act on. default is "default". all will disable all controllers
     function HoundElint:removeController(sectorName)
         if sectorName == nil then
             sectorName = "default"
@@ -424,7 +424,7 @@ do
     end
 
     --- configure controller in sector
-    -- @string[opt] sectorName name of sector to configure
+    -- @param[type=?string] sectorName name of sector to configure
     -- @tab settings settings for sector controller
     function HoundElint:configureController(sectorName,settings)
         if sectorName == nil and settings == nil then return end
@@ -444,7 +444,7 @@ do
     end
 
     --- get controller freq
-    -- @string[opt] sectorName name of sector to configure
+    -- @param[type=?string] sectorName name of sector to configure
     -- @return frequncies table for sector's controller
     function HoundElint:getControllerFreq(sectorName)
         sectorName = sectorName or "default"
@@ -452,8 +452,8 @@ do
     end
 
     --- get controller state
-    -- @string[opt] sectorName name of sector to probe
-    -- @return (Bool) True = enabled. False is disable or not configured
+    -- @param[type=?string] sectorName name of sector to probe
+    -- @return[type=Bool] True = enabled. False is disable or not configured
     function HoundElint:getControllerState(sectorName)
         sectorName = sectorName or "default"
 
@@ -464,7 +464,7 @@ do
     end
 
     --- Transmit custom TTS message on controller freqency
-    -- @param sectorName name of the sector to transmit on.
+    -- @param[type=string] sectorName name of the sector to transmit on.
     -- @param msg String message to broadcast
     function HoundElint:transmitOnController(sectorName,msg)
         if not sectorName or not msg then return end
@@ -483,7 +483,7 @@ do
     -- @section ATIS
 
     --- enable ATIS in sector
-    -- @string[opt] sectorName name of sector in which a controller is enabled (default is "default") - "all" enable ATIS on all sectors
+    -- @param[type=?string] sectorName name of sector in which a controller is enabled (default is "default") - "all" enable ATIS on all sectors
     -- @tab[opt] settings controller settings to apply (if "all" is used, setting will be dropped)
     function HoundElint:enableAtis(sectorName,settings)
         if type(sectorName) == "table" and settings == nil then
@@ -503,7 +503,7 @@ do
     end
 
     --- disable ATIS in sector
-    -- @string[opt] sectorName Name of sector to act on. default is "default". all will disable all ATIS
+    -- @param[type=?string] sectorName Name of sector to act on. default is "default". all will disable all ATIS
     function HoundElint:disableAtis(sectorName)
         if sectorName == nil then
             sectorName = "default"
@@ -520,7 +520,7 @@ do
     end
 
     --- remove ATIS in sector
-    -- @string[opt] sectorName Name of sector to act on. default is "default". all will disable all ATIS
+    -- @param[type=?string] sectorName Name of sector to act on. default is "default". all will disable all ATIS
     function HoundElint:removeAtis(sectorName)
         if sectorName == nil then
             sectorName = "default"
@@ -535,7 +535,7 @@ do
     end
 
     --- configure ATIS in sector
-    -- @string[opt] sectorName name of sector to configure
+    -- @param[type=?string] sectorName name of sector to configure
     -- @tab settings settings for sector ATIS
     function HoundElint:configureAtis(sectorName,settings)
         if sectorName == nil and settings == nil then return end
@@ -555,7 +555,7 @@ do
     end
 
     --- get ATIS freq
-    -- @string[opt] sectorName name of sector to query
+    -- @param[type=?string] sectorName name of sector to query
     -- @return frequncies table for sector's controller
     function HoundElint:getAtisFreq(sectorName)
         sectorName = sectorName or "default"
@@ -563,7 +563,7 @@ do
     end
 
     --- set ATIS EWR report state for sector
-    -- @string[opt] name sector name. valid inputs are sector name, "all". nothing will default to "default"
+    -- @param[type=?string] name sector name. valid inputs are sector name, "all". nothing will default to "default"
     -- @bool state set desired state
     function HoundElint:reportEWR(name,state)
         if type(name) == "boolean" then
@@ -582,8 +582,8 @@ do
     end
 
     --- get ATIS state
-    -- @string[opt] sectorName name of sector to probe
-    -- @return (Bool) True = enabled. False is disable or not configured
+    -- @param[type=?string] sectorName name of sector to probe
+    -- @return[type=Bool] True = enabled. False is disable or not configured
     function HoundElint:getAtisState(sectorName)
         sectorName = sectorName or "default"
         if self.sectors[sectorName] then
@@ -598,7 +598,7 @@ do
     --- enable Notifier in sector
     -- Only one notifier is required as it will broadcast on a global frequency (default is guard)
     -- controller will also handle alerts for per sector notifications
-    -- @string[opt] sectorName name of sector in which a Notifier is enabled (default is "default")
+    -- @param[type=?string] sectorName name of sector in which a Notifier is enabled (default is "default")
     -- @tab[opt] settings controller settings to apply (if "all" is used, setting will be dropped)
     function HoundElint:enableNotifier(sectorName,settings)
         if type(sectorName) == "table" and settings == nil then
@@ -612,7 +612,7 @@ do
     end
 
     --- disable Notifier in sector
-    -- @string[opt] sectorName Name of sector to act on. default is "default". all will disable all Notifiers
+    -- @param[type=?string] sectorName Name of sector to act on. default is "default". all will disable all Notifiers
     function HoundElint:disableNotifier(sectorName)
         if sectorName == nil then
             sectorName = "default"
@@ -629,7 +629,7 @@ do
     end
 
     --- remove controller in sector
-    -- @string[opt] sectorName Name of sector to act on. default is "default". all will disable all Notifiers
+    -- @param[type=?string] sectorName Name of sector to act on. default is "default". all will disable all Notifiers
     function HoundElint:removeNotifier(sectorName)
         if sectorName == nil then
             sectorName = "default"
@@ -646,7 +646,7 @@ do
     end
 
     --- configure Notifier in sector
-    -- @string[opt] sectorName name of sector to configure
+    -- @param[type=?string] sectorName name of sector to configure
     -- @tab settings settings for sector Notifier
     function HoundElint:configureNotifier(sectorName,settings)
         if sectorName == nil and settings == nil then return end
@@ -666,7 +666,7 @@ do
     end
 
     --- get Notifier freq
-    -- @string[opt] sectorName name of sector to query
+    -- @param[type=?string] sectorName name of sector to query
     -- @return frequncies table for sector's Notifier
     function HoundElint:getNotifierFreq(sectorName)
         sectorName = sectorName or "default"
@@ -674,8 +674,8 @@ do
     end
 
     --- get Notifier state
-    -- @string[opt] sectorName name of sector to probe
-    -- @return (Bool) True = enabled. False is disable or not configured
+    -- @param[type=?string] sectorName name of sector to probe
+    -- @return[type=Bool] True = enabled. False is disable or not configured
     function HoundElint:getNotifierState(sectorName)
         sectorName = sectorName or "default"
         if self.sectors[sectorName] then
@@ -687,7 +687,7 @@ do
     -- @section sectors
 
     --- enable Text notification for controller
-    -- @string[opt] sectorName name of sector to enable (default is "default", "all" will enable on all sectors)
+    -- @param[type=?string] sectorName name of sector to enable (default is "default", "all" will enable on all sectors)
     function HoundElint:enableText(sectorName)
         if sectorName == nil or type(sectorName) ~= "string" then
             sectorName = "default"
@@ -705,7 +705,7 @@ do
     end
 
     --- disable Text notification for controller
-    -- @string[opt] sectorName name of sector to disable (default is "default", "all" will enable on all sectors)
+    -- @param[type=?string] sectorName name of sector to disable (default is "default", "all" will enable on all sectors)
     function HoundElint:disableText(sectorName)
         if sectorName == nil or type(sectorName) ~= "string" then
             sectorName = "default"
@@ -722,7 +722,7 @@ do
     end
 
     --- enable Text-To-Speach notification for controller
-    -- @string[opt] sectorName name of sector to enable (default is "default", "all" will enable on all sectors)
+    -- @param[type=?string] sectorName name of sector to enable (default is "default", "all" will enable on all sectors)
     function HoundElint:enableTTS(sectorName)
         if sectorName == nil or type(sectorName) ~= "string" then
             sectorName = "default"
@@ -739,7 +739,7 @@ do
     end
 
     --- disable Text-to-speach notification for controller
-    -- @string[opt] sectorName name of sector to disable (default is "default", "all" will enable on all sectors)
+    -- @param[type=?string] sectorName name of sector to disable (default is "default", "all" will enable on all sectors)
     function HoundElint:disableTTS(sectorName)
         if sectorName == nil or type(sectorName) ~= "string" then
             sectorName = "default"
@@ -756,7 +756,7 @@ do
     end
 
     --- enable Alert notification for controller
-    -- @string[opt] sectorName name of sector to enable (default is "default", "all" will enable on all sectors)
+    -- @param[type=?string] sectorName name of sector to enable (default is "default", "all" will enable on all sectors)
     function HoundElint:enableAlerts(sectorName)
         if sectorName == nil or type(sectorName) ~= "string" then
             sectorName = "default"
@@ -774,7 +774,7 @@ do
     end
 
     --- disable Alert notification for controller
-    -- @string[opt] sectorName name of sector to disable (default is "default", "all" will enable on all sectors)
+    -- @param[type=?string] sectorName name of sector to disable (default is "default", "all" will enable on all sectors)
     function HoundElint:disableAlerts(sectorName)
         if sectorName == nil or type(sectorName) ~= "string" then
             sectorName = "default"
@@ -793,7 +793,7 @@ do
     --- Set sector callsign
     -- @string sectorName sector to change
     -- @string sectorCallsign callsign for sector. if not provided, a random one will be selected from pool. "NATO" will draw from the NATO pool
-    -- @return Bool. True if callsign was changes. False otherwise
+    -- @return[type=bool] True if callsign was changes. False otherwise
     function HoundElint:setCallsign(sectorName,sectorCallsign)
         if not sectorName then return false end
         local NATO = self.settings:getUseNATOCallsigns()
@@ -823,7 +823,7 @@ do
     end
 
     --- set transmitter to named sector
-    -- @param sectorName name of sector to apply to.
+    -- @param[type=string] sectorName name of sector to apply to.
     --- valid values are name of sector, "all" or nil (will change default)
     -- @param transmitter DCS unit name which will be the transmitter
     function HoundElint:setTransmitter(sectorName,transmitter)
@@ -844,7 +844,7 @@ do
     end
 
     --- remove transmitter to named sector
-    -- @param sectorName name of sector to apply to.
+    -- @param[type=string] sectorName name of sector to apply to.
     --- valid values are name of sector, "all" or nil (will change default)
     function HoundElint:removeTransmitter(sectorName)
         if sectorName == nil then sectorName = "default" end
@@ -859,7 +859,7 @@ do
     end
 
     --- get zone of sector
-    -- @param sectorName to act on
+    -- @param[type=string] sectorName to act on
     -- @return table of points or nil if no sector set
     function HoundElint:getZone(sectorName)
         sectorName = sectorName or "default"
@@ -869,7 +869,7 @@ do
     end
 
     --- add zone to sector
-    -- @param sectorName to act on
+    -- @param[type=string] sectorName to act on
     -- @param zoneCandidate DCS Group name. Group's waypoints will be used.
     -- same as MOOSE. use late activation invisible helicopter group is recommended.
     function HoundElint:setZone(sectorName,zoneCandidate)
@@ -882,7 +882,7 @@ do
     end
 
     --- remove zone from sector
-    -- @param sectorName to act on
+    -- @param[type=string] sectorName to act on
     function HoundElint:removeZone(sectorName)
         if self.sectors[sectorName] then
             self.sectors[sectorName]:removeZone()
@@ -910,7 +910,7 @@ do
 
     --- enable Markers for Hound Instance (default)
     -- @param[opt] markerType change marker type to use
-    -- @return (Bool) True if changed
+    -- @return[type=Bool] True if changed
     function HoundElint:enableMarkers(markerType)
         if markerType and HOUND.setContainsValue(HOUND.MARKER,markerType) then
             self:setMarkerType(markerType)
@@ -919,20 +919,20 @@ do
     end
 
     --- disable Markers for Hound Instance
-    -- @return (Bool) True if changed
+    -- @return[type=Bool] True if changed
 
     function HoundElint:disableMarkers()
         return self.settings:setUseMarkers(false)
     end
 
     --- enable Site Markers for Hound Instance (default)
-    -- @return (Bool) True if changed
+    -- @return[type=Bool] True if changed
     function HoundElint:enableSiteMarkers()
         return self.settings:setMarkSites(true)
     end
 
     --- disable Site Markers for Hound Instance
-    -- @return (Bool) True if changed
+    -- @return[type=Bool] True if changed
 
     function HoundElint:disableSiteMarkers()
         return self.settings:setMarkSites(false)
@@ -941,7 +941,7 @@ do
     --- Set marker type for Hound instance
     -- @param markerType valid marker type enum
     -- @see HOUND.MARKER
-    -- @return (Bool) True if changed
+    -- @return[type=Bool] True if changed
     function HoundElint:setMarkerType(markerType)
         if markerType and HOUND.setContainsValue(HOUND.MARKER,markerType) then
             return self.settings:setMarkerType(markerType)
@@ -952,7 +952,7 @@ do
     --- set intervals
     -- @param setIntervalName interval name to change (scan,process,menu,markers)
     -- @param setValue interval in seconds to set.
-    -- @return (Bool) True if changed
+    -- @return[type=Bool] True if changed
     function HoundElint:setTimerInterval(setIntervalName,setValue)
         if self.settings and HOUND.setContains(self.settings.intervals,string.lower(setIntervalName)) then
             return self.settings:setInterval(setIntervalName,setValue)
@@ -961,13 +961,13 @@ do
     end
 
     --- enable platforms INS position errors
-    -- @return Bool if settings was updated
+    -- @return[type=bool] if settings was updated
     function HoundElint:enablePlatformPosErrors()
         return self.settings:setPosErr(true)
     end
 
     --- disable platforms INS position errors
-    -- @return Bool if settings was updated
+    -- @return[type=bool] if settings was updated
     function HoundElint:disablePlatformPosErrors()
         return self.settings:setPosErr(false)
     end
@@ -980,50 +980,50 @@ do
 
     -- set callsign override table
     -- @param overrides Table of overrides
-    -- @return (Bool) True if setting has been updated
+    -- @return[type=Bool] True if setting has been updated
     function HoundElint:setCallsignOverride(overrides)
         return self.settings:setCallsignOverride(overrides)
     end
 
     --- get current BDA setting state
-    -- @return Bool current state
+    -- @return[type=bool] current state
     function HoundElint:getBDA()
         return self.settings:getBDA()
     end
 
     --- enable BDA for Hound Instance
     -- Hound will notify on radar destruction
-    -- @return (Bool) True if setting has been updated
+    -- @return[type=Bool] True if setting has been updated
     function HoundElint:enableBDA()
         return self.settings:setBDA(true)
     end
 
     --- disable BDA for Hound Instance
-    -- @return (Bool) True if setting has been updated
+    -- @return[type=Bool] True if setting has been updated
     function HoundElint:disableBDA()
         return self.settings:setBDA(false)
     end
 
     --- Get current state of NATO brevity setting
-    -- @return Bool current state
+    -- @return[type=bool] current state
     function HoundElint:getNATO()
         return self.settings:getNATO()
     end
 
     --- enable NATO brevity for Hound Instance
-    -- @return (Bool) True if setting has been updated
+    -- @return[type=Bool] True if setting has been updated
     function HoundElint:enableNATO()
         return self.settings:setNATO(true)
     end
 
     --- disable NATO brevity for Hound Instance
-    -- @return (Bool) True if setting has been updated
+    -- @return[type=Bool] True if setting has been updated
     function HoundElint:disableNATO()
         return self.settings:setNATO(false)
     end
 
     --- set flag if callsignes for sectors under Callsignes would be from the NATO pool
-    -- @return (Bool) True if setting has been updated
+    -- @return[type=Bool] True if setting has been updated
     function HoundElint:useNATOCallsignes(value)
         if type(value) ~= "boolean" then return false end
         return self.settings:setUseNATOCallsigns(value)
@@ -1039,7 +1039,7 @@ do
     --- Set Main parent menu for hound Instace
     -- must be set <b>BEFORE</b> calling <code>enableController()</code>
     -- @param parent desired parent menu (pass nil to clear)
-    -- @return (Bool) True if no errors
+    -- @return[type=Bool] True if no errors
     function HoundElint:setRadioMenuParent(parent)
         local retval = self.settings:setRadioMenuParent(parent)
         if retval == true and self:isRunning() then
@@ -1196,7 +1196,7 @@ do
     end
 
     --- is Instance on
-    -- @return Bool, True if system is running
+    -- @return[type=bool], True if system is running
     function HoundElint:isRunning()
         return (self.elintTaskID ~= nil)
     end
@@ -1262,7 +1262,7 @@ do
         end
         local currentGameTime = HoundUtils.Text.getTime()
         local csvFile = io.open(lfs.writedir() .. filename, "w+")
-        csvFile:write("SiteId,SiteNatoDesignation,TrackId,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accuracy,lastSeen,DCStype,DCSunit,DCSgroup,ReportGenerated\n")
+        csvFile:write("SiteId,SiteNatoDesignation,TrackId,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accuracy,lastSeen,DcsType,DcsUnit,DcsGroup,ReportGenerated\n")
         csvFile:flush()
         for _,site in pairs(self.contacts:listAllSitesByRange()) do
             local siteItems = site:generateIntelBrief()
@@ -1330,6 +1330,7 @@ do
                     sector:notifySiteDead(houndEvent.initiator,(houndEvent.id == HOUND.EVENTS.SITE_REMOVED))
                 end
             end
+
             if houndEvent.id == HOUND.EVENTS.SITE_CREATED or houndEvent.id == HOUND.EVENTS.SITE_CLASSIFIED then
                 self:populateRadioMenu()
                 if self.settings:getMarkSites() then
@@ -1338,8 +1339,20 @@ do
             end
             if houndEvent.id == HOUND.EVENTS.RADAR_DETECTED then
                 if self.settings:getUseMarkers() then
-                    houndEvent.initiator:updateMarker(HOUND.MARKER.NONE)
+                    houndEvent.initiator:updateMarker(self.settings:getMarkerType())
                 end
+            end
+
+            if not self.settings:getBDA() then return end
+            -- do there only then BDA is enabled
+            if houndEvent.id == HOUND.EVENTS.SITE_REMOVED then
+                houndEvent.initiator:destroy()
+                self.contacts:removeSite(houndEvent.initiator)
+                self:populateRadioMenu()
+            end
+            if houndEvent.id == HOUND.EVENTS.RADAR_DESTROYED then
+                self.contacts:removeContact(houndEvent.initiator)
+                self:populateRadioMenu()
             end
         end
     end

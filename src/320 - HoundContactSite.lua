@@ -20,17 +20,17 @@ do
     -- @param[opt] SiteId specify uid for the Site. if not present Group ID will be used
     -- @return HOUND.Contact.Site instance
     function HOUND.Contact.Site:New(HoundContact,HoundCoalition,SiteId)
-        if not HoundContact or type(HoundContact) ~= "table" or not HoundContact.getGroupName or not HoundCoalition then
+        if not HoundContact or type(HoundContact) ~= "table" or not HoundContact.getDcsGroupName or not HoundCoalition then
             HOUND.Logger.warn("failed to create HOUND.Contact.Site instance")
             return
         end
         local instance = self:superClass():New(HoundContact:getDcsObject(),HoundCoalition)
         setmetatable(instance, HOUND.Contact.Site)
         self.__index = self
-        instance.DCSobject = HoundContact:getDcsObject():getGroup()
-        instance.gid = SiteId or instance.DCSobject:getId()
-        instance.DCSgroupName = instance.DCSobject:getName()
-        instance.DCSobjectName = instance.DCSobject:getName()
+        instance.DcsObject = HoundContact:getDcsObject():getGroup()
+        instance.gid = SiteId or tonumber(instance.DcsObject:getId())
+        instance.DcsGroupName = instance.DcsObject:getName()
+        instance.DcsObjectName = instance.DcsObject:getName()
         instance.typeAssigned = HoundContact.typeAssigned
 
         instance.emitters = { HoundContact }
@@ -42,13 +42,14 @@ do
         instance.isEWR = HoundContact.isEWR
         instance.state = HOUND.EVENTS.SITE_NEW
         instance.preBriefed = HoundContact:isAccurate()
+        instance.DcsRadarUnits = HoundUtils.Dcs.getRadarUnitsInGroup(instance.DcsObject)
 
         return instance
     end
 
     --- Destructor function
     function HOUND.Contact.Site:destroy()
-        HOUND.Logger.debug("site destroy")
+        self:removeMarkers()
     end
 
     --- Getters and Setters
@@ -72,7 +73,7 @@ do
             self.name = requestedName
         end
     end
-    --- Get contact type name
+    --- Get site type name
     -- @return String
     function HOUND.Contact.Site:getType()
         return self.typeAssigned
@@ -84,22 +85,22 @@ do
         return self.gid%1000
     end
 
-    --- Get Contact Group Name
+    --- Get Site Group Name
     -- @return String
-    function HOUND.Contact.Site:getGroupName()
-        return self.DCSgroupName
+    function HOUND.Contact.Site:getDcsGroupName()
+        return self.DcsGroupName
     end
 
     --- Get the DCS unit name
     -- @return String
     function HOUND.Contact.Site:getDcsName()
-        return self.DCSgroupName
+        return self.DcsGroupName
     end
 
     --- Get the underlying DCS Object
     -- @return DCS Group or DCS staticObject
     function HOUND.Contact.Site:getDcsObject()
-        return self.group or self.DCSgroupName
+        return self.group or self.DcsGroupName
     end
     --- Get last seen in seconds
     -- @return number in seconds since contact was last seen
@@ -113,32 +114,38 @@ do
         return table.concat(self.typeAssigned," or ")
     end
 
-    --- Check if contact is Active
-    -- @return (Bool) True if seen in the last 15 seconds
+    --- Check if site is Active
+    -- @return[type=Bool] True if seen in the last 15 seconds
     function HOUND.Contact.Site:isActive()
         return self:getLastSeen()/16 < 1.0
     end
 
-    --- check if contact is recent
-    -- @return (Bool) True if seen in the last 2 minutes
+    --- check if site is recent
+    -- @return[type=Bool] True if seen in the last 2 minutes
     function HOUND.Contact.Site:isRecent()
         return self:getLastSeen()/120 < 1.0
     end
 
-    --- check if contact position is accurate
-    -- @return Bool - True target is pre briefed
+    --- check if site position is accurate
+    -- @return[type=bool] - True target is pre briefed
     function HOUND.Contact.Site:isAccurate()
         return self.preBriefed
     end
 
-    --- check if contact is timed out
-    -- @return (Bool) True if timed out
+    --- check if contact DCS Unit is still alive
+    -- @return[type=bool] True if object is considered Alive
+    function HOUND.Contact.Site:isAlive()
+        return #self.emitters > 0
+    end
+
+    --- check if site is timed out
+    -- @return[type=Bool] True if timed out
     function HOUND.Contact.Site:isTimedout()
         return self:getLastSeen() > HOUND.CONTACT_TIMEOUT
     end
 
     --- Get current state
-    -- @return Contact state in @{HOUND.EVENTS}
+    -- @return site state in @{HOUND.EVENTS}
     function HOUND.Contact.Site:getState()
         return self.state
     end
@@ -149,6 +156,20 @@ do
         return self.pos.p or nil
     end
 
+    --- Does site have any living radars still (for DBA)
+    -- @local
+    -- @return[type=bool] true if any radars are alive in the group
+    function HOUND.Contact.Site:hasRadarUnits()
+        local hasRadars = false
+        for _,unit in ipairs(self.DcsRadarUnits) do
+            if HoundUtils.Dcs.isUnit(unit) and unit:getLife() > 1 then
+                hasRadars = true
+                break
+            end
+        end
+        return hasRadars
+    end
+
     --- Emitter managment
     -- @section Emitters
 
@@ -157,7 +178,7 @@ do
     -- @return @{HOUND.EVENTS}
     function HOUND.Contact.Site:addEmitter(HoundEmitter)
         self.state = HOUND.EVENTS.NO_CHANGE
-        if HoundEmitter:getGroupName() == self:getGroupName() and
+        if HoundEmitter:getDcsGroupName() == self:getDcsGroupName() and
             not HOUND.setContainsValue(self.emitters,HoundEmitter) then
                 table.insert(self.emitters,HoundEmitter)
                 self:selectPrimaryEmitter()
@@ -174,7 +195,7 @@ do
     -- @return @{HOUND.EVENTS}
     function HOUND.Contact.Site:removeEmitter(HoundEmitter)
         self.state = HOUND.EVENTS.NO_CHANGE
-        if HoundEmitter:getGroupName() == self:getGroupName() then
+        if HoundEmitter:getDcsGroupName() == self:getDcsGroupName() then
             for idx,emitter in ipairs(self.emitters) do
                 if emitter == HoundEmitter then
                     table.remove(self.emitters,idx)
@@ -187,6 +208,15 @@ do
             end
         end
         return self.state
+    end
+
+    --- Prune Nil emitters
+    function HOUND.Contact.Site:gcEmitters()
+        for idx=#self.emitters,1,-1 do
+            if self.emitters[idx] == nil then
+                table.remove(self.emitters,idx)
+            end
+        end
     end
 
     --- Get site's primary emitter
@@ -204,6 +234,11 @@ do
         return self.emitters
     end
 
+    --- get emitter count for site
+    -- @return[type=int] number of emitters currently in the site
+    function HOUND.Contact.Site:countEmitters()
+        return #self.emitters
+    end
     --- re-sort emitters
     -- @local
     function HOUND.Contact.Site:sortEmitters()
@@ -211,7 +246,7 @@ do
     end
 
     --- select primaty emitter for site
-    -- @return (Bool) True if primary changed
+    -- @return[type=Bool] True if primary changed
     function HOUND.Contact.Site:selectPrimaryEmitter()
         self:sortEmitters()
         if self.primaryEmitter ~= self.emitters[1] then
@@ -224,7 +259,7 @@ do
     end
 
     --- update site type
-    -- @return (Bool) True if site type changed
+    -- @return[type=Bool] True if site type changed
     function HOUND.Contact.Site:updateTypeAssigned()
         local type = self.primaryEmitter.typeAssigned or {}
         if HOUND.Length(type) > 1 then
@@ -260,13 +295,16 @@ do
         self:updateDefaultSector()
     end
 
+    --- Process site data (wrapper for consistency)
     function HOUND.Contact.Site:processData()
         self:update()
     end
 
+    --- Update site data
     function HOUND.Contact.Site:update()
         -- update stats
         if #self.emitters > 0 then
+            self:gcEmitters()
             self:selectPrimaryEmitter()
             self:updateTypeAssigned()
             self:updatePos()
@@ -280,12 +318,19 @@ do
             end
             self:setPreBriefed(isPB)
         end
-        if self:isTimedout() then
+        if self.state ~=  HOUND.EVENTS.SITE_ASLEEP then
+            if self:isTimedout() then
+                self.state = HOUND.EVENTS.SITE_ASLEEP
+                self:queueEvent(self.state)
+            end
+        end
+        if #self.emitters == 0 then
             self.state = HOUND.EVENTS.SITE_ASLEEP
-            self:queueEvent(self.state)
+            if not self:hasRadarUnits() then
+                self:queueEvent(HOUND.EVENTS.SITE_REMOVED)
+            end
         end
     end
-
 
     --- Marker managment
     -- @section markers
@@ -338,12 +383,25 @@ do
     --- Update marker positions
     -- @param MarkerType type of marker to use
     function HOUND.Contact.Site:updateMarker(MarkerType)
-        if not self:getPos() or type(self.maxWeaponsRange) ~= "number" or not self:isRecent() then return end
+        if not self:getPos() or type(self.maxWeaponsRange) ~= "number"  then return end
         -- if self:isAccurate() and self._markpoints.pos:isDrawn() then return end
+        local textColor = 0
+        local textAlpha = 1
+        if not self:isAccurate() then
+            textAlpha = HoundUtils.Mapping.linear(l_math.floor(HoundUtils.absTimeDelta(self.last_seen)),10,HOUND.CONTACT_TIMEOUT,1,0.5,true)
+        end
+        if self:isTimedout() and not self:isAccurate() then
+            textAlpha = 0.5
+            Colorfactor = 0.3
+        end
+
+        local lineColor = {textColor,textColor,textColor,textAlpha}
+
         local markerArgs = {
             text = self:getName() .. " (" .. self:getNatoDesignation().. ")",
             pos = self:getPos(),
-            coalition = self._platformCoalition
+            coalition = self._platformCoalition,
+            lineColor = lineColor
         }
         self._markpoints.pos:update(markerArgs)
 
@@ -352,9 +410,7 @@ do
                 self._markpoints.area:remove()
             end
             return
-        end
-
-        if MarkerType > HOUND.MARKER.NONE then
+        elseif MarkerType > HOUND.MARKER.NONE then
             self:drawAreaMarker()
         end
 
