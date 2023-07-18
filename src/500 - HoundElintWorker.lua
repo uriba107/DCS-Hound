@@ -403,8 +403,8 @@ do
                                 platformData.pos[axis] = value + platformData.posErr[axis]
                             end
                         end
-
-                        local datapoint = HOUND.Contact.Datapoint.New(platform,platformData.pos, az, el, timer.getAbsTime(),sampleAngularResolution,platformData.isStatic)
+                        local signalStrength = HoundUtils.Elint.getSignalStrength(platformData.pos,radarPos,contact.detectionRange)
+                        local datapoint = HOUND.Contact.Datapoint.New(platform,platformData.pos, az, el, signalStrength, timer.getAbsTime(),sampleAngularResolution,platformData.isStatic)
                         contact:AddPoint(datapoint)
                     end
                 end

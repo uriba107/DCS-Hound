@@ -3,12 +3,14 @@ TARGET_PATH="./include"
 TARGET_FILE="${TARGET_PATH}/HoundElint.lua"
 
 SED_ARGS="-i"
+SED="sed"
 LUAROCKS="luarocks"
 $(echo $OSTYPE | grep -q darwin)
 isMacOs=$?
 if [ $isMacOs -eq 0 ]; then
     export PATH="$PATH:$HOME/.luarocks/bin"
-    SED_ARGS="-i .orig -e"
+    #SED_ARGS="-i .orig -e"
+    SED="gsed"
     LUAROCKS="luarocks --lua-dir=$(brew --prefix)/opt/lua@5.1 --lua-version=5.1"
 fi
 
@@ -48,7 +50,7 @@ function check_dependecies {
       MD_TOC_VERSION=1.2.1
       MD_TOC_URL="https://github.com/ekalinin/github-markdown-toc.go/releases/download/v${MD_TOC_VERSION}/gh-md-toc_${MD_TOC_VERSION}_linux_amd64.tar.gz"
       if [ $isMacOs -eq 0 ]; then
-      MD_TOC_URL=$(echo ${MD_TOC_URL} | sed 's/linux/darwin//')
+      MD_TOC_URL=$(echo ${MD_TOC_URL} | $SED 's/linux/darwin//')
       fi
       curl -L ${MD_TOC_URL} -o ${MD_TOC}.tar.gz
       tar -xzvf ${MD_TOC}.tar.gz -C ${HOME} gh-md-toc
@@ -110,22 +112,23 @@ function compile {
     done
 
     # remove dev stuff
-    highlight "cleaning Dev comments"
-    sed -E ${SED_ARGS} '/StopWatch|:Stop()/d' ${TARGET_FILE}
-    sed ${SED_ARGS} '/HOUND.Logger.trace("/d' ${TARGET_FILE}
+    highlight "Cleaning development helpers"
+    $SED -E ${SED_ARGS} '/StopWatch|:Stop()/d' ${TARGET_FILE}
+    $SED ${SED_ARGS} '/HOUND.Logger.trace("/d' ${TARGET_FILE}
+    $SED ${SED_ARGS} '/HOUND.Logger.debug("/d' ${TARGET_FILE}
 
     # disable logging
-    sed ${SED_ARGS} "s/DEBUG = true/DEBUG = false/" ${TARGET_FILE}
+    $SED ${SED_ARGS} "s/DEBUG = true/DEBUG = false/" ${TARGET_FILE}
 
     # clean comments
-    sed ${SED_ARGS} '/^[[:space:]]*--/d' ${TARGET_FILE}
-    sed ${SED_ARGS} '$!N;/^[[:space:]]*$/{$q;D;};P;D;' ${TARGET_FILE}
+    $SED ${SED_ARGS} '/^[[:space:]]*--/d' ${TARGET_FILE}
+    $SED ${SED_ARGS} '$!N;/^[[:space:]]*$/{$q;D;};P;D;' ${TARGET_FILE}
 
-    GIT_BRANCH="-$(git branch --show-current | sed 's/[^a-zA-Z 0-9]/\\&/g')-$(date +%Y%m%d)"
+    GIT_BRANCH="-$(git branch --show-current | $SED 's/[^a-zA-Z 0-9]/\\&/g')-$(date +%Y%m%d)"
     if [ ${GIT_BRANCH} == "-main-$(date +%Y%m%d)" ]; 
        then GIT_BRANCH="";
     fi
-    sed ${SED_ARGS} "s/-TRUNK/""${GIT_BRANCH}""/" ${TARGET_FILE}
+    $SED ${SED_ARGS} "s/-TRUNK/""${GIT_BRANCH}""/" ${TARGET_FILE}
 
     VERSION=$(grep '        VERSION = ' ${TARGET_FILE} | cut -d\" -f2)
     echo "-- Hound version ${VERSION} - Compiled on $(TZ=UTC date +%Y-%m-%d' '%H:%M)" >> ${TARGET_FILE}
@@ -138,7 +141,7 @@ function compile {
 
 function print_includes {
     for FILE in src/*.lua; do
-    echo "assert(loadfile(currentDir..'${FILE}'))()" | sed 's/\//\\\\/g'
+    echo "assert(loadfile(currentDir..'${FILE}'))()" | $SED 's/\//\\\\/g'
     done
 }
 
@@ -222,10 +225,10 @@ if [ $BUILD_DOCS -eq 1 ]; then
 fi
 if [ $COMPILE -eq 1 ]; then
     compile
-fi
-if [ ${LINT_COMPILED} -eq 1 ]; then
     lint_compiled
 fi
+# if [ ${LINT_COMPILED} -eq 1 ]; then
+# fi
 if [ $UPDATE_MISSIONS -eq 1 ]; then
     update_mission "demo_mission/Caucasus_demo" "HoundElint_demo"
     update_mission "demo_mission/Syria_POC" "Hound_Demo_SyADFGCI"

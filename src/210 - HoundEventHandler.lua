@@ -63,7 +63,7 @@ do
     --- Execute event on all registeres subscribers
     function HOUND.EventHandler.onHoundEvent(event)
         for _, handler in pairs(HOUND.EventHandler._internalSubscribers) do
-            if handler and handler.settings then
+            if handler and getmetatable(handler) == HoundElint and handler:getId() == event.houndId then
                 if handler.onHoundInternalEvent and type(handler.onHoundInternalEvent) == "function" then
                     handler:onHoundInternalEvent(event)
                 end

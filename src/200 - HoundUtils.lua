@@ -605,7 +605,7 @@ do
         local radarUnits = {}
         if HOUND.Utils.Dcs.isGroup(DcsGroup) then
             for _,unit in ipairs(DcsGroup:getUnits()) do
-                if unit:hasSensors(Unit.SensorType.RADAR) then
+                if unit:hasSensors(Unit.SensorType.RADAR) and HOUND.setContains(HOUND.DB.Radars,unit:getTypeName()) then
                     table.insert(radarUnits,unit)
                 end
             end
@@ -1354,10 +1354,11 @@ do
     -- @param src position of the source (i.e Hound platform)
     -- @param dst position of the destination (i.e emitting radar)
     -- @param sensorPrecision angular resolution (in rad) of platform against radar
-    -- @return Azimuth (radians) from source to destination (0 to 2*pi)
-    -- @return elevation angle (radians) from source to destination (-pi to pi)
+    -- @return[type=number] Azimuth from source to destination in radians (0 to 2*pi)
+    -- @return[type=number] Elevation angle from source to destination in radians (-pi to pi)
 
     function HOUND.Utils.Elint.getAzimuth(src, dst, sensorPrecision)
+        if not HOUND.Utils.Dcs.isPoint(src) or not HOUND.Utils.Dcs.isPoint(dst) then return end
         -- local pi_2 = 2*l_math.pi
         local AngularErr = HOUND.Utils.Elint.generateAngularError(sensorPrecision)
 
@@ -1372,7 +1373,21 @@ do
 
         local el = (l_math.atan(vec.y/l_math.sqrt(vec.x^2 + vec.z^2)) + AngularErr.el)
 
+
         return az,el
+    end
+
+    --- Get Signal strength of point
+    -- @param src position of the source (i.e Hound platform)
+    -- @param dst position of the destination (i.e emitting radar)
+    -- @param maxDetection Maximum detection range of radar in meters
+    -- @return[type=number] Signal strength
+
+    function HOUND.Utils.Elint.getSignalStrength(src, dst, maxDetection)
+        if not HOUND.Utils.Dcs.isPoint(src) or not HOUND.Utils.Dcs.isPoint(dst) or not (type(maxDetection) == "number" and maxDetection > 0) then return 0 end
+        local dist = l_mist.utils.get3DDist(src,dst)
+        local rng = (dist/maxDetection)
+        return 1/(rng*rng)
     end
 
     --- Get currently transmitting Ground and Ship radars that are not in the Hound Instance coalition

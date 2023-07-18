@@ -284,6 +284,8 @@ do
         pos.z = Northing
         pos.y = land.getHeight({x=pos.x,y=pos.z})
 
+        pos.score = earlyPoint.signalStrength * latePoint.signalStrength
+
         return pos
     end
 
@@ -421,6 +423,8 @@ do
         end
         local numMobilepoints = HOUND.Length(mobileDataPoints)
         local numStaticPoints = HOUND.Length(staticDataPoints)
+        table.sort(mobileDataPoints, function(a,b) return a.signalStrength < b.signalStrength end)
+        table.sort(staticDataPoints, function(a,b) return a.signalStrength < b.signalStrength end)
 
         if numMobilepoints+numStaticPoints < 2 and HOUND.Length(estimatePositions) == 0 then return end
         -- Static against all statics
@@ -454,6 +458,8 @@ do
         end
 
         if HOUND.Length(estimatePositions) > 2 or (HOUND.Length(estimatePositions) > 0 and staticPlatformsOnly) then
+            table.sort(estimatePositions, function(a,b) return a.score < b.score end)
+
             self.pos.p = HoundUtils.Cluster.weightedMean(estimatePositions,self.pos.p)
 
             if HOUND.Length(estimatePositions) > 10 then

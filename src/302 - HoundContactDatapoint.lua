@@ -33,12 +33,13 @@ do
     -- @param[opt] angularResolution angular resolution of datapoint
     -- @param[opt] isPlatformStatic (bool)
     -- @return Datapoint instance
-    function HOUND.Contact.Datapoint.New(platform0, p0, az0, el0, t0, angularResolution, isPlatformStatic)
+    function HOUND.Contact.Datapoint.New(platform0, p0, az0, el0, s0, t0, angularResolution, isPlatformStatic)
         local elintDatapoint = {}
         setmetatable(elintDatapoint, HOUND.Contact.Datapoint)
         elintDatapoint.platformPos = p0
         elintDatapoint.az = az0
         elintDatapoint.el = el0
+        elintDatapoint.signalStrength = tonumber(s0) or 0
         elintDatapoint.t = tonumber(t0)
         elintDatapoint.platformId = tonumber(platform0:getID())
         elintDatapoint.platformName = platform0:getName()
@@ -108,7 +109,9 @@ do
     -- @local
     function HOUND.Contact.Datapoint.estimatePos(self)
         if self.el == nil or self.platformStatic or l_math.abs(self.el) <= self.platformPrecision then return end
-        return HoundUtils.Geo.getProjectedIP(self.platformPos,self.az,self.el)
+        local pos = HoundUtils.Geo.getProjectedIP(self.platformPos,self.az,self.el)
+        pos.score = self.signalStrength*self.signalStrength
+        return pos
     end
 
     --- generate Az only Triangle and if possible Az/El polygon footprint

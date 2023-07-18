@@ -617,4 +617,15 @@ do
         },
         ['Primary'] = true
     }
+    -- P-14 Mod
+    HOUND.DB.Radars['EWR P-14 Tall King'] = {
+        ['Name'] = "Tall King",
+        ['Assigned'] = {"EWR"},
+        ['Role'] = {HOUND.DB.RadarType.EWR},
+        ['Band'] = {
+            [true] = HOUND.DB.Bands.A,
+            [false] = HOUND.DB.Bands.A
+        },
+        ['Primary'] = false
+    }
 end

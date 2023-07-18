@@ -164,14 +164,24 @@ do
     -- @param NATO (bool) True will generate NATO Brevity brief
     -- @return string containing
     function HOUND.Contact.Site:generateTtsBrief(NATO)
+
+        if self:getType() == "Naval" then
+            local boatData = {}
+            for idx,emitter in pairs(self:getEmitters()) do
+                table.insert(boatData,emitter:generateTtsBrief(NATO))
+            end
+            return table.concat(boatData," ")
+        end
+        local str = ""
+
         local primary = self:getPrimary()
-        if getmetatable(primary) ~= HOUND.Contact.Emitter or primary.pos.p == nil or primary.uncertenty_data == nil then return end
+        if getmetatable(primary) ~= HOUND.Contact.Emitter or primary.pos.p == nil or primary.uncertenty_data == nil then return str end
         local phoneticGridPos,phoneticBulls = primary:getTtsData(false,1)
         local reportedName = self:getName()
         if NATO then
             reportedName = ""
         end
-        local str = reportedName .. " " .. self:getNatoDesignation()
+        str = reportedName .. " " .. self:getNatoDesignation()
         if primary:isAccurate() then
             str = str .. ", reported"
         else

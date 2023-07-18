@@ -1301,7 +1301,10 @@ do
     -- @param houndEvent incoming event
     -- @local
     function HoundElint:onHoundInternalEvent(houndEvent)
-        if houndEvent.houndId ~= self.settings:getId() then return end
+        if houndEvent.houndId ~= self.settings:getId() then
+            HOUND.Logger.trace("Processing Event " .. HOUND.reverseLookup(HOUND.EVENTS,houndEvent.id) .. " for myself? " .. tostring(houndEvent.houndId == self:getId()))
+            return
+        end
         if houndEvent.id == HOUND.EVENTS.HOUND_DISABLED then return end
 
         local sectors = self:getSectors()
@@ -1313,6 +1316,7 @@ do
             end
         end
         if self:isRunning() then
+
             for _,sector in pairs(sectors) do
                 -- if houndEvent.id == HOUND.EVENTS.RADAR_DETECTED then
                 --     sector:notifyEmitterNew(houndEvent.initiator)

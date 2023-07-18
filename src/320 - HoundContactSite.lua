@@ -66,6 +66,7 @@ do
 
         return self.name or string.format("%s%03d",prefix,self:getId())
     end
+
     --- set Site Name
     -- @param requestedName requested name
     function HOUND.Contact.Site:setName(requestedName)
@@ -73,10 +74,11 @@ do
             self.name = requestedName
         end
     end
+
     --- Get site type name
     -- @return String
     function HOUND.Contact.Site:getType()
-        return self.typeAssigned
+        return self:getTypeAssigned()
     end
 
     --- Get Site GID
@@ -102,6 +104,7 @@ do
     function HOUND.Contact.Site:getDcsObject()
         return self.group or self.DcsGroupName
     end
+
     --- Get last seen in seconds
     -- @return number in seconds since contact was last seen
     function HOUND.Contact.Site:getLastSeen()
@@ -160,14 +163,9 @@ do
     -- @local
     -- @return[type=bool] true if any radars are alive in the group
     function HOUND.Contact.Site:hasRadarUnits()
-        local hasRadars = false
-        for _,unit in ipairs(self.DcsRadarUnits) do
-            if HoundUtils.Dcs.isUnit(unit) and unit:getLife() > 1 then
-                hasRadars = true
-                break
-            end
-        end
-        return hasRadars
+        if not TestHoundUtils.Dcs.isGroup(self.DcsObject) or self.DcsObject:getSize() == 0 then return false end
+        local lastUnit = self.DcsObject:getUnit(self.DcsObject:getSize())
+        return lastUnit:hasSensors(Unit.SensorType.RADAR)
     end
 
     --- Emitter managment
@@ -184,7 +182,7 @@ do
                 self:selectPrimaryEmitter()
                 self:updateTypeAssigned()
                 self:updateSector()
-
+                self:updateGroupRadars()
                 self.state = HOUND.EVENTS.SITE_UPDATED
         end
         return self.state
@@ -202,6 +200,7 @@ do
                     if #self.emitters > 0 then
                         self:selectPrimaryEmitter()
                     end
+                    self:updateGroupRadars()
                     self.state = HOUND.EVENTS.SITE_UPDATED
                     break
                 end
@@ -211,12 +210,19 @@ do
     end
 
     --- Prune Nil emitters
+    -- @local
     function HOUND.Contact.Site:gcEmitters()
         for idx=#self.emitters,1,-1 do
             if self.emitters[idx] == nil then
                 table.remove(self.emitters,idx)
             end
         end
+    end
+
+    --- update internal actual radars list
+    -- @local
+    function HOUND.Contact.Site:updateGroupRadars()
+        self.DcsRadarUnits = HoundUtils.Dcs.getRadarUnitsInGroup(self.DcsObject)
     end
 
     --- Get site's primary emitter
@@ -319,16 +325,13 @@ do
             self:setPreBriefed(isPB)
         end
         if self.state ~=  HOUND.EVENTS.SITE_ASLEEP then
-            if self:isTimedout() then
+            if self:isTimedout() or #self.emitters == 0 then
                 self.state = HOUND.EVENTS.SITE_ASLEEP
                 self:queueEvent(self.state)
             end
         end
-        if #self.emitters == 0 then
-            self.state = HOUND.EVENTS.SITE_ASLEEP
-            if not self:hasRadarUnits() then
-                self:queueEvent(HOUND.EVENTS.SITE_REMOVED)
-            end
+        if #self.emitters == 0 and not self:hasRadarUnits() then
+            self:queueEvent(HOUND.EVENTS.SITE_REMOVED)
         end
     end
 
