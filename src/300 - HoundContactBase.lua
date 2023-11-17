@@ -119,14 +119,22 @@ do
         return table.concat(self.typeAssigned," or ")
     end
 
+    -- get designation
+    -- @param[type=Bool] NATO return nato designation
+    -- @return[Type=String] designation
+    function HOUND.Contact.Base:getDesignation(NATO)
+        if not NATO then return self:getTypeAssigned() end
+        local natoDesignation = string.gsub(self:getTypeAssigned(),"(SA)-",'')
+        if natoDesignation == "Naval" then
+            natoDesignation = self:getType()
+        end
+        return natoDesignation
+    end
+
     --- get NATO designation
     -- @return string
     function HOUND.Contact.Base:getNatoDesignation()
-        local natoDesignation = string.gsub(self:getTypeAssigned(),"(SA)-",'')
-            if natoDesignation == "Naval" then
-                natoDesignation = self:getType()
-            end
-        return natoDesignation
+        return self:getDesignation(true)
     end
 
     --- Check if contact is Active

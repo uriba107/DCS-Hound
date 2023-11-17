@@ -32,6 +32,8 @@
 
 <h2>Contents</h2>
 <ul>
+<li><a href="#Functions">Functions</a></li>
+<li><a href="#Local_Functions">Local Functions</a></li>
 <li><a href="#Class_HOUND_Sector">Class HOUND.Sector </a></li>
 <li><a href="#getters_and_setters">getters and setters </a></li>
 <li><a href="#Controller_Functions">Controller Functions </a></li>
@@ -77,6 +79,44 @@
 <p></p>
 
 
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:populateRadioMenu">HOUND.Sector:populateRadioMenu ()</a></td>
+	<td class="summary">Populate sector radio menu</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:removeMenuItems">HOUND.Sector:removeMenuItems (menu, grpId)</a></td>
+	<td class="summary">recursivly clean out a menu</td>
+	</tr>
+</table>
+<h2><a href="#Local_Functions">Local Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:getRadioItemsText">HOUND.Sector:getRadioItemsText ()</a></td>
+	<td class="summary">generate menu cache</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:createCheckIn">HOUND.Sector:createCheckIn ()</a></td>
+	<td class="summary">create check menu items for players</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:getMenuPage">HOUND.Sector:getMenuPage (menu, grpId, parent)</a></td>
+	<td class="summary">Handle menu pagination</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:getMenuObj">HOUND.Sector:getMenuObj ()</a></td>
+	<td class="summary">get new menu object</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:addSiteRadioItems">HOUND.Sector:addSiteRadioItems (typeMenu, requester, siteData)</a></td>
+	<td class="summary">create site menu item</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:removeSiteRadioItems">HOUND.Sector:removeSiteRadioItems (typeMenu, requester, siteData)</a></td>
+	<td class="summary">remove radar menu items</td>
+	</tr>
+</table>
 <h2><a href="#Class_HOUND_Sector">Class HOUND.Sector </a></h2>
 <table class="function_list">
 	<tr>
@@ -350,44 +390,192 @@
 	<td class="name" nowrap><a href="#HOUND.Sector:TransmitCheckOutAck">HOUND.Sector:TransmitCheckOutAck (player)</a></td>
 	<td class="summary">transmit checkout message</td>
 	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Sector:getRadioItemsText">HOUND.Sector:getRadioItemsText ()</a></td>
-	<td class="summary">generate menu cache</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Sector:createCheckIn">HOUND.Sector:createCheckIn ()</a></td>
-	<td class="summary">create check menu items for players</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Sector:populateRadioMenu">HOUND.Sector:populateRadioMenu ()</a></td>
-	<td class="summary">Populate sector radio menu</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Sector:removeMenuItems">HOUND.Sector:removeMenuItems (menu, grpId)</a></td>
-	<td class="summary">recursivly clean out a menu</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Sector:getMenuPage">HOUND.Sector:getMenuPage (menu, grpId, parent)</a></td>
-	<td class="summary">Handle menu pagination</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Sector:getMenuObj">HOUND.Sector:getMenuObj ()</a></td>
-	<td class="summary">get new menu object</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Sector:addSiteRadioItems">HOUND.Sector:addSiteRadioItems (typeMenu, requester, siteData)</a></td>
-	<td class="summary">create site menu item</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Sector:removeSiteRadioItems">HOUND.Sector:removeSiteRadioItems (typeMenu, requester, siteData)</a></td>
-	<td class="summary">remove radar menu items</td>
-	</tr>
 </table>
 
 <br/>
 <br/>
 
 
+    <h2 class="section-header "><a name="Functions"></a>Functions</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HOUND.Sector:populateRadioMenu"></a>
+    <strong>HOUND.Sector:populateRadioMenu ()</strong>
+    </dt>
+    <dd>
+    Populate sector radio menu
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:removeMenuItems"></a>
+    <strong>HOUND.Sector:removeMenuItems (menu, grpId)</strong>
+    </dt>
+    <dd>
+    recursivly clean out a menu
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">menu</span>
+
+        </li>
+        <li><span class="parameter">grpId</span>
+         GroupId to remove from
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Local_Functions"></a>Local Functions</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HOUND.Sector:getRadioItemsText"></a>
+    <strong>HOUND.Sector:getRadioItemsText ()</strong>
+    </dt>
+    <dd>
+    generate menu cache
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        #table radio items text
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:createCheckIn"></a>
+    <strong>HOUND.Sector:createCheckIn ()</strong>
+    </dt>
+    <dd>
+    create check menu items for players
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:getMenuPage"></a>
+    <strong>HOUND.Sector:getMenuPage (menu, grpId, parent)</strong>
+    </dt>
+    <dd>
+    Handle menu pagination
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">menu</span>
+         to paginate
+        </li>
+        <li><span class="parameter">grpId</span>
+         group Id for menus
+        </li>
+        <li><span class="parameter">parent</span>
+         root menu if required
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        reference to the current page to use
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:getMenuObj"></a>
+    <strong>HOUND.Sector:getMenuObj ()</strong>
+    </dt>
+    <dd>
+    get new menu object
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:addSiteRadioItems"></a>
+    <strong>HOUND.Sector:addSiteRadioItems (typeMenu, requester, siteData)</strong>
+    </dt>
+    <dd>
+    create site menu item
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">typeMenu</span>
+         table containg the assigned type menu
+        </li>
+        <li><span class="parameter">requester</span>
+         MIST player object
+        </li>
+        <li><span class="parameter">siteData</span>
+         #table of site from menu cache
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:removeSiteRadioItems"></a>
+    <strong>HOUND.Sector:removeSiteRadioItems (typeMenu, requester, siteData)</strong>
+    </dt>
+    <dd>
+    remove radar menu items
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">typeMenu</span>
+         table contaning a menu structure for the group
+        </li>
+        <li><span class="parameter">requester</span>
+         mist human player object
+        </li>
+        <li><span class="parameter">siteData</span>
+         #table of site from menu cache
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
     <h2 class="section-header has-description"><a name="Class_HOUND_Sector"></a>Class HOUND.Sector </h2>
 
           <div class="section-description">
@@ -530,7 +718,8 @@
     <h3>Returns:</h3>
     <ol>
 
-        Int priority of sector
+           <span class="types"><span class="type">int</span></span>
+        priority of sector
     </ol>
 
 
@@ -613,7 +802,8 @@
     <h3>Returns:</h3>
     <ol>
 
-        Bool. True if sector has zone
+           <span class="types"><span class="type">bool</span></span>
+        True if sector has zone
     </ol>
 
 
@@ -1219,7 +1409,8 @@
     <h3>Returns:</h3>
     <ol>
 
-        Integer
+           <span class="types"><span class="type">int</span></span>
+        Number of contacts
     </ol>
 
 
@@ -1590,178 +1781,6 @@
 
 
 </dd>
-    <dt>
-    <a name = "HOUND.Sector:getRadioItemsText"></a>
-    <strong>HOUND.Sector:getRadioItemsText ()</strong>
-    </dt>
-    <dd>
-    generate menu cache
-
-
-
-    <h3>Returns:</h3>
-    <ol>
-
-        #table radio items text
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Sector:createCheckIn"></a>
-    <strong>HOUND.Sector:createCheckIn ()</strong>
-    </dt>
-    <dd>
-    create check menu items for players
-
-
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Sector:populateRadioMenu"></a>
-    <strong>HOUND.Sector:populateRadioMenu ()</strong>
-    </dt>
-    <dd>
-    Populate sector radio menu
-
-
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Sector:removeMenuItems"></a>
-    <strong>HOUND.Sector:removeMenuItems (menu, grpId)</strong>
-    </dt>
-    <dd>
-    recursivly clean out a menu
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">menu</span>
-
-        </li>
-        <li><span class="parameter">grpId</span>
-         GroupId to remove from
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Sector:getMenuPage"></a>
-    <strong>HOUND.Sector:getMenuPage (menu, grpId, parent)</strong>
-    </dt>
-    <dd>
-    Handle menu pagination
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">menu</span>
-         to paginate
-        </li>
-        <li><span class="parameter">grpId</span>
-         group Id for menus
-        </li>
-        <li><span class="parameter">parent</span>
-         root menu if required
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        reference to the current page to use
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Sector:getMenuObj"></a>
-    <strong>HOUND.Sector:getMenuObj ()</strong>
-    </dt>
-    <dd>
-    get new menu object
-
-
-
-    <h3>Returns:</h3>
-    <ol>
-
-        table
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Sector:addSiteRadioItems"></a>
-    <strong>HOUND.Sector:addSiteRadioItems (typeMenu, requester, siteData)</strong>
-    </dt>
-    <dd>
-    create site menu item
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">typeMenu</span>
-         table containg the assigned type menu
-        </li>
-        <li><span class="parameter">requester</span>
-         MIST player object
-        </li>
-        <li><span class="parameter">siteData</span>
-         #table of site from menu cache
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Sector:removeSiteRadioItems"></a>
-    <strong>HOUND.Sector:removeSiteRadioItems (typeMenu, requester, siteData)</strong>
-    </dt>
-    <dd>
-    remove radar menu items
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">typeMenu</span>
-         table contaning a menu structure for the group
-        </li>
-        <li><span class="parameter">requester</span>
-         mist human player object
-        </li>
-        <li><span class="parameter">siteData</span>
-         #table of site from menu cache
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
 </dl>
 
 
@@ -1769,7 +1788,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2023-07-03 20:57:16 </i>
+<i style="float:right;">Last updated 2023-07-18 12:04:46 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

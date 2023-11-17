@@ -36,7 +36,7 @@ do
     Elint_blue:enableText()
     Elint_blue:enableAtis()
     -- Elint_blue:disableBDA()
-    -- Elint_blue:setMarkerType(HOUND.MARKER.DIAMOND)
+    Elint_blue:setMarkerType(HOUND.MARKER.POLYGON)
 
     Elint_blue:addSector("Fake")
     Elint_blue:setZone("Fake")
@@ -49,6 +49,13 @@ do
     }
 
     Elint_blue:setCallsignOverride(callsignOverride)
+
+    -- test death
+    Elint_blue.onHoundEvent = function(self,event)
+        if event.id == HOUND.EVENTS.RADAR_DESTROYED or event.id == HOUND.EVENTS.SITE_ASLEEP or event.id == HOUND.EVENTS.SITE_REMOVED then
+            HOUND.Logger.debug("Event triggered! " .. HOUND.reverseLookup(HOUND.EVENTS,event.id) .. " for " .. event.initiator:getName())
+        end
+    end
 end
 
 do
@@ -72,12 +79,12 @@ do
     end
 
     function testing.spawnPlatform(hound)
-        env.info("No. platforms before: " .. HOUND.Length(hound.platform))
+        env.info("No. platforms before: " .. hound:countPlatforms())
         local newGrp = mist.cloneGroup("ELINT_C17_SPAWN",true)
         local newUnit = newGrp.units[1].name
         env.info("MIST Spawn - Grp:" .. newGrp.name .. " Unit: " .. newUnit)
         hound:addPlatform(newUnit)
-        env.info("No. platforms after: " .. HOUND.Length(hound.platform))
+        env.info("No. platforms after: " .. hound:countPlatforms())
     end
 
     function testing.AddMarker()
@@ -99,22 +106,57 @@ do
             units = DcsObject:getUnits()
         end
 
-        for _,unit in ipairs(units) do
-            local pos = unit:getPoint()
-            local life0 = unit:getLife0()
-            local life = unit:getLife()
-            local ittr = 1
-            while life > 1 and ittr < 10 do
-                local pwr = math.max(0.0055,(life-1)/life0)
-                env.info(ittr .. " | unit has " .. unit:getLife() .. " HP, started with " .. life0 .. " explody power: " .. pwr)
-                trigger.action.explosion(pos,pwr)
-                life = unit:getLife()
-                ittr = ittr+1
-            end
-            if ittr > 1 then
-                return -- only destroy one unit
+        for i=#units,1,-1 do
+            local unit = units[i]
+            if unit:hasSensors(Unit.SensorType.RADAR) and HOUND.setContains(HOUND.DB.Radars,unit:getTypeName()) then
+                local pos = unit:getPoint()
+                local life0 = unit:getLife0()
+                local life = unit:getLife()
+                local ittr = 1
+                while life > 1 and ittr < 10 do
+                    local pwr = math.max(0.0055,(life-1)/life0)
+                    env.info(ittr .. " | unit has " .. unit:getLife() .. " HP, started with " .. life0 .. " explody power: " .. pwr)
+                    trigger.action.explosion(pos,pwr)
+                    life = unit:getLife()
+                    ittr = ittr+1
+                end
+                if ittr > 1 then
+                    return -- only destroy one unit
+                end
             end
         end
+    end
+
+    function testing.testHasRadar(DcsObject)
+        local units = {}
+        if getmetatable(DcsObject) == Unit then
+            table.insert(units,DcsObject)
+        end
+        if getmetatable(DcsObject) == Group then
+            units = DcsObject:getUnits()
+        end
+        local lastUnit = units[#units]
+        env.info("*** BEFORE ***")
+        env.info(lastUnit:getName() .. " has radar? " .. tostring(lastUnit:hasSensors(Unit.SensorType.RADAR)))
+        env.info(mist.utils.tableShow(lastUnit:getSensors()))
+        env.info("*************")
+        for idx,unit in ipairs(units) do
+            if idx <=4 then
+                local pos = unit:getPoint()
+                local life0 = unit:getLife0()
+                local life = unit:getLife()
+                local ittr = 1
+                while life > 1 and ittr < 10 do
+                    trigger.action.explosion(pos,5)
+                    life = unit:getLife()
+                    ittr = ittr+1
+                end
+            end
+        end
+        env.info("*** AFTER ***")
+        env.info(lastUnit:getName() .. " has radar? " .. tostring(lastUnit:hasSensors(Unit.SensorType.RADAR)))
+        env.info(mist.utils.tableShow(lastUnit:getSensors()))
+        env.info("*************")
     end
 
     function testing.badaBoom(pos)
@@ -213,6 +255,8 @@ do
 
     missionCommands.addCommand("Toggle SA-3 Activation",testing.Menu,testing.toggleGroup,"SA-3_late")
     missionCommands.addCommand("BlowUp SA3",testing.Menu,testing.boom,Group.getByName("SA-3"))
+    missionCommands.addCommand("BlowUp SA10",testing.Menu,testing.testHasRadar,Group.getByName("SA10_1"))
+
     -- missionCommands.addCommand("Destroy C17",testing.Menu,Unit.destroy,Unit.getByName("ELINT_C17"))
     -- missionCommands.addCommand("Remove C17",testing.Menu,testing.removePlatform,{houndInstance=Elint_blue,unit_name="ELINT_C17"})
     missionCommands.addCommand("Spawn platform",testing.Menu,testing.spawnPlatform,Elint_blue)

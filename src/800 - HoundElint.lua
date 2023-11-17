@@ -194,6 +194,7 @@ do
     --- Mark Radar as dead
     -- @param[type=string|table] radarUnit DCS Unit, DCS Group or Unit/Group name to mark as dead
     function HoundElint:markDeadContact(radarUnit)
+        HOUND.Logger.trace("markDeadContact called")
         local units={}
         local obj = radarUnit
         if type(radarUnit) == "string" then
@@ -217,6 +218,7 @@ do
         end
         for _,unit in pairs(units) do
             if self.contacts:isContact(unit) then
+                HOUND.Logger.trace("Setting Dead for " .. tostring(unit))
                 self.contacts:setDead(unit)
             end
         end
@@ -1365,13 +1367,13 @@ do
     -- @param DcsEvent incoming dcs event
     -- @local
     function HoundElint:onEvent(DcsEvent)
-        if not DcsEvent.initiator or type(DcsEvent.initiator) ~= "table" then return end
-        if type(DcsEvent.initiator.getCoalition) ~= "function" then return end
+        if not HoundUtils.Dcs.isUnit(DcsEvent.initiator) then return end
 
         if DcsEvent.id == world.event.S_EVENT_DEAD
             and DcsEvent.initiator:getCoalition() ~= self.settings:getCoalition()
             and self:getBDA()
             then
+                HOUND.Logger.trace("triggered S_EVENT_DEAD for " .. DcsEvent.initiator:getName())
                 return self:markDeadContact(DcsEvent.initiator)
         end
 

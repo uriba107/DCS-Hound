@@ -364,6 +364,16 @@ do
             },
             ['Primary'] = true
         },
+        ['HEMTT_C-RAM_Phalanx'] = {
+            ['Name'] = "Phalanx C-RAM",
+            ['Assigned'] = {"AAA"},
+            ['Role'] = {HOUND.DB.RadarType.TRACK},
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.J,
+                [false] = HOUND.DB.Bands.J
+            },
+            ['Primary'] = true
+        },
         ['Dog Ear radar'] = {
             ['Name'] = "Dog Ear",
             ['Assigned'] = {"AAA"},
@@ -726,6 +736,16 @@ do
             ['Band'] = {
                 [true] = HOUND.DB.Bands.K,
                 [false] = HOUND.DB.Bands.K
+            },
+            ['Primary'] = true
+        },
+        ['ara_vdm'] = {
+            ['Name'] = "Veinticinco de Mayo (CV)",
+            ['Assigned'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.E,
+                [false] = HOUND.DB.Bands.E
             },
             ['Primary'] = true
         },

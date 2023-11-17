@@ -112,7 +112,7 @@
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Contact.Site:generateIdentReport">HOUND.Contact.Site:generateIdentReport (isTTS, sectorName)</a></td>
-	<td class="summary">generate ident report</td>
+	<td class="summary">generate Ident report</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Contact.Site:generateTtsBrief">HOUND.Contact.Site:generateTtsBrief (NATO)</a></td>
@@ -124,7 +124,7 @@
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Contact.Site:export">HOUND.Contact.Site:export ()</a></td>
-	<td class="summary">Generate contact export object</td>
+	<td class="summary">Generate Site export object</td>
 	</tr>
 </table>
 <h2><a href="#Marker_managment">Marker managment </a></h2>
@@ -150,15 +150,15 @@
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Contact.Site:getType">HOUND.Contact.Site:getType ()</a></td>
-	<td class="summary">Get contact type name</td>
+	<td class="summary">Get site type name</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Contact.Site:getId">HOUND.Contact.Site:getId ()</a></td>
 	<td class="summary">Get Site GID</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.Contact.Site:getGroupName">HOUND.Contact.Site:getGroupName ()</a></td>
-	<td class="summary">Get Contact Group Name</td>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:getDcsGroupName">HOUND.Contact.Site:getDcsGroupName ()</a></td>
+	<td class="summary">Get Site Group Name</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Contact.Site:getDcsName">HOUND.Contact.Site:getDcsName ()</a></td>
@@ -178,19 +178,23 @@
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Contact.Site:isActive">HOUND.Contact.Site:isActive ()</a></td>
-	<td class="summary">Check if contact is Active</td>
+	<td class="summary">Check if site is Active</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Contact.Site:isRecent">HOUND.Contact.Site:isRecent ()</a></td>
-	<td class="summary">check if contact is recent</td>
+	<td class="summary">check if site is recent</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Contact.Site:isAccurate">HOUND.Contact.Site:isAccurate ()</a></td>
-	<td class="summary">check if contact position is accurate</td>
+	<td class="summary">check if site position is accurate</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:isAlive">HOUND.Contact.Site:isAlive ()</a></td>
+	<td class="summary">check if contact DCS Unit is still alive</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Contact.Site:isTimedout">HOUND.Contact.Site:isTimedout ()</a></td>
-	<td class="summary">check if contact is timed out</td>
+	<td class="summary">check if site is timed out</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Contact.Site:getState">HOUND.Contact.Site:getState ()</a></td>
@@ -199,6 +203,10 @@
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Contact.Site:getPos">HOUND.Contact.Site:getPos ()</a></td>
 	<td class="summary">get current extimted position of primary</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:hasRadarUnits">HOUND.Contact.Site:hasRadarUnits ()</a></td>
+	<td class="summary">Does site have any living radars still (for DBA)</td>
 	</tr>
 </table>
 <h2><a href="#Class_HOUND_Contact_Site">Class HOUND.Contact.Site </a></h2>
@@ -223,12 +231,24 @@
 	<td class="summary">Add emitter to site</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:gcEmitters">HOUND.Contact.Site:gcEmitters ()</a></td>
+	<td class="summary">Prune Nil emitters</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:updateGroupRadars">HOUND.Contact.Site:updateGroupRadars ()</a></td>
+	<td class="summary">update internal actual radars list</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#HOUND.Contact.Site:getPrimary">HOUND.Contact.Site:getPrimary ()</a></td>
 	<td class="summary">Get site's primary emitter</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Contact.Site:getEmitters">HOUND.Contact.Site:getEmitters ()</a></td>
 	<td class="summary">get Dict with all emitters in site</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:countEmitters">HOUND.Contact.Site:countEmitters ()</a></td>
+	<td class="summary">get emitter count for site</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Contact.Site:sortEmitters">HOUND.Contact.Site:sortEmitters ()</a></td>
@@ -249,6 +269,14 @@
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Contact.Site:updateSector">HOUND.Contact.Site:updateSector ()</a></td>
 	<td class="summary">Update sector data</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:processData">HOUND.Contact.Site:processData ()</a></td>
+	<td class="summary">Process site data (wrapper for consistency)</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:update">HOUND.Contact.Site:update ()</a></td>
+	<td class="summary">Update site data</td>
 	</tr>
 </table>
 
@@ -369,7 +397,8 @@
          Bool. If true message will be for TTS. False will make a text message
         </li>
         <li><span class="parameter">sectorName</span>
-         string Name of primary sector if present function will only return sector data
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Name of primary sector if present function will only return sector data
         </li>
     </ul>
 
@@ -397,7 +426,8 @@
          Bool. If true message will be for TTS. False will make a text message
         </li>
         <li><span class="parameter">sectorName</span>
-         string Name of primary sector if present function will only return sector data
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Name of primary sector if present function will only return sector data
         </li>
     </ul>
 
@@ -425,7 +455,8 @@
          Bool. If true message will be for TTS. False will make a text message
         </li>
         <li><span class="parameter">sectorName</span>
-         string Name of primary sector if present function will only return sector data
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Name of primary sector if present function will only return sector data
         </li>
     </ul>
 
@@ -444,7 +475,7 @@
     <strong>HOUND.Contact.Site:generateIdentReport (isTTS, sectorName)</strong>
     </dt>
     <dd>
-    generate ident report
+    generate Ident report
 
 
     <h3>Parameters:</h3>
@@ -453,7 +484,8 @@
          Bool. If true message will be for TTS. False will make a text message
         </li>
         <li><span class="parameter">sectorName</span>
-         string Name of primary sector if present function will only return sector data
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Name of primary sector if present function will only return sector data
         </li>
     </ul>
 
@@ -516,7 +548,7 @@
     <strong>HOUND.Contact.Site:export ()</strong>
     </dt>
     <dd>
-    Generate contact export object
+    Generate Site export object
 
 
 
@@ -623,7 +655,7 @@
     <strong>HOUND.Contact.Site:getType ()</strong>
     </dt>
     <dd>
-    Get contact type name
+    Get site type name
 
 
 
@@ -657,11 +689,11 @@
 
 </dd>
     <dt>
-    <a name = "HOUND.Contact.Site:getGroupName"></a>
-    <strong>HOUND.Contact.Site:getGroupName ()</strong>
+    <a name = "HOUND.Contact.Site:getDcsGroupName"></a>
+    <strong>HOUND.Contact.Site:getDcsGroupName ()</strong>
     </dt>
     <dd>
-    Get Contact Group Name
+    Get Site Group Name
 
 
 
@@ -756,14 +788,15 @@
     <strong>HOUND.Contact.Site:isActive ()</strong>
     </dt>
     <dd>
-    Check if contact is Active
+    Check if site is Active
 
 
 
     <h3>Returns:</h3>
     <ol>
 
-        (Bool) True if seen in the last 15 seconds
+           <span class="types"><span class="type">Bool</span></span>
+        True if seen in the last 15 seconds
     </ol>
 
 
@@ -775,14 +808,15 @@
     <strong>HOUND.Contact.Site:isRecent ()</strong>
     </dt>
     <dd>
-    check if contact is recent
+    check if site is recent
 
 
 
     <h3>Returns:</h3>
     <ol>
 
-        (Bool) True if seen in the last 2 minutes
+           <span class="types"><span class="type">Bool</span></span>
+        True if seen in the last 2 minutes
     </ol>
 
 
@@ -794,14 +828,35 @@
     <strong>HOUND.Contact.Site:isAccurate ()</strong>
     </dt>
     <dd>
-    check if contact position is accurate
+    check if site position is accurate
 
 
 
     <h3>Returns:</h3>
     <ol>
 
-        Bool - True target is pre briefed
+           <span class="types"><span class="type">bool</span></span>
+        - True target is pre briefed
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:isAlive"></a>
+    <strong>HOUND.Contact.Site:isAlive ()</strong>
+    </dt>
+    <dd>
+    check if contact DCS Unit is still alive
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">bool</span></span>
+        True if object is considered Alive
     </ol>
 
 
@@ -813,14 +868,15 @@
     <strong>HOUND.Contact.Site:isTimedout ()</strong>
     </dt>
     <dd>
-    check if contact is timed out
+    check if site is timed out
 
 
 
     <h3>Returns:</h3>
     <ol>
 
-        (Bool) True if timed out
+           <span class="types"><span class="type">Bool</span></span>
+        True if timed out
     </ol>
 
 
@@ -839,7 +895,7 @@
     <h3>Returns:</h3>
     <ol>
 
-        Contact state in <a href="../modules/HOUND.html#EVENTS">HOUND.EVENTS</a>
+        site state in <a href="../modules/HOUND.html#EVENTS">HOUND.EVENTS</a>
     </ol>
 
 
@@ -859,6 +915,26 @@
     <ol>
 
         DCS point - estimated position
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:hasRadarUnits"></a>
+    <strong>HOUND.Contact.Site:hasRadarUnits ()</strong>
+    </dt>
+    <dd>
+    Does site have any living radars still (for DBA)
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">bool</span></span>
+        true if any radars are alive in the group
     </ol>
 
 
@@ -974,6 +1050,34 @@
 
 </dd>
     <dt>
+    <a name = "HOUND.Contact.Site:gcEmitters"></a>
+    <strong>HOUND.Contact.Site:gcEmitters ()</strong>
+    </dt>
+    <dd>
+    Prune Nil emitters
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:updateGroupRadars"></a>
+    <strong>HOUND.Contact.Site:updateGroupRadars ()</strong>
+    </dt>
+    <dd>
+    update internal actual radars list
+
+
+
+
+
+
+
+</dd>
+    <dt>
     <a name = "HOUND.Contact.Site:getPrimary"></a>
     <strong>HOUND.Contact.Site:getPrimary ()</strong>
     </dt>
@@ -1012,6 +1116,26 @@
 
 </dd>
     <dt>
+    <a name = "HOUND.Contact.Site:countEmitters"></a>
+    <strong>HOUND.Contact.Site:countEmitters ()</strong>
+    </dt>
+    <dd>
+    get emitter count for site
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">int</span></span>
+        number of emitters currently in the site
+    </ol>
+
+
+
+
+</dd>
+    <dt>
     <a name = "HOUND.Contact.Site:sortEmitters"></a>
     <strong>HOUND.Contact.Site:sortEmitters ()</strong>
     </dt>
@@ -1037,7 +1161,8 @@
     <h3>Returns:</h3>
     <ol>
 
-        (Bool) True if primary changed
+           <span class="types"><span class="type">Bool</span></span>
+        True if primary changed
     </ol>
 
 
@@ -1056,7 +1181,8 @@
     <h3>Returns:</h3>
     <ol>
 
-        (Bool) True if site type changed
+           <span class="types"><span class="type">Bool</span></span>
+        True if site type changed
     </ol>
 
 
@@ -1091,6 +1217,34 @@
 
 
 </dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:processData"></a>
+    <strong>HOUND.Contact.Site:processData ()</strong>
+    </dt>
+    <dd>
+    Process site data (wrapper for consistency)
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:update"></a>
+    <strong>HOUND.Contact.Site:update ()</strong>
+    </dt>
+    <dd>
+    Update site data
+
+
+
+
+
+
+
+</dd>
 </dl>
 
 
@@ -1098,7 +1252,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2023-07-03 20:57:16 </i>
+<i style="float:right;">Last updated 2023-07-18 12:04:46 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

@@ -325,7 +325,7 @@ do
             self:setPreBriefed(isPB)
         end
         if self.state ~=  HOUND.EVENTS.SITE_ASLEEP then
-            if self:isTimedout() or #self.emitters == 0 then
+            if (self:isTimedout() and not self:isAccurate()) or #self.emitters == 0 then
                 self.state = HOUND.EVENTS.SITE_ASLEEP
                 self:queueEvent(self.state)
             end
@@ -401,7 +401,7 @@ do
         local lineColor = {textColor,textColor,textColor,textAlpha}
 
         local markerArgs = {
-            text = self:getName() .. " (" .. self:getNatoDesignation().. ")",
+            text = self:getName() .. " (" .. self:getDesignation(true).. ")",
             pos = self:getPos(),
             coalition = self._platformCoalition,
             lineColor = lineColor

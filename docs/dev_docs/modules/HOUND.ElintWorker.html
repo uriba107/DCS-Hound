@@ -149,10 +149,6 @@
 	<td class="name" nowrap><a href="#HOUND.ElintWorker:isTracked">HOUND.ElintWorker:isTracked (emitter)</a></td>
 	<td class="summary">is contact is tracked</td>
 	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.ElintWorker:addDatapointToEmitter">HOUND.ElintWorker:addDatapointToEmitter (emitter, datapoint)</a></td>
-	<td class="summary">add datapoint to emitter</td>
-	</tr>
 </table>
 <h2><a href="#Site_functions">Site functions </a></h2>
 <table class="function_list">
@@ -194,11 +190,11 @@
 <h2><a href="#Query_functions">Query functions </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.ElintWorker:listContactsInSector">HOUND.ElintWorker:listContactsInSector ([sectorName])</a></td>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:listContactsInSector">HOUND.ElintWorker:listContactsInSector (sectorName)</a></td>
 	<td class="summary">list all contact is a sector</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.ElintWorker:listAllContacts">HOUND.ElintWorker:listAllContacts ([sectorName])</a></td>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:listAllContacts">HOUND.ElintWorker:listAllContacts (sectorName)</a></td>
 	<td class="summary">Return all contacts managed by this instance regardless of sector</td>
 	</tr>
 	<tr>
@@ -206,31 +202,31 @@
 	<td class="summary">return all contacts managed by this instance sorted by range</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.ElintWorker:countContacts">HOUND.ElintWorker:countContacts ([sectorName])</a></td>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:countContacts">HOUND.ElintWorker:countContacts (sectorName)</a></td>
 	<td class="summary">return number of contacts tracked</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.ElintWorker:getContacts">HOUND.ElintWorker:getContacts ([sectorName])</a></td>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:getContacts">HOUND.ElintWorker:getContacts (sectorName)</a></td>
 	<td class="summary">return list of contacts</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.ElintWorker:sortContacts">HOUND.ElintWorker:sortContacts (sortFunc[, sectorName])</a></td>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:sortContacts">HOUND.ElintWorker:sortContacts (sortFunc, sectorName)</a></td>
 	<td class="summary">return a sorted list of contacts</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.ElintWorker:countSites">HOUND.ElintWorker:countSites ([sectorName])</a></td>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:countSites">HOUND.ElintWorker:countSites (sectorName)</a></td>
 	<td class="summary">return number of contacts tracked</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.ElintWorker:getSites">HOUND.ElintWorker:getSites ([sectorName])</a></td>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:getSites">HOUND.ElintWorker:getSites (sectorName)</a></td>
 	<td class="summary">return list of contacts</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.ElintWorker:sortSites">HOUND.ElintWorker:sortSites (sortFunc[, sectorName])</a></td>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:sortSites">HOUND.ElintWorker:sortSites (sortFunc, sectorName)</a></td>
 	<td class="summary">return a sorted list of contacts</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.ElintWorker:listAllSites">HOUND.ElintWorker:listAllSites ([sectorName])</a></td>
+	<td class="name" nowrap><a href="#HOUND.ElintWorker:listAllSites">HOUND.ElintWorker:listAllSites (sectorName)</a></td>
 	<td class="summary">Return all contacts managed by this instance regardless of sector</td>
 	</tr>
 	<tr>
@@ -328,7 +324,8 @@
     <h3>Returns:</h3>
     <ol>
 
-        Bool. True if requested platform was added. else false
+           <span class="types"><span class="type">bool</span></span>
+        True if requested platform was added. else false
     </ol>
 
 
@@ -353,7 +350,8 @@
     <h3>Returns:</h3>
     <ol>
 
-        Bool. true if removed, else false
+           <span class="types"><span class="type">bool</span></span>
+        true if removed, else false
     </ol>
 
 
@@ -400,7 +398,8 @@
     <h3>Returns:</h3>
     <ol>
 
-        Int number of platforms
+           <span class="types"><span class="type">int</span></span>
+        number of platforms
     </ol>
 
 
@@ -448,7 +447,8 @@
     <h3>Returns:</h3>
     <ol>
 
-        Bool return True if unit is in the system
+           <span class="types"><span class="type">bool</span></span>
+        return True if unit is in the system
     </ol>
 
 
@@ -528,7 +528,8 @@
     <h3>Returns:</h3>
     <ol>
 
-        Bool. true if removed.
+           <span class="types"><span class="type">bool</span></span>
+        true if removed.
     </ol>
 
 
@@ -593,31 +594,9 @@
     <h3>Returns:</h3>
     <ol>
 
-        Bool if Unit is being tracked by current HoundWorker instance.
+           <span class="types"><span class="type">bool</span></span>
+        if Unit is being tracked by current HoundWorker instance.
     </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.ElintWorker:addDatapointToEmitter"></a>
-    <strong>HOUND.ElintWorker:addDatapointToEmitter (emitter, datapoint)</strong>
-    </dt>
-    <dd>
-    add datapoint to emitter
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">emitter</span>
-         DCS UNIT with radar
-        </li>
-        <li><span class="parameter">datapoint</span>
-         <a href="../modules/HOUND.Contact.Datapoint.html#">HOUND.Contact.Datapoint</a> instance
-        </li>
-    </ul>
-
 
 
 
@@ -645,7 +624,8 @@
     <h3>Returns:</h3>
     <ol>
 
-        Bool return True if group is in the system
+           <span class="types"><span class="type">bool</span></span>
+        return True if group is in the system
     </ol>
 
 
@@ -725,7 +705,8 @@
     <h3>Returns:</h3>
     <ol>
 
-        Bool. true if removed.
+           <span class="types"><span class="type">bool</span></span>
+        true if removed.
     </ol>
 
 
@@ -787,7 +768,7 @@
     <dl class="function">
     <dt>
     <a name = "HOUND.ElintWorker:listContactsInSector"></a>
-    <strong>HOUND.ElintWorker:listContactsInSector ([sectorName])</strong>
+    <strong>HOUND.ElintWorker:listContactsInSector (sectorName)</strong>
     </dt>
     <dd>
     list all contact is a sector
@@ -796,8 +777,8 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">sectorName</span>
-         String name or sector to filter by
-         (<em>optional</em>)
+            <span class="types">optional <a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         name or sector to filter by
         </li>
     </ul>
 
@@ -808,7 +789,7 @@
 </dd>
     <dt>
     <a name = "HOUND.ElintWorker:listAllContacts"></a>
-    <strong>HOUND.ElintWorker:listAllContacts ([sectorName])</strong>
+    <strong>HOUND.ElintWorker:listAllContacts (sectorName)</strong>
     </dt>
     <dd>
     Return all contacts managed by this instance regardless of sector
@@ -817,8 +798,8 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">sectorName</span>
-         String name or sector to filter by
-         (<em>optional</em>)
+            <span class="types">optional <a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         name or sector to filter by
         </li>
     </ul>
 
@@ -849,7 +830,7 @@
 </dd>
     <dt>
     <a name = "HOUND.ElintWorker:countContacts"></a>
-    <strong>HOUND.ElintWorker:countContacts ([sectorName])</strong>
+    <strong>HOUND.ElintWorker:countContacts (sectorName)</strong>
     </dt>
     <dd>
     return number of contacts tracked
@@ -858,8 +839,8 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">sectorName</span>
-         String name or sector to filter by
-         (<em>optional</em>)
+            <span class="types">optional <a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         name or sector to filter by
         </li>
     </ul>
 
@@ -870,7 +851,7 @@
 </dd>
     <dt>
     <a name = "HOUND.ElintWorker:getContacts"></a>
-    <strong>HOUND.ElintWorker:getContacts ([sectorName])</strong>
+    <strong>HOUND.ElintWorker:getContacts (sectorName)</strong>
     </dt>
     <dd>
     return list of contacts
@@ -879,8 +860,8 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">sectorName</span>
-         String. sector to filter by
-         (<em>optional</em>)
+            <span class="types">optional <a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         sector to filter by
         </li>
     </ul>
 
@@ -896,7 +877,7 @@
 </dd>
     <dt>
     <a name = "HOUND.ElintWorker:sortContacts"></a>
-    <strong>HOUND.ElintWorker:sortContacts (sortFunc[, sectorName])</strong>
+    <strong>HOUND.ElintWorker:sortContacts (sortFunc, sectorName)</strong>
     </dt>
     <dd>
     return a sorted list of contacts
@@ -908,8 +889,8 @@
          Function to sort by
         </li>
         <li><span class="parameter">sectorName</span>
-         String. sector to filter by
-         (<em>optional</em>)
+            <span class="types">optional <a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         sector to filter by
         </li>
     </ul>
 
@@ -925,7 +906,7 @@
 </dd>
     <dt>
     <a name = "HOUND.ElintWorker:countSites"></a>
-    <strong>HOUND.ElintWorker:countSites ([sectorName])</strong>
+    <strong>HOUND.ElintWorker:countSites (sectorName)</strong>
     </dt>
     <dd>
     return number of contacts tracked
@@ -934,8 +915,8 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">sectorName</span>
-         String name or sector to filter by
-         (<em>optional</em>)
+            <span class="types">optional <a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         name or sector to filter by
         </li>
     </ul>
 
@@ -946,7 +927,7 @@
 </dd>
     <dt>
     <a name = "HOUND.ElintWorker:getSites"></a>
-    <strong>HOUND.ElintWorker:getSites ([sectorName])</strong>
+    <strong>HOUND.ElintWorker:getSites (sectorName)</strong>
     </dt>
     <dd>
     return list of contacts
@@ -955,8 +936,8 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">sectorName</span>
-         String. sector to filter by
-         (<em>optional</em>)
+            <span class="types">optional <a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         sector to filter by
         </li>
     </ul>
 
@@ -972,7 +953,7 @@
 </dd>
     <dt>
     <a name = "HOUND.ElintWorker:sortSites"></a>
-    <strong>HOUND.ElintWorker:sortSites (sortFunc[, sectorName])</strong>
+    <strong>HOUND.ElintWorker:sortSites (sortFunc, sectorName)</strong>
     </dt>
     <dd>
     return a sorted list of contacts
@@ -984,8 +965,8 @@
          Function to sort by
         </li>
         <li><span class="parameter">sectorName</span>
-         String. sector to filter by
-         (<em>optional</em>)
+            <span class="types">optional <a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         sector to filter by
         </li>
     </ul>
 
@@ -1001,7 +982,7 @@
 </dd>
     <dt>
     <a name = "HOUND.ElintWorker:listAllSites"></a>
-    <strong>HOUND.ElintWorker:listAllSites ([sectorName])</strong>
+    <strong>HOUND.ElintWorker:listAllSites (sectorName)</strong>
     </dt>
     <dd>
     Return all contacts managed by this instance regardless of sector
@@ -1010,8 +991,8 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">sectorName</span>
-         String name or sector to filter by
-         (<em>optional</em>)
+            <span class="types">optional <a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         name or sector to filter by
         </li>
     </ul>
 
@@ -1047,7 +1028,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2023-07-03 20:57:16 </i>
+<i style="float:right;">Last updated 2023-07-18 12:04:46 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

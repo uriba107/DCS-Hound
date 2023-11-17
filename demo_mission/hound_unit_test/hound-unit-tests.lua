@@ -7,7 +7,7 @@ do
 
     function UserSpaceLogging(msg)
         trigger.action.outText(msg,10)
-        env.info(msg)
+        env.info("***** "..msg.." *****")
     end
 
     env.info("Loading UnitTesting")

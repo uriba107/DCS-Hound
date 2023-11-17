@@ -178,15 +178,15 @@
 	<td class="summary">get Callsign</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.isDMM">HOUND.Utils.isDMM (DCS_Unit)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.isDMM">HOUND.Utils.isDMM (DcsUnit)</a></td>
 	<td class="summary">Unit use DMM</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.hasPayload">HOUND.Utils.hasPayload (DCS_Unit, payloadName)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.hasPayload">HOUND.Utils.hasPayload (DcsUnit, payloadName)</a></td>
 	<td class="summary">does unit has payload (placeholder)</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.hasTask">HOUND.Utils.hasTask (DCS_Unit, taskName)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.hasTask">HOUND.Utils.hasTask (DcsUnit, taskName)</a></td>
 	<td class="summary">does unit has task (placeholder)</td>
 	</tr>
 </table>
@@ -220,12 +220,20 @@
 	<td class="summary">check if object is DCS static object</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.Dcs.getSamMaxRange">HOUND.Utils.Dcs.getSamMaxRange (DCS_Unit)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Dcs.isRadarTracking">HOUND.Utils.Dcs.isRadarTracking (DcsUnit)</a></td>
+	<td class="summary">check if Unit is tracking anything with it's radar</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Dcs.getSamMaxRange">HOUND.Utils.Dcs.getSamMaxRange (DcsUnit)</a></td>
 	<td class="summary">return maximum weapon range in the group of DCS Unit</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.Dcs.getRadarDetectionRange">HOUND.Utils.Dcs.getRadarDetectionRange (DCS_Unit)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Dcs.getRadarDetectionRange">HOUND.Utils.Dcs.getRadarDetectionRange (DcsUnit)</a></td>
 	<td class="summary">return Radar detection Range for provided unit</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Dcs.getRadarUnitsInGroup">HOUND.Utils.Dcs.getRadarUnitsInGroup (DcsGroup)</a></td>
+	<td class="summary">return all radar units in group</td>
 	</tr>
 </table>
 <h2><a href="#Geo_Function">Geo Function </a></h2>
@@ -652,7 +660,8 @@
     <h3>Returns:</h3>
     <ol>
 
-        (Bool) True if initial ID was updated
+           <span class="types"><span class="type">Bool</span></span>
+        True if initial ID was updated
     </ol>
 
 
@@ -1133,7 +1142,7 @@
 </dd>
     <dt>
     <a name = "HOUND.Utils.isDMM"></a>
-    <strong>HOUND.Utils.isDMM (DCS_Unit)</strong>
+    <strong>HOUND.Utils.isDMM (DcsUnit)</strong>
     </dt>
     <dd>
     Unit use DMM
@@ -1141,7 +1150,7 @@
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">DCS_Unit</span>
+        <li><span class="parameter">DcsUnit</span>
          DCS Unit or typeName string
         </li>
     </ul>
@@ -1153,7 +1162,7 @@
 </dd>
     <dt>
     <a name = "HOUND.Utils.hasPayload"></a>
-    <strong>HOUND.Utils.hasPayload (DCS_Unit, payloadName)</strong>
+    <strong>HOUND.Utils.hasPayload (DcsUnit, payloadName)</strong>
     </dt>
     <dd>
     does unit has payload (placeholder)
@@ -1161,7 +1170,7 @@
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">DCS_Unit</span>
+        <li><span class="parameter">DcsUnit</span>
          DCS unit
         </li>
         <li><span class="parameter">payloadName</span>
@@ -1172,7 +1181,8 @@
     <h3>Returns:</h3>
     <ol>
 
-        Bool always true
+           <span class="types"><span class="type">bool</span></span>
+        always true
     </ol>
 
 
@@ -1181,7 +1191,7 @@
 </dd>
     <dt>
     <a name = "HOUND.Utils.hasTask"></a>
-    <strong>HOUND.Utils.hasTask (DCS_Unit, taskName)</strong>
+    <strong>HOUND.Utils.hasTask (DcsUnit, taskName)</strong>
     </dt>
     <dd>
     does unit has task (placeholder)
@@ -1189,7 +1199,7 @@
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">DCS_Unit</span>
+        <li><span class="parameter">DcsUnit</span>
          DCS unit
         </li>
         <li><span class="parameter">taskName</span>
@@ -1200,7 +1210,8 @@
     <h3>Returns:</h3>
     <ol>
 
-        Bool always true
+           <span class="types"><span class="type">bool</span></span>
+        always true
     </ol>
 
 
@@ -1321,7 +1332,8 @@
     <h3>Returns:</h3>
     <ol>
 
-        (Bool) True if is valid point
+           <span class="types"><span class="type">Bool</span></span>
+        True if is valid point
     </ol>
 
 
@@ -1346,7 +1358,8 @@
     <h3>Returns:</h3>
     <ol>
 
-        (Bool) True if object is unit
+           <span class="types"><span class="type">Bool</span></span>
+        True if object is unit
     </ol>
 
 
@@ -1371,7 +1384,8 @@
     <h3>Returns:</h3>
     <ol>
 
-        (Bool) True if object is Group
+           <span class="types"><span class="type">Bool</span></span>
+        True if object is Group
     </ol>
 
 
@@ -1396,7 +1410,34 @@
     <h3>Returns:</h3>
     <ol>
 
-        (Bool) True if object is static object
+           <span class="types"><span class="type">Bool</span></span>
+        True if object is static object
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.Dcs.isRadarTracking"></a>
+    <strong>HOUND.Utils.Dcs.isRadarTracking (DcsUnit)</strong>
+    </dt>
+    <dd>
+    check if Unit is tracking anything with it's radar
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">DcsUnit</span>
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">bool</span></span>
+        True if tracking
     </ol>
 
 
@@ -1405,7 +1446,7 @@
 </dd>
     <dt>
     <a name = "HOUND.Utils.Dcs.getSamMaxRange"></a>
-    <strong>HOUND.Utils.Dcs.getSamMaxRange (DCS_Unit)</strong>
+    <strong>HOUND.Utils.Dcs.getSamMaxRange (DcsUnit)</strong>
     </dt>
     <dd>
     return maximum weapon range in the group of DCS Unit
@@ -1413,7 +1454,7 @@
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">DCS_Unit</span>
+        <li><span class="parameter">DcsUnit</span>
          DCS unit - in Hound context unit with emitting radar
         </li>
     </ul>
@@ -1430,7 +1471,7 @@
 </dd>
     <dt>
     <a name = "HOUND.Utils.Dcs.getRadarDetectionRange"></a>
-    <strong>HOUND.Utils.Dcs.getRadarDetectionRange (DCS_Unit)</strong>
+    <strong>HOUND.Utils.Dcs.getRadarDetectionRange (DcsUnit)</strong>
     </dt>
     <dd>
     return Radar detection Range for provided unit
@@ -1438,7 +1479,7 @@
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">DCS_Unit</span>
+        <li><span class="parameter">DcsUnit</span>
          DCS Unit with radars sensor
         </li>
     </ul>
@@ -1447,6 +1488,32 @@
     <ol>
 
         Unit radar detection range agains airborne targers in meters
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.Dcs.getRadarUnitsInGroup"></a>
+    <strong>HOUND.Utils.Dcs.getRadarUnitsInGroup (DcsGroup)</strong>
+    </dt>
+    <dd>
+    return all radar units in group
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">DcsGroup</span>
+         DCS Group
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+        Table of radar units in group
     </ol>
 
 
@@ -1638,7 +1705,8 @@
     <h3>Returns:</h3>
     <ol>
 
-        (Bool) True if initial ID was updated
+           <span class="types"><span class="type">Bool</span></span>
+        True if initial ID was updated
     </ol>
 
 
@@ -1831,7 +1899,8 @@
     <h3>Returns:</h3>
     <ol>
 
-        Bool - True if marker is drawn
+           <span class="types"><span class="type">bool</span></span>
+        - True if marker is drawn
     </ol>
 
 
@@ -1943,7 +2012,8 @@
     <h3>Returns:</h3>
     <ol>
 
-        (Bool) True if TTS is available
+           <span class="types"><span class="type">Bool</span></span>
+        True if TTS is available
     </ol>
 
 
@@ -2654,9 +2724,11 @@
     <h3>Returns:</h3>
     <ol>
         <li>
-        (Bool) True if point is in polygon</li>
+           <span class="types"><span class="type">Bool</span></span>
+        True if point is in polygon</li>
         <li>
-        (Bool) True if radius around point intersects polygon</li>
+           <span class="types"><span class="type">Bool</span></span>
+        True if radius around point intersects polygon</li>
     </ol>
 
 
@@ -3001,7 +3073,8 @@
     <h3>Returns:</h3>
     <ol>
 
-        Bool
+           <span class="types"><span class="type">bool</span></span>
+
     </ol>
 
 
@@ -3033,7 +3106,8 @@
     <h3>Returns:</h3>
     <ol>
 
-        Bool
+           <span class="types"><span class="type">bool</span></span>
+
     </ol>
 
 
@@ -3065,7 +3139,8 @@
     <h3>Returns:</h3>
     <ol>
 
-        Bool
+           <span class="types"><span class="type">bool</span></span>
+
     </ol>
 
 
@@ -3097,7 +3172,8 @@
     <h3>Returns:</h3>
     <ol>
 
-        Bool
+           <span class="types"><span class="type">bool</span></span>
+
     </ol>
 
 
@@ -3129,7 +3205,8 @@
     <h3>Returns:</h3>
     <ol>
 
-        Bool
+           <span class="types"><span class="type">bool</span></span>
+
     </ol>
 
 
@@ -3229,7 +3306,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2023-07-03 20:57:16 </i>
+<i style="float:right;">Last updated 2023-07-18 12:04:46 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

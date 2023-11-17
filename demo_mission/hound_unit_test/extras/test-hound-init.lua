@@ -33,10 +33,10 @@ do
         lu.assertEquals(ewr:getSize(),1)
         setupGroup(ewr)
 
-        local kirov = Group.getByName('KIROV_NORTH')
-        lu.assertIsTable(kirov)
-        lu.assertEquals(kirov:getSize(),1)
-        setupGroup(kirov)
+        local ships = Group.getByName('SHIPS_NORTH')
+        lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(ships))
+        lu.assertEquals(ships:getSize(),2)
+        setupGroup(ships)
 
         local sa6 = Group.getByName('SA-6_TINIAN')
         lu.assertIsTable(sa6)

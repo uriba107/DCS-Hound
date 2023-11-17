@@ -45,9 +45,12 @@ do
         -- lu.assertAlmostEquals(el1,,0.0001)
         -- lu.assertAlmostEquals(az2,,0.0001)
         -- lu.assertAlmostEquals(el2,,0.0001)
+        local emitterDetection = HOUND.Utils.Dcs.getRadarDetectionRange(emitter)
+        local s1 = HOUND.Utils.Elint.getSignalStrength(p1,tgtPos,emitterDetection)
+        local s2 = HOUND.Utils.Elint.getSignalStrength(p2,tgtPos,emitterDetection)
 
-        local d1 = HOUND.Contact.Datapoint.New(platform1,p1, az1, el1, timer.getAbsTime(),err,false)
-        local d2 = HOUND.Contact.Datapoint.New(platform2,p2, az2, el2, timer.getAbsTime(),err,false)
+        local d1 = HOUND.Contact.Datapoint.New(platform1,p1, az1, el1, s1, timer.getAbsTime(),err,false)
+        local d2 = HOUND.Contact.Datapoint.New(platform2,p2, az2, el2, s2, timer.getAbsTime(),err,false)
 
         self.contact:AddPoint(d1)
         self.contact:AddPoint(d2)
@@ -86,9 +89,11 @@ do
 
         local az1,el1 = HOUND.Utils.Elint.getAzimuth( p1, tgtPos, err )
         local az2,el2 = HOUND.Utils.Elint.getAzimuth( p2, tgtPos, err )
-
-        local d1 = HOUND.Contact.Datapoint.New(platform1,p1, az1, el1, timer.getAbsTime(),err,false)
-        local d2 = HOUND.Contact.Datapoint.New(platform2,p2, az2, el2, timer.getAbsTime(),err,false)
+        local emitterDetection = HOUND.Utils.Dcs.getRadarDetectionRange(emitter)
+        local s1 = HOUND.Utils.Elint.getSignalStrength(p1,tgtPos,emitterDetection)
+        local s2 = HOUND.Utils.Elint.getSignalStrength(p2,tgtPos,emitterDetection)
+        local d1 = HOUND.Contact.Datapoint.New(platform1,p1, az1, el1, s1, timer.getAbsTime(),err,false)
+        local d2 = HOUND.Contact.Datapoint.New(platform2,p2, az2, el2, s2, timer.getAbsTime(),err,false)
 
         self.contact:AddPoint(d1)
         self.contact:AddPoint(d2)

@@ -64,7 +64,7 @@ do
         local phoneticGridPos,phoneticBulls = self:getTtsData(false,1)
         local reportedName = self:getName()
         if NATO then
-            reportedName = self:getNatoDesignation()
+            reportedName = self:getDesignation(NATO)
         end
         local str = reportedName
         if self:isAccurate() then

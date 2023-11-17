@@ -12,7 +12,7 @@ do
 
     function TestHoundFunctionalBase:Test_02_base_00_unitSetup()
         local tor_golf = Group.getByName("TOR_SAIPAN")
-        lu.assertIsTable(tor_golf)
+        lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(tor_golf))
         lu.assertEquals(tor_golf:getSize(),1)
         tor_golf:enableEmission(false)
         local control = tor_golf:getController()
@@ -22,7 +22,7 @@ do
         control:setOption(20,false) -- ENGAGE_AIR_WEAPONS, false
 
         local sa5 = Group.getByName('SA-5_SAIPAN')
-        lu.assertIsTable(sa5)
+        lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(sa5))
         lu.assertEquals(sa5:getSize(),8)
         sa5:enableEmission(false)
 
@@ -33,7 +33,7 @@ do
         control:setOption(20,false) -- ENGAGE_AIR_WEAPONS, false
 
         local ewr = Group.getByName('EWR_SAIPAN')
-        lu.assertIsTable(ewr)
+        lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(ewr))
         lu.assertEquals(ewr:getSize(),1)
         ewr:enableEmission(false)
 
@@ -43,19 +43,19 @@ do
         control:setOption(9,2) -- Alarm_State, RED
         control:setOption(20,false) -- ENGAGE_AIR_WEAPONS, false
 
-        local kirov = Group.getByName('KIROV_NORTH')
-        lu.assertIsTable(kirov)
-        lu.assertEquals(kirov:getSize(),1)
-        kirov:enableEmission(false)
+        local ships = Group.getByName('SHIPS_NORTH')
+        lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(ships))
+        lu.assertEquals(ships:getSize(),2)
+        ships:enableEmission(false)
 
-        control = kirov:getController()
+        control = ships:getController()
         control:setOnOff(true)
-        control:setOption(0,2) -- ROE, Open_file
+        control:setOption(0,3) -- ROE, Return Fire
         control:setOption(9,2) -- Alarm_State, RED
         control:setOption(20,false) -- ENGAGE_AIR_WEAPONS, false
 
         local sa6 = Group.getByName('SA-6_TINIAN')
-        lu.assertIsTable(sa6)
+        lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(sa6))
         lu.assertEquals(sa6:getSize(),5)
         sa6:enableEmission(false)
 
@@ -113,7 +113,7 @@ do
             freq = "251.500",
             NATO = false
         }
-    
+
         self.houndBlue:configureController(tts_args)
         self.houndBlue:configureAtis(atis_args)
         lu.assertEquals(self.houndBlue.sectors.default.comms.atis.callback.interval,300)
@@ -161,7 +161,7 @@ do
         lu.assertEquals(self.houndBlue:countContacts(),0)
 
         local tor = Group.getByName("TOR_SAIPAN")
-        lu.assertIsTable(tor)
+        lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(tor))
         lu.assertEquals(tor:getSize(),1)
         tor:enableEmission(true)
 
@@ -171,24 +171,24 @@ do
         sa5:enableEmission(true)
 
         local ewr = Group.getByName('EWR_SAIPAN')
-        lu.assertIsTable(ewr)
+        lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(ewr))
         lu.assertEquals(ewr:getSize(),1)
         sa5:enableEmission(true)
 
-        local kirov = Group.getByName('KIROV_NORTH')
-        lu.assertIsTable(kirov)
-        lu.assertEquals(kirov:getSize(),1)
-        kirov:enableEmission(true)
+        local ships = Group.getByName('SHIPS_NORTH')
+        lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(ships))
+        lu.assertEquals(ships:getSize(),2)
+        ships:enableEmission(true)
 
         local sa6 = Group.getByName('SA-6_TINIAN')
-        lu.assertIsTable(sa6)
+        lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(sa6))
         lu.assertEquals(sa6:getSize(),5)
         sa6:enableEmission(true)
 
         lu.assertIsTrue(sa5:getUnits()[1]:getRadar())
         lu.assertIsFalse(sa5:getUnits()[2]:getRadar())
         lu.assertIsTrue(ewr:getUnits()[1]:getRadar())
-        lu.assertIsTrue(kirov:getUnits()[1]:getRadar())
+        lu.assertIsTrue(ships:getUnits()[1]:getRadar())
         -- lu.assertIsTrue(tor:getUnits()[1]:getRadar())
         -- lu.assertIsTrue(sa6:getUnits()[1]:getRadar())
     end
@@ -317,7 +317,7 @@ do
         lu.assertEquals(sa3_sr,sa3_site:getPrimary())
         lu.assertEquals("SA-2 or SA-3 or SA-5",sa3_site:getTypeAssigned())
         lu.assertEquals(sa3_site:getName(),"T004")
-        lu.assertEquals(sa3_site:generatePopUpReport(false,"Tinian"),"T004, identified as 2 or 3 or 5, is now Alive in Tinian.")
+        lu.assertEquals(sa3_site:generatePopUpReport(false,"Tinian"),"T004, identified as 2 or 3 or 5, is active in Tinian.")
         self.houndBlue:preBriefedContact('SA-3_TINIAN',"Non La")
         lu.assertEquals(self.houndBlue:countPreBriefedContacts(),3)
         lu.assertEquals(sa3_site:getName(),"Non La")
@@ -326,7 +326,7 @@ do
         lu.assertNotEquals(sa3_sr,sa3_site:getPrimary())
         lu.assertEquals(sa3_tr,sa3_site:getPrimary())
         lu.assertEquals("SA-3",sa3_site:getTypeAssigned())
-        lu.assertEquals(sa3_site:generatePopUpReport(false,"Tinian"),"Non La, identified as 3, is now Alive in Tinian.")
+        lu.assertEquals(sa3_site:generatePopUpReport(false,"Tinian"),"Non La, identified as 3, is active in Tinian.")
         lu.assertNotEquals(sa3_site:getName(),"T004")
     end
 
@@ -349,4 +349,39 @@ do
         world.addEventHandler(humanElint)
     end
 
+    function TestHoundFunctional:Test_02_base_010_eventHandler()
+        lu.assertEquals(type(self.houndBlue.onHoundEvent),"function")
+            lu.assertIsNil(self.houndBlue:onHoundEvent({HoundId = self.houndBlue:getId(),id = "success"}))
+    
+            function self.houndBlue:onHoundEvent(event)
+                if event.id == "success" then return true end
+                if event.id == HOUND.EVENTS.RADAR_DESTROYED then
+                    env.info("HOUND.EVENTS.RADAR_DESTROYED for " .. event.initiator:getDcsName() )
+                    lu.assertEquals(event.initiator:getDcsGroupName(),"SA-5_SAIPAN")
+                    local grp = Group.getByName(event.initiator:getDcsGroupName())
+                    local grpSize = grp:getSize()
+                    local lastUnit = grp:getUnit(grpSize)
+                    if grpSize >= 7 then
+                        lu.assertIsTrue(lastUnit:hasSensors(Unit.SensorType.RADAR))
+                        destroyObject(grp:getUnit(1))
+                    else
+                        lu.assertIsFalse(lastUnit:hasSensors(Unit.SensorType.RADAR))
+                    end
+                end
+                if event.id == HOUND.EVENTS.SITE_ASLEEP then
+                    lu.assertEquals(event.initiator:getDcsGroupName(),"SA-5_SAIPAN")
+                    lu.assertIsTrue(event.initiator:hasRadarUnits())
+                end
+                if event.id == HOUND.EVENTS.SITE_REMOVED then
+                    lu.assertEquals(event.initiator:getDcsGroupName(),"SA-5_SAIPAN")
+                    lu.assertEquals(event.initiator:countEmitters(),0)
+                    lu.assertIsFalse(event.initiator:hasRadarUnits())
+                    lu.assertStrContains(self:printDebugging(),"Platforms: 2 | sectors: 3 (Z:2 ,C:2 ,A: 2 ,N:1) | Sites: 3 | Contacts: 4 (A:1 ,PB:4)")
+                end
+            end
+    
+            lu.assertEquals(type(self.houndBlue.onHoundEvent),"function")
+            lu.assertIsTrue(self.houndBlue:onHoundEvent({HoundId = self.houndBlue:getId(),id = "success"}))
+        
+    end
 end

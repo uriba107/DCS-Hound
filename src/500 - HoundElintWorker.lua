@@ -50,10 +50,7 @@ do
     -- @string platformName DCS Unit Name of platform to be added
     -- @return[type=bool] True if requested platform was added. else false
     function HOUND.ElintWorker:addPlatform(platformName)
-        local candidate = Unit.getByName(platformName)
-        if candidate == nil then
-            candidate = StaticObject.getByName(platformName)
-        end
+        local candidate = Unit.getByName(platformName) or StaticObject.getByName(platformName)
 
         if self:getCoalition() == nil and candidate ~= nil then
             self:setCoalition(candidate:getCoalition())
@@ -253,7 +250,10 @@ do
     -- @param emitter DCS Unit/Unit name of radar
     function HOUND.ElintWorker:setDead(emitter)
         local contact = self:getContact(emitter,true)
-        if contact then contact:setDead() end
+        if contact then
+            HOUND.Logger.trace("setDead for " .. contact:getName())
+            contact:setDead()
+         end
     end
     --- is contact is tracked
     -- @param emitter DCS Unit/UID of requested emitter
@@ -435,7 +435,7 @@ do
                 if self.settings:getBDA() and contact:isAlive() and contact:getLife() < 1 then
                     contact:setDead()
                 end
-                if not contact:isAlive() and contact:getLastSeen() > 60 then
+                if not contact:isAlive() and (contact:getLastSeen() > 60 or contact:getPreBriefed()) then
                     contact:destroy()
                 end
 

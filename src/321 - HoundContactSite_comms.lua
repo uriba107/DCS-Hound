@@ -67,7 +67,7 @@ do
     -- @param[type=string] sectorName Name of primary sector if present function will only return sector data
     -- @return string. compiled message
     function HOUND.Contact.Site:generatePopUpReport(isTTS,sectorName)
-        local msg = self:getName() .. ", identified as " .. self:getNatoDesignation() .. ", is active"
+        local msg = self:getName() .. ", identified as " .. self:getDesignation(true) .. ", is active"
 
         if sectorName then
             msg = msg .. " in " .. sectorName
@@ -92,7 +92,7 @@ do
     -- @param[type=string] sectorName Name of primary sector if present function will only return sector data
     -- @return string. compiled message
     function HOUND.Contact.Site:generateDeathReport(isTTS,sectorName)
-        local msg = self:getName() ..  ", identified as " .. self:getNatoDesignation() .. " is down"
+        local msg = self:getName() ..  ", identified as " .. self:getDesignation(true) .. " is down"
         if sectorName then
             msg = msg .. " in " .. sectorName
         else
@@ -115,7 +115,7 @@ do
     -- @param[type=string] sectorName Name of primary sector if present function will only return sector data
     -- @return string. compiled message
     function HOUND.Contact.Site:generateAsleepReport(isTTS,sectorName)
-        local msg = self:getName() ..  ", identified as " .. self:getNatoDesignation() .. " is asleep"
+        local msg = self:getName() ..  ", identified as " .. self:getDesignation(true) .. " is asleep"
         if sectorName then
             msg = msg .. " in " .. sectorName
         else
@@ -142,9 +142,9 @@ do
 
         if sectorName then
             msg = msg .. " in " .. sectorName
-            msg = msg .. ", has been reclassified as " .. self:getNatoDesignation()
+            msg = msg .. ", has been reclassified as " .. self:getDesignation(true)
         else
-            msg = msg .. ", has been reclassified as " .. self:getNatoDesignation()
+            msg = msg .. ", has been reclassified as " .. self:getDesignation(true)
             local primary = self:getPrimary()
             if primary:hasPos() then
                 local GridPos,BePos
@@ -164,10 +164,9 @@ do
     -- @param NATO (bool) True will generate NATO Brevity brief
     -- @return string containing
     function HOUND.Contact.Site:generateTtsBrief(NATO)
-
         if self:getType() == "Naval" then
             local boatData = {}
-            for idx,emitter in pairs(self:getEmitters()) do
+            for _,emitter in ipairs(self:getEmitters()) do
                 table.insert(boatData,emitter:generateTtsBrief(NATO))
             end
             return table.concat(boatData," ")
@@ -177,11 +176,11 @@ do
         local primary = self:getPrimary()
         if getmetatable(primary) ~= HOUND.Contact.Emitter or primary.pos.p == nil or primary.uncertenty_data == nil then return str end
         local phoneticGridPos,phoneticBulls = primary:getTtsData(false,1)
-        local reportedName = self:getName()
+        local reportedName = self:getName() .. " "
         if NATO then
             reportedName = ""
         end
-        str = reportedName .. " " .. self:getNatoDesignation()
+        str = reportedName .. self:getDesignation(NATO)
         if primary:isAccurate() then
             str = str .. ", reported"
         else
@@ -209,7 +208,7 @@ do
         for _,emitter in ipairs(self.emitters) do
             local body = emitter:generateIntelBrief()
             if body ~= "" then
-                local entry = table.concat({self:getName(),self:getNatoDesignation(),body,self.DcsObjectName},",")
+                local entry = table.concat({self:getName(),self:getDesignation(true),body,self.DcsObjectName},",")
                 table.insert(items,entry)
             end
         end
@@ -223,7 +222,7 @@ do
             name = self:getName(),
             DcsObjectName = self:getDcsName(),
             gid = self.gid % 100,
-            Type = self:getNatoDesignation(),
+            Type = self:getDesignation(true),
             last_seen = self.last_seen,
             emitters = {}
         }

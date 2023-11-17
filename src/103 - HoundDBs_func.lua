@@ -28,7 +28,7 @@ do
         end
 
         local isValid = false
-        local mainCategory = candidate:getCategory()
+        local mainCategory = Object.getCategory(candidate)
         local type = candidate:getTypeName()
         if HOUND.setContains(HOUND.DB.Platform,mainCategory) then
             if HOUND.setContains(HOUND.DB.Platform[mainCategory],type) then
@@ -66,7 +66,7 @@ do
             isAerial = false,
         }
 
-        local mainCategory = DcsObject:getCategory()
+        local mainCategory = Object.getCategory(DcsObject)
         local typeName = DcsObject:getTypeName()
         local DbInfo = HOUND.DB.Platform[mainCategory][typeName]
 
@@ -80,11 +80,11 @@ do
         if objHitBox then
             VerticalOffset = objHitBox["max"]["y"]
         end
-        if DcsObject:getCategory() == Object.Category.STATIC then
+        if mainCategory == Object.Category.STATIC then
             platformData.isStatic = true
             platformData.pos.y = platformData.pos.y + VerticalOffset/2
         else
-            local PlatformUnitCategory = DcsObject:getDesc()["category"]
+            local PlatformUnitCategory = DcsObject:getCategory()
             if PlatformUnitCategory == Unit.Category.HELICOPTER or PlatformUnitCategory == Unit.Category.AIRPLANE then
                 platformData.isAerial = true
             end
@@ -116,7 +116,7 @@ do
     -- @return Effective aperture size in meters
     function HOUND.DB.getApertureSize(DcsObject)
         if not HOUND.Utils.Dcs.isUnit(DcsObject) and not HOUND.Utils.Dcs.isStaticObject(DcsObject) then return 0 end
-        local mainCategory = DcsObject:getCategory()
+        local mainCategory = Object.getCategory(DcsObject)
         local typeName = DcsObject:getTypeName()
         if HOUND.setContains(HOUND.DB.Platform,mainCategory) then
             if HOUND.setContains(HOUND.DB.Platform[mainCategory],typeName) then

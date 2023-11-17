@@ -822,71 +822,71 @@ do
             notifier:addMessageObj(msg)
         end
     end
-    -- --- Generate Atis message for sector (legacy)
-    -- -- @local
-    -- -- @param loopData HoundInfomationSystem loop table
-    -- -- @param AtisPreferences HoundInfomationSystem settings table
-    function HOUND.Sector:generateAtisLegacy(loopData,AtisPreferences)
-        local body = ""
-        local numberEWR = 0
-        local contactCount = self:countContacts()
-        if contactCount > 0 then
-            local sortedContacts = self:getContacts()
+    -- -- --- Generate Atis message for sector (legacy)
+    -- -- -- @local
+    -- -- -- @param loopData HoundInfomationSystem loop table
+    -- -- -- @param AtisPreferences HoundInfomationSystem settings table
+    -- function HOUND.Sector:generateAtisLegacy(loopData,AtisPreferences)
+    --     local body = ""
+    --     local numberEWR = 0
+    --     local contactCount = self:countContacts()
+    --     if contactCount > 0 then
+    --         local sortedContacts = self:getContacts()
 
-            for _, emitter in pairs(sortedContacts) do
-                if emitter.pos.p ~= nil then
-                    if not emitter.isEWR or
-                        (AtisPreferences.reportewr and emitter.isEWR) then
-                        body = body ..
-                                    emitter:generateTtsBrief(
-                                        self._hSettings:getNATO()) .. " "
-                    end
-                    if (not AtisPreferences.reportewr and emitter.isEWR) then
-                        numberEWR = numberEWR + 1
-                    end
-                end
-            end
-            if numberEWR > 0 then
-                body = body .. numberEWR .. " EWRs are tracked. "
-            end
-        end
+    --         for _, emitter in pairs(sortedContacts) do
+    --             if emitter.pos.p ~= nil then
+    --                 if not emitter.isEWR or
+    --                     (AtisPreferences.reportewr and emitter.isEWR) then
+    --                     body = body ..
+    --                                 emitter:generateTtsBrief(
+    --                                     self._hSettings:getNATO()) .. " "
+    --                 end
+    --                 if (not AtisPreferences.reportewr and emitter.isEWR) then
+    --                     numberEWR = numberEWR + 1
+    --                 end
+    --             end
+    --         end
+    --         if numberEWR > 0 then
+    --             body = body .. numberEWR .. " EWRs are tracked. "
+    --         end
+    --     end
 
-        if body == "" then
-            if self._hSettings:getNATO() then
-                body = ". EMPTY. "
-            else
-                body = "No threats had been detected "
-            end
-        end
+    --     if body == "" then
+    --         if self._hSettings:getNATO() then
+    --             body = ". EMPTY. "
+    --         else
+    --             body = "No threats had been detected "
+    --         end
+    --     end
 
-        if loopData.body == body then return end
-        loopData.body = body
+    --     if loopData.body == body then return end
+    --     loopData.body = body
 
-        local reportId
-        reportId, loopData.reportIdx =
-            HoundUtils.getReportId(loopData.reportIdx)
+    --     local reportId
+    --     reportId, loopData.reportIdx =
+    --         HoundUtils.getReportId(loopData.reportIdx)
 
-        local header = self.callsign
-        local footer = reportId .. "."
+    --     local header = self.callsign
+    --     local footer = reportId .. "."
 
-        if self._hSettings:getNATO() then
-            header = header .. " Lowdown "
-            footer = "Lowdown " .. footer
-        else
-            header = header .. " SAM information "
-            footer = "you have " .. footer
-        end
-        header = header .. reportId .. " " ..
-                                    HoundUtils.TTS.getTtsTime() .. ". "
+    --     if self._hSettings:getNATO() then
+    --         header = header .. " Lowdown "
+    --         footer = "Lowdown " .. footer
+    --     else
+    --         header = header .. " SAM information "
+    --         footer = "you have " .. footer
+    --     end
+    --     header = header .. reportId .. " " ..
+    --                                 HoundUtils.TTS.getTtsTime() .. ". "
 
-        local msgObj = {
-            coalition = self._hSettings:getCoalition(),
-            priority = "loop",
-            updateTime = timer.getAbsTime(),
-            tts = header .. loopData.body .. footer
-        }
-        loopData.msg = msgObj
-    end
+    --     local msgObj = {
+    --         coalition = self._hSettings:getCoalition(),
+    --         priority = "loop",
+    --         updateTime = timer.getAbsTime(),
+    --         tts = header .. loopData.body .. footer
+    --     }
+    --     loopData.msg = msgObj
+    -- end
 
     --- Generate Atis message for sector
     -- @local

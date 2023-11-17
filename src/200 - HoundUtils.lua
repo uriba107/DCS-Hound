@@ -1400,13 +1400,9 @@ do
 
         for _,coalitionName in pairs(coalition.side) do
             if coalitionName ~= instanceCoalition then
-                -- env.info("starting coalition ".. coalitionName)
                 for _,CategoryId in pairs({Group.Category.GROUND,Group.Category.SHIP}) do
-                    -- env.info("starting categoty ".. CategoryId)
                     for _,group in pairs(coalition.getGroups(coalitionName, CategoryId)) do
-                        -- env.info("starting group ".. group:getName())
                         for _,unit in pairs(group:getUnits()) do
-                            -- env.info("looking at ".. unit:getName())
                             if (unit:isExist() and unit:isActive() and unit:getRadar()) then
                                 table.insert(Radars, unit:getName()) -- insert the name
                             end

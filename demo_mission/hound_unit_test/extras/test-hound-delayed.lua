@@ -22,7 +22,7 @@ do
         local sa5 = Group.getByName('SA-5_SAIPAN')
         sa5:enableEmission(true)
 
-        timer.scheduleFunction(delayTest,"Platforms: 2 | sectors: 3 (Z:2 ,C:2 ,A: 2 ,N:1) | Sites: 4 | Contacts: 6 (A:2 ,PB:6)",timer.getTime()+45)
+        timer.scheduleFunction(delayTest,"Platforms: 2 | sectors: 3 (Z:2 ,C:2 ,A: 2 ,N:1) | Sites: 5 | Contacts: 8 (A:4 ,PB:6)",timer.getTime()+45)
         timer.scheduleFunction(delayMove,nil,timer.getTime()+60)
 
     end
@@ -33,28 +33,84 @@ do
         for _,site in ipairs(sites) do
             lu.assertEquals(getmetatable(site),HOUND.Contact.Site)
         end
-        -- for sectorName,sector in pairs(self.houndBlue.sectors) do
-        --     HOUND.Logger.debug(sectorName)
-        --     HOUND.Logger.debug(mist.utils.tableShow(sector:getRadioItemsText()))
-        -- end
     end
 
-    function TestHoundFunctional:Test_5mDelay_00_preBriefed()
-        self.houndBlue:onScreenDebug(true)
-
-        local delayTest = function (expectedStr)
-            -- env.info(self.houndBlue:printDebugging())
-            lu.assertEquals(self.houndBlue:countPreBriefedContacts(),5)
+    function TestHoundFunctional:Test_1mDelay_02_destroy()
+        function delayTest(expectedStr)
             lu.assertStrContains(self.houndBlue:printDebugging(),expectedStr)
         end
 
-        -- env.info(self.houndBlue:printDebugging())
-        lu.assertStrContains(self.houndBlue:printDebugging(),"Platforms: 2 | sectors: 3 (Z:2 ,C:2 ,A: 2 ,N:1) | Sites: 4 | Contacts: 6 (A:2 ,PB:6)")
+        local function destroyObject(DcsObject)
+            local units = {}
+            if getmetatable(DcsObject) == Unit then
+                table.insert(units,DcsObject)
+            end
+            if getmetatable(DcsObject) == Group then
+                units = DcsObject:getUnits()
+            end
+
+            for i=#units,1,-1 do
+                local unit = units[i]
+                local pos = unit:getPoint()
+                local life0 = unit:getLife0()
+                local life = unit:getLife()
+                local name = unit:getName()
+                local ittr = 1
+                while life > 1 and ittr < 10 do
+                    -- local pwr = math.max(0.0055,(life-1)/life0)
+                    local pwr = life0*2
+                    env.info(ittr .. " | " .. name .. " has " .. life .. " HP, started with " .. life0 .. " explody power: " .. pwr)
+                    trigger.action.explosion(pos,pwr)
+                    life = unit:getLife()
+                    ittr = ittr+1
+                end
+            end
+        end
+
+        self.houndBlue:enableBDA()
+        lu.assertIsTrue(self.houndBlue:getBDA())
+        local grp = Group.getByName('SA-5_SAIPAN')
+        lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(grp))
+        lu.assertEquals(grp:getSize(),8)
+
+        destroyObject(grp:getUnit(2)) -- nuke TR first
+    end
+
+    function TestHoundFunctional:Test_1mDelay_03_ships()
+        local ships = Group.getByName('SHIPS_NORTH')
+        lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(ships))
+        lu.assertEquals(ships:getSize(),2)
+        ships:enableEmission(true)
+    end
+
+    function TestHoundFunctional:Test_5mDelay_00_preBriefed()
+        function delayTest(expectedStr)
+            -- env.info(self.houndBlue:printDebugging())
+            lu.assertEquals(self.houndBlue:countPreBriefedContacts(),3)
+            lu.assertStrContains(self.houndBlue:printDebugging(),expectedStr)
+        end
+        self.houndBlue:onScreenDebug(true)
+
+        lu.assertStrContains(self.houndBlue:printDebugging(),"Platforms: 2 | sectors: 3 (Z:2 ,C:2 ,A: 2 ,N:1) | Sites: 5 | Contacts: 8 (A:4 ,PB:6)")
         local tor = Group.getByName("TOR_SAIPAN")
         tor:enableEmission(true)
-        timer.scheduleFunction(delayTest,"Platforms: 2 | sectors: 3 (Z:2 ,C:2 ,A: 2 ,N:1) | Sites: 4 | Contacts: 6 (A:3 ,PB:5)",timer.getTime()+45)
+        timer.scheduleFunction(delayTest,"Platforms: 2 | sectors: 3 (Z:2 ,C:2 ,A: 2 ,N:1) | Sites: 5 | Contacts: 8 (A:4 ,PB:6)",timer.getTime()+45)
     end
+
     function TestHoundFunctional:Test_5mDelay_01_exports()
         self.houndBlue:dumpIntelBrief()
+    end
+
+    function TestHoundFunctional:Test_5mDelay_02_boats()
+        local sector = self.houndBlue:getSector("default")
+        local loopData = {
+            reportIdx = 'A',
+            body = "",
+            msg = {}
+        }
+        sector:generateAtis(loopData,{reportewr = false })
+        local msg = loopData.msg.tts
+        lu.assertStrContains(msg,"Kirov (CG)")
+        lu.assertStrContains(msg,"Moskva (CG)")
     end
 end

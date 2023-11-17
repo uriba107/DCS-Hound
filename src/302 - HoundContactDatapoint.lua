@@ -110,7 +110,9 @@ do
     function HOUND.Contact.Datapoint.estimatePos(self)
         if self.el == nil or self.platformStatic or l_math.abs(self.el) <= self.platformPrecision then return end
         local pos = HoundUtils.Geo.getProjectedIP(self.platformPos,self.az,self.el)
-        pos.score = self.signalStrength*self.signalStrength
+        if HoundUtils.Dcs.isPoint(pos) then
+            pos.score = self.signalStrength*self.signalStrength
+        end
         return pos
     end
 

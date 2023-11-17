@@ -46,7 +46,7 @@ do
         instance.isPrimary = false
         instance.radarRoles = {HOUND.DB.RadarType.SEARCH}
 
-        local contactUnitCategory = DcsObject:getDesc()["category"]
+        local contactUnitCategory = DcsObject:getCategory()
         if contactUnitCategory and contactUnitCategory == Unit.Category.SHIP then
             instance.band = {
                 [false] = HOUND.DB.Bands.E,
@@ -389,7 +389,7 @@ do
             end
         end
 
-        if not self:isRecent() then
+        if not self:isRecent() and self.state ~= HOUND.EVENTS.RADAR_NEW then
             return self.state
         end
 
@@ -492,7 +492,7 @@ do
             self.detected_by = detected_by
         end
 
-        if newContact and self.pos.p ~= nil and self.isEWR == false then
+        if newContact and HoundUtils.Dcs.isPoint(self.pos.p) ~= nil and self.isEWR == false then
             self.state = HOUND.EVENTS.RADAR_DETECTED
             self:calculateExtrasPosData(self.pos)
         end
