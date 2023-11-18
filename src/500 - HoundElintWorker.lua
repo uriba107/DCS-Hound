@@ -51,7 +51,14 @@ do
     -- @return[type=bool] True if requested platform was added. else false
     function HOUND.ElintWorker:addPlatform(platformName)
         local candidate = Unit.getByName(platformName) or StaticObject.getByName(platformName)
-
+        if HOUND.Utils.Dcs.isUnit(platformName) or HOUND.Utils.Dcs.isStaticObject(platformName) then
+            candidate = platformName
+        end
+        
+        if not (HOUND.Utils.Dcs.isUnit(candidate) or HOUND.Utils.Dcs.isStaticObject(candidate)) then
+            HOUND.Logger.warn("Failed to add platform "..platformName..". Could not find the Object.")
+            return false
+        end
         if self:getCoalition() == nil and candidate ~= nil then
             self:setCoalition(candidate:getCoalition())
         end
