@@ -12,7 +12,7 @@ end
 
 do
     HOUND = {
-        VERSION = "0.4.0-develop-20230718",
+        VERSION = "0.4.0-develop-20231118",
         DEBUG = false,
         ELLIPSE_PERCENTILE = 0.6,
         DATAPOINTS_NUM = 30,
@@ -748,6 +748,16 @@ do
             },
             ['Primary'] = true
         },
+        ['HEMTT_C-RAM_Phalanx'] = {
+            ['Name'] = "Phalanx C-RAM",
+            ['Assigned'] = {"AAA"},
+            ['Role'] = {HOUND.DB.RadarType.TRACK},
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.J,
+                [false] = HOUND.DB.Bands.J
+            },
+            ['Primary'] = true
+        },
         ['Dog Ear radar'] = {
             ['Name'] = "Dog Ear",
             ['Assigned'] = {"AAA"},
@@ -1106,6 +1116,16 @@ do
             ['Band'] = {
                 [true] = HOUND.DB.Bands.K,
                 [false] = HOUND.DB.Bands.K
+            },
+            ['Primary'] = true
+        },
+        ['ara_vdm'] = {
+            ['Name'] = "Veinticinco de Mayo (CV)",
+            ['Assigned'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.E,
+                [false] = HOUND.DB.Bands.E
             },
             ['Primary'] = true
         },
@@ -1805,7 +1825,7 @@ do
         end
 
         local isValid = false
-        local mainCategory = candidate:getCategory()
+        local mainCategory = Object.getCategory(candidate)
         local type = candidate:getTypeName()
         if HOUND.setContains(HOUND.DB.Platform,mainCategory) then
             if HOUND.setContains(HOUND.DB.Platform[mainCategory],type) then
@@ -1836,7 +1856,7 @@ do
             isAerial = false,
         }
 
-        local mainCategory = DcsObject:getCategory()
+        local mainCategory = Object.getCategory(DcsObject)
         local typeName = DcsObject:getTypeName()
         local DbInfo = HOUND.DB.Platform[mainCategory][typeName]
 
@@ -1850,11 +1870,11 @@ do
         if objHitBox then
             VerticalOffset = objHitBox["max"]["y"]
         end
-        if DcsObject:getCategory() == Object.Category.STATIC then
+        if mainCategory == Object.Category.STATIC then
             platformData.isStatic = true
             platformData.pos.y = platformData.pos.y + VerticalOffset/2
         else
-            local PlatformUnitCategory = DcsObject:getDesc()["category"]
+            local PlatformUnitCategory = DcsObject:getCategory()
             if PlatformUnitCategory == Unit.Category.HELICOPTER or PlatformUnitCategory == Unit.Category.AIRPLANE then
                 platformData.isAerial = true
             end
@@ -1875,7 +1895,7 @@ do
 
     function HOUND.DB.getApertureSize(DcsObject)
         if not HOUND.Utils.Dcs.isUnit(DcsObject) and not HOUND.Utils.Dcs.isStaticObject(DcsObject) then return 0 end
-        local mainCategory = DcsObject:getCategory()
+        local mainCategory = Object.getCategory(DcsObject)
         local typeName = DcsObject:getTypeName()
         if HOUND.setContains(HOUND.DB.Platform,mainCategory) then
             if HOUND.setContains(HOUND.DB.Platform[mainCategory],typeName) then
@@ -3835,12 +3855,17 @@ do
         return table.concat(self.typeAssigned," or ")
     end
 
-    function HOUND.Contact.Base:getNatoDesignation()
+    function HOUND.Contact.Base:getDesignation(NATO)
+        if not NATO then return self:getTypeAssigned() end
         local natoDesignation = string.gsub(self:getTypeAssigned(),"(SA)-",'')
-            if natoDesignation == "Naval" then
-                natoDesignation = self:getType()
-            end
+        if natoDesignation == "Naval" then
+            natoDesignation = self:getType()
+        end
         return natoDesignation
+    end
+
+    function HOUND.Contact.Base:getNatoDesignation()
+        return self:getDesignation(true)
     end
 
     function HOUND.Contact.Base:isActive()
@@ -4181,7 +4206,9 @@ do
     function HOUND.Contact.Datapoint.estimatePos(self)
         if self.el == nil or self.platformStatic or l_math.abs(self.el) <= self.platformPrecision then return end
         local pos = HoundUtils.Geo.getProjectedIP(self.platformPos,self.az,self.el)
-        pos.score = self.signalStrength*self.signalStrength
+        if HoundUtils.Dcs.isPoint(pos) then
+            pos.score = self.signalStrength*self.signalStrength
+        end
         return pos
     end
 
@@ -4305,7 +4332,7 @@ do
         instance.isPrimary = false
         instance.radarRoles = {HOUND.DB.RadarType.SEARCH}
 
-        local contactUnitCategory = DcsObject:getDesc()["category"]
+        local contactUnitCategory = DcsObject:getCategory()
         if contactUnitCategory and contactUnitCategory == Unit.Category.SHIP then
             instance.band = {
                 [false] = HOUND.DB.Bands.E,
@@ -4581,7 +4608,7 @@ do
             end
         end
 
-        if not self:isRecent() then
+        if not self:isRecent() and self.state ~= HOUND.EVENTS.RADAR_NEW then
             return self.state
         end
 
@@ -4680,7 +4707,7 @@ do
             self.detected_by = detected_by
         end
 
-        if newContact and self.pos.p ~= nil and self.isEWR == false then
+        if newContact and HoundUtils.Dcs.isPoint(self.pos.p) ~= nil and self.isEWR == false then
             self.state = HOUND.EVENTS.RADAR_DETECTED
             self:calculateExtrasPosData(self.pos)
         end
@@ -4893,7 +4920,7 @@ do
         local phoneticGridPos,phoneticBulls = self:getTtsData(false,1)
         local reportedName = self:getName()
         if NATO then
-            reportedName = self:getNatoDesignation()
+            reportedName = self:getDesignation(NATO)
         end
         local str = reportedName
         if self:isAccurate() then
@@ -5301,7 +5328,7 @@ do
             self:setPreBriefed(isPB)
         end
         if self.state ~=  HOUND.EVENTS.SITE_ASLEEP then
-            if self:isTimedout() or #self.emitters == 0 then
+            if (self:isTimedout() and not self:isAccurate()) or #self.emitters == 0 then
                 self.state = HOUND.EVENTS.SITE_ASLEEP
                 self:queueEvent(self.state)
             end
@@ -5367,7 +5394,7 @@ do
         local lineColor = {textColor,textColor,textColor,textAlpha}
 
         local markerArgs = {
-            text = self:getName() .. " (" .. self:getNatoDesignation().. ")",
+            text = self:getName() .. " (" .. self:getDesignation(true).. ")",
             pos = self:getPos(),
             coalition = self._platformCoalition,
             lineColor = lineColor
@@ -5432,7 +5459,7 @@ do
     end
 
     function HOUND.Contact.Site:generatePopUpReport(isTTS,sectorName)
-        local msg = self:getName() .. ", identified as " .. self:getNatoDesignation() .. ", is active"
+        local msg = self:getName() .. ", identified as " .. self:getDesignation(true) .. ", is active"
 
         if sectorName then
             msg = msg .. " in " .. sectorName
@@ -5453,7 +5480,7 @@ do
     end
 
     function HOUND.Contact.Site:generateDeathReport(isTTS,sectorName)
-        local msg = self:getName() ..  ", identified as " .. self:getNatoDesignation() .. " is down"
+        local msg = self:getName() ..  ", identified as " .. self:getDesignation(true) .. " is down"
         if sectorName then
             msg = msg .. " in " .. sectorName
         else
@@ -5472,7 +5499,7 @@ do
     end
 
     function HOUND.Contact.Site:generateAsleepReport(isTTS,sectorName)
-        local msg = self:getName() ..  ", identified as " .. self:getNatoDesignation() .. " is asleep"
+        local msg = self:getName() ..  ", identified as " .. self:getDesignation(true) .. " is asleep"
         if sectorName then
             msg = msg .. " in " .. sectorName
         else
@@ -5495,9 +5522,9 @@ do
 
         if sectorName then
             msg = msg .. " in " .. sectorName
-            msg = msg .. ", has been reclassified as " .. self:getNatoDesignation()
+            msg = msg .. ", has been reclassified as " .. self:getDesignation(true)
         else
-            msg = msg .. ", has been reclassified as " .. self:getNatoDesignation()
+            msg = msg .. ", has been reclassified as " .. self:getDesignation(true)
             local primary = self:getPrimary()
             if primary:hasPos() then
                 local GridPos,BePos
@@ -5514,10 +5541,9 @@ do
     end
 
     function HOUND.Contact.Site:generateTtsBrief(NATO)
-
         if self:getType() == "Naval" then
             local boatData = {}
-            for idx,emitter in pairs(self:getEmitters()) do
+            for _,emitter in ipairs(self:getEmitters()) do
                 table.insert(boatData,emitter:generateTtsBrief(NATO))
             end
             return table.concat(boatData," ")
@@ -5527,11 +5553,11 @@ do
         local primary = self:getPrimary()
         if getmetatable(primary) ~= HOUND.Contact.Emitter or primary.pos.p == nil or primary.uncertenty_data == nil then return str end
         local phoneticGridPos,phoneticBulls = primary:getTtsData(false,1)
-        local reportedName = self:getName()
+        local reportedName = self:getName() .. " "
         if NATO then
             reportedName = ""
         end
-        str = reportedName .. " " .. self:getNatoDesignation()
+        str = reportedName .. self:getDesignation(NATO)
         if primary:isAccurate() then
             str = str .. ", reported"
         else
@@ -5556,7 +5582,7 @@ do
         for _,emitter in ipairs(self.emitters) do
             local body = emitter:generateIntelBrief()
             if body ~= "" then
-                local entry = table.concat({self:getName(),self:getNatoDesignation(),body,self.DcsObjectName},",")
+                local entry = table.concat({self:getName(),self:getDesignation(true),body,self.DcsObjectName},",")
                 table.insert(items,entry)
             end
         end
@@ -5568,7 +5594,7 @@ do
             name = self:getName(),
             DcsObjectName = self:getDcsName(),
             gid = self.gid % 100,
-            Type = self:getNatoDesignation(),
+            Type = self:getDesignation(true),
             last_seen = self.last_seen,
             emitters = {}
         }
@@ -5821,7 +5847,7 @@ do
             return false
         end
         local pos = self.transmitter:getPoint()
-        if self.transmitter:getCategory() == Object.Category.STATIC or self.transmitter:getDesc()["category"] == Unit.Category.GROUND_UNIT then
+        if Object.getCategory(self.transmitter) == Object.Category.STATIC or self.transmitter:getCategory() == Unit.Category.GROUND_UNIT then
             local verticalOffset = (self.transmitter:getDesc()["box"]["max"]["y"] + 5) or 20
             pos.y = pos.y + verticalOffset
         end
@@ -6049,11 +6075,15 @@ do
     end
 
     function HOUND.ElintWorker:addPlatform(platformName)
-        local candidate = Unit.getByName(platformName)
-        if candidate == nil then
-            candidate = StaticObject.getByName(platformName)
+        local candidate = Unit.getByName(platformName) or StaticObject.getByName(platformName)
+        if HOUND.Utils.Dcs.isUnit(platformName) or HOUND.Utils.Dcs.isStaticObject(platformName) then
+            candidate = platformName
         end
 
+        if not (HOUND.Utils.Dcs.isUnit(candidate) or HOUND.Utils.Dcs.isStaticObject(candidate)) then
+            HOUND.Logger.warn("Failed to add platform "..platformName..". Could not find the Object.")
+            return false
+        end
         if self:getCoalition() == nil and candidate ~= nil then
             self:setCoalition(candidate:getCoalition())
         end
@@ -6217,7 +6247,9 @@ do
 
     function HOUND.ElintWorker:setDead(emitter)
         local contact = self:getContact(emitter,true)
-        if contact then contact:setDead() end
+        if contact then
+            contact:setDead()
+         end
     end
     function HOUND.ElintWorker:isTracked(emitter)
         if emitter == nil then return false end
@@ -6350,7 +6382,7 @@ do
                 if self.settings:getBDA() and contact:isAlive() and contact:getLife() < 1 then
                     contact:setDead()
                 end
-                if not contact:isAlive() and contact:getLastSeen() > 60 then
+                if not contact:isAlive() and (contact:getLastSeen() > 60 or contact:getPreBriefed()) then
                     contact:destroy()
                 end
 
@@ -7142,67 +7174,6 @@ do
         if notifier and notifier:isEnabled() then
             notifier:addMessageObj(msg)
         end
-    end
-    function HOUND.Sector:generateAtisLegacy(loopData,AtisPreferences)
-        local body = ""
-        local numberEWR = 0
-        local contactCount = self:countContacts()
-        if contactCount > 0 then
-            local sortedContacts = self:getContacts()
-
-            for _, emitter in pairs(sortedContacts) do
-                if emitter.pos.p ~= nil then
-                    if not emitter.isEWR or
-                        (AtisPreferences.reportewr and emitter.isEWR) then
-                        body = body ..
-                                    emitter:generateTtsBrief(
-                                        self._hSettings:getNATO()) .. " "
-                    end
-                    if (not AtisPreferences.reportewr and emitter.isEWR) then
-                        numberEWR = numberEWR + 1
-                    end
-                end
-            end
-            if numberEWR > 0 then
-                body = body .. numberEWR .. " EWRs are tracked. "
-            end
-        end
-
-        if body == "" then
-            if self._hSettings:getNATO() then
-                body = ". EMPTY. "
-            else
-                body = "No threats had been detected "
-            end
-        end
-
-        if loopData.body == body then return end
-        loopData.body = body
-
-        local reportId
-        reportId, loopData.reportIdx =
-            HoundUtils.getReportId(loopData.reportIdx)
-
-        local header = self.callsign
-        local footer = reportId .. "."
-
-        if self._hSettings:getNATO() then
-            header = header .. " Lowdown "
-            footer = "Lowdown " .. footer
-        else
-            header = header .. " SAM information "
-            footer = "you have " .. footer
-        end
-        header = header .. reportId .. " " ..
-                                    HoundUtils.TTS.getTtsTime() .. ". "
-
-        local msgObj = {
-            coalition = self._hSettings:getCoalition(),
-            priority = "loop",
-            updateTime = timer.getAbsTime(),
-            tts = header .. loopData.body .. footer
-        }
-        loopData.msg = msgObj
     end
 
     function HOUND.Sector:generateAtis(loopData,AtisPreferences)
@@ -8631,8 +8602,7 @@ do
     end
 
     function HoundElint:onEvent(DcsEvent)
-        if not DcsEvent.initiator or type(DcsEvent.initiator) ~= "table" then return end
-        if type(DcsEvent.initiator.getCoalition) ~= "function" then return end
+        if not HoundUtils.Dcs.isUnit(DcsEvent.initiator) then return end
 
         if DcsEvent.id == world.event.S_EVENT_DEAD
             and DcsEvent.initiator:getCoalition() ~= self.settings:getCoalition()
@@ -8675,4 +8645,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.4.0-develop-20230718 - Compiled on 2023-07-18 19:16
+-- Hound version 0.4.0-develop-20231118 - Compiled on 2023-11-18 15:36

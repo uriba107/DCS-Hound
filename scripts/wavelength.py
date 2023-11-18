@@ -56,6 +56,8 @@ platforms = {
             "P-3C": {"category": 2, "antenna":{"size":25, "factor":1}},
             "P-8A": {"category": 2, "antenna":{"size":35, "factor":1}},
             "Tu-214R": {"category": 2, "antenna":{"size":40, "factor":1}},
+            "Shavit": {"category": 2, "antenna":{"size":30, "factor":1}},
+
 
         }
 
