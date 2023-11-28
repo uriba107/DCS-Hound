@@ -126,7 +126,7 @@ on a "ONCE" type action with "time more 1" condition, add the scripts in the fol
 
 ### Minimum required Code to get Hound working
 ---
-The bare minumum, more customization optionas are available.
+The bare minimum, more customization options are available.
 ```lua
 do
   Elint_blue = HoundElint:create(coalition.side.BLUE)
@@ -144,9 +144,9 @@ end
 ### Basic Hound setup (YouTube)
 [![Hound mission editor video](https://i.ytimg.com/vi/gmJmFR7UCfo/hqdefault.jpg)](https://www.youtube.com/watch?v=gmJmFR7UCfo)
 
-### Advanced config
-It doesn't need to make sense to you, there is actually more explenations ahead.
-But this is an example of a more compex configuration.
+### Advanced configuration
+It doesn't need to make sense to you, there is actually more explanations ahead.
+But this is an example of a more complex configuration.
 ```lua
     HoundBlue = HoundElint:create(coalition.side.BLUE)
     HoundBlue:addPlatform("ELINT North") -- C-130
@@ -217,20 +217,20 @@ Platforms can
 ```lua
     HoundInstance:addPlatform("ELINT_C17")
 ```
-and if need be the oposite is also available
+and if need be the opposite is also available
 ```lua
     HoundInstance:removePlatform("ELINT_C17")
 ```
-please make sure you go over the [available assets list](#available-assets) of each to determin what would work best for your mission.
+please make sure you go over the [available assets list](#available-assets) of each to determine what would work best for your mission.
 
-## Enrgize
+## Energize
 
-Thats it, all you need to do now is to activate the system
+That's it, all you need to do now is to activate the system
 ```lua
     HoundInstance:systemOn()
 ```
-Once activated the system will use all avaliable platforms to locate transmitting radars. 
-Information about these radars is updated periodicly onto the F10 map.
+Once activated the system will use all available platforms to locate transmitting radars. 
+Information about these radars is updated periodicity onto the F10 map.
 
 ` Note: during this first implementation, markers are updated every 2 minutes`
 
@@ -238,25 +238,15 @@ You can of course turn it off for any reason with:
 ```lua
     HoundInstance:systemOff()
 ```
-### Hadnling pre-briefed contacts
-In some cases you would want to always provide accurate positional information on a contact. for exmpale a stationaty SAM site you provided strike coordianted for in the Briefing.
+### Handling pre-briefed contacts
+In some cases you would want to always provide accurate positional information on a contact. for example a stationary SAM site you provided strike coordinated for in the Briefing.
 you can sync Hound to use the actual unit data as position. The contact will be treated as "Pre-Briefed" and will not update position like the others.
-However if a PB concat moves more then 100m from it's original position the special "pre-brifed" flag will be removed and radar will be processed as a normal contact from that point on.
-
-you can mark Unit or Group, only valid Hound Radars will be added (it will not add units it will not normally track). if a group was passed and in contains more then one valid radar, all of the radars will be added
-
-```lua
-    HoundInstance:preBriefedContact('UNIT_NAME')
-    HoundInstance:preBriefedContact('GROUP_NAME')
-
-```
-## Global settings
-Global settings are best set early, which is why I'm listing them here. However they might effect resources that will only be explained later in this document. So if something looks out of place, don't worry about it.
+However if a PB concat moves more then 100m from it's original position the special "pre-briefed" flag will be removed and radar will be processed as a normal contact from that point on.  you can mark Unit or Group, only valid Hound Radars will be added (it will not add units it will not normally track). if a group was passed and in contains more then one valid radar, all of the radars will be added  ```lua     HoundInstance:preBriefedContact('UNIT_NAME')     HoundInstance:preBriefedContact('GROUP_NAME')  ``` ## Global settings Global settings are best set early, which is why I'm listing them here. However they might effect resources that will only be explained later in this document. So if something looks out of place, don't worry about it.
 
 ---
 ### Map markers
-Hound uses Map markers to indicate the estimated position of the radar tracket. It's a product of the system, and only contains data user can get from the system in other ways (equvilant to making marks on a paper map).
-Map markers are enabled by default. In addition, if radar went offline, the marker fill will fade slowly over time until it reaches a minimum value on contact timeout (thee time in which all past contact datapoints are deleted).
+Hound uses Map markers to indicate the estimated position of the radar tracker. It's a product of the system, and only contains data user can get from the system in other ways (equivalent to making marks on a paper map).
+Map markers are enabled by default. In addition, if radar went offline, the marker fill will fade slowly over time until it reaches a minimum value on contact timeout (thee time in which all past contact data points are deleted).
 
 However, some mission designers may want to disable the markers. 
 ```lua
@@ -266,7 +256,7 @@ they can be turned back on with
 ```lua
     HoundInstance:enableMarkers()
 ```
-Hound Supports a few different marker types for the uncertenty ellipse that can be selected. 
+Hound Supports a few different marker types for the uncertainty ellipse that can be selected. 
 The type of marker is set per Hound instance.
 ```lua
     HoundInstance:setMarkerType(HOUND.MARKER.POLYGON)
@@ -276,9 +266,9 @@ the available marker types are:
 |  HOUND.MARKER | Description |
 | ---- | ------------|
 | NONE | no ellipse is drawn (only position marker)|
-| CIRCLE | a circle of uncertenty will be drawn |
-| DIAMOND | a diamond will be drawn with 4 points representing uncertenty ellipse (Default) |
-| OCTAGON | ellipse will be drawn with 8 points (diamon with midpoints) |
+| CIRCLE | a circle of uncertainty will be drawn |
+| DIAMOND | a diamond will be drawn with 4 points representing uncertainty ellipse (Default) |
+| OCTAGON | ellipse will be drawn with 8 points (diamond with midpoints) |
 | POLYGON | ellipse will be drawn as a 16 sides polygon |
 
 `Note: More points causes higher CPU usage. DIAMOND is default`
@@ -301,7 +291,7 @@ In addition to all that Hound will only delete its own markers (by tracking ever
 
 ---
 ### Platform position errors
-Position of the platform is a baseline used for the triangulation. In the real world however position on the platform is always never accurate. Older aircraft have INS systems that drift overtime unless updated periodically, while in newer Aircraft a less "drifty" system is updated automatically from GPS.
+Position of the platform is a baseline used for the triangulation. In the real world however position on the platform is always never accurate. Older aircraft have INS systems that drift overtime unless updated periodically, while in newer Aircraft a less "drift" system is updated automatically from GPS.
 To simulate this you can enable position errors. When this setting is enabled, a random error is introduced to platform's position when stored. 
 ```lua
     HoundInstance:enablePlatformPosErrors()
@@ -324,7 +314,7 @@ you may choose to disable this behaviour
 local bool = HoundInstance:getBDA()
 ```
 
-This setting only affects automatic marking of dead contacts. you can manually mark a contact as dead (and notifications will be transmitted) regardless of BDA settings.  
+This setting only affects automatic marking of dead contacts. You can manually mark a contact as dead (and notifications will be transmitted) regardless of BDA settings.  
 To mark a contact as dead use ```HoundInstance:markDeadContact(radarUnit)``` see [extended docs](#more-docs) for more information.
 
 ---
@@ -340,12 +330,12 @@ You may choose to change this to a different base location in some cases.
 -- If set after "enableController()" is called, in some cases a user will be required to retake his slot.
     HoundInstance:setRadioMenuParent(SuperDuperMenu)
 
--- after parent has been assinged you can enable controller
+-- after parent has been assigned you can enable controller
     HoundInstance:enableController()
 ```
 ---
-### NATO callsigns
-[Sectors](#sectors) get automatically assigned [callsigns](#callsigns). The callsignes are picked from a pool of names. Howwever there is an alternate list, taken from callsignes used by RC-135 squadrons. to use this alternate callsign list by default, you'll need to set the following.
+### NATO call signs
+[Sectors](#sectors) get automatically assigned [callsigns](#callsigns). The callsigns are picked from a pool of names. However there is an alternate list, taken from callsigns used by RC-135 squadrons. to use this alternate call sign list by default, you'll need to set the following.
 ```lua
 -- enable use of alternate pool
     HoundInstance:useNATOCallsignes(true)
@@ -353,8 +343,8 @@ You may choose to change this to a different base location in some cases.
     HoundInstance:useNATOCallsignes(false)
 ```
 ---
-### NATO Lowdown
-The [ATIS system](#atis-system) has two modes, Normal and NATO lowdown.
+### NATO Low-down
+The [ATIS system](#atis-system) has two modes, Normal and NATO low-down.
 same report in both will look slightly different.
 in the Normal default format, ATIS will also call out radar names and Grid position.  
 `Straight Flush 17, grid GG20, accuracy very high`
@@ -391,9 +381,9 @@ the four timers and their default values are:
   * menus: 60s
   * markers: 120s
 
-`scan` controls the interval in which platforms are tested agains radars and datapoints are added.  
+`scan` controls the interval in which platforms are tested gains radars and data points are added.  
 `process` is the position calculation interval.  
-`menus` is the interval in which the comms menues will be computed.  
+`menus` is the interval in which the comms menus will be computed.  
 `markers` is the interval in which all map markers will be updated.  
 you can change the default value if you wish by passing interval name and new value.
 this is normally done to tune performance impact. 
@@ -406,16 +396,15 @@ HoundInstance:setTimerInterval("display",180)
 ---
 ## Sectors
 The next big building block of Hound are the sectors. 
-Introduced in 0.2 this aims to solve a problem in large servers. in the past there was only one "default" sector that everyone contacted for information. In practice in large missions it was just un-manageable. 
+Introduced in 0.2 this aims to solve a problem in large servers. in the past there was only one "default" sector that everyone contacted for information. In practice in large missions it was just unmanageable. 
 
-A "Sector" is a internal named object that manages communication with players. each sector is assigned a name and a callsing.
-when initilizing Hound a "default" sector is created with the callsign "HOUND". when not passing any sector name argument, "default" sector is the sector that would be affected.
+A "Sector" is a internal named object that manages communication with players. each sector is assigned a name and a callsign. when initializing Hound a "default" sector is created with the call sign "HOUND". when not passing any sector name argument, "default" sector is the sector that would be affected.
 
-A Sector can be geofenced, if such geofencing is is set (more on this later) only radars in and around the sector will be reported. see more under [Zone managment](#zones)
+A Sector can be geo fenced, if such geofencing is is set (more on this later) only radars in and around the sector will be reported. see more under [Zone management](#zones)
 
 There are two reserved sector names:
   * `default` - default sector name created with hound instance. it cannot be removed and some features such as geofencing is not available on it
-  * `all` - all sectors. some settings can be changes accross all sectors
+  * `all` - all sectors. some settings can be changes across all sectors
  using the "all" keyword. this is available on generic config functions not on 
 
 ### Managing sectors
@@ -434,7 +423,7 @@ You can request a list of all sector names
     HoundInstance:listSectors()
 ```
 
-or if from some bizzare reason you would like to remove a sector
+or if from some bizarre reason you would like to remove a sector
 ```lua
     HoundInstance:removeSector("sectorName")
 ``` 
@@ -442,17 +431,7 @@ or if from some bizzare reason you would like to remove a sector
 ### Sector configuration
 Sectors have a few options worth knowing.
 #### ***Text messages***
-By default Hound will only broadcast using SRS. You can optionally enable Text messages of all controller messages (ATIS and notifier will remain Voice only). Text notification will only show up for groups that are currently checked in with a controller. enable and disable is per-sector
-```lua
-    HoundInstance:enableText("sectorName")
-    HoundInstance:disableText("anotherSector")
-```
-or to all of them using the "all" keyword
-```lua
-    HoundInstance:enableText("all")
-```
-#### ***TTS transmissions***
-Hound is primary built to use Text-To-Speach messages to communicate. However if from any reason you wish to disable this feature. (which is strictly enabled by default)
+By default Hound will only broadcast using SRS. You can optionally enable Text messages of all controller messages (ATIS and notifier will remain Voice only). Text notification will only show up for groups that are currently checked in with a controller. enable and disable is per-sector ```lua     HoundInstance:enableText("sectorName")     HoundInstance:disableText("anotherSector") ``` or to all of them using the "all" keyword ```lua     HoundInstance:enableText("all") ``` #### ***TTS transmissions*** Hound is primary built to use Text-To-Speachh messages to communicate. However if from any reason you wish to disable this feature. (which is strictly enabled by default)
 you can use the following
 ```lua
     HoundInstance:disableTTS("sectorName")
@@ -464,10 +443,10 @@ or to all of them using the "all" keyword
     HoundInstance:disableTTS("all")
 ```
 #### ***Zones***
-Geofencing a sector will be achived by assigning a "Zone".
+Geofencing a sector will be achieved by assigning a "Zone".
 There are two valid polygon inputs to the Sector.
-  * Draw tool freeform polygon
-  * DCS Group waypoints (standard method - best practis is to use a late activation helicopter group)
+  * Draw tool free-form polygon
+  * DCS Group waypoints (standard method - best practise is to use a late activation helicopter group)
 
 it is then added to the sector using the following:
 ```lua
@@ -497,8 +476,8 @@ To remove a zone from sector use:
 A sector can have a transmitter which will broadcast all the TTS messages for the sector.
 when no transmitter is assigned, everyone on the frequency will be able to hear then transmissions, without any limitations, a "Magic Satlink" if you wish.
 
-Once transmitter is set, SRS will use transmitter's current position for the transmition forcing line-of-sight, maximum radio range and any other SRS limitation that comes with it.  
-If transmitter unit is destroyed, no TTS transmissions will occure. To resolve it you would either need to set a new transmitter to take over.
+Once transmitter is set, SRS will use transmitter's current position for the transmission forcing line-of-sight, maximum radio range and any other SRS limitation that comes with it.  
+If transmitter unit is destroyed, no TTS transmissions will occur. To resolve it you would either need to set a new transmitter to take over.
 
 you can also remove the transmitter at any time to return to the default "Magic Satlink" state.
 
@@ -517,8 +496,8 @@ you can also use the "all" keyword for apply the transmitter to all sectors
     HoundInstance:setTransmitter("all","GCI_bunker")
 ```
 #### ***Callsigns***
-each sector has a randomly assigned callsign. these callsignes are selected from a pool of callsignes.
-you can get currenly assigned callsign using 
+each sector has a randomly assigned callsign. these callsigns are selected from a pool of callsigns.
+you can get currently assigned callsign using 
 ```lua
 local assignedCallsign = HoundInstance:getCallsign("sectorName")
 ```
@@ -531,23 +510,23 @@ If you wish you can also assign a new callsign
 -- assign the callsign "CALLSIGN" to the sector "sectorName"
     HoundInstance:setCallsign("sectorName","CALLSIGN")
 ```
-there are two callsign pools, one is generic the other is a list of callsignes for RC-135s in the USAF. 
+there are two callsign pools, one is generic the other is a list of callsigns for RC-135s in the USAF. 
 if you with for a specific sector to use a callsign from the NATO list you can call
 ```lua
     HoundInstance:setCallsign("sectorName",true)
 -- or
     HoundInstance:setCallsign("sectorName","NATO")
 ```
-if you want ALL sectors to use callsignes from this pool there is a global setting for this. See [Global settings -> NATO callsigns](#nato-callsigns)
+if you want ALL sectors to use callsigns from this pool there is a global setting for this. See [Global settings -> NATO callsigns](#nato-callsigns)
 ## Text-To-Speech
 ---
 In addition to the map markers described above. Hound is utilizing Text-To-Speech to provide the player with information via SRS.
 The three communication types are:
   * Automated Information System [ATIS system](#atis-system)
-  * User interactable [SAM controller](#sam-controller)
+  * User interact-able [SAM controller](#sam-controller)
   * Alert Agency dubbed [Notifier](#notifier)
 
-they are all configureable as will be described the [Text-To-Speach configuration](#text-to-speach-configuration) segment below.
+they are all configurable as will be described the [Text-To-Speach configuration](#text-to-speach-configuration) segment below.
 
 ### ATIS system
 ---
@@ -578,7 +557,7 @@ or you can pass the configuration on enable
 ```
 
 #### **additional settings**
-  * ATIS by default will not report EWR radars as threat, but will only notify you on their presence (and how many of them are tracket in the sector). If from some reason you prefer to get a normal brief on them as well you can enable it using the following:
+  * ATIS by default will not report EWR radars as threat, but will only notify you on their presence (and how many of them are tracked in the sector). If from some reason you prefer to get a normal brief on them as well you can enable it using the following:
 ```lua
     HoundInstance:reportEWR("Sukhumi",true)
 -- disable again with
@@ -588,7 +567,7 @@ or you can pass the configuration on enable
     HoundInstance:reportEWR("all",true)
 ```
   * NATO Lowdown format is available as global setting. see [Global Settings -> NATO Lowdown](#nato-lowdown)
-  * Changing the ATIS update interval is avilable via global settings. see [Global Settings -> ATIS update interval](#atis-update-interval)
+  * Changing the ATIS update interval is available via global settings. see [Global Settings -> ATIS update interval](#atis-update-interval)
 ### SAM controller
 ---
 The SAM controller is the main user interface with the system. Via the F10 menu, you can request detailed information about specific tracked radars. the controller defaults to 250.00 AM
@@ -642,13 +621,13 @@ you can override this to get different precision (i.e 3 will give you 6 digits M
   * Precise estimated position - using LL (repeated twice for readback/VR)
   * Precise estimated position - using MGRS
   * Elevation of Radar above Sea-level (in 50ft increments)
-  * Extended uncertenty ellipse information (Major axis, Minor Axis, rotation of major axis)
+  * Extended uncertainty ellipse information (Major axis, Minor Axis, rotation of major axis)
   * Extended Tracking time information (How long is tracked, when last seed)
 
 This Reads like this:
  ```
  <Radar Type> <Radar UID>, [Active/Recent/stale etc.] at Bullseye XXX YY, accuracy [Very High/High/Medium/Low etc.], 
- position <LL in Aircraft format>, I repeate <LL in Aircraft format>,
+ position <LL in Aircraft format>, I repeat <LL in Aircraft format>,
  MGRS <MGRS with HOUND.MGRS_PRECISION>,
  elevation XXXX feet MSL,
  ellipse is XX by YY, aligned bearing ZZ,
@@ -656,7 +635,7 @@ This Reads like this:
  ```
 
 Advanced users what wish to change this structure may do it. 
-If you are satisfied by only supressing the Extended uncertenty and the Extended Tracking time info you can do so by invoking `HOUND.showExtendedInfo()` function. This will have an affect globally.
+If you are satisfied by only suppressing the Extended uncertainty and the Extended Tracking time info you can do so by invoking `HOUND.showExtendedInfo()` function. This will have an affect globally.
 ```lua
   HOUND.showExtendedInfo(false)
 ```
@@ -665,11 +644,11 @@ If
 
  ### Notifier
  ---
- This, as the name suggests is notification only agent. it functions independently of controller or ATIS and will only report pop-up and if enable radar destruction alerts. this is intended to be operated on a different freqency then the controller (which has the same alerting capacity). This may be used for improving SA on Air-To-Air frequency or on general strike channels.
+ This, as the name suggests is notification only agent. it functions independently of controller or ATIS and will only report pop-up and if enable radar destruction alerts. this is intended to be operated on a different frequency then the controller (which has the same alerting capacity). This may be used for improving SA on Air-To-Air frequency or on general strike channels.
  
- Notifier has a special case when used under "default" sector when radar is inside a geofenced sector. In this scenario it will report using sector name rather then with location. for example:
+ Notifier has a special case when used under "default" sector when radar is inside a geo-fenced sector. In this scenario it will report using sector name rather then with location. for example:
   * Normal: `Attention All Aircraft! This is HOUND. New threat detected! Straight flush 11 is now Alive, bullseye XXX YY, Grid ZZ 1 4.`<br>
-  * Special case: `Attention All Aircraft! this is HOUND. New thread detected! Straigh flush 11 is now Alive in Bander Abbas.`
+  * Special case: `Attention All Aircraft! this is HOUND. New thread detected! Straight flush 11 is now Alive in Bander Abbas.`
 
   by default it will broadcast on 243.000AM and 121.500AM, i.e Guard frequency. but will accept [TTS configuration](#text-to-speach-configuration).
 
@@ -677,7 +656,7 @@ If
   ```lua
     -- enable on default sector with default settings
     HoundInstance:enableNotifier()
-    -- enable with custom config on seperate sector
+    -- enable with custom config on separate sector
     HoundInstace:enableNotifier("Bander Abbas",notifier_config)
 
     -- configure and set frequency inline without enabling
@@ -687,7 +666,7 @@ If
 ### Text-To-Speach configuration
 ---
 Oviously, you may want to tweak the radio to better work with you mission.
-this can be done using an arguments table and passing it to the configuration funtion.
+this can be done using an arguments table and passing it to the configuration function.
 
 possible settings are slightly different based on your TTS provider of choice.
 
@@ -714,7 +693,7 @@ to change it and use STTS regardless. you need to set a global variable (which i
 ```lua
         args = {
             freq = 250.000,
-            speed = <speed> -- optional, range is -10 to +10 on windows TTS. you can also specify a number between 50 and 250 which will be treated as speech speeed (100% is normal)
+            speed = <speed> -- optional, range is -10 to +10 on windows TTS. you can also specify a number between 50 and 250 which will be treated as speech speed (100% is normal)
             volume = "1.0", -- optional
             gender = "male"|"female", -- optional
             culture = "en-US"|"en-UK" -- (must be available on you system)
@@ -722,8 +701,8 @@ to change it and use STTS regardless. you need to set a global variable (which i
             provider = {} -- optional gRPC.tts provider settings (consult DCS-gRPC). for example ATIS works with windows TTS. controller via a cloud provider (like AWS or Azure)
       
 #### applying the settings
-you can override one or more, and you can also have mutiple frequencies.
-you then pass the table into the appropriet functions
+you can override one or more, and you can also have multiple frequencies.
+you then pass the table into the appropriate functions
 ```lua
     HoundInstance:configureController(args)
     HoundInstance:configureAtis(args)
@@ -743,7 +722,7 @@ for example:
     HoundInstance:enableController()
     HoundInstance:enableAtis()
 ```
-This will change ATIS freqency to 251.5 and enable ATIS
+This will change ATIS frequency to 251.5 and enable ATIS
 and will enable Controller both in Text and in Voice, while transmitting on two frequencies 251.0 AM and 35 FM
 
 ## Event handlers
@@ -805,19 +784,19 @@ to remove use
     HOUND.removeEventHandler(CustomHoundScript)
 ```
 `NOTE: Event handlers are global so make sure you validate coalition or houndId as the event might be from a different Instance from a different coalition`
-`RADAR_DESTROYED event is delayed from the DCS Unit destroyed event, so unit is gone by then. unit field in a dead contact is unitName not unit object like on other events. Try and use initiator.DCSgroupName whenever possible`
+`RADAR_DESTROYED event is delayed from the DCS Unit destroyed event, so unit is gone by then. unit field in a dead contact is unit-name not unit object like on other events. Try and use initiator.DCSgroupName whenever possible`
 
 ---
-## Performace Tuning
-when running a large mission with a huge Air defence network it is not uncommon to encounter some peformance issues.  
+## Performance Tuning
+when running a large mission with a huge Air defence network it is not uncommon to encounter some performance issues.  
 These issues are caused by the huge number of markers needed to be created and DCS' ability to manage them.
 Here are some tips to help you mitigate this.
 
-1. Disable Markers! if you don't need them, just disable them altogeather. 
+1. Disable Markers! if you don't need them, just disable them altogether. 
 ```lua
  HoundInstance:disableMarkers()
 ```
-2. if you want some markers, then disable just the uncertenty markers, this will cut down the number of markers needed by half. the information will still be included in the description on the point marker.
+2. if you want some markers, then disable just the uncertainty markers, this will cut down the number of markers needed by half. the information will still be included in the description on the point marker.
 ```lua
 HoundInstance:setMarkerType(HOUND.MARKER.NONE)
 ```
@@ -827,7 +806,7 @@ HoundInstance:setTimerInterval("display",180)
 ```
 ---
 ## Exports
-Current implementation suports two types of export. LUA and CSV.
+Current implementation supports two types of export. LUA and CSV.
 ### LUA Export
 ```lua
 HoudnInstace:getContacts()
@@ -845,7 +824,7 @@ Calling this function will return a LUA table
           }
 }
 ```
-Each contact will be added to the apropriate category and count will be updated to match number of contacts in each categoty.
+Each contact will be added to the appropriate category and count will be updated to match number of contacts in each category.
 data structure of each record will follow this pattern.
 ```lua
 {
@@ -906,16 +885,16 @@ I-8,EWR,Box Spring,Active,183/52,34.151685,35.911686,36S YC 6845 8280,Precise,17
 
 ---
 ## Known Issues
-  * On initial detection accuracy will usually be very high with solution nowhere near the radar actual position. This is sorted by the system as more datapoints are gathered. allow at least 2 minutes for contact to stablize.
-  * Adding low resolution platforms will degrade the solution as Hound currently does not reject "bad data". Hound will drop readings that have more then 10 degrees of error. but if resolution is above the threashold, but very far away, it may still degrate the resolution.
-  * Overlapping of sectors is currently not recommended. you can add a small high priority sector on top of a larger sector, but this is the ONLY tested overlap, and there might be some un-expected behavour with that.
-  * MIST 4.4 is REQUIRED. However if used with MIST 4.5.103+ some a additional functionality is enabled. (e.g SAM that threaten sectors )
+  * On initial detection accuracy will usually be very high with solution nowhere near the radar actual position. This is sorted by the system as more data points are gathered. allow at least 2 minutes for contact to stabilize.
+  * Adding low resolution platforms will degrade the solution as Hound currently does not reject "bad data". Hound will drop readings that have more then 10 degrees of error. but if resolution is above the threshold, but very far away, it may still degrade the resolution.
+  * Overlapping of sectors is currently not recommended. you can add a small high priority sector on top of a larger sector, but this is the ONLY tested overlap, and there might be some unexpected behaviour with that.
+  * MIST 4.4 is REQUIRED. However if used with MIST 4.5.103+ some a additional functionality is enabled. (e.g. SAM that threaten sectors )
 
 ## Breaking changes
 ### 0.1.X to 0.2.X
 If you are upgrading from 0.1 please note that some changes will be required.
   * `enableController()` no longer accepts boolean to enable or disable text. please use [`enableText()`](#text-messages) call.
-  * Every function that has `ATIS` in it needs to be changesd to have `Atis` - note the capitalization.
+  * Every function that has `ATIS` in it needs to be changed to have `Atis` - note the capitalization.
   * "name" argument passed in the TTS config table is no longer used. (silent failure)
   * `setTransmitter()` is now a sector function. in general passing everything directly to `Instance.controller` or `Instance.atis` will no longer work due to changes in the internal architecture. 
 ### 0.2.X to 0.3.X 
@@ -927,7 +906,7 @@ From 0.2 to 0.3 there was an internal change and all classes (except form `Hound
   * [Developers Documentation](https://uriba107.github.io/DCS-Hound/dev_docs/) - this is actually everything. You don't need this unless you intend to hack your way to glory.
   * [Scripting Ideas](SCRIPTING_IDEAS.MD) - A random bunch of scripting ideas. feel free to suggest more via an issue or Pull-Request.
 
-### Desanitize DCS Scripting Engine
+### De-sanitize DCS Scripting Engine
 By default the DCS scripting engine blocks all access to the OS to avoid potential security risks.
 some functions, most notably anything that needs to write to disk, will not work in this default state.
 You'll need to "De-sanitize" the DCS Scripting Engine and allow these LUA core modules to be used.
@@ -936,14 +915,14 @@ You'll need to "De-sanitize" the DCS Scripting Engine and allow these LUA core m
 USE WITH CAUTION`
 
 This is done by editing a single core DCS lua file. this change will be reverted on every DCS update and will need to be re-applied.
-open the file `<DCS_ROOT_FOLDER>/scripts/MissionScripting.lua` in your favorite text editor (NodePad++ for example)
+open the file `<DCS_ROOT_FOLDER>/scripts/MissionScripting.lua` in your favourite text editor (Notepad++ for example)
 in that file you'll see the following 3 lines.
 ```lua
 sanitizeModule('os')
 sanitizeModule('io')
 sanitizeModule('lfs')
 ```
-Each of these lines reprisent a core lua module that is disabled by DCS Scripting Engine. to enable them just comment out the line that corresponds to the module needed. when all 3 are enabled, that part of the file will look like this
+Each of these lines represent a core lua module that is disabled by DCS Scripting Engine. to enable them just comment out the line that corresponds to the module needed. when all 3 are enabled, that part of the file will look like this
 ```lua
 -- sanitizeModule('os')
 -- sanitizeModule('io')
@@ -955,10 +934,10 @@ for example, STTS require all 3 to be available.
 ## Special thanks
   * __Grimes__ - For [MIST](https://github.com/mrSkortch/MissionScriptingTools) and because Without the [Hoggit Wiki](https://wiki.hoggitworld.com/) we would all be fumbling in the dark.
   * __[flywaldair](https://github.com/walder)__ - Hound was initially inspired by [Skynet IADS](https://github.com/walder/Skynet-IADS).
-  * __[Ciribob](https://github.com/ciribob)__ - without his help, support and acceptence of wierd merge requests. none of this would have been possible.
+  * __[Ciribob](https://github.com/ciribob)__ - without his help, support and acceptance of weird merge requests. none of this would have been possible.
   * __[rkusa](https://github.com/rkusa)__,__[rurounijones](https://github.com/rurounijones)__,__[Binary](https://discord.com/users/Binary#0001)__ and everyone involved for [DCS-gRPC](https://github.com/DCS-gRPC/rust-server).
   *  __[Pene](https://github.com/Penecruz)__, for being a sport and trying out all manner of builds. And to the rest of the __(DCS ANZUS)[https://discord.gg/mCQw9Wm5Qq]__ for allowing him to keep doing that :)
-  * __Nikos__, __[Jester](https://github.com/hbjonsson)__, __[davidp57](https://github.com/davidp57)__ and all the rest - For the feeback and suggestions pushing Hound even further
+  * __Nikos__, __[Jester](https://github.com/hbjonsson)__, __[davidp57](https://github.com/davidp57)__ and all the rest - For the feedback and suggestions pushing Hound even further
 
 And a very special thanks is (and will always be) reserved to those who choose to click the button below :) 
 
