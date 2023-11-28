@@ -1,8 +1,8 @@
 # Hound ELINT system for DCS
 ## Overview
-**Hound ELINT** is a mission script for DCS. it uses one or more assigned ELINT platforms to approximates location of transmitting enemy radars using triangulation. Platforms are pre-assigned or dynamicly assgined asstes, they can be Airborn, ground units or stationary objects from a set list of assets avialable. 
+**Hound ELINT** is a mission script for DCS. it uses one or more assigned ELINT platforms to approximates location of transmitting enemy radars using triangulation. Platforms are pre-assigned or dynamic assigned assets, they can be Air born, ground units or stationary objects from a set list of assets available. 
 
-Hound presents data in sevral methods.
+Hound presents data in serval methods.
 
 1. F10 map markers indicating estimated position of the Radar, with type and accuracy information for tactical decisions. this works best with "My AC" or "Map only" modes
 2. Hound offers a Text-To-Speech ATIS system using SRS. This feature provides a radio channel with constantly updated information about current threats.
@@ -17,22 +17,22 @@ Hound requires MIST and is compatible with MOOSE, Skynet IADS and High-Digit SAM
 
 ## Putting this to work
 Hound system triangulates positions of radars. It does this by taking bearing readings at set times, while recording the platform position. 
-using these plotted data points system can estimate the position. the more points you have, with greater intersection angles between them, there is a better chance of estimating the position correctly. you will never get a perfect "hit" but you may be able to get a position within a 200 meter radius, where you can can use other sensors to poinpoint for a strike, or know where you need to avoid flying.
+using these plotted data points system can estimate the position. the more points you have, with greater intersection angles between them, there is a better chance of estimating the position correctly. you will never get a perfect "hit" but you may be able to get a position within a 200 meter radius, where you can can use other sensors to pinpoint for a strike, or know where you need to avoid flying.
 
-Only specific units are ELINT capable. In order to get the best positional accuracy you want your best precision platforms positioned as close as possible and as high as possible. Rememeber the higher you go the longer you can see, simple physics.
+Only specific units are ELINT capable. In order to get the best positional accuracy you want your best precision platforms positioned as close as possible and as high as possible. Remember the higher you go the longer you can see, simple physics.
 
 placing two C-17s going race-track holding patterns at 30,000 ft can get you positional data on radars more then 200nm away, not the best accuracy of course. 
 using a Comms Tower placed on a high mountain will provide very accurate baseline on which aircraft data can be triangulated.
 However, tall mountains are not very common, and clear line-of-site is a thing. 
 
-Helicopters may be of some use, but they can, using existing mission scripts, transport ground units to tall mountains deep inside enemy terirory.
-Same goes to Fast movers like the Viggen, F-16, JF-17 or the Su-25T. they can dash into enemy teritory and help you find the radars trying to hide. 
+Helicopters may be of some use, but they can, using existing mission scripts, transport ground units to tall mountains deep inside enemy territory.
+Same goes to Fast movers like the Viggen, F-16, JF-17 or the Su-25T. they can dash into enemy territory and help you find the radars trying to hide. 
 
-Remember that the system is using a simulated DF to determin the bearing of the radar from the platform. Low precision systems will cause the calculated position to be with a higher ellipse of uncertenty for radar position. below you can find the list of working units and their sensor precision.
+Remember that the system is using a simulated DF to determine the bearing of the radar from the platform. Low precision systems will cause the calculated position to be with a higher ellipse of uncertainty for radar position. below you can find the list of working units and their sensor precision.
 
-Resolution of platforms are derrived from antenna size and emitter frequency. shout out to TLTeo for explaining the physics of this.
+Resolution of platforms are derived from antenna size and emitter frequency. shout out to TLTeo for explaining the physics of this.
 
-Hound Currently has a 10 degrees angular resolution cutoff point to avoid introduing "bad data". The the first band that is valid for a platform is denoted in the `Minimum Band` column.
+Hound Currently has a 10 degrees angular resolution cut-off point to avoid introducing "bad data". The the first band that is valid for a platform is denoted in the `Minimum Band` column.
 
 ``` Note: While currently not implemented. Intention of including both Viggen and the Su-25T is that they will only be able to participate if they are carrying their ELINT pods ```  
 
@@ -60,7 +60,7 @@ Hound Currently has a 10 degrees angular resolution cutoff point to avoid introd
 | JF-17     | 7.05 / 0.76 | C | KG-600 SPJ |
 | F-16C     | 15.79 / 1.69| D | Block 50 w/HTS |
 
-<sup>*</sup> Data with angular resolution below 10 deg is rejected. That is a roudementry way to drop very bad data.
+<sup>*</sup> Data with angular resolution below 10 deg is rejected. That is a rudimentary way to drop very bad data.
   
 #### Helicopters
 ---
@@ -98,7 +98,7 @@ Hound Currently has a 10 degrees angular resolution cutoff point to avoid introd
 | P-3C (MAM)   |  0.92 / 0.10  | A |
 | P-8A (CLP)   |  0.65 / 0.07  | A |
 | TU-214R (CLP)  |  0.57 / 0.06  | A |
-## Can I haz syntax pls?
+## Can I have the syntax please?
 Yes you can.
 if upgrading from Hound 0.1 please see [Breaking changes](#breaking-changes)
 
@@ -112,7 +112,7 @@ Optional scripts - required for TTS (only one of them is required, based on your
 
 `For installation of STTS or DCS-gRPC please consult project of choice repo. Both require you to modify "DCS World/Scripts/MissionScripting.lua"
 `  
-for more information of desanitization process, look [here](#desanitize-dcs-scripting-engine).
+for more information of de-sanitization process, look [here](#desanitize-dcs-scripting-engine).
 ### adding scripts in mission editor
 ``` NOTE the order of scripts - it's important ```  
 on a "ONCE" type action with "time more 1" condition, add the scripts in the following order
@@ -212,7 +212,8 @@ Hound adds units by using their names (or pilot name) not by a group name.
     HoundInstance = HoundElint:create("Migariya_Elint")
 ```
 ## Platforms
-Platforms can be added at any time (before or after system activation)
+Platforms can
+ be added at any time (before or after system activation)
 ```lua
     HoundInstance:addPlatform("ELINT_C17")
 ```
@@ -414,7 +415,8 @@ A Sector can be geofenced, if such geofencing is is set (more on this later) onl
 
 There are two reserved sector names:
   * `default` - default sector name created with hound instance. it cannot be removed and some features such as geofencing is not available on it
-  * `all` - all sectors. some settings can be changes accross all sectors using the "all" keyword. this is available on generic config functions not on 
+  * `all` - all sectors. some settings can be changes accross all sectors
+ using the "all" keyword. this is available on generic config functions not on 
 
 ### Managing sectors
 The most basic command is to add a sector. you will need to provide a name for the sector (not a callsign), this name will be used in the comms menu for example. so you can make it human descriptive or match your SOP .
@@ -658,7 +660,8 @@ If you are satisfied by only supressing the Extended uncertenty and the Extended
 ```lua
   HOUND.showExtendedInfo(false)
 ```
-If a more extensive change is desired, The recommended way to achieve it is to `COPY` the `HOUND.Contact:generateTtsReport` and `HOUND.Contact:generateTextReport` functions from `src/301 - HoundContact_comms.lua` file in this repo to a new file. In that new file perform the changes you want. To activate load the new file to the mission using `Do script file` **AFTER** the main Hound script is loaded. this will replace the original implementation without  editing the original file. allowing a simpler upgrades to newer Hound versions without loosing you changes.  
+If
+ a more extensive change is desired, The recommended way to achieve it is to `COPY` the `HOUND.Contact:generateTtsReport` and `HOUND.Contact:generateTextReport` functions from `src/301 - HoundContact_comms.lua` file in this repo to a new file. In that new file perform the changes you want. To activate load the new file to the mission using `Do script file` **AFTER** the main Hound script is loaded. this will replace the original implementation without  editing the original file. allowing a simpler upgrades to newer Hound versions without loosing you changes.  
 
  ### Notifier
  ---
@@ -887,7 +890,8 @@ TrackId,NatoDesignation,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accurac
 I-1,2,Fan-song,Down,187/78,33.721733,35.800634,36S YC 5951 3482,Precise,1700,SNR_75V,SYR_SA-2_TR,SYR_SA-2,1705
 I-2,2 or 3,Flat Face,Active,187/78,33.723213,35.799935,36S YC 5944 3498,Precise,1705,p-19 s-125 sr,SYR_SA-2_SR,SYR_SA-2,1705
 E-12,11 or 17,Snow Drift,Active,186/77,33.734985,35.821898,36S YC 6144 3634,High,1705,SA-11 Buk SR 9S18M1,SYRIA gnd 3 unit1,SYRIA gnd 3,1705
-E-10,6,Straight Flush,Active,189/84,33.622484,35.727605,36S YC 5303 2363,High,1705,Kub 1S91 str,SYRIA gnd 2 unit1,SYRIA gnd 2,1705
+E-10,6,Straight Flush,Active,189/84,33.622484,35.727605,36S
+ YC 5303 2363,High,1705,Kub 1S91 str,SYRIA gnd 2 unit1,SYRIA gnd 2,1705
 E-11,6,Straight Flush,Active,181/71,33.845855,35.952393,36S YC 7318 4898,Very High,1705,Kub 1S91 str,SYRIA gnd 1 unit1,SYRIA gnd 1,1705
 E-9,EWR,Box Spring,Active,185/96,33.418094,35.864466,36S YC 6636 130,Very Low,1705,1L13 EWR,EWR-SKYNET-1,EWR-SKYNET-0,1705
 I-3,EWR,Box Spring,Active,147/60,34.207544,36.618624,37S BT 8059 8773,Precise,1705,1L13 EWR,EWR-SKYNET-4-1,EWR-SKYNET-4,1705
