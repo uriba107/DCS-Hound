@@ -1,40 +1,40 @@
 # Hound ELINT system for DCS
 ## Overview
-**Hound ELINT** is a mission script for DCS. it uses one or more assigned ELINT platforms to approximates location of transmitting enemy radars using triangulation. Platforms are pre-assigned or dynamicly assgined asstes, they can be Airborn, ground units or stationary objects from a set list of assets avialable. 
+**Hound ELINT** is a mission script for DCS. it uses one or more assigned ELINT platforms to approximate locations of transmitting enemy radars using triangulation. Platforms are pre-assigned or dynamically assgined assets, they can be airborn, ground units or stationary objects from a set list of assets avialable. 
 
-Hound presents data in sevral methods.
+Hound presents data in several methods.
 
-1. F10 map markers indicating estimated position of the Radar, with type and accuracy information for tactical decisions. this works best with "My AC" or "Map only" modes
-2. Hound offers a Text-To-Speech ATIS system using SRS. This feature provides a radio channel with constantly updated information about current threats.
-3. Detailed information by a "SAM controller" can be provided as TTS (via SRS) and as text messages. 
+1. **F10 map markers** indicating estimated position of the radar, with type, and accuracy information for tactical decisions. This works best with "My AC" or "Map only" modes
+2. Hound offers a **Text-To-Speech** ATIS system using SRS. This feature provides a radio channel with constantly updated information about current threats.
+3. Detailed information by a **"SAM controller"** can be provided as TTS (via SRS) and as text messages. 
 
-System can gather information about Enemy radar deployments and help understand the tactical situation or penetrate enemy defences. Because the System is asset based, you also need to be protecting these assets, as if they are destroyed, you loose your tactical data.
+The system can gather information about enemy radar deployments and help understand the tactical situation or penetrate enemy defences. Because the system is asset based, you also need to be protecting these assets, and if they are destroyed, you loose your tactical data.
 
-Hound requires MIST and is compatible with MOOSE, Skynet IADS and High-Digit SAMs and more.
+Hound requires MIST and is compatible with MOOSE, Skynet IADS, High-Digit SAMs and more.
 
 ## Video Intro (YouTube)
 [![Hound Cinematic Intro video](https://i.ytimg.com/vi/S4xxtKOqGqU/hq720.jpg?sqp=-oaymwEcCNAFEJQDSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLAAa-SdnDgNiWTKc0YNSvm5RRMa7g)](https://www.youtube.com/watch?v=S4xxtKOqGqU)
 
-## Putting this to work
-Hound system triangulates positions of radars. It does this by taking bearing readings at set times, while recording the platform position. 
-using these plotted data points system can estimate the position. the more points you have, with greater intersection angles between them, there is a better chance of estimating the position correctly. you will never get a perfect "hit" but you may be able to get a position within a 200 meter radius, where you can can use other sensors to poinpoint for a strike, or know where you need to avoid flying.
+## Putting it to work
+Hound system triangulates positions of radars. It does so by taking bearing readings at set times, while recording the platform position. 
+Using the plotted data points, the system can estimate the position. The more points you have, with greater intersection angles between them, the better is the chance of estimating the position correctly. You will never get a perfect "hit", but you may be able to get a position within a 200 meter radius, where you can can use other sensors to poinpoint for a strike, or know where you need to avoid flying.
 
-Only specific units are ELINT capable. In order to get the best positional accuracy you want your best precision platforms positioned as close as possible and as high as possible. Rememeber the higher you go the longer you can see, simple physics.
+Only specific units are ELINT capable. In order to get the best positional accuracy, you want your best precision platforms positioned as close as possible and as high as possible. Rememeber, the higher you go the further you can see, simple physics.
 
-placing two C-17s going race-track holding patterns at 30,000 ft can get you positional data on radars more then 200nm away, not the best accuracy of course. 
-using a Comms Tower placed on a high mountain will provide very accurate baseline on which aircraft data can be triangulated.
+Placing two C-17s in a race-track holding pattern at 30,000 ft can get you positional data on radars more then 200nm away, not with the best accuracy of course. 
+Using a Comms Tower placed on a high mountain will provide a very accurate baseline, on which aircraft data can be triangulated.
 However, tall mountains are not very common, and clear line-of-site is a thing. 
 
-Helicopters may be of some use, but they can, using existing mission scripts, transport ground units to tall mountains deep inside enemy terirory.
-Same goes to Fast movers like the Viggen, F-16, JF-17 or the Su-25T. they can dash into enemy teritory and help you find the radars trying to hide. 
+Helicopters may be of some use, but they can, using existing mission scripts, transport ground units on top of tall mountains deep inside enemy territory.
+Same is true for fast movers like the Viggen, F-16, JF-17 or the Su-25T. They can dash into enemy teritory and help you find the radars which trying to hide. 
 
-Remember that the system is using a simulated DF to determin the bearing of the radar from the platform. Low precision systems will cause the calculated position to be with a higher ellipse of uncertenty for radar position. below you can find the list of working units and their sensor precision.
+Remember that the system is using a simulated DF to determine the bearing of the radar from the platform. Low precision systems will cause the calculated position to be within a higher ellipse of uncertainty for radar position. Below you can find the list of working units and their sensor precision.
 
-Resolution of platforms are derrived from antenna size and emitter frequency. shout out to TLTeo for explaining the physics of this.
+Resolution of platforms is derrived from antenna size and emitter frequency. Kudos to TLTeo for explaining the physics of this.
 
-Hound Currently has a 10 degrees angular resolution cutoff point to avoid introduing "bad data". The the first band that is valid for a platform is denoted in the `Minimum Band` column.
+Hound currently has a 10 degrees angular resolution cut-off point to avoid introducing "bad data". The the first band that is valid for a platform is denoted in the `Minimum Band` column.
 
-``` Note: While currently not implemented. Intention of including both Viggen and the Su-25T is that they will only be able to participate if they are carrying their ELINT pods ```  
+``` Note: While currently not implemented, it is the intention to include both Viggen and the Su-25T. They only will be able to participate if they are carrying their ELINT pods ```  
 
 ## Available assets
 ### Airborn assets
@@ -60,7 +60,7 @@ Hound Currently has a 10 degrees angular resolution cutoff point to avoid introd
 | JF-17     | 7.05 / 0.76 | C | KG-600 SPJ |
 | F-16C     | 15.79 / 1.69| D | Block 50 w/HTS |
 
-<sup>*</sup> Data with angular resolution below 10 deg is rejected. That is a roudementry way to drop very bad data.
+<sup>*</sup> Data with angular resolution below 10 deg is rejected as a rudimentry way to drop very bad data.
   
 #### Helicopters
 ---
@@ -98,9 +98,10 @@ Hound Currently has a 10 degrees angular resolution cutoff point to avoid introd
 | P-3C (MAM)   |  0.92 / 0.10  | A |
 | P-8A (CLP)   |  0.65 / 0.07  | A |
 | TU-214R (CLP)  |  0.57 / 0.06  | A |
-## Can I haz syntax pls?
+
+## Syntax please?
 Yes you can.
-if upgrading from Hound 0.1 please see [Breaking changes](#breaking-changes)
+If upgrading from Hound 0.1 please see [Breaking changes](#breaking-changes)
 
 # Adding Hound to a Mission
 ### Required external scripts
@@ -112,7 +113,7 @@ Optional scripts - required for TTS (only one of them is required, based on your
 
 `For installation of STTS or DCS-gRPC please consult project of choice repo. Both require you to modify "DCS World/Scripts/MissionScripting.lua"
 `  
-for more information of desanitization process, look [here](#desanitize-dcs-scripting-engine).
+For more information on the desanitization process, see [here](#desanitize-dcs-scripting-engine).
 ### adding scripts in mission editor
 ``` NOTE the order of scripts - it's important ```  
 on a "ONCE" type action with "time more 1" condition, add the scripts in the following order
@@ -120,13 +121,13 @@ on a "ONCE" type action with "time more 1" condition, add the scripts in the fol
 2. `DCS-SimpleTextToSpeech` (if TTS via STTS is desired - gRPC is implemented globally)
 3. `HoundElint.lua`
 
-#### some screenshot as hints
+#### Some screenshot as hints
 
 ![Add scripts](/images/hound_setup.jpg)
 
 ### Minimum required Code to get Hound working
 ---
-The bare minumum, more customization optionas are available.
+The bare minumum code, more customization optionas are available.
 ```lua
 do
   Elint_blue = HoundElint:create(coalition.side.BLUE)
@@ -145,7 +146,7 @@ end
 [![Hound mission editor video](https://i.ytimg.com/vi/gmJmFR7UCfo/hqdefault.jpg)](https://www.youtube.com/watch?v=gmJmFR7UCfo)
 
 ### Advanced config
-It doesn't need to make sense to you, there is actually more explenations ahead.
+If it doesn't need to make much sense to you, there are actually more explanations ahead.
 But this is an example of a more compex configuration.
 ```lua
     HoundBlue = HoundElint:create(coalition.side.BLUE)
@@ -183,9 +184,9 @@ But this is an example of a more compex configuration.
     HoundBlue:systemOn()
 ```
 
-### On screen Debug
-when this setting is enabled, Hound will print a short status report after each update cycle. (every ~15 seconds by default)
-it is controlled by the `onScreenDebug` function. this output is disabled by default
+### On-screen debug
+When this setting is enabled, Hound will print out a short status report after each update cycle (every ~15 seconds by default). 
+It is controlled by the `onScreenDebug` function. This output is disabled by default.
 ```lua
 -- to enable
     HoundBlue:onScreenDebug(true)
