@@ -18,7 +18,7 @@ LUACHECK=$(which luacheck)
 LINT_SRC=0
 BUILD_DOCS=0
 COMPILE=0
-LINT_COMPILED=0
+RELEASE=0
 UPDATE_MISSIONS=0
 
 GREEN="\e[01;32m"
@@ -100,7 +100,7 @@ function compile {
     sed ${SED_ARGS} '$!N;/^[[:space:]]*$/{$q;D;};P;D;' ${TARGET_FILE}
 
     GIT_BRANCH="-$(git branch --show-current | sed 's/[^a-zA-Z 0-9]/\\&/g')-$(date +%Y%m%d)"
-    if [ ${GIT_BRANCH} == "-main-$(date +%Y%m%d)" ]; 
+    if [ ${GIT_BRANCH} == "-main-$(date +%Y%m%d)" ] || [ $RELEASE -eq 1 ]; 
        then GIT_BRANCH="";
     fi
     sed ${SED_ARGS} "s/-TRUNK/""${GIT_BRANCH}""/" ${TARGET_FILE}
@@ -166,7 +166,6 @@ do
         ;;
         --compile | -c )
             COMPILE=1
-            LINT_COMPILED=1
             shift
         ;;
 
@@ -174,11 +173,17 @@ do
             UPDATE_MISSIONS=1
             shift
         ;;
+        --release )
+            RELEASE=1
+            BUILD_DOCS=1
+            COMPILE=1
+            UPDATE_MISSIONS=1
+            shift
+        ;;
         --all )
             LINT_SRC=1
             BUILD_DOCS=1
             COMPILE=1
-            LINT_COMPILED=1
             UPDATE_MISSIONS=1
             break
         ;;
@@ -194,15 +199,16 @@ check_dependecies
 if [ $LINT_SRC -eq 1 ]; then
     lint_src
 fi
+
+if [ $COMPILE -eq 1 ]; then
+    compile
+    lint_compiled
+fi
+
 if [ $BUILD_DOCS -eq 1 ]; then
     build_docs
 fi
-if [ $COMPILE -eq 1 ]; then
-    compile
-fi
-if [ ${LINT_COMPILED} -eq 1 ]; then
-    lint_compiled
-fi
+
 if [ $UPDATE_MISSIONS -eq 1 ]; then
     update_mission "demo_mission/Caucasus_demo" "HoundElint_demo"
     update_mission "demo_mission/Syria_POC" "Hound_Demo_SyADFGCI"

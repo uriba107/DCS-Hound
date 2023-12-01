@@ -107,7 +107,7 @@ do
     function HOUND.ElintWorker:removeDeadPlatforms()
         if Length(self.platforms) < 1 then return end
         for id,platform in ipairs(self.platforms) do
-            if platform:isExist() == false or platform:getLife() <1  or (platform:getCategory() ~= Object.Category.STATIC and platform:isActive() == false) then
+            if platform:isExist() == false or platform:getLife() <1  or (Object.getCategory(platform) ~= Object.Category.STATIC and platform:isActive() == false) then
                 table.remove(self.platforms, id)
                 HOUND.EventHandler.publishEvent({
                     id = HOUND.EVENTS.PLATFORM_DESTROYED,
@@ -366,7 +366,7 @@ do
                 -- local isAerialUnit = false
                 -- local posErr = {x = 0, z = 0, y = 0 }
 
-                -- if platform:getCategory() == Object.Category.STATIC then
+                -- if Object.getCategory(platform) == Object.Category.STATIC then
                 --     platformIsStatic = true
                 --     platformPos.y = platformPos.y + platform:getDesc()["box"]["max"]["y"]
                 -- else

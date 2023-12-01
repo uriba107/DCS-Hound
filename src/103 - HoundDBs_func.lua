@@ -28,7 +28,7 @@ do
         end
 
         local isValid = false
-        local mainCategory = candidate:getCategory()
+        local mainCategory = Object.getCategory(candidate)
         local type = candidate:getTypeName()
         if setContains(HOUND.DB.Platform,mainCategory) then
             if setContains(HOUND.DB.Platform[mainCategory],type) then
@@ -67,7 +67,7 @@ do
             isAerial = false,
         }
 
-        local mainCategory = DCS_Unit:getCategory()
+        local mainCategory = Object.getCategory(DCS_Unit)
         local typeName = DCS_Unit:getTypeName()
         local DbInfo = HOUND.DB.Platform[mainCategory][typeName]
 
@@ -76,7 +76,7 @@ do
         platformData.posErr.y = 0
         platformData.ApertureSize = (DbInfo.antenna.size * DbInfo.antenna.factor) or 0
 
-        if DCS_Unit:getCategory() == Object.Category.STATIC then
+        if Object.getCategory(DCS_Unit) == Object.Category.STATIC then
             platformData.isStatic = true
             -- platformData.pos.y = platformData.pos.y + DCS_Unit:getDesc()["box"]["max"]["y"]
         else
@@ -112,7 +112,7 @@ do
     -- @return Effective aperture size in meters
     function HOUND.DB.getApertureSize(DCS_Unit)
         if type(DCS_Unit) ~= "table" or not DCS_Unit.getTypeName or not DCS_Unit.getCategory then return 0 end
-        local mainCategory = DCS_Unit:getCategory()
+        local mainCategory = Object.getCategory(DCS_Unit)
         local typeName = DCS_Unit:getTypeName()
         if setContains(HOUND.DB.Platform,mainCategory) then
             if setContains(HOUND.DB.Platform[mainCategory],typeName) then

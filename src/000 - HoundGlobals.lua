@@ -32,7 +32,7 @@ do
     -- @field USE_LEGACY_MARKERS Force Hound to use normal markers for radar positions (default is true)
     -- @field PREFER_GRPC_TTS Hound will prefer DCS-gRPC as a TTS engine (default is true)
     HOUND = {
-        VERSION = "0.3.4-TRUNK",
+        VERSION = "0.3.5-TRUNK",
         DEBUG = true,
         ELLIPSE_PERCENTILE = 0.6,
         DATAPOINTS_NUM = 30,

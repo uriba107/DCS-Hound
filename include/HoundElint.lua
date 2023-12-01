@@ -12,7 +12,7 @@ end
 
 do
     HOUND = {
-        VERSION = "0.3.4-develop-20230523",
+        VERSION = "0.3.5",
         DEBUG = false,
         ELLIPSE_PERCENTILE = 0.6,
         DATAPOINTS_NUM = 30,
@@ -1292,7 +1292,7 @@ do
         end
 
         local isValid = false
-        local mainCategory = candidate:getCategory()
+        local mainCategory = Object.getCategory(candidate)
         local type = candidate:getTypeName()
         if setContains(HOUND.DB.Platform,mainCategory) then
             if setContains(HOUND.DB.Platform[mainCategory],type) then
@@ -1323,7 +1323,7 @@ do
             isAerial = false,
         }
 
-        local mainCategory = DCS_Unit:getCategory()
+        local mainCategory = Object.getCategory(DCS_Unit)
         local typeName = DCS_Unit:getTypeName()
         local DbInfo = HOUND.DB.Platform[mainCategory][typeName]
 
@@ -1332,7 +1332,7 @@ do
         platformData.posErr.y = 0
         platformData.ApertureSize = (DbInfo.antenna.size * DbInfo.antenna.factor) or 0
 
-        if DCS_Unit:getCategory() == Object.Category.STATIC then
+        if Object.getCategory(DCS_Unit) == Object.Category.STATIC then
             platformData.isStatic = true
         else
             local PlatformUnitCategory = DCS_Unit:getDesc()["category"]
@@ -1353,7 +1353,7 @@ do
 
     function HOUND.DB.getApertureSize(DCS_Unit)
         if type(DCS_Unit) ~= "table" or not DCS_Unit.getTypeName or not DCS_Unit.getCategory then return 0 end
-        local mainCategory = DCS_Unit:getCategory()
+        local mainCategory = Object.getCategory(DCS_Unit)
         local typeName = DCS_Unit:getTypeName()
         if setContains(HOUND.DB.Platform,mainCategory) then
             if setContains(HOUND.DB.Platform[mainCategory],typeName) then
@@ -4666,7 +4666,7 @@ do
             return false
         end
         local pos = self.transmitter:getPoint()
-        if self.transmitter:getCategory() == Object.Category.STATIC or self.transmitter:getDesc()["category"] == Unit.Category.GROUND_UNIT then
+        if Object.getCategory(self.transmitter) == Object.Category.STATIC or self.transmitter:getDesc()["category"] == Unit.Category.GROUND_UNIT then
             pos.y = pos.y + self.transmitter:getDesc()["box"]["max"]["y"] + 5
         end
         return pos
@@ -4952,7 +4952,7 @@ do
     function HOUND.ElintWorker:removeDeadPlatforms()
         if Length(self.platforms) < 1 then return end
         for id,platform in ipairs(self.platforms) do
-            if platform:isExist() == false or platform:getLife() <1  or (platform:getCategory() ~= Object.Category.STATIC and platform:isActive() == false) then
+            if platform:isExist() == false or platform:getLife() <1  or (Object.getCategory(platform) ~= Object.Category.STATIC and platform:isActive() == false) then
                 table.remove(self.platforms, id)
                 HOUND.EventHandler.publishEvent({
                     id = HOUND.EVENTS.PLATFORM_DESTROYED,
@@ -7098,4 +7098,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.3.4-develop-20230523 - Compiled on 2023-05-23 12:05
+-- Hound version 0.3.5 - Compiled on 2023-12-01 19:21
