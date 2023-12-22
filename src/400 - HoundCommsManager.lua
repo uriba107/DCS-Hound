@@ -298,7 +298,7 @@ do
             return false
         end
         local pos = self.transmitter:getPoint()
-        if self.transmitter:getCategory() == Object.Category.STATIC or self.transmitter:getDesc()["category"] == Unit.Category.GROUND_UNIT then
+        if Object.getCategory(self.transmitter) == Object.Category.STATIC or self.transmitter:getDesc()["category"] == Unit.Category.GROUND_UNIT then
             pos.y = pos.y + self.transmitter:getDesc()["box"]["max"]["y"] + 5
         end
         return pos
