@@ -1,6 +1,9 @@
 #!/bin/bash
 TARGET_PATH="./include"
-TARGET_FILE="${TARGET_PATH}/HoundElint.lua"
+TARGET_BASENAME="HoundElint"
+TARGET_FILE="${TARGET_PATH}/${TARGET_BASENAME}.lua"
+MINIFIED_PATH=${TARGET_PATH}/minified
+mkdir -p ${MINIFIED_PATH}
 
 SED_ARGS="-i"
 LUAROCKS="luarocks"
@@ -14,12 +17,15 @@ fi
 
 LDOC=$(which ldoc) 
 LUACHECK=$(which luacheck)
+LUASRCDIET=$(which luasrcdiet)
+
 # initial function setup
 LINT_SRC=0
 BUILD_DOCS=0
 COMPILE=0
 RELEASE=0
 UPDATE_MISSIONS=0
+FETCH_LIB=0
 
 GREEN="\e[01;32m"
 WHITE_ON_BLUE="\e[1;37;1;44m"
@@ -43,7 +49,11 @@ function check_dependecies {
         ROCKS="luacheck ${ROCKS}"
     fi
 
-    if [ ! -z "${APT}" ]; then
+    if [ -z ${LUASRCDIET} ]; then
+        ROCKS="luasrcdiet ${ROCKS}"
+    fi
+
+    if [ ! -z "${APT}" ] || [ ! -z "${ROCKS}"]; then
       echo "missing Dependecies to install please run"
       echo "using apt"
       echo "sudo apt update; sudo apt install -y ${APT}"
@@ -74,6 +84,11 @@ function build_docs {
 function lint_compiled {
     highlight "lint compiled Hound"
     luacheck -g --no-self --no-max-line-length "${TARGET_FILE}"
+
+    if [ -f ${TARGET_BASENMAE}_.lua ]; then
+        highlight "lint minified Hound"
+        luacheck -g --no-self --no-max-line-length "${TARGET_BASENMAE}_.lua"
+    fi
 }
 
 function compile {
@@ -113,6 +128,18 @@ function compile {
     fi
     set +e
 } 
+
+function minify_compiled {
+     # create minified versions
+    mkdir -p ${MINIFIED_PATH}
+    ${LUASRCDIET} --basic --opt-emptylines ${TARGET_FILE} -o ${MINIFIED_PATH}/${TARGET_BASENAME}_.lua
+
+}
+function fetch_mist {
+    MIST_BRANCH=${1:-development}
+    curl -L https://raw.githubusercontent.com/mrSkortch/MissionScriptingTools/${MIST_BRANCH}/mist.lua -o ${TARGET_PATH}/mist.lua
+    # ${LUASRCDIET} --basic --opt-emptylines ${TARGET_PATH}/mist.lua -o ${MINIFIED_PATH}/mist_.lua
+}
 
 function print_includes {
     for FILE in src/*.lua; do
@@ -170,10 +197,12 @@ do
         ;;
 
         --missions | -m )
+            FETCH_LIB=1
             UPDATE_MISSIONS=1
             shift
         ;;
         --release )
+            FETCH_LIB=1
             RELEASE=1
             BUILD_DOCS=1
             COMPILE=1
@@ -185,6 +214,7 @@ do
             BUILD_DOCS=1
             COMPILE=1
             UPDATE_MISSIONS=1
+            FETCH_LIB=1
             break
         ;;
         * )
@@ -200,8 +230,13 @@ if [ $LINT_SRC -eq 1 ]; then
     lint_src
 fi
 
+if [ $FETCH_LIB -eq 1 ]; then
+    fetch_mist
+fi
+
 if [ $COMPILE -eq 1 ]; then
     compile
+    # minify_compiled
     lint_compiled
 fi
 
