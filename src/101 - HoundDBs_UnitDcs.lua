@@ -8,7 +8,7 @@ do
     -- @field @string Name NATO Name
     -- @field #table Assigned Which Battery this radar can belong to
     -- @field #table Role Role of radar in battery
-    -- @field #table Band Radio Band the radar operates in
+    -- @field #table Band Radio Band the radar operates in true is when tracking target
     -- @field #bool Primary set to True if this is a primary radar for site (usually FCR)
     -- @usage
     -- ['p-19 s-125 sr'] = {
@@ -154,8 +154,28 @@ do
             },
             ['Primary'] = false
         },
+        ['S-300PS 40B6MD sr_19J6'] = {
+            ['Name'] = "Tin Shield",
+            ['Assigned'] = {"SA-10"},
+            ['Role'] = {HOUND.DB.RadarType.SEARCH},
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.I,
+                [false] = HOUND.DB.Bands.I
+            },
+            ['Primary'] = false
+        },
         ['S-300PS 40B6M tr'] = {
             ['Name'] = "Tomb Stone",
+            ['Assigned'] = {"SA-10"},
+            ['Role'] = {HOUND.DB.RadarType.TRACK},
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.J,
+                [false] = HOUND.DB.Bands.J
+            },
+            ['Primary'] = true
+        },
+        ['S-300PS 5H63C 30H6_tr'] = {
+            ['Name'] = "Flap Lid",
             ['Assigned'] = {"SA-10"},
             ['Role'] = {HOUND.DB.RadarType.TRACK},
             ['Band'] = {

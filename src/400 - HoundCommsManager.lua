@@ -311,7 +311,8 @@ do
             return false
         end
         local pos = self.transmitter:getPoint()
-        if Object.getCategory(self.transmitter) == Object.Category.STATIC or self.transmitter:getCategory() == Unit.Category.GROUND_UNIT then
+        local transmitterObjectCat, transmitterSubCat = self.transmitter:getCategory()
+        if transmitterObjectCat == Object.Category.STATIC or (transmitterObjectCat == Object.Category.UNIT and transmitterSubCat == Unit.Category.GROUND_UNIT) then
             local verticalOffset = (self.transmitter:getDesc()["box"]["max"]["y"] + 5) or 20
             pos.y = pos.y + verticalOffset
         end

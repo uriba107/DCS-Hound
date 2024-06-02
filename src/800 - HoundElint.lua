@@ -154,6 +154,7 @@ do
         for _,contact in pairs(contacts) do
             if contact:isAccurate() then
                 pbContactCount = pbContactCount +1
+                -- HOUND.Logger.trace(contact:getName() .. " Is PB")
             end
         end
         return pbContactCount
@@ -194,7 +195,7 @@ do
     --- Mark Radar as dead
     -- @param[type=string|table] radarUnit DCS Unit, DCS Group or Unit/Group name to mark as dead
     function HoundElint:markDeadContact(radarUnit)
-        HOUND.Logger.trace("markDeadContact called")
+        -- HOUND.Logger.trace("markDeadContact called")
         local units={}
         local obj = radarUnit
         if type(radarUnit) == "string" then
@@ -1348,7 +1349,7 @@ do
                     houndEvent.initiator:updateMarker(self.settings:getMarkerType())
                 end
             end
-
+            -- HOUND.Logger.trace("Processing " ..  HOUND.reverseLookup(HOUND.EVENTS,houndEvent.id) .. " event for " .. tostring(houndEvent.initiator:getName()) .. " with BDA set to " .. tostring(self.settings:getBDA()))
             if not self.settings:getBDA() then return end
             -- do there only then BDA is enabled
             if houndEvent.id == HOUND.EVENTS.SITE_REMOVED then
@@ -1357,6 +1358,7 @@ do
                 self:populateRadioMenu()
             end
             if houndEvent.id == HOUND.EVENTS.RADAR_DESTROYED then
+                HOUND.Logger.trace("Processing HOUND.EVENTS.RADAR_DESTROYED for " .. houndEvent.initiator:getName())
                 self.contacts:removeContact(houndEvent.initiator)
                 self:populateRadioMenu()
             end
@@ -1369,7 +1371,7 @@ do
     function HoundElint:onEvent(DcsEvent)
         if not HoundUtils.Dcs.isUnit(DcsEvent.initiator) then return end
 
-        if DcsEvent.id == world.event.S_EVENT_DEAD
+        if DcsEvent.id == world.event.S_EVENT_UNIT_LOST
             and DcsEvent.initiator:getCoalition() ~= self.settings:getCoalition()
             and self:getBDA()
             then
@@ -1394,6 +1396,21 @@ do
             and type(DcsEvent.initiator.getName) == "function"
             and HOUND.setContains(mist.DBs.humansByName,DcsEvent.initiator:getName())
                 then return self:populateRadioMenu()
+        end
+
+        if DcsEvent.id == world.event.S_EVENT_SHOT
+        and DcsEvent.initiator:getCoalition() ~= self.settings:getCoalition()
+        and DcsEvent.initiator:hasAttribute("Air Defence")
+        and DcsEvent.initiator:getCategory() == Object.Category.UNIT
+        then
+            local _,catEx = DcsEvent.initiator:getCategory()
+            if not HOUND.setContains({Unit.Category.GROUND_UNIT,Unit.Category.SHIP},catEx) then return end
+            local grp = DcsEvent.initiator:getGroup()
+            if HOUND.Utils.Dcs.isGroup(grp) then
+                self.contacts:Sniff(grp:getName())
+                HOUND.Logger.trace("triggered S_EVENT_SHOT for " .. DcsEvent.initiator:getName() .. " Part of Group " .. grp:getName())
+            end
+
         end
     end
 

@@ -373,13 +373,16 @@ do
 
     --- Perform a sample of all emitting radars against all platforms
     -- generates and stores datapoints as required
-    function HOUND.ElintWorker:Sniff()
+    function HOUND.ElintWorker:Sniff(GroupName)
         self:removeDeadPlatforms()
 
         if HOUND.Length(self.platforms) == 0 then return end
-
-        local Radars = HoundUtils.Elint.getActiveRadars(self:getCoalition())
-
+        local Radars = {}
+        if GroupName then
+            Radars = HoundUtils.Elint.getActiveRadarsInGroup(GroupName)
+        else
+            Radars = HoundUtils.Elint.getActiveRadars(self:getCoalition())
+        end
         if HOUND.Length(Radars) == 0 then return end
         -- env.info("Recivers: " .. table.getn(self.platform) .. " | Radars: " .. table.getn(Radars))
         for _,RadarName in ipairs(Radars) do
@@ -447,6 +450,7 @@ do
                 end
 
                 -- publish event (in case of destroyed radar, event is handled by the notify function)
+                contactState = contact:getState()
                 if contactState and contactState ~= HOUND.EVENTS.NO_CHANGE then
                     local contactEvents = contact:getEventQueue()
                     while #contactEvents > 0 do

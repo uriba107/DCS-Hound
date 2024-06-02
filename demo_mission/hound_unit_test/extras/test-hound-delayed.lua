@@ -22,7 +22,7 @@ do
         local sa5 = Group.getByName('SA-5_SAIPAN')
         sa5:enableEmission(true)
 
-        timer.scheduleFunction(delayTest,"Platforms: 2 | sectors: 3 (Z:2 ,C:2 ,A: 2 ,N:1) | Sites: 5 | Contacts: 8 (A:4 ,PB:6)",timer.getTime()+45)
+        timer.scheduleFunction(delayTest,"Platforms: 2 | sectors: 3 (Z:2 ,C:2 ,A: 2 ,N:1) | Sites: 5 | Contacts: 7 (A:3 ,PB:5)",timer.getTime()+45)
         timer.scheduleFunction(delayMove,nil,timer.getTime()+60)
 
     end
@@ -34,8 +34,66 @@ do
             lu.assertEquals(getmetatable(site),HOUND.Contact.Site)
         end
     end
+    function TestHoundFunctional:Test_1mDelay_02_EventHandler()
+        lu.assertEquals(type(self.houndBlue.onHoundEvent),"function")
+        lu.assertIsNil(self.houndBlue:onHoundEvent({HoundId = self.houndBlue:getId(),id = "updated"}))
+        function self.houndBlue:onHoundEvent(event)
+            local function destroyObject(DcsObject)
+                local units = {}
+                if getmetatable(DcsObject) == Unit then
+                    table.insert(units,DcsObject)
+                end
+                if getmetatable(DcsObject) == Group then
+                    units = DcsObject:getUnits()
+                end
+    
+                for i=#units,1,-1 do
+                    local unit = units[i]
+                    local pos = unit:getPoint()
+                    local life0 = unit:getLife0()
+                    local life = unit:getLife()
+                    local name = unit:getName()
+                    local ittr = 1
+                    while life > 1 and ittr < 10 do
+                        -- local pwr = math.max(0.0055,(life-1)/life0)
+                        local pwr = life0*2
+                        env.info(ittr .. " | " .. name .. " has " .. life .. " HP, started with " .. life0 .. " explody power: " .. pwr)
+                        trigger.action.explosion(pos,pwr)
+                        life = unit:getLife()
+                        ittr = ittr+1
+                    end
+                end
+            end
+            if event.id == "updated" then return true end
+            if event.id == HOUND.EVENTS.RADAR_DESTROYED then
+                env.info("HOUND.EVENTS.RADAR_DESTROYED for " .. event.initiator:getDcsName() )
+                lu.assertEquals(event.initiator:getDcsGroupName(),"SA-5_SAIPAN")
+                local grp = Group.getByName(event.initiator:getDcsGroupName())
+                local grpSize = grp:getSize()
+                local lastUnit = grp:getUnit(grpSize)
+                if grpSize >=7 then
+                    lu.assertIsTrue(lastUnit:hasSensors(Unit.SensorType.RADAR))
+                    destroyObject(grp:getUnit(1))
+                else
+                    lu.assertIsFalse(lastUnit:hasSensors(Unit.SensorType.RADAR))
+                end
+            end
+            if event.id == HOUND.EVENTS.SITE_ASLEEP then
+                lu.assertEquals(event.initiator:getDcsGroupName(),"SA-5_SAIPAN")
+                lu.assertIsFalse(event.initiator:hasRadarUnits())
+            end
+            if event.id == HOUND.EVENTS.SITE_REMOVED then
+                lu.assertEquals(event.initiator:getDcsGroupName(),"SA-5_SAIPAN")
+                lu.assertEquals(event.initiator:countEmitters(),0)
+                lu.assertIsFalse(event.initiator:hasRadarUnits())
+                lu.assertStrContains(self:printDebugging(),"Platforms: 2 | sectors: 3 (Z:2 ,C:2 ,A: 2 ,N:1) | Sites: 4 | Contacts: 6 (A:3 ,PB:4)")
+            end
+        end
+        lu.assertEquals(type(self.houndBlue.onHoundEvent),"function")
+        lu.assertIsTrue(self.houndBlue:onHoundEvent({HoundId = self.houndBlue:getId(),id = "updated"}))
+    end
 
-    function TestHoundFunctional:Test_1mDelay_02_destroy()
+    function TestHoundFunctional:Test_1mDelay_03_destroy()
         function delayTest(expectedStr)
             lu.assertStrContains(self.houndBlue:printDebugging(),expectedStr)
         end
@@ -76,7 +134,7 @@ do
         destroyObject(grp:getUnit(2)) -- nuke TR first
     end
 
-    function TestHoundFunctional:Test_1mDelay_03_ships()
+    function TestHoundFunctional:Test_1mDelay_04_ships()
         local ships = Group.getByName('SHIPS_NORTH')
         lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(ships))
         lu.assertEquals(ships:getSize(),2)
@@ -85,16 +143,15 @@ do
 
     function TestHoundFunctional:Test_5mDelay_00_preBriefed()
         function delayTest(expectedStr)
-            -- env.info(self.houndBlue:printDebugging())
             lu.assertEquals(self.houndBlue:countPreBriefedContacts(),3)
             lu.assertStrContains(self.houndBlue:printDebugging(),expectedStr)
         end
         self.houndBlue:onScreenDebug(true)
 
-        lu.assertStrContains(self.houndBlue:printDebugging(),"Platforms: 2 | sectors: 3 (Z:2 ,C:2 ,A: 2 ,N:1) | Sites: 5 | Contacts: 8 (A:4 ,PB:6)")
+        lu.assertStrContains(self.houndBlue:printDebugging(),"Platforms: 2 | sectors: 3 (Z:2 ,C:2 ,A: 2 ,N:1) | Sites: 4 | Contacts: 6 (A:3 ,PB:4)")
         local tor = Group.getByName("TOR_SAIPAN")
         tor:enableEmission(true)
-        timer.scheduleFunction(delayTest,"Platforms: 2 | sectors: 3 (Z:2 ,C:2 ,A: 2 ,N:1) | Sites: 5 | Contacts: 8 (A:4 ,PB:6)",timer.getTime()+45)
+        timer.scheduleFunction(delayTest,"Platforms: 2 | sectors: 3 (Z:2 ,C:2 ,A: 2 ,N:1) | Sites: 4 | Contacts: 6 (A:4 ,PB:3)",timer.getTime()+45)
     end
 
     function TestHoundFunctional:Test_5mDelay_01_exports()

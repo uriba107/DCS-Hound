@@ -66,7 +66,7 @@ do
             isAerial = false,
         }
 
-        local mainCategory = Object.getCategory(DcsObject)
+        local mainCategory, PlatformUnitCategory = DcsObject:getCategory()
         local typeName = DcsObject:getTypeName()
         local DbInfo = HOUND.DB.Platform[mainCategory][typeName]
 
@@ -84,7 +84,7 @@ do
             platformData.isStatic = true
             platformData.pos.y = platformData.pos.y + VerticalOffset/2
         else
-            local PlatformUnitCategory = DcsObject:getCategory()
+            -- local PlatformUnitCategory = DcsObject:getCategory()
             if PlatformUnitCategory == Unit.Category.HELICOPTER or PlatformUnitCategory == Unit.Category.AIRPLANE then
                 platformData.isAerial = true
             end

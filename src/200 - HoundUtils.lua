@@ -1395,8 +1395,8 @@ do
     -- @return Table of all currently transmitting Ground and Ship radars that are not in the Hound Instance coalition
 
     function HOUND.Utils.Elint.getActiveRadars(instanceCoalition)
-        if instanceCoalition == nil then return end
         local Radars = {}
+        if instanceCoalition == nil then return Radars end
 
         for _,coalitionName in pairs(coalition.side) do
             if coalitionName ~= instanceCoalition then
@@ -1409,6 +1409,22 @@ do
                         end
                     end
                 end
+            end
+        end
+        return Radars
+    end
+
+    --- Get currently transmitting units in a given groupName
+    -- @param GroupName groupName for group
+    -- @return Table of all currently transmitting Ground and Ship radars that are not in the Hound Instance coalition
+    function HOUND.Utils.Elint.getActiveRadarsInGroup(GroupName)
+        local Radars = {}
+        if GroupName == nil then return Radars end
+        local group = Group.getByName(GroupName)
+        if not HOUND.Utils.Dcs.isGroup(group) then return Radars end
+        for _,unit in pairs(group:getUnits()) do
+            if (unit:isExist() and unit:isActive() and unit:getRadar()) then
+                table.insert(Radars, unit:getName()) -- insert the name
             end
         end
         return Radars

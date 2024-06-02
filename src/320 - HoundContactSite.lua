@@ -163,7 +163,7 @@ do
     -- @local
     -- @return[type=bool] true if any radars are alive in the group
     function HOUND.Contact.Site:hasRadarUnits()
-        if not TestHoundUtils.Dcs.isGroup(self.DcsObject) or self.DcsObject:getSize() == 0 then return false end
+        if not HoundUtils.Dcs.isGroup(self.DcsObject) or self.DcsObject:getSize() == 0 then return false end
         local lastUnit = self.DcsObject:getUnit(self.DcsObject:getSize())
         return lastUnit:hasSensors(Unit.SensorType.RADAR)
     end

@@ -46,7 +46,7 @@ do
         instance.isPrimary = false
         instance.radarRoles = {HOUND.DB.RadarType.SEARCH}
 
-        local contactUnitCategory = DcsObject:getCategory()
+        local _,contactUnitCategory = DcsObject:getCategory()
         if contactUnitCategory and contactUnitCategory == Unit.Category.SHIP then
             instance.band = {
                 [false] = HOUND.DB.Bands.E,
@@ -82,6 +82,7 @@ do
     --- Destructor function
     function HOUND.Contact.Emitter:destroy()
         self:removeMarkers()
+        self.state=HOUND.EVENTS.RADAR_DESTROYED
         self:queueEvent(HOUND.EVENTS.RADAR_DESTROYED)
     end
 
