@@ -21,7 +21,7 @@ do
         if event.coalition == coalition.side.BLUE then
             if event.id == HOUND.EVENTS.RADAR_DESTROYED then
                 local contact = event.initiator
-                local SAM = Group.getByName(contact:getGroupName())
+                local SAM = Group.getByName(contact:getDcsGroupName())
                 if SAM and SAM:getSize() > 0 and
                     HOUND.setContainsValue({HOUND_MISSION.SA6.North,HOUND_MISSION.SA6.South,HOUND_MISSION.SA6.Joker},SAM)
                     then
@@ -88,6 +88,7 @@ do
     HoundBlue:enableBDA()
 
     HoundBlue:preBriefedContact('SYR_SA-2')
+    HoundBlue:setAlertOnLaunch(true)
 
     for ewrUnitName,_ in pairs(HOUND.Utils.Filter.unitsByPrefix("EWR-")) do
         HoundBlue:preBriefedContact(ewrUnitName)

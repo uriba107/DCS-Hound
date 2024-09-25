@@ -311,6 +311,7 @@ The available marker types are:
 |  HOUND.MARKER | Description |
 | ---- | ------------|
 | NONE | no ellipse is drawn (only position marker)|
+| SITE_ONLY | only draw site markers |
 | CIRCLE | a circle of uncertainty will be drawn |
 | DIAMOND | a diamond will be drawn with 4 points representing uncertainty ellipse (Default) |
 | OCTAGON | an ellipse will be drawn with 8 points (diamond with midpoints) |

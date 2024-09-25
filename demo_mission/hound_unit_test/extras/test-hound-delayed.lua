@@ -22,8 +22,8 @@ do
         local sa5 = Group.getByName('SA-5_SAIPAN')
         sa5:enableEmission(true)
 
-        timer.scheduleFunction(delayTest,"Platforms: 2 | sectors: 3 (Z:2 ,C:2 ,A: 2 ,N:1) | Sites: 5 | Contacts: 7 (A:3 ,PB:5)",timer.getTime()+45)
-        timer.scheduleFunction(delayMove,nil,timer.getTime()+60)
+        assert(timer.scheduleFunction(delayTest,"Platforms: 2 | sectors: 3 (Z:2 ,C:2 ,A: 2 ,N:1) | Sites: 4 | Contacts: 6 (A:3 ,PB:4)",timer.getTime()+75))
+        assert(timer.scheduleFunction(delayMove,nil,timer.getTime()+60))
 
     end
 
@@ -79,8 +79,14 @@ do
                 end
             end
             if event.id == HOUND.EVENTS.SITE_ASLEEP then
-                lu.assertEquals(event.initiator:getDcsGroupName(),"SA-5_SAIPAN")
-                lu.assertIsFalse(event.initiator:hasRadarUnits())
+                env.info("HOUND.EVENTS.SITE_ASLEEP for " .. event.initiator:getDcsName() )
+                if event.initiator:getDcsGroupName() == "SA-5_SAIPAN" then
+                    lu.assertEquals(event.initiator:getDcsGroupName(),"SA-5_SAIPAN")
+                    lu.assertIsFalse(event.initiator:hasRadarUnits())
+                elseif event.initiator:getDcsGroupName() == "SA-6_TINIAN" then
+                    lu.assertEquals(event.initiator:getDcsGroupName(),"SA-6_TINIAN")
+                    lu.assertIsTrue(event.initiator:hasRadarUnits())
+                end
             end
             if event.id == HOUND.EVENTS.SITE_REMOVED then
                 lu.assertEquals(event.initiator:getDcsGroupName(),"SA-5_SAIPAN")
@@ -151,7 +157,7 @@ do
         lu.assertStrContains(self.houndBlue:printDebugging(),"Platforms: 2 | sectors: 3 (Z:2 ,C:2 ,A: 2 ,N:1) | Sites: 4 | Contacts: 6 (A:3 ,PB:4)")
         local tor = Group.getByName("TOR_SAIPAN")
         tor:enableEmission(true)
-        timer.scheduleFunction(delayTest,"Platforms: 2 | sectors: 3 (Z:2 ,C:2 ,A: 2 ,N:1) | Sites: 4 | Contacts: 6 (A:4 ,PB:3)",timer.getTime()+45)
+        assert(timer.scheduleFunction(delayTest,"Platforms: 2 | sectors: 3 (Z:2 ,C:2 ,A: 2 ,N:1) | Sites: 5 | Contacts: 7 (A:5 ,PB:3)",timer.getTime()+45))
     end
 
     function TestHoundFunctional:Test_5mDelay_01_exports()
@@ -169,5 +175,34 @@ do
         local msg = loopData.msg.tts
         lu.assertStrContains(msg,"Kirov (CG)")
         lu.assertStrContains(msg,"Moskva (CG)")
+    end
+
+    function TestHoundFunctional:Test_5mDelay_03_shoot()
+            shootEvent = {}
+            shootEvent.HoundInstance = self.houndBlue
+            function shootEvent:onEvent(DcsEvent)
+                if DcsEvent.id == world.event.S_EVENT_SHOT and self.HoundInstance then
+                    if self.HoundInstance and DcsEvent.initiator and DcsEvent.initiator:getCoalition() == self.HoundInstance:getCoalition()
+                        and ( DcsEvent.initiator:getGroup() == Group.getByName("SA-6_TINIAN") )
+                    then
+                        local tgt = DcsEvent.weapon:getTarget()
+                        local uav = Unit.getByName("MQ-9_TGT")
+                        lu.assertItemsEquals(tgt,uav)
+                        HOUND.Logger.info("SA-6 fired on UAV")
+                    end
+                end
+            end
+            world.addEventHandler(shootEvent)
+
+            local uavgrp = Unit.getByName("MQ-9_TGT"):getGroup()
+            local SA6 = Group.getByName("SA-6_TINIAN")
+            lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(uavgrp))
+            lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(SA6))
+            -- lu.assertIsFalse(uavgrp:isExist())
+            uavgrp:activate()
+            -- lu.assertIsTrue(uavgrp:isExist())
+            local sam_brain = SA6:getUnit(1):getController()
+            sam_brain:knowTarget(Unit.getByName("MQ-9_TGT"))
+            SA6:enableEmission(true)
     end
 end

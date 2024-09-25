@@ -392,18 +392,31 @@ do
 
     --- Unit use DMM
     -- @param DcsUnit DCS Unit or typeName string
-    function HOUND.Utils.isDMM(DcsUnit)
+    function HOUND.Utils.useDMM(DcsUnit)
         if not DcsUnit then return false end
         local typeName = nil
         if type(DcsUnit) == "string" then
             typeName = DcsUnit
         end
-        if type(DcsUnit) == "Table" and DcsUnit.getTypeName then
+        if HOUND.Utils.Dcs.isUnit(DcsUnit) then
             typeName = DcsUnit:getTypeName()
         end
-        return HOUND.setContains(HOUND.DB.useDecMin,typeName)
+        return HOUND.setContains(HOUND.DB.useDMM,typeName)
     end
 
+    --- Unit use MGRS
+    -- @param DcsUnit DCS Unit or typeName string
+    function HOUND.Utils.useMGRS(DcsUnit)
+        if not DcsUnit then return false end
+        local typeName = nil
+        if type(DcsUnit) == "string" then
+            typeName = DcsUnit
+        end
+        if HOUND.Utils.Dcs.isUnit(DcsUnit) then
+            typeName = DcsUnit:getTypeName()
+        end
+        return HOUND.setContains(HOUND.DB.useMGRS,typeName)
+    end
     --- does unit has payload (placeholder)
     -- @param DcsUnit DCS unit
     -- @param payloadName Name of payload
@@ -603,7 +616,7 @@ do
     -- @return[type=table] Table of radar units in group
     function HOUND.Utils.Dcs.getRadarUnitsInGroup(DcsGroup)
         local radarUnits = {}
-        if HOUND.Utils.Dcs.isGroup(DcsGroup) then
+        if HOUND.Utils.Dcs.isGroup(DcsGroup) and DcsGroup:isExist() and DcsGroup:getSize() > 0 then
             for _,unit in ipairs(DcsGroup:getUnits()) do
                 if unit:hasSensors(Unit.SensorType.RADAR) and HOUND.setContains(HOUND.DB.Radars,unit:getTypeName()) then
                     table.insert(radarUnits,unit)
@@ -759,7 +772,7 @@ do
             if type(text) == "string" and self.id > 0 then
                 if self.type == HOUND.Utils.Marker.Type.TEXT then
                     -- text = "¤ « " .. text
-                    text = "⇙ " .. text
+                    text = HOUND.MARKER_TEXT_POINTER .. text
                 end
                 trigger.action.setMarkupText(self.id,text)
             end
@@ -850,7 +863,8 @@ do
                     return true
                 end
                 self.type = HOUND.Utils.Marker.Type.TEXT
-                trigger.action.textToAll(coalition,self.id, pos,lineColor,fillColor,fontSize,true,"¤ « " .. text)
+                -- trigger.action.textToAll(coalition,self.id, pos,lineColor,fillColor,fontSize,true,"¤ « " .. text)
+                trigger.action.textToAll(coalition,self.id, pos,lineColor,fillColor,fontSize,true,HOUND.MARKER_TEXT_POINTER .. text)
                 return true
             end
 
@@ -1022,7 +1036,7 @@ do
     function HOUND.Utils.TTS.TransmitSTTS(msg,coalitionID,args,transmitterPos)
         args.modulation = args.modulation or HOUND.Utils.TTS.getdefaultModulation(args.freq)
         args.culture = args.culture or "en-US"
-        return STTS.TextToSpeech(msg,args.freq,args.modulation,args.volume,args.name,coalitionID,transmitterPos,args.speed,args.gender,args.culture,args.voice,args.googleTTS)
+        return STTS.TextToSpeech(msg,args.freq,args.modulation,args.volume,args.name,coalitionID,transmitterPos,args.speed,args.gender,args.culture,args.voice,args.googletts)
     end
 
     --- Transmit message using gRPC.tts
@@ -1114,10 +1128,8 @@ do
         local freqs = string.split(args.freq,",")
 
         for _,freq in ipairs(freqs) do
-            -- HOUND.Logger.debug("transmitting on "..freq)
             freq = math.ceil(freq * 1000000)
             l_grpc.tts(ssml_msg, freq, grpc_ttsArgs)
-            -- break -- for debugging. only transmit once
         end
         return HOUND.Utils.TTS.getReadTime(msg) / readSpeed -- read speed > 1.0 is fast
     end
@@ -1254,10 +1266,10 @@ do
     -- returns estimated time in seconds STTS will need to read a message
     -- @param length length of string to estimate (also except the string itself)
     -- @param[opt] speed speed setting for reading them message
-    -- @param[opt] isGoogle Bool, if true calculation will be done for GoogleTTS engine
+    -- @param[opt] googleTTS Bool, if true calculation will be done for GoogleTTS engine
     -- @return estimated message read time in seconds
 
-    function HOUND.Utils.TTS.getReadTime(length,speed,isGoogle)
+    function HOUND.Utils.TTS.getReadTime(length,speed,googleTTS)
         -- Assumptions for time calc: 100 Words per min, avarage of 5 letters for english word
         -- so 5 chars * 100wpm = 500 characters per min = 8.3 chars per second
         -- so lengh of msg / 8.3 = number of seconds needed to read it. rounded down to 8 chars per sec
@@ -1266,10 +1278,10 @@ do
         local maxRateRatio = 3 -- can be chaned to 5 if windows TTSrate is up to 5x not 4x
 
         speed = speed or 1.0
-        isGoogle = isGoogle or false
+        googleTTS = googleTTS or false
 
         local speedFactor = 1.0
-        if isGoogle then
+        if googleTTS then
             speedFactor = speed
         else
             if speed ~= 0 then

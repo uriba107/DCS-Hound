@@ -39,7 +39,10 @@ do
             NatoBrevity = false,
             platformPosErr = false,
             useNatoCallsigns = false,
-            AtisUpdateInterval = 300
+            AtisUpdateInterval = 300,
+            AlertOnLaunch = false,
+            AlertOnLaunchCooldown = 30
+
         }
         instance.coalitionId = nil
         instance.id = HoundInstanceId
@@ -322,6 +325,49 @@ do
             end
             return false
         end
+
+        --- Alert on Launch setter
+        -- @param self config instance
+        -- @bool value set this value
+        -- @return[type=Bool] True if change was made
+        instance.setAlertOnLaunch = function(self,value)
+            if type(value) == "boolean" then
+                self.preferences.AlertOnLaunch = value
+                return true
+            end
+            return false
+        end
+
+                --- Alert on Launch getter
+        -- @within HOUND.Config.instance
+        -- @param self config instance
+        -- @return[type=Bool] True if Debug output will be used
+        instance.getAlertOnLaunch = function(self)
+            return self.preferences.AlertOnLaunch
+        end
+
+
+        --- Alert on Launch cooldown getter
+        -- @within HOUND.Config.instance
+        -- @param self config instance
+        -- @return[type=Bool] True if Debug output will be used
+        instance.getAlertOnLaunchCooldown = function(self)
+            return self.preferences.AlertOnLaunchCooldown
+        end
+
+         --- Alert on Launch cooldown setter
+        -- @param self config instance
+        -- @bool value set this value
+        -- @return[type=Bool] True if change was made
+        instance.setAlertOnLaunchCooldown = function(self,value)
+            if type(value) == "number" then
+                self.preferences.AlertOnLaunchCooldown = value
+                return true
+            end
+            return false
+        end
+
+
 
         --- return root radio menu for hound instance
         -- will create one if needed

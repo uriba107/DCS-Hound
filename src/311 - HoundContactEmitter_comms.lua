@@ -86,17 +86,22 @@ do
 
     --- Generate TTS report for the contact (for controller)
     -- @param[opt] useDMM if true. output will be DM.M rather then the default DMS
+    -- @param[opt] preferMGRS if true output will be MGRS rather then Lat/Lon (not Currently used)
     -- @param[opt] refPos position of reference point for BR (Not Currently Used)
     -- @return generated message
-    function HOUND.Contact.Emitter:generateTtsReport(useDMM,refPos)
+    function HOUND.Contact.Emitter:generateTtsReport(useDMM,preferMGRS,refPos)
         if self.pos.p == nil then return end
         useDMM = useDMM or false
-
+        preferMGRS = preferMGRS or false
+        local MGRSPrecision = HOUND.MGRS_PRECISION
+        if preferMGRS then
+            MGRSPrecision = 5;
+        end
         local BR = nil
         if refPos ~= nil and refPos.x ~= nil and refPos.z ~= nil then
             BR = HoundUtils.getBR(self.pos.p,refPos)
         end
-        local phoneticGridPos,phoneticBulls = self:getTtsData(true,HOUND.MGRS_PRECISION)
+        local phoneticGridPos,phoneticBulls = self:getTtsData(true,MGRSPrecision)
         local msg =  self:getName()
         if self:isAccurate()
             then
@@ -111,10 +116,18 @@ do
                 msg = msg .." at bullseye " .. phoneticBulls
         end
         local LLstr = HoundUtils.TTS.getVerbalLL(self.pos.LL.lat,self.pos.LL.lon,useDMM)
+
+        local primaryPos = LLstr
+        if preferMGRS then
+            primaryPos = phoneticGridPos
+        end
+
         msg = msg .. ", accuracy " .. HoundUtils.TTS.getVerbalConfidenceLevel( self.uncertenty_data.r )
-        msg = msg .. ", position " .. LLstr
-        msg = msg .. ", I say again " .. LLstr
-        msg = msg .. ", MGRS " .. phoneticGridPos
+        msg = msg .. ", position " .. primaryPos
+        msg = msg .. ", I say again " .. primaryPos
+        if not preferMGRS then
+            msg = msg .. ", MGRS " .. phoneticGridPos
+        end
         msg = msg .. ", elevation  " .. self:getElev() .. " feet MSL"
 
         if HOUND.EXTENDED_INFO then
@@ -172,7 +185,7 @@ do
     --- generate Text for the Radio menu item
     -- @return string
     function HOUND.Contact.Emitter:getRadioItemText()
-        if not self:hasPos() then return end
+        if not self:hasPos() then return self:getName() end
         local GridPos,BePos = self:getTextData(true,1)
         BePos = BePos:gsub(" for ","/")
         return self:getName() .. " - BE: " .. BePos .. " (".. GridPos ..")"

@@ -554,9 +554,9 @@ do
             end
 
         -- setup the marker
-        local alpha = HoundUtils.Mapping.linear(l_math.floor(HoundUtils.absTimeDelta(self.last_seen)),0,HOUND.CONTACT_TIMEOUT,0.2,0.05,true)
+        local alpha = HoundUtils.Mapping.linear(l_math.floor(HoundUtils.absTimeDelta(self.last_seen)),0,HOUND.CONTACT_TIMEOUT,HOUND.MARKER_MAX_ALPHA,HOUND.MARKER_MIN_ALPHA,true)
         local fillColor = {0,0,0,alpha}
-        local lineColor = {0,0,0,0.30}
+        local lineColor = {0,0,0,HOUND.MARKER_LINE_OPACITY}
         local lineType = 2
         if (HoundUtils.absTimeDelta(self.last_seen) < 15) then
             lineType = 1
@@ -591,6 +591,7 @@ do
     --- Update marker positions
     -- @param MarkerType type of marker to use
     function HOUND.Contact.Emitter:updateMarker(MarkerType)
+        local MarkerType = MarkerType or HOUND.MARKER.POINT
         if not self:hasPos() or self.uncertenty_data == nil or not self:isRecent() then return end
         if self:isAccurate() and self._markpoints.pos:isDrawn() then return end
         local markerArgs = {
@@ -602,12 +603,17 @@ do
         if not self:isAccurate() and HOUND.USE_LEGACY_MARKERS then
             markerArgs.text = markerArgs.text .. " (" .. self.uncertenty_data.major .. "/" .. self.uncertenty_data.minor .. "@" .. self.uncertenty_data.az .. ")"
         end
-        self._markpoints.pos:update(markerArgs)
+        if MarkerType > HOUND.MARKER.POINT then
+            self._markpoints.pos:update(markerArgs)
+        end
 
-        if MarkerType == HOUND.MARKER.NONE or self:isAccurate() then
-            if self._markpoints.area:isDrawn() then
+        if  MarkerType < HOUND.MARKER.POINT or self:isAccurate() then
+            -- if self._markpoints.area:isDrawn() then
                 self._markpoints.area:remove()
-            end
+                if MarkerType < HOUND.MARKER.POINT then
+                    self._markpoints.pos:remove()
+                end
+            -- end
             return
         end
 
@@ -632,7 +638,8 @@ do
     -- @section helpers
 
     --- Use DCS Unit Position as contact position
-    function HOUND.Contact.Emitter:useUnitPos()
+    -- @param[number] unitPosMarker marker type to use for unit (see HOUND.MARKER)
+    function HOUND.Contact.Emitter:useUnitPos(unitPosMarker)
         if not self.DcsObject:isExist() then
             HOUND.Logger.info("PB failed - unit does not exist")
             return
@@ -654,7 +661,7 @@ do
         self.uncertenty_data.r  = 0.1
 
         table.insert(self.detected_by,"External")
-        self:updateMarker(HOUND.MARKER.NONE)
+        self:updateMarker(unitPosMarker)
         return self.state
     end
 

@@ -37,7 +37,8 @@ do
             voice = nil,
             gender = nil,
             culture = nil,
-            interval = 0.5
+            interval = 0.5,
+            freqAlias = nil
         }
 
         CommsManager.preferences = {
@@ -236,6 +237,20 @@ do
         return retval
     end
 
+    --- get configured Frequeny Alias
+    -- @return string. currently configured Frequeny Alias
+    function HOUND.Comms.Manager:getAlias()
+        return self:getSettings("freqAlias")
+    end
+
+    --- set Frequeny Alias
+    -- @string alias
+    function HOUND.Comms.Manager:setAlias(alias)
+        if type(alias) == "string" then
+            self:setSettings("freqAlias",alias)
+        end
+    end
+
     --- Message Handling
     -- @section Messaging
 
@@ -344,7 +359,7 @@ do
 
         if gSelf.enabled and HoundUtils.TTS.isAvailable() and msgObj.tts ~= nil and gSelf.preferences.enabletts then
             HoundUtils.TTS.Transmit(msgObj.tts,msgObj.coalition,gSelf.settings,transmitterPos)
-            readTime = HoundUtils.TTS.getReadTime(msgObj.tts,gSelf.settings.speed)
+            readTime = HoundUtils.TTS.getReadTime(msgObj.tts,gSelf.settings.speed,gSelf.settings.googletts)
             -- env.info("TTS msg: " .. msgObj.tts)
 
         end

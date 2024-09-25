@@ -153,6 +153,11 @@ do
         lu.assertIsTrue(self.houndBlue:getControllerState("default"))
         lu.assertIsTrue(self.houndBlue:getAtisState("default"))
         lu.assertIsFalse(self.houndBlue:getNotifierState("default"))
+
+        lu.assertIsFalse(self.houndBlue:getAlertOnLaunch())
+        lu.assertIsTrue(self.houndBlue:setAlertOnLaunch(true))
+        lu.assertIsTrue(self.houndBlue:getAlertOnLaunch())
+
     end
 
     function TestHoundFunctional:Test_02_base_03_turnRadarsOn()
@@ -315,9 +320,9 @@ do
         local sa3_site = elint:getSite('SA-3_TINIAN')
         lu.assertIsTrue(getmetatable(sa3_site)==HOUND.Contact.Site)
         lu.assertEquals(sa3_sr,sa3_site:getPrimary())
-        lu.assertEquals("SA-2 or SA-3 or SA-5",sa3_site:getTypeAssigned())
+        lu.assertEquals("SA-2 or SA-3",sa3_site:getTypeAssigned())
         lu.assertEquals(sa3_site:getName(),"T004")
-        lu.assertEquals(sa3_site:generatePopUpReport(false,"Tinian"),"T004, identified as 2 or 3 or 5, is active in Tinian.")
+        lu.assertEquals(sa3_site:generatePopUpReport(false,"Tinian"),"T004, identified as 2 or 3, is active in Tinian.")
         self.houndBlue:preBriefedContact('SA-3_TINIAN',"Non La")
         lu.assertEquals(self.houndBlue:countPreBriefedContacts(),3)
         lu.assertEquals(sa3_site:getName(),"Non La")
@@ -335,56 +340,7 @@ do
             lu.assertIsNil(self.houndBlue:onHoundEvent({HoundId = self.houndBlue:getId(),id = "success"}))
 
             function self.houndBlue:onHoundEvent(event)
-            --     local function destroyObject(DcsObject)
-            --         local units = {}
-            --         if getmetatable(DcsObject) == Unit then
-            --             table.insert(units,DcsObject)
-            --         end
-            --         if getmetatable(DcsObject) == Group then
-            --             units = DcsObject:getUnits()
-            --         end
-        
-            --         for i=#units,1,-1 do
-            --             local unit = units[i]
-            --             local pos = unit:getPoint()
-            --             local life0 = unit:getLife0()
-            --             local life = unit:getLife()
-            --             local name = unit:getName()
-            --             local ittr = 1
-            --             while life > 1 and ittr < 10 do
-            --                 -- local pwr = math.max(0.0055,(life-1)/life0)
-            --                 local pwr = life0*2
-            --                 env.info(ittr .. " | " .. name .. " has " .. life .. " HP, started with " .. life0 .. " explody power: " .. pwr)
-            --                 trigger.action.explosion(pos,pwr)
-            --                 life = unit:getLife()
-            --                 ittr = ittr+1
-            --             end
-            --         end
-            --     end
                 if event.id == "success" then return true end
-            --     if event.id == HOUND.EVENTS.RADAR_DESTROYED then
-            --         env.info("HOUND.EVENTS.RADAR_DESTROYED for " .. event.initiator:getDcsName() )
-            --         lu.assertEquals(event.initiator:getDcsGroupName(),"SA-5_SAIPAN")
-            --         local grp = Group.getByName(event.initiator:getDcsGroupName())
-            --         local grpSize = grp:getSize()
-            --         local lastUnit = grp:getUnit(grpSize)
-            --         if grpSize >=7 then
-            --             lu.assertIsTrue(lastUnit:hasSensors(Unit.SensorType.RADAR))
-            --             destroyObject(grp:getUnit(1))
-            --         else
-            --             lu.assertIsFalse(lastUnit:hasSensors(Unit.SensorType.RADAR))
-            --         end
-            --     end
-            --     if event.id == HOUND.EVENTS.SITE_ASLEEP then
-            --         lu.assertEquals(event.initiator:getDcsGroupName(),"SA-5_SAIPAN")
-            --         lu.assertIsTrue(event.initiator:hasRadarUnits())
-            --     end
-            --     if event.id == HOUND.EVENTS.SITE_REMOVED then
-            --         lu.assertEquals(event.initiator:getDcsGroupName(),"SA-5_SAIPAN")
-            --         lu.assertEquals(event.initiator:countEmitters(),0)
-            --         lu.assertIsFalse(event.initiator:hasRadarUnits())
-            --         lu.assertStrContains(self:printDebugging(),"Platforms: 2 | sectors: 3 (Z:2 ,C:2 ,A: 2 ,N:1) | Sites: 3 | Contacts: 4 (A:1 ,PB:4)")
-            --     end
             end
 
             lu.assertEquals(type(self.houndBlue.onHoundEvent),"function")

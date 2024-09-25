@@ -29,17 +29,27 @@ do
         NATO = false,
     }
 
+    notifier_args = {
+        freq = "305.000,127.000",
+        modulation = "AM,AM",
+        gender = "male"
+    }
     Elint_blue:configureController(tts_args)
     Elint_blue:configureAtis(atis_args)
+    Elint_blue:configureNotifier(notifier_args)
 
     Elint_blue:enableController()
     Elint_blue:enableText()
     Elint_blue:enableAtis()
+    Elint_blue:enableNotifier()
     -- Elint_blue:disableBDA()
     Elint_blue:setMarkerType(HOUND.MARKER.POLYGON)
+    -- Elint_blue:setMarkerType(HOUND.MARKER.SITE_ONLY)
+
 
     Elint_blue:addSector("Fake")
     Elint_blue:setZone("Fake")
+    Elint_blue:setAlertOnLaunch(true)
     -- Elint_blue:onScreenDebug(true)
     -- Elint_blue:enablePlatformPosErrors()
 
@@ -76,6 +86,13 @@ do
     function testing.getContacts(hound)
         env.info(mist.utils.tableShow(hound:getSites()))
         hound:dumpIntelBrief()
+    end
+
+    function testing.destroyEWR()
+        local unit = Unit.getByName("EWR-20-1")  or Unit.getByName("EWR-3-1") or Unit.getByName("EWR-9-1")
+        if HOUND.Utils.Dcs.isUnit(unit) then
+            testing.boom(unit)
+        end
     end
 
     function testing.spawnPlatform(hound)
@@ -235,7 +252,6 @@ do
             end
         end
         env.info(mist.utils.tableShow(args))
-
     end
 
     function testing.GRPCtts(msg)
@@ -263,7 +279,9 @@ do
     -- missionCommands.addCommand("Add transmitter",testing.Menu,testing.addTransmitter,{houndCommsInstance=Elint_blue.controller,unit_name="Migariya_Elint"})
     -- missionCommands.addCommand("Destroy transmitter",testing.Menu,Unit.destroy,	Unit.getByName("Migariya_Elint"))
     -- missionCommands.addCommand("Remove transmitter",testing.Menu,testing.removeTransmitter,Elint_blue.controller)
-    missionCommands.addCommand("Get Contacts",testing.Menu,testing.getContacts,Elint_blue)
+    -- missionCommands.addCommand("Get Contacts",testing.Menu,testing.getContacts,Elint_blue)
+    missionCommands.addCommand("Blow up EWR",testing.Menu,testing.destroyEWR)
+
 
 end
 
@@ -299,7 +317,9 @@ do
 
 
     -- env.info(Unit.getByName('P8'):getTypeName())
-    -- env.info(Unit.getByName('P3'):getTypeName())
+    env.info("KW is " .. Unit.getByName('KW'):getTypeName())
+    env.info("KWR is " .. Unit.getByName('KWR'):getTypeName())
+
  
     -- for grpName,grp in pairs( HOUND.Utils.Filter.groupsByPrefix("F-1")) do
     --     env.info(grpName.." | "..grp:getUnit(1):getTypeName())

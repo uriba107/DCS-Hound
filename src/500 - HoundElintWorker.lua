@@ -222,6 +222,7 @@ do
         if self.contacts[emitterName] then
             local site = self:getSite(self.contacts[emitterName]:getDcsGroupName(),true)
             if site then
+                -- HOUND.Logger.trace("removing " .. emitterName .. " from " .. site:getName())
                 site:removeEmitter(self.contacts[emitterName])
             end
 
@@ -242,7 +243,7 @@ do
     function HOUND.ElintWorker:setPreBriefedContact(emitter)
         if not emitter:isExist() then return end
         local contact = self:getContact(emitter)
-        local contactState = contact:useUnitPos()
+        local contactState = contact:useUnitPos(l_math.min(self.settings:getMarkerType(),HOUND.MARKER.POINT))
         if contactState then
             HOUND.EventHandler.publishEvent({
                 id = contactState,
@@ -258,10 +259,34 @@ do
     function HOUND.ElintWorker:setDead(emitter)
         local contact = self:getContact(emitter,true)
         if contact then
-            HOUND.Logger.trace("setDead for " .. contact:getName())
+            -- HOUND.Logger.trace("setDead for " .. contact:getName())
             contact:setDead()
          end
     end
+
+    function HOUND.ElintWorker:ensureSitePrimaryHasPos(fireGrp,refPos)
+        local site = self:getSite(fireGrp,true)
+        if site then
+            site:ensurePrimaryHasPos(refPos)
+        end
+    end
+    --- Send Launch Alert
+    -- @param fireGrp DCS Group/Group name that is firing
+    function HOUND.ElintWorker:AlertOnLaunch(fireGrp)
+        if not self.settings:getAlertOnLaunch() then return end
+        local site = self:getSite(fireGrp,true)
+        if site then
+            -- HOUND.Logger.trace("Launch Alert called for " .. site:getName())
+            -- HOUND.Logger.onScreenDebug(site:getName().. " is launching!")
+            local event = site:LaunchDetected()
+            if type(event) == "table" then
+                event.houndId = self.settings:getId()
+                event.coalition = self.settings:getCoalition()
+                HOUND.EventHandler.publishEvent(event)
+            end
+        end
+    end
+
     --- is contact is tracked
     -- @param emitter DCS Unit/UID of requested emitter
     -- @return[type=bool] if Unit is being tracked by current HoundWorker instance.
@@ -456,6 +481,7 @@ do
                     while #contactEvents > 0 do
                         local event = table.remove(contactEvents,1)
                         -- HOUND.Logger.onScreenDebug(contact:getDcsName() .. " has triggered " .. HOUND.reverseLookup(HOUND.EVENTS,event.id),5)
+                        -- HOUND.Logger.trace(contact:getDcsName() .. " has triggered " .. HOUND.reverseLookup(HOUND.EVENTS,event.id))
                         event.houndId = self.settings:getId()
                         event.coalition = self.settings:getCoalition()
                         HOUND.EventHandler.publishEvent(event)

@@ -66,7 +66,7 @@ do
         -- SAM radars --
         ['p-19 s-125 sr'] = {
             ['Name'] = "Flat Face",
-            ['Assigned'] = {"SA-2","SA-3","SA-5"},
+            ['Assigned'] = {"SA-2","SA-3"},
             ['Role'] = {HOUND.DB.RadarType.SEARCH},
             ['Band'] = {
                 [true] = HOUND.DB.Bands.C,

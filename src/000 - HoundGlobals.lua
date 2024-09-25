@@ -30,6 +30,10 @@ do
     -- @field EXTENDED_INFO Hound will add more in depth uncertenty info to controller messages (default is true)
     -- @field FORCE_MANAGE_MARKERS Force Hound to use internal counter for markIds (default is true).
     -- @field USE_LEGACY_MARKERS Force Hound to use normal markers for radar positions (default is true)
+    -- @field MARKER_MIN_ALPHA Minimum opacity for area markers
+    -- @field MARKER_MAX_ALPHA Maximum opacity for area markers
+    -- @field MARKER_LINE_OPACITY Opacity of the line around the area markers
+    -- @field MARKER_TEXT_POINTER Char/string used as pointer on text markers
     -- @field TTS_ENGINE Hound will use the table to determin TTS engine priority
     -- @field MENU_PAGE_LENGTH Number of Items Hound will put in a menu before starting a new menu page
     HOUND = {
@@ -44,23 +48,31 @@ do
         MIST_VERSION = tonumber(table.concat({mist.majorVersion,mist.minorVersion},".")),
         FORCE_MANAGE_MARKERS = true,
         USE_LEGACY_MARKERS = true,
-        TTS_ENGINE = {'GRPC','STTS'},
+        MARKER_MIN_ALPHA = 0.05,
+        MARKER_MAX_ALPHA = 0.2,
+        MARKER_LINE_OPACITY = 0.3,
+        MARKER_TEXT_POINTER = "⇙ ", -- "¤ « "
+        TTS_ENGINE = {'STTS','GRPC'},
         MENU_PAGE_LENGTH = 9
     }
 
     --- Map Markers ENUM
     -- @table HOUND.MARKER
-    -- @field NONE no ellipse is drawn
+    -- @field NONE no markers are drawn
+    -- @field SITE_ONLY only site markers are drawn
+    -- @field POINT only draw point marker for emitters
     -- @field CIRCLE a circle of uncertenty will be drawn
     -- @field DIAMOND a diamond will be drawn with 4 points representing uncertenty ellipse
     -- @field OCTAGON ellipse will be drawn with 8 points (diamon with midpoints)
     -- @field POLYGON ellipse will be drawn as a 16 sides polygon
     HOUND.MARKER = {
         NONE = 0,
-        CIRCLE = 1,
-        DIAMOND = 2,
-        OCTAGON = 3,
-        POLYGON = 4
+        SITE_ONLY = 1,
+        POINT = 2,
+        CIRCLE = 3,
+        DIAMOND = 4,
+        OCTAGON = 5,
+        POLYGON = 6
     }
 
     --- Hound Events
@@ -106,7 +118,8 @@ do
         SITE_CLASSIFIED = 18,
         SITE_REMOVED = 19,
         SITE_ALIVE = 20,
-        SITE_ASLEEP = 21
+        SITE_ASLEEP = 21,
+        SITE_LAUNCH = 22,
     }
 
     --- Event structure

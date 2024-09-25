@@ -1,5 +1,5 @@
 .ignore
-._.DS_Store
+._*
 .DS_Store
 .vscode
 logo
@@ -7,3 +7,7 @@ not_working
 test
 src/.ignore
 *.DS_Store
+notes.MD
+mist*.lua
+Moos*.lua
+TODO

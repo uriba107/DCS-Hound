@@ -166,6 +166,16 @@ do
     function HOUND.Contact.Base:setPreBriefed(state)
         if type(state) == "boolean" then
             self.preBriefed = state
+            if not self.preBriefed then
+                if type(self.detected_by) == "table" then
+                    for i,v in ipairs(self.detected_by) do
+                        if v == "External" then
+                            table.remove(self.detected_by,i)
+                            break
+                        end
+                    end
+                end
+            end
         end
     end
 

@@ -29,6 +29,7 @@ do
     -- @param p0 Position of platform on detection
     -- @param az0 Azimuth (rad) from platform to emitter
     -- @param el0 Elevation (rad) from platform to emitter
+    -- @param s0 signal strength as detected by the platform
     -- @param t0 Abs time of datapoint
     -- @param[opt] angularResolution angular resolution of datapoint
     -- @param[opt] isPlatformStatic (bool)

@@ -822,6 +822,42 @@ do
             notifier:addMessageObj(msg)
         end
     end
+
+
+    --- Notify that a site is launching.
+    -- This function sends a notification when a site is launching if alerts are enabled.
+    -- It checks if the sector is set to notify and if the site belongs to the primary sector.
+    -- The notification is sent to both the controller and notifier if they are enabled.
+    -- @param site @{HOUND.Contact.Site} The site that is launching.
+function HOUND.Sector:notifySiteLaunching(site)
+        if not self._hSettings:getAlertOnLaunch() or not self:isNotifiying() then return end
+        local controller = self.comms.controller
+        local notifier = self.comms.notifier
+        local sitePrimarySector = site:getPrimarySector()
+        if self.name ~= "default" and self.name ~= sitePrimarySector then return end
+
+        if self.name == sitePrimarySector then
+            sitePrimarySector = nil
+        end
+
+        -- local announce = self:getTransmissionAnnounce()
+        local enrolledGid = self:getSubscribedGroups()
+
+        local msg = {coalition = self._hSettings:getCoalition(), priority = 1 , gid=enrolledGid}
+        msg.contactId = site:getId()
+        msg.txt = site:generateLaunchAlert(false,sitePrimarySector)
+        msg.tts = site:generateLaunchAlert(true,sitePrimarySector)
+
+        if controller and controller:isEnabled() and controller:getSettings("alerts") then
+            controller:addMessageObj(msg)
+        end
+
+        if notifier and notifier:isEnabled() then
+            notifier:addMessageObj(msg)
+        end
+
+    end
+
     -- -- --- Generate Atis message for sector (legacy)
     -- -- -- @local
     -- -- -- @param loopData HoundInfomationSystem loop table
@@ -963,17 +999,20 @@ do
         local coalitionId = gSelf._hSettings:getCoalition()
         local msgObj = {coalition = coalitionId, priority = 1}
         local useDMM = false
+        local preferMGRS = false
+
 
         if contact.isEWR then msgObj.priority = 2 end
 
         if requester ~= nil then
             msgObj.gid = requester.groupId
-            useDMM =  HoundUtils.isDMM(requester.type)
+            useDMM =  HoundUtils.useDMM(requester.type)
+            preferMGRS = HoundUtils.useMGRS(requester.type)
         end
 
         if gSelf.comms.controller:isEnabled() then
             msgObj.contactId = contact:getId()
-            msgObj.tts = contact:generateTtsReport(useDMM)
+            msgObj.tts = contact:generateTtsReport(useDMM,preferMGRS)
             if requester ~= nil then
                 msgObj.tts = HoundUtils.getFormationCallsign(requester,gSelf._hSettings:getCallsignOverride()) .. ", " .. gSelf.callsign .. ", " .. msgObj.tts
             end

@@ -6,7 +6,7 @@ do
     --- Query functions
     -- @section Query
 
-    --- list all contact is a sector
+    --- list all contacts is a sector
     -- @param[type=?string] sectorName name or sector to filter by
     function HOUND.ElintWorker:listContactsInSector(sectorName)
         local emitters = {}
@@ -19,7 +19,7 @@ do
         return emitters
     end
 
-    --- Return all contacts managed by this instance regardless of sector
+    --- Return all contacts managed by this instance regardless of sectors
     -- @param[type=?string] sectorName name or sector to filter by
     function HOUND.ElintWorker:listAllContacts(sectorName)
         if sectorName then
@@ -34,7 +34,7 @@ do
         return self.contacts
     end
 
-    --- return all contacts managed by this instance sorted by range
+    --- Return all contacts managed by this instance sorted by range
     function HOUND.ElintWorker:listAllContactsByRange(sectorName)
         return self:sortContacts(HoundUtils.Sort.ContactsByRange,sectorName)
     end

@@ -37,6 +37,7 @@ do
         instance.primaryEmitter = HoundContact
         instance.last_seen = HoundContact:getLastSeen()
         instance.first_seen = HoundContact.first_seen
+        instance.last_launch_notify = 0
         instance.maxWeaponsRange = HoundContact:getMaxWeaponsRange()
         instance.detectionRange = HoundContact:getRadarDetectionRange()
         instance.isEWR = HoundContact.isEWR
@@ -102,7 +103,7 @@ do
     --- Get the underlying DCS Object
     -- @return DCS Group or DCS staticObject
     function HOUND.Contact.Site:getDcsObject()
-        return self.group or self.DcsGroupName
+        return self.DcsObject or self.DcsGroupName
     end
 
     --- Get last seen in seconds
@@ -285,20 +286,75 @@ do
 
     --- update stored site pos
     function HOUND.Contact.Site:updatePos()
-        if self.primaryEmitter:hasPos() then
-            local noPos = (self.pos.p == nil)
-            self.pos.p = l_mist.utils.deepCopy(self.primaryEmitter:getPos())
-            if noPos and self.pos.p ~= nil then
-                self:queueEvent(HOUND.EVENTS.SITE_CREATED)
+        local noPos = (self.pos.p == nil)
+        self:ensurePrimaryHasPos()
+        for _,emitter in ipairs(self.emitters) do
+            if emitter:hasPos() then
+                self.pos.p = l_mist.utils.deepCopy(emitter:getPos())
+                break
+            end
+        end
+        if noPos and self.pos.p ~= nil then
+            self:queueEvent(HOUND.EVENTS.SITE_CREATED)
+        end
+    end
+
+    --- Ensure primay emitter has position
+    -- @param[table] refPos DCS Point with adhock position if nothing else is available
+    function HOUND.Contact.Site:ensurePrimaryHasPos(refPos)
+        local primary = self:getPrimary()
+        if ( not primary:hasPos() ) then
+            for _,emitter in ipairs(self.emitters) do
+                if ( emitter:hasPos() ) then
+                    primary.pos = l_mist.utils.deepCopy(emitter.pos)
+                    primary.uncertenty_data = l_mist.utils.deepCopy(emitter.uncertenty_data)
+                    break
+                end
+            end
+
+            if ( not primary:hasPos() and HoundUtils.Dcs.isPoint(refPos)) then
+                local uncertenty = primary:getMaxWeaponsRange() * 0.75
+                primary.pos.p = l_mist.utils.deepCopy(refPos)
+                primary.pos.p = primary:calculateExtrasPosData(primary.pos)
+                primary.uncertenty_data = {}
+                primary.uncertenty_data.major = uncertenty
+                primary.uncertenty_data.minor = uncertenty
+                primary.uncertenty_data.theta = 0
+                primary.uncertenty_data.az = 0
+                primary.uncertenty_data.r  = uncertenty
             end
         end
     end
+
     --- Update sector data
     function HOUND.Contact.Site:updateSector()
-        local primary = self:getPrimary()
-        self.threatSectors = primary.threatSectors
-        self.primarySector = primary.primarySector
+        for _,emitter in ipairs(self.emitters) do
+            if emitter:hasPos() then
+                self.threatSectors = emitter.threatSectors
+                self.primarySector = emitter.primarySector
+                break
+            end
+        end
         self:updateDefaultSector()
+    end
+
+    --- trigger launch event
+    -- @param[number] cooldown interval between alerts. avoid spam
+    function HOUND.Contact.Site:LaunchDetected(cooldown)
+        local cooldown = cooldown or 30
+        -- HOUND.Logger.trace(self:getName() .. " Launch detected - last notification " ..  HoundUtils.absTimeDelta(self.last_launch_notify))
+        if ( HoundUtils.absTimeDelta(self.last_launch_notify) > cooldown ) then
+            -- HOUND.Logger.trace(self:getName() .. " LaunchDetected - triggered")
+
+            self.last_launch_notify = timer.getAbsTime()
+            -- self:queueEvent(HOUND.EVENTS.SITE_LAUNCH)
+            local event = {
+                id = HOUND.EVENTS.SITE_LAUNCH,
+                initiator = self,
+                time = timer.getTime()
+            }
+            return event
+        end
     end
 
     --- Process site data (wrapper for consistency)
@@ -409,9 +465,9 @@ do
         self._markpoints.pos:update(markerArgs)
 
         if MarkerType == HOUND.MARKER.NONE then
-            if self._markpoints.area:isDrawn() then
+            -- if self._markpoints.area:isDrawn() then
                 self._markpoints.area:remove()
-            end
+            -- end
             return
         elseif MarkerType > HOUND.MARKER.NONE then
             self:drawAreaMarker()

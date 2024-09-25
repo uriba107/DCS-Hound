@@ -132,7 +132,7 @@ do
         }
     HOUND.DB.Radars['S-300V 9S32 tr'] = {
             ['Name'] = 'Grill Pan',
-            ['Assigned'] = {"SA-10"},
+            ['Assigned'] = {"SA-12"},
             ['Role'] = {HOUND.DB.RadarType.TRACK},
             ['Band'] = {
                 [true] = HOUND.DB.Bands.J,
@@ -182,7 +182,7 @@ do
         }
     HOUND.DB.Radars['S-300VM 9S32ME tr'] = {
             ['Name'] = 'Grill Pan M',
-            ['Assigned'] = {"SA-10"},
+            ['Assigned'] = {"SA-12"},
             ['Role'] = {HOUND.DB.RadarType.TRACK},
             ['Band'] = {
                 [true] = HOUND.DB.Bands.K,
@@ -201,15 +201,35 @@ do
             ['Primary'] = false
         }
     HOUND.DB.Radars['34Ya6E Gazetchik E decoy'] = {
-            ['Name'] = "Flap Lid",
-            ['Assigned'] = {"SA-10"},
-            ['Role'] = {HOUND.DB.RadarType.TRACK},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.J,
-                [false] = HOUND.DB.Bands.J
-            },
-            ['Primary'] = true
-        }
+        ['Name'] = "Flap Lid",
+        ['Assigned'] = {"SA-10"},
+        ['Role'] = {HOUND.DB.RadarType.TRACK},
+        ['Band'] = {
+            [true] = HOUND.DB.Bands.J,
+            [false] = HOUND.DB.Bands.J
+        },
+        ['Primary'] = true
+    }
+    HOUND.DB.Radars['SAMPT_MRI_ARABEL'] = {
+        ['Name'] = "SAMP/T",
+        ['Assigned'] = {"SAMP/T"},
+        ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
+        ['Band'] = {
+            [true] = HOUND.DB.Bands.I,
+            [false] = HOUND.DB.Bands.I
+        },
+        ['Primary'] = true
+    }
+    HOUND.DB.Radars['SAMPT_MRI_GF300'] = {
+        ['Name'] = "SAMP/T",
+        ['Assigned'] = {"SAMP/T"},
+        ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
+        ['Band'] = {
+            [true] = HOUND.DB.Bands.K,
+            [false] = HOUND.DB.Bands.K
+        },
+        ['Primary'] = true
+    }
     HOUND.DB.Radars['Fire Can radar'] = {
             ['Name'] = "Fire Can",
             ['Assigned'] = {"AAA"},

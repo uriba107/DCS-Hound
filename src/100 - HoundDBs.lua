@@ -52,10 +52,10 @@ do
     }
 
     --- Units that use DMM format
-    -- @table HOUND.DB.useDecMin
+    -- @table HOUND.DB.useDMM
     -- @field UnitType Bool Value
     -- @usage ['F-16C_blk50'] = true
-    HOUND.DB.useDecMin =  {
+    HOUND.DB.useDMM =  {
         ['F-16C_blk50'] = true,
         ['F-16C_50'] = true,
         ['M-2000C'] = true,
@@ -63,6 +63,20 @@ do
         ['A-10C_2'] = true,
         ['AH-64D_BLK_II'] = true,
         ['F-15ESE'] = true,
+        ['OH58D'] = true,
+        ['OH-58D'] = true
+    }
+
+    --- Units that prefer MGRS format (not in use)
+    -- @table HOUND.DB.useMGRS
+    -- @field UnitType Bool value
+    -- @usage ['A-10C'] = true
+    HOUND.DB.useMGRS = {
+        ['A-10C'] = true,
+        ['A-10C_2'] = true,
+        ['AH-64D_BLK_II'] = true,
+        ['OH58D'] = true,
+        ['OH-58D'] = true
     }
 
     --- Band vs wavelength
