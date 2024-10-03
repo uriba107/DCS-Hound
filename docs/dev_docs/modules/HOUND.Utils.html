@@ -75,6 +75,7 @@
 <h2>Scripts</h2>
 <ul class="nowrap">
   <li><a href="../scripts/HoundElint.html">HoundElint</a></li>
+  <li><a href="../scripts/HoundElint.html">HoundElint</a></li>
 </ul>
 
 </div>
@@ -178,8 +179,12 @@
 	<td class="summary">get Callsign</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.isDMM">HOUND.Utils.isDMM (DcsUnit)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.useDMM">HOUND.Utils.useDMM (DcsUnit)</a></td>
 	<td class="summary">Unit use DMM</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.useMGRS">HOUND.Utils.useMGRS (DcsUnit)</a></td>
+	<td class="summary">Unit use MGRS</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Utils.hasPayload">HOUND.Utils.hasPayload (DcsUnit, payloadName)</a></td>
@@ -368,7 +373,7 @@
 	<td class="summary">Convert string to phonetic text</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.TTS.getReadTime">HOUND.Utils.TTS.getReadTime (length[, speed[, isGoogle]])</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.TTS.getReadTime">HOUND.Utils.TTS.getReadTime (length[, speed[, googleTTS]])</a></td>
 	<td class="summary">get estimated message read time
  returns estimated time in seconds STTS will need to read a message</td>
 	</tr>
@@ -399,8 +404,16 @@
 	<td class="summary">Get Azimuth (and elevation) between two points</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Elint.getSignalStrength">HOUND.Utils.Elint.getSignalStrength (src, dst, maxDetection)</a></td>
+	<td class="summary">Get Signal strength of point</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#HOUND.Utils.Elint.getActiveRadars">HOUND.Utils.Elint.getActiveRadars (instanceCoalition)</a></td>
 	<td class="summary">Get currently transmitting Ground and Ship radars that are not in the Hound Instance coalition</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Elint.getActiveRadarsInGroup">HOUND.Utils.Elint.getActiveRadarsInGroup (GroupName)</a></td>
+	<td class="summary">Get currently transmitting units in a given groupName</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Utils.Elint.getRwrContacts">HOUND.Utils.Elint.getRwrContacts (platform)</a></td>
@@ -1141,11 +1154,31 @@
 
 </dd>
     <dt>
-    <a name = "HOUND.Utils.isDMM"></a>
-    <strong>HOUND.Utils.isDMM (DcsUnit)</strong>
+    <a name = "HOUND.Utils.useDMM"></a>
+    <strong>HOUND.Utils.useDMM (DcsUnit)</strong>
     </dt>
     <dd>
     Unit use DMM
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">DcsUnit</span>
+         DCS Unit or typeName string
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.useMGRS"></a>
+    <strong>HOUND.Utils.useMGRS (DcsUnit)</strong>
+    </dt>
+    <dd>
+    Unit use MGRS
 
 
     <h3>Parameters:</h3>
@@ -2300,7 +2333,7 @@
 </dd>
     <dt>
     <a name = "HOUND.Utils.TTS.getReadTime"></a>
-    <strong>HOUND.Utils.TTS.getReadTime (length[, speed[, isGoogle]])</strong>
+    <strong>HOUND.Utils.TTS.getReadTime (length[, speed[, googleTTS]])</strong>
     </dt>
     <dd>
     get estimated message read time
@@ -2316,7 +2349,7 @@
          speed setting for reading them message
          (<em>optional</em>)
         </li>
-        <li><span class="parameter">isGoogle</span>
+        <li><span class="parameter">googleTTS</span>
          Bool, if true calculation will be done for GoogleTTS engine
          (<em>optional</em>)
         </li>
@@ -2475,9 +2508,43 @@
     <h3>Returns:</h3>
     <ol>
         <li>
-        Azimuth (radians) from source to destination (0 to 2*pi)</li>
+           <span class="types"><span class="type">number</span></span>
+        Azimuth from source to destination in radians (0 to 2*pi)</li>
         <li>
-        elevation angle (radians) from source to destination (-pi to pi)</li>
+           <span class="types"><span class="type">number</span></span>
+        Elevation angle from source to destination in radians (-pi to pi)</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.Elint.getSignalStrength"></a>
+    <strong>HOUND.Utils.Elint.getSignalStrength (src, dst, maxDetection)</strong>
+    </dt>
+    <dd>
+    Get Signal strength of point
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">src</span>
+         position of the source (i.e Hound platform)
+        </li>
+        <li><span class="parameter">dst</span>
+         position of the destination (i.e emitting radar)
+        </li>
+        <li><span class="parameter">maxDetection</span>
+         Maximum detection range of radar in meters
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Signal strength
     </ol>
 
 
@@ -2496,6 +2563,31 @@
     <ul>
         <li><span class="parameter">instanceCoalition</span>
          CoalitionID for current Hound Instance
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Table of all currently transmitting Ground and Ship radars that are not in the Hound Instance coalition
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.Elint.getActiveRadarsInGroup"></a>
+    <strong>HOUND.Utils.Elint.getActiveRadarsInGroup (GroupName)</strong>
+    </dt>
+    <dd>
+    Get currently transmitting units in a given groupName
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">GroupName</span>
+         groupName for group
         </li>
     </ul>
 
@@ -3306,7 +3398,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2023-07-18 12:04:46 </i>
+<i style="float:right;">Last updated 2024-10-03 14:43:31 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

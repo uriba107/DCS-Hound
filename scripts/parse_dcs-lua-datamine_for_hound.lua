@@ -1,4 +1,5 @@
 -- for file in $(find ../../dcs-lua-datamine/_G/db/Units/ -type f -name "*.lua"); do echo $file; gsed -i 's/<table [[:digit:]]*>/\{\}/g' "${file}"; gsed -i 's/<[[:digit:]]*>//g' "${file}"; done
+-- for file in $(find ../../dcs-lua-datamine/_G/db/Units/ -type f -name "*.lua"); do echo $file; sed -i 's/<table [[:digit:]]*>/\{\}/g' "${file}"; sed -i 's/<[[:digit:]]*>//g' "${file}"; done
 require'lfs'
 
 local basePath = '../../dcs-lua-datamine/_G/db/Units'

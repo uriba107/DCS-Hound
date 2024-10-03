@@ -40,8 +40,9 @@ Hound currently has a 10-degree angular resolution cutoff point to avoid introdu
 - [MIST (by mrSkortch)](https://github.com/mrSkortch/MissionScriptingTools/releases/latest)
 
 Optional scripts required for TTS (only one of them is required, based on your preference):
-- [DCS-gRPC](https://github.com/DCS-gRPC/rust-server)
 - [DCS-SimpleTextToSpeech (by Ciribob)](https://github.com/ciribob/DCS-SimpleTextToSpeech)
+- [DCS-gRPC](https://github.com/DCS-gRPC/rust-server)
+
 
 For installation of STTS or DCS-gRPC, please consult the project of choice repo. Both require you to modify "DCS World/Scripts/MissionScripting.lua".
 
@@ -262,8 +263,6 @@ You can, of course, turn it off for any reason with:
 
 ### Handling Pre-briefed Contacts
 
-### Handling Pre-briefed Contacts
-
 In some cases, you would want to always provide accurate positional information on a contact, for example, a stationary SAM site for which you provided strike coordinates in the briefing. You can sync Hound to use the actual unit data as position. The contact will be treated as "Pre-Briefed" and will not update its position like the others. However, if a pre-briefed contact moves more than 100m from its original position, and is detected by Hound in its shifted location, the special "pre-briefed" flag will be removed, and the radar will be processed as a normal contact from that point on.
 
 You can mark a unit or group as pre-briefed. Only valid Hound radars will be added (it will not add units it will not normally track). If a group is passed and it contains more than one valid radar, all of the radars will be added.
@@ -277,8 +276,8 @@ In addition, you can provide an optional "code name" for a pre-briefed site, whi
     HoundInstance:preBriefedContact('GROUP2_NAME',"ANTELOPE")
 ```
 ---
-### Global and per instance Settings
----
+# Global and per instance Settings
+
 ## Per-instance Settings
 These are settings that are configurable per Hound instance.
 
@@ -310,10 +309,11 @@ The available marker types are:
 
 |  HOUND.MARKER | Description |
 | ---- | ------------|
-| NONE | no ellipse is drawn (only position marker)|
+| NONE | Nothing is drawn |
 | SITE_ONLY | only draw site markers |
-| CIRCLE | a circle of uncertainty will be drawn |
-| DIAMOND | a diamond will be drawn with 4 points representing uncertainty ellipse (Default) |
+| POINT | Draw position marker for radars (and Site markers)
+| CIRCLE | a circle of uncertainty will be drawn (Default) |
+| DIAMOND | a diamond will be drawn with 4 points representing uncertainty ellipse |
 | OCTAGON | an ellipse will be drawn with 8 points (diamond with midpoints) |
 | POLYGON | an ellipse will be drawn as a 16-sided polygon |
 
@@ -353,9 +353,9 @@ To simulate this, you can enable position errors. When this setting is enabled, 
     -- disable (default)
     HoundInstance:disablePlatformPosErrors()
 ```
-
 ---
 ### DBA reports
+
 By default, the [Controller](#sam-controller)](#sam-controller) and [Notifier](#notifier) will push alerts when a radar is destroyed when the track is dropped.
 you may choose to disable this behavior
 ```lua
@@ -372,10 +372,26 @@ This setting only affects the automatic marking of dead contacts. you can manual
 To mark a contact as dead use ```HoundInstance:markDeadContact(radarUnit)``` see [extended docs](#more-docs) for more information.
 
 ---
+### Launch Alerts
+In past conflicts, ELINT platform would issue a SAM launch alerts on comms to improve situational awareness of aircraft in the battle space. 
+Hound can issue these alerts with the [Controller](#sam-controller)](#sam-controller) and [Notifier](#notifier). By default this is disabled on Hound
+You may choose to enable this feature
+```lua
+    -- Enable
+    HoundInstance:setAlertOnLaunch(true)
+
+    -- Disable (default)
+    HoundInstance:setAlertOnLaunch(true)
+
+    -- get current value
+    HoundInstance:getAlertOnLaunch()
+```
+
+---
 
 ### Reposition The Controller radio menu
 
-By default, the [Controller](#sam-controller)](#sam-controller) will generate the "ELINT" root menu in the base F10 menu.
+By default, the [Controller](#sam-controller) will generate the "ELINT" root menu in the base F10 menu.
 You may choose to change this to a different base location in some cases.  
 
 ```lua
@@ -752,12 +768,13 @@ this can be done using an arguments table and passing it to the configuration fu
 
 possible settings are slightly different based on your TTS provider of choice.
 
-by default, if a supporting gRPC version is present, Hound will use it over STTS
-to change it and use STTS regardless. you need to set a global variable.
+by default, Hound is using STTS. However it does support gRPC, and will fallback to use it if STTS is not present.
+
+You can supply explicit order or completly disable one TTS engine or the other. To do that you need to modify a global variable.
+
 ```lua
-  HOUND.TTS_ENGINE = {'GRPC','STTS'} -- this is the default value
+  HOUND.TTS_ENGINE = {'STTS','GRPC'} -- this is the default value
 ```
-Completely disabling one engine of the two is also possible. Just remove it from the table.
 
 ### STTS settings
 ```lua
@@ -768,7 +785,7 @@ Completely disabling one engine of the two is also possible. Just remove it from
             speed = <speed> -- number default is 0/1 for controller/atis. range is -10 to +10 on windows TTS. for google it's 0.25 to 4.0
             gender = "male"|"female",
             culture = "en-US"|"en-UK" -- (any installed on your system)
-            isGoogle = true/false -- use google TTS (requires additional STTS config)
+            googleTTS = true/false -- use google TTS (requires additional STTS config)
         }
 ```
 
@@ -814,6 +831,7 @@ Introduced with Hound 0.2 you now have Hound event handling. This for example al
 `NOTE: reserved events are not yet emitted`
 | name | id |
 | ---|-----|
+| NO_CHANGE | 0 |
 | HOUND_ENABLED |  1 |
 | HOUND_DISABLED |  2 |
 | PLATFORM_ADDED |  3 |
@@ -831,9 +849,11 @@ Introduced with Hound 0.2 you now have Hound event handling. This for example al
 | SITE_NEW  | 15 |
 | SITE_CREATED  | 16 |
 | SITE_UPDATED  | 17 |
-| SITE_REMOVED  | 18 |
-| SITE_ALIVE  | 19  |
-| SITE_ASLEEP |  20  |
+| SITE_CLASSIFIED | 18 |
+| SITE_REMOVED  | 19 |
+| SITE_ALIVE  | 20  |
+| SITE_ASLEEP |  21  |
+| SITE_LAUNCH | 22 |
 
 An event structure is as follows:
 ```lua
@@ -1047,7 +1067,8 @@ If you are upgrading from 0.1 please note that some changes will be required.
 From 0.2 to 0.3 there was an internal change and all classes (except form `HoundElint`) were wrapped into `HOUND` class (rather then several independent classes).
   *  HoundEventHandler is now called HOUND.EventHandler please make sure to update your scripts
 ## 0.3.x to 0.4.x
-  * [Site markers](#map-markers) are toggled separately then the normal map markers. If you really want nothing, you need to add `HoundInstance:disableSiteMarkers()` to your Hound setup.
+  * Marker ENUMs have changes. `HOUND.MARKER.NONE` will draw nothing. Original behaviour is now `HOUND.MARKER.POINT`.
+  * [Site markers](#map-markers) are toggled separately then the normal map markers. If you really want nothing, you need to add `HoundInstance:disableSiteMarkers()` to your Hound setup, or select 
   * HOUND.Contact class has been refactored and split into multiple classes. if you call HOUND.Contact directly in custom scripts you'll need to rename it to HOUND.Contact.Emitter
   * Export has been refactored to support new site groupings, see [exports](#exports)
 
@@ -1061,8 +1082,8 @@ From 0.2 to 0.3 there was an internal change and all classes (except form `Hound
   * __Grimes__ - For [MIST](https://github.com/mrSkortch/MissionScriptingTools) and because Without the [Hoggit Wiki](https://wiki.hoggitworld.com/) we would all be fumbling in the dark.
   * __[flywaldair](https://github.com/walder)__ - Author of [Skynet IADS](https://github.com/walder/Skynet-IADS), which was a massive inspiration for creating Hound. 
   * __[Ciribob](https://github.com/ciribob)__ - without his help, support and acceptance of weird merge requests. Hound would have never been possible.
-  * __[rkusa](https://github.com/rkusa)__,__[rurounijones](https://github.com/rurounijones)__ and everyone involved for [DCS-gRPC](https://github.com/DCS-gRPC/rust-server).
   *  __[Pene](https://github.com/Penecruz)__, for being a sport and trying out all manner of builds. And to the rest of the __[DCS ANZUS](https://discord.gg/mCQw9Wm5Qq)__ for allowing him to keep doing that :)
+  * __[rkusa](https://github.com/rkusa)__,__[rurounijones](https://github.com/rurounijones)__ and everyone involved for [DCS-gRPC](https://github.com/DCS-gRPC/rust-server).
   * __Nikos__, __[Jester](https://github.com/hbjonsson)__, __[davidp57](https://github.com/davidp57)__ and all the rest - For the feedback and suggestions pushing Hound even further
 
 And a very special thanks is (and will always be) reserved for those who choose to click the button below :) 
