@@ -1,8 +1,11 @@
 do
     if STTS ~= nil then
         STTS.DIRECTORY = "C:\\Program Files\\DCS-SimpleRadio-Standalone"
+        STTS.GOOGLE_CREDENTIALS = "E:\\Dropbox\\uri\\Dropbox\\DCS\\Mission Building\\googletts.json"
     end
     HOUND.USE_LEGACY_MARKS = false
+    -- HOUND.TTS_ENGINE = {'STTS','GRPC'}
+
 
 end
 
@@ -20,9 +23,11 @@ do
     -- Elint_blue:addPlatform("Cow")
 
     tts_args = {
-        freq = "251.000,35.000",
-        modulation = "AM,FM",
-        gender = "male"
+        freq = "251.000,127.500,35.000",
+        modulation = "AM,AM,FM",
+        -- gender = "male",
+        voice = "en-US-Standard-F",
+        googleTTS = true
     }
     atis_args = {
         freq = 251.500,
