@@ -17,8 +17,7 @@ do
 end
 
 do
-    --- HOUND global settings
-    -- Global settings and paramters
+    --- Global settings and paramters
     -- @table HOUND
     -- @field VERSION Hound Version
     -- @field DEBUG Hound will do extended debug output to log (for development)
@@ -96,6 +95,7 @@ do
     -- @field SITE_REMOVED Hound Event
     -- @field SITE_ALIVE Hound Event
     -- @field SITE_ASLEEP Hound Event
+    -- @field SITE_LAUNCH Hound Event
     HOUND.EVENTS = {
         NO_CHANGE     = 0,
         HOUND_ENABLED = 1,

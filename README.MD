@@ -22,6 +22,7 @@ Table of Contents
 * [Hound ELINT System for DCS](#hound-elint-system-for-dcs)
   * [Overview](#overview)
     * [Video Intro (YouTube)](#video-intro-youtube)
+* [Full Documentation](#full-documentation)
 * [Adding Hound to a Mission](#adding-hound-to-a-mission)
   * [Required External Scripts](#required-external-scripts)
     * [Adding Scripts in Mission Editor](#adding-scripts-in-mission-editor)
@@ -89,8 +90,15 @@ Table of Contents
   * [0\.1\.X to 0\.2\.X](#01x-to-02x)
   * [0\.2\.X to 0\.3\.X](#02x-to-03x)
   * [0\.3\.x to 0\.4\.x](#03x-to-04x)
-* [Full Documentation](#full-documentation)
 * [Special thanks](#special-thanks)
+
+# Full Documentation
+For those fimiliar with Hound and looking for a cheat sheet or just q quick reference (and some scripting ideas).
+If you are new to Hound, you might benifit more from the more detailed explenations in this document.
+
+  * [Main script Documentation](https://uriba107.github.io/DCS-Hound/) - all the options available for the average mission builder, even those I didn't write here
+  * [Developers Documentation](https://uriba107.github.io/DCS-Hound/dev_docs/) - this is actually everything. You don't need this unless you intend to hack your way to glory.
+  * [Scripting Ideas](SCRIPTING_IDEAS.MD) - A random bunch of scripting ideas. Most are half-baked and not working, They are here to inspire. feel free to suggest more via an issue or Pull-Request.
 
 # Adding Hound to a Mission
 ***If upgrading from a previous version of Hound, please see [Breaking Changes](#breaking-changes).***
@@ -1146,12 +1154,6 @@ From 0.2 to 0.3 there was an internal change and all classes (except form `Hound
   * [Site markers](#map-markers) are toggled separately then the normal map markers. If you really want nothing, you need to add `HoundInstance:disableSiteMarkers()` to your Hound setup, or select 
   * HOUND.Contact class has been refactored and split into multiple classes. if you call HOUND.Contact directly in custom scripts you'll need to rename it to HOUND.Contact.Emitter
   * Export has been refactored to support new site groupings, see [exports](#exports)
-
-# Full Documentation
-  * [Main script Documentation](https://uriba107.github.io/DCS-Hound/) - all the options available for the average mission builder, even those I didn't write here
-  * [Developers Documentation](https://uriba107.github.io/DCS-Hound/dev_docs/) - this is actually everything. You don't need this unless you intend to hack your way to glory.
-  * [Scripting Ideas](SCRIPTING_IDEAS.MD) - A random bunch of scripting ideas. Most are half-baked and not working, They are here to inspire. feel free to suggest more via an issue or Pull-Request.
-
 
 # Special thanks
   * __Grimes__ - For [MIST](https://github.com/mrSkortch/MissionScriptingTools) and because Without the [Hoggit Wiki](https://wiki.hoggitworld.com/) we would all be fumbling in the dark.

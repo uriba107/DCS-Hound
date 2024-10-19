@@ -12,7 +12,7 @@ end
 
 do
     HOUND = {
-        VERSION = "0.4.0-develop-20241003",
+        VERSION = "0.4.0-develop-20241019",
         DEBUG = false,
         ELLIPSE_PERCENTILE = 0.6,
         DATAPOINTS_NUM = 30,
@@ -6003,7 +6003,11 @@ do
     function HOUND.Comms.Manager:addMessageObj(obj)
         if obj.coalition == nil or not self.enabled then return end
         if obj.txt == nil and obj.tts == nil then return end
-        if obj.priority == nil or obj.priority > 3 then obj.priority = 3 end
+        if obj.priority == nil or obj.priority > 3 or obj.priority < 0 then obj.priority = 3 end
+        if obj.priority == 0 then
+            obj.priority = 1
+            obj.push = true
+        end
         if obj.priority == "loop" then
             self.loop.msg = obj
             return
@@ -6020,19 +6024,22 @@ do
                 end
             end
         end
-        table.insert(self._queue[obj.priority],obj)
+        if obj.push then
+            table.insert(self._queue[obj.priority],1,obj)
+        else
+            table.insert(self._queue[obj.priority],obj)
+        end
     end
 
     function HOUND.Comms.Manager:addMessage(coalition,msg,prio)
         if msg == nil or coalition == nil or ( type(msg) ~= "string" and string.len(tostring(msg)) <= 0) or not self.enabled then return end
-        if prio == nil or prio > 3 then prio = 3 end
+        if prio == nil or prio > 3 or prio < 0 then prio = 3 end
 
         local obj = {
             coalition = coalition,
-            priority = prio,
-            tts = msg
+            tts = msg,
+            priority = prio
         }
-
         self:addMessageObj(obj)
     end
 
@@ -7020,10 +7027,18 @@ do
         return self.comms.controller ~= nil and self.comms.controller:isEnabled()
     end
 
-    function HOUND.Sector:transmitOnController(msg)
+    function HOUND.Sector:getController()
+        if self:hasController() then
+            return self.comms.controller
+        end
+        return
+    end
+
+    function HOUND.Sector:transmitOnController(msg,priority)
         if not self.comms.controller or not self.comms.controller:isEnabled() then return end
         if type(msg) ~= "string" then return end
-        local msgObj = {priority = 1,coalition = self._hSettings:getCoalition()}
+        if type(priority) ~= "number" then priority = 1 end
+        local msgObj = {priority = priority,coalition = self._hSettings:getCoalition()}
         msgObj.tts = msg
         if self.comms.controller:isEnabled() then
             self.comms.controller:addMessageObj(msgObj)
@@ -7125,6 +7140,25 @@ do
 
     function HOUND.Sector:isNotifierEnabled()
         return self.comms.notifier ~= nil and self.comms.notifier:isEnabled()
+    end
+
+    function HOUND.Sector:getNotifier()
+        if self:hasNotifier() then
+            return self.comms.notifier
+        end
+        return
+    end
+
+    function HOUND.Sector:transmitOnNotifier(msg,priority)
+        if not self.comms.notifier or not self.comms.notifier:isEnabled() then return end
+        if type(msg) ~= "string" then return end
+        if type(priority) ~= "number" then priority = 1 end
+
+        local msgObj = {priority = priority,coalition = self._hSettings:getCoalition()}
+        msgObj.tts = msg
+        if self.comms.notifier:isEnabled() then
+            self.comms.notifier:addMessageObj(msgObj)
+        end
     end
 
     function HOUND.Sector:getContacts()
@@ -8347,6 +8381,19 @@ do
         return false
     end
 
+    function HoundElint:transmitOnNotifier(sectorName,msg,priority)
+        if not sectorName or not msg then return end
+        if self.sectors[sectorName] then
+            self.sectors[sectorName]:transmitOnNotifier(msg)
+            return
+        end
+        if sectorName == "all" then
+            for _,sector in pairs(self.sectors) do
+                sector:transmitOnNotifier(msg)
+            end
+        end
+    end
+
     function HoundElint:enableText(sectorName)
         if sectorName == nil or type(sectorName) ~= "string" then
             sectorName = "default"
@@ -8963,4 +9010,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.4.0-develop-20241003 - Compiled on 2024-10-03 11:52
+-- Hound version 0.4.0-develop-20241019 - Compiled on 2024-10-19 17:59

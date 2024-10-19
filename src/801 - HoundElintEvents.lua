@@ -1,5 +1,8 @@
---- HoundElintEvents
--- @script HoundElint
+--- Hound Main interface
+-- Elint system for DCS
+-- @author uri_ba
+-- @copyright uri_ba 2020-2021
+-- @module HoundElint
 
 do
     --- EventHandler functions

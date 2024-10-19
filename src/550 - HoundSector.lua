@@ -307,12 +307,23 @@ do
         return self.comms.controller ~= nil and self.comms.controller:isEnabled()
     end
 
+    --- If Controller exists on sector, return controller object
+    -- @return HOUND.COMMS.Controller
+    function HOUND.Sector:getController()
+        if self:hasController() then
+            return self.comms.controller
+        end
+        return
+    end
+
     --- Transmit custom TTS message on controller
-    -- @param msg string to broadcast
-    function HOUND.Sector:transmitOnController(msg)
+    -- @param[type=string] msg string to broadcast
+    -- @param[type=?number] priority  message priority, default is 1 (high priority)
+    function HOUND.Sector:transmitOnController(msg,priority)
         if not self.comms.controller or not self.comms.controller:isEnabled() then return end
         if type(msg) ~= "string" then return end
-        local msgObj = {priority = 1,coalition = self._hSettings:getCoalition()}
+        if type(priority) ~= "number" then priority = 1 end
+        local msgObj = {priority = priority,coalition = self._hSettings:getCoalition()}
         msgObj.tts = msg
         if self.comms.controller:isEnabled() then
             self.comms.controller:addMessageObj(msgObj)
@@ -448,6 +459,31 @@ do
     -- @return true if Sector ats is enabled
     function HOUND.Sector:isNotifierEnabled()
         return self.comms.notifier ~= nil and self.comms.notifier:isEnabled()
+    end
+
+    --- If notifier exists on sector, return notifier opject
+    -- @return HOUND.COMMS.Notifier
+    function HOUND.Sector:getNotifier()
+        if self:hasNotifier() then
+            return self.comms.notifier
+        end
+        return
+    end
+
+    --- Transmit custom TTS message on Notifier
+    -- @param[type=string] msg string to broadcast
+    -- @param[type=number] priority message priority, default is 1 (high priority)
+
+    function HOUND.Sector:transmitOnNotifier(msg,priority)
+        if not self.comms.notifier or not self.comms.notifier:isEnabled() then return end
+        if type(msg) ~= "string" then return end
+        if type(priority) ~= "number" then priority = 1 end
+
+        local msgObj = {priority = priority,coalition = self._hSettings:getCoalition()}
+        msgObj.tts = msg
+        if self.comms.notifier:isEnabled() then
+            self.comms.notifier:addMessageObj(msgObj)
+        end
     end
 
     --- Contact Functions

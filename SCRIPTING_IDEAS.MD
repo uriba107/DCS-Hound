@@ -64,3 +64,18 @@ Emit all radar related hound events to DCS-gRPC in a serilized form
 
     HOUND.addEventHandler(FakeEventHandler)
 ```
+
+## Restricted Area warning
+This was originally done by PeneCruz for the ANZUS community.
+When an aircraft violates a restricted airspace, you can use the Notifier or Controller to issue a verbal warning using TTS.
+```lua
+    function violatedAirspace(unit,last_warning)
+        local callsign = HOUND.Utils.getFormationCallsign(unit)
+        local msg = callsign .. " You are violating restricted airspace! please reverse course immidiatly!"
+        if last_warning then
+        msg = msg .. callsign .. " This is your last warning! Change course Immidiatly!"
+        end
+        HoundInstance:transmitOnNotifier("all",msg,0)
+        return HOUND.Utils.TTS.getReadTime(msg)
+    end
+```

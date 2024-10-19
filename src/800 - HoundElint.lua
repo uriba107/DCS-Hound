@@ -478,7 +478,8 @@ do
 
     --- Transmit custom TTS message on controller freqency
     -- @param[type=string] sectorName name of the sector to transmit on.
-    -- @param msg String message to broadcast
+    -- @param[type=string] msg message to broadcast
+    -- @param[type=?number] priority message priority
     function HoundElint:transmitOnController(sectorName,msg)
         if not sectorName or not msg then return end
         if self.sectors[sectorName] then
@@ -695,6 +696,23 @@ do
             return (self.sectors[sectorName]:isNotifierEnabled())
         end
         return false
+    end
+
+    --- Transmit custom TTS message on Notifier freqency
+    -- @param[type=string] sectorName name of the sector to transmit on.
+    -- @param[type=string] msg  message to broadcast
+    -- @param[type=?number] priority message priority
+    function HoundElint:transmitOnNotifier(sectorName,msg,priority)
+        if not sectorName or not msg then return end
+        if self.sectors[sectorName] then
+            self.sectors[sectorName]:transmitOnNotifier(msg)
+            return
+        end
+        if sectorName == "all" then
+            for _,sector in pairs(self.sectors) do
+                sector:transmitOnNotifier(msg)
+            end
+        end
     end
     --- Sector managment
     -- @section sectors

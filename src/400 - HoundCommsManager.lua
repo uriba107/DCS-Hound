@@ -259,7 +259,11 @@ do
     function HOUND.Comms.Manager:addMessageObj(obj)
         if obj.coalition == nil or not self.enabled then return end
         if obj.txt == nil and obj.tts == nil then return end
-        if obj.priority == nil or obj.priority > 3 then obj.priority = 3 end
+        if obj.priority == nil or obj.priority > 3 or obj.priority < 0 then obj.priority = 3 end
+        if obj.priority == 0 then
+            obj.priority = 1
+            obj.push = true
+        end
         if obj.priority == "loop" then
             self.loop.msg = obj
             return
@@ -276,7 +280,11 @@ do
                 end
             end
         end
-        table.insert(self._queue[obj.priority],obj)
+        if obj.push then
+            table.insert(self._queue[obj.priority],1,obj)
+        else
+            table.insert(self._queue[obj.priority],obj)
+        end
     end
 
     --- add message to queue
@@ -285,14 +293,13 @@ do
     -- @int[opt] prio message priority in queue
     function HOUND.Comms.Manager:addMessage(coalition,msg,prio)
         if msg == nil or coalition == nil or ( type(msg) ~= "string" and string.len(tostring(msg)) <= 0) or not self.enabled then return end
-        if prio == nil or prio > 3 then prio = 3 end
+        if prio == nil or prio > 3 or prio < 0 then prio = 3 end
 
         local obj = {
             coalition = coalition,
-            priority = prio,
-            tts = msg
+            tts = msg,
+            priority = prio
         }
-
         self:addMessageObj(obj)
     end
 
