@@ -25,9 +25,9 @@ do
     tts_args = {
         freq = "251.000,127.500,35.000",
         modulation = "AM,AM,FM",
-        -- gender = "male",
-        voice = "en-US-Standard-F",
-        googleTTS = true
+        gender = "female",
+        -- voice = "en-US-Standard-F",
+        -- googleTTS = true
     }
     atis_args = {
         freq = 251.500,
