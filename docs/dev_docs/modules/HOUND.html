@@ -26,6 +26,7 @@
 <br/>
 <h1>Hound<br> ELINT for DCS</h1>
 
+
 <ul>
   <li><a href="../index.html">Index</a></li>
 </ul>
@@ -45,9 +46,11 @@
   <li><a href="../modules/HOUND.Config.html">HOUND.Config</a></li>
   <li><a href="../modules/HOUND.Utils.html">HOUND.Utils</a></li>
   <li><a href="../modules/HOUND.EventHandler.html">HOUND.EventHandler</a></li>
-  <li><a href="../modules/HOUND.Estimator.html">HOUND.Estimator</a></li>
-  <li><a href="../modules/HOUND.Datapoint.html">HOUND.Datapoint</a></li>
-  <li><a href="../modules/HOUND.Contact.html">HOUND.Contact</a></li>
+  <li><a href="../modules/HOUND.Contact.Base.html">HOUND.Contact.Base</a></li>
+  <li><a href="../modules/HOUND.Contact.Estimator.html">HOUND.Contact.Estimator</a></li>
+  <li><a href="../modules/HOUND.Contact.Datapoint.html">HOUND.Contact.Datapoint</a></li>
+  <li><a href="../modules/HOUND.Contact.Emitter.html">HOUND.Contact.Emitter</a></li>
+  <li><a href="../modules/HOUND.Contact.Site.html">HOUND.Contact.Site</a></li>
   <li><a href="../modules/HOUND.Comms.Manager.html">HOUND.Comms.Manager</a></li>
   <li><a href="../modules/HOUND.Comms.InformationSystem.html">HOUND.Comms.InformationSystem</a></li>
   <li><a href="../modules/HOUND.Comms.Controller.html">HOUND.Comms.Controller</a></li>
@@ -80,8 +83,7 @@
 <table class="function_list">
 	<tr>
 	<td class="name" nowrap><a href="#HOUND">HOUND</a></td>
-	<td class="summary">HOUND global settings
- Global settings and paramters</td>
+	<td class="summary">Global settings and paramters</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#MARKER">MARKER</a></td>
@@ -125,15 +127,23 @@
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#setContains">setContains (set, key)</a></td>
-	<td class="summary">check if set contains a provided key</td>
+	<td class="summary">check if set contains a provided key (case sensitive)</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#setContainsValue">setContainsValue (set, value)</a></td>
 	<td class="summary">check if table contains a provided</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#setIntersection">setIntersection (a, b)</a></td>
+	<td class="summary">return set intersection product</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#Gaussian">Gaussian (mean, sigma)</a></td>
 	<td class="summary">return Gaussian random number</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#reverseLookup">reverseLookup (tbl, value)</a></td>
+	<td class="summary">reverse table lookup</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#string.split">string.split (str[, delim])</a></td>
@@ -153,8 +163,7 @@
     <strong>HOUND</strong>
     </dt>
     <dd>
-    HOUND global settings
- Global settings and paramters
+    Global settings and paramters
 
 
     <h3>Fields:</h3>
@@ -184,13 +193,28 @@
          Hound will add more in depth uncertenty info to controller messages (default is true)
         </li>
         <li><span class="parameter">FORCE_MANAGE_MARKERS</span>
-         Force Hound to use internal counter for markIds (default is false).
+         Force Hound to use internal counter for markIds (default is true).
         </li>
         <li><span class="parameter">USE_LEGACY_MARKERS</span>
          Force Hound to use normal markers for radar positions (default is true)
         </li>
-        <li><span class="parameter">PREFER_GRPC_TTS</span>
-         Hound will prefer DCS-gRPC as a TTS engine (default is true)
+        <li><span class="parameter">MARKER_MIN_ALPHA</span>
+         Minimum opacity for area markers
+        </li>
+        <li><span class="parameter">MARKER_MAX_ALPHA</span>
+         Maximum opacity for area markers
+        </li>
+        <li><span class="parameter">MARKER_LINE_OPACITY</span>
+         Opacity of the line around the area markers
+        </li>
+        <li><span class="parameter">MARKER_TEXT_POINTER</span>
+         Char/string used as pointer on text markers
+        </li>
+        <li><span class="parameter">TTS_ENGINE</span>
+         Hound will use the table to determin TTS engine priority
+        </li>
+        <li><span class="parameter">MENU_PAGE_LENGTH</span>
+         Number of Items Hound will put in a menu before starting a new menu page
         </li>
     </ul>
 
@@ -210,7 +234,13 @@
     <h3>Fields:</h3>
     <ul>
         <li><span class="parameter">NONE</span>
-         no ellipse is drawn
+         no markers are drawn
+        </li>
+        <li><span class="parameter">SITE_ONLY</span>
+         only site markers are drawn
+        </li>
+        <li><span class="parameter">POINT</span>
+         only draw point marker for emitters
         </li>
         <li><span class="parameter">CIRCLE</span>
          a circle of uncertenty will be drawn
@@ -241,6 +271,9 @@
 
     <h3>Fields:</h3>
     <ul>
+        <li><span class="parameter">NO_CHANGE</span>
+         nothing changed in the object
+        </li>
         <li><span class="parameter">HOUND_ENABLED</span>
          Hound Event
         </li>
@@ -283,6 +316,9 @@
         <li><span class="parameter">SITE_UPDATED</span>
          Hound Event
         </li>
+        <li><span class="parameter">SITE_CLASSIFIED</span>
+         Hound Event
+        </li>
         <li><span class="parameter">SITE_REMOVED</span>
          Hound Event
         </li>
@@ -290,6 +326,9 @@
          Hound Event
         </li>
         <li><span class="parameter">SITE_ASLEEP</span>
+         Hound Event
+        </li>
+        <li><span class="parameter">SITE_LAUNCH</span>
          Hound Event
         </li>
     </ul>
@@ -475,7 +514,7 @@
     <strong>setContains (set, key)</strong>
     </dt>
     <dd>
-    check if set contains a provided key
+    check if set contains a provided key (case sensitive)
 
 
     <h3>Parameters:</h3>
@@ -491,7 +530,8 @@
     <h3>Returns:</h3>
     <ol>
 
-        Bool. True if key exists in set
+           <span class="types"><span class="type">bool</span></span>
+        True if key exists in set
     </ol>
 
 
@@ -519,7 +559,36 @@
     <h3>Returns:</h3>
     <ol>
 
-        Bool. True if value exists in set
+           <span class="types"><span class="type">bool</span></span>
+        True if value exists in set
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "setIntersection"></a>
+    <strong>setIntersection (a, b)</strong>
+    </dt>
+    <dd>
+    return set intersection product
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+         Table
+        </li>
+        <li><span class="parameter">b</span>
+         Table
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Table
     </ol>
 
 
@@ -548,6 +617,34 @@
     <ol>
 
         random number in gaussian space
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "reverseLookup"></a>
+    <strong>reverseLookup (tbl, value)</strong>
+    </dt>
+    <dd>
+    reverse table lookup
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">tbl</span>
+         table
+        </li>
+        <li><span class="parameter">value</span>
+         to search
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        the key wher value was found
     </ol>
 
 
@@ -589,8 +686,8 @@
 </div> <!-- id="content" -->
 </div> <!-- id="main" -->
 <div id="about">
-<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2023-12-23 21:39:03 </i>
+<i>generated by <a href="http://github.com/lunarmodules/LDoc">LDoc 1.5.0</a></i>
+<i style="float:right;">Last updated 2024-10-23 14:24:49 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

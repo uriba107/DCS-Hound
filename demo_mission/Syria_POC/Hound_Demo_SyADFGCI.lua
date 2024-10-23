@@ -52,7 +52,6 @@ do
     Elint_blue:setZone("Latakya","Latakya")
 
     Elint_blue:enableController("Lebanon",{freq="308.000", modulation = "AM"})
-    Elint_blue:enableAtis("Lebanon",{freq="308.250", modulation = "AM"})
     Elint_blue:setCallsign("Lebanon","GRIMLOK")
     Elint_blue:setZone("Lebanon","Lebanon")
 
@@ -76,6 +75,7 @@ do
     if GRPC ~= nil and type(GRPC.tts) == "function" then
         env.info("gRPC TTS is available enabling additional ATIS controllers")
         Elint_blue:enableAtis("Homs",{freq="307.250", modulation = "AM"})
+        Elint_blue:enableAtis("Lebanon",{freq="308.250", modulation = "AM"})
         Elint_blue:enableAtis("Palmyra",{freq="308.750", modulation = "AM"})
         Elint_blue:enableAtis("Saykal",{freq="309.250", modulation = "AM"})
         Elint_blue:enableAtis("Tabqa",{freq="310.250", modulation = "AM"})
@@ -106,13 +106,14 @@ do
     HoundEventHandler = {}
     function HoundEventHandler:onHoundEvent(event)
         if event.coalition == coalition.side.BLUE then
-            if event.id == HOUND.EVENTS.RADAR_DETECTED then
-                local contact = event.initiator
-                trigger.action.outTextForCoalition(event.coalition,"Fragging a SEAD flight to strike " .. contact:getName(),10)
-                local grp = contact:getUnit():getGroup()
+            if event.id == HOUND.EVENTS.SITE_CREATED then
+                local site = event.initiator
+                if site.isEWR then return end
+                trigger.action.outTextForCoalition(event.coalition,"Fragging a SEAD flight to strike " .. site:getName() .. "(".. site:getNatoDesignation()..")",10)
+                local grp = site:getDcsObject()
                 if not grp then return end
                 -- select SEAD flight
-                local pos = contact:getPos()
+                local pos = site:getPos()
                 local seadFlights = {'SEAD_NORTH','SEAD_WEST','SEAD_SOUTH'}
                 table.sort(seadFlights,
                             function (f1,f2) 
@@ -121,9 +122,9 @@ do
                                 return mist.utils.get2DDist(pos,p1) < mist.utils.get2DDist(pos,p2)
                             end)
                 -- initilize mission
-                local mooseGroup = GROUP:FindByName(contact:getUnit():getGroup():getName())
+                local mooseGroup = GROUP:FindByName(site:getDcsName())
                 local mission = AUFTRAG:NewSEAD(mooseGroup, 20000)
-                local sector = Elint_blue:getSector(contact:getPrimarySector())
+                local sector = Elint_blue:getSector(site:getPrimarySector())
                 env.info(tostring(sector:hasController()))
                 local controllerFreq = nil
                 if sector:hasController() then
@@ -131,7 +132,7 @@ do
                     if controllerFreq[2] == "FM" then controllerFreq[3] = 1 else controllerFreq[3] = 0 end
                     mission:SetRadio(tonumber(controllerFreq[1]),controllerFreq[3])
                 end
-                local seadStrike = SPAWN:NewWithAlias(seadFlights[1],"SEAD ".. contact:getName()):OnSpawnGroup( 
+                local seadStrike = SPAWN:NewWithAlias(seadFlights[1],"SEAD ".. site:getName()):OnSpawnGroup( 
                     function( SeadGroup )
                         local fg=FLIGHTGROUP:New(SeadGroup)
                         fg:AddMission(mission)

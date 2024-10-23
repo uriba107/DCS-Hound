@@ -1,8 +1,11 @@
 do
     if STTS ~= nil then
         STTS.DIRECTORY = "C:\\Program Files\\DCS-SimpleRadio-Standalone"
+        STTS.GOOGLE_CREDENTIALS = "E:\\Dropbox\\uri\\Dropbox\\DCS\\Mission Building\\googletts.json"
     end
     HOUND.USE_LEGACY_MARKS = false
+    -- HOUND.TTS_ENGINE = {'STTS','GRPC'}
+
 
 end
 
@@ -12,42 +15,62 @@ do
     Elint_blue:preBriefedContact('PB-test-1')
     Elint_blue:systemOn()
 
-    Elint_blue:addPlatform("ELINT_C17")
-    Elint_blue:addPlatform("ELINT_C130")
-    -- Elint_blue:addPlatform("Kokotse_Elint")
-    -- Elint_blue:addPlatform("Khvamli_Elint")
-    -- Elint_blue:addPlatform("Migariya_Elint")
+    -- Elint_blue:addPlatform("ELINT_C17")
+    -- Elint_blue:addPlatform("ELINT_C130")
+    Elint_blue:addPlatform("Kokotse_Elint")
+    Elint_blue:addPlatform("Khvamli_Elint")
+    Elint_blue:addPlatform("Migariya_Elint")
     -- Elint_blue:addPlatform("Cow")
 
     tts_args = {
-        freq = "251.000,35.000",
-        modulation = "AM,FM",
-        gender = "male"
+        freq = "251.000,127.500,35.000",
+        modulation = "AM,AM,FM",
+        gender = "female",
+        -- voice = "en-US-Standard-F",
+        -- googleTTS = true
     }
     atis_args = {
         freq = 251.500,
         NATO = false,
     }
 
+    notifier_args = {
+        freq = "305.000,127.000",
+        modulation = "AM,AM",
+        gender = "male"
+    }
     Elint_blue:configureController(tts_args)
     Elint_blue:configureAtis(atis_args)
+    Elint_blue:configureNotifier(notifier_args)
 
     Elint_blue:enableController()
     Elint_blue:enableText()
     Elint_blue:enableAtis()
+    Elint_blue:enableNotifier()
     -- Elint_blue:disableBDA()
-    -- Elint_blue:setMarkerType(HOUND.MARKER.DIAMOND)
+    Elint_blue:setMarkerType(HOUND.MARKER.POLYGON)
+    -- Elint_blue:setMarkerType(HOUND.MARKER.SITE_ONLY)
+
 
     Elint_blue:addSector("Fake")
     Elint_blue:setZone("Fake")
+    Elint_blue:setAlertOnLaunch(true)
     -- Elint_blue:onScreenDebug(true)
     -- Elint_blue:enablePlatformPosErrors()
 
     local callsignOverride = {
-        Uzi = "Tulip"
+        Uzi = "Tulip",
+        Chevy = "*"
     }
 
     Elint_blue:setCallsignOverride(callsignOverride)
+
+    -- test death
+    Elint_blue.onHoundEvent = function(self,event)
+        if event.id == HOUND.EVENTS.RADAR_DESTROYED or event.id == HOUND.EVENTS.SITE_ASLEEP or event.id == HOUND.EVENTS.SITE_REMOVED then
+            HOUND.Logger.debug("Event triggered! " .. HOUND.reverseLookup(HOUND.EVENTS,event.id) .. " for " .. event.initiator:getName())
+        end
+    end
 end
 
 do
@@ -66,17 +89,24 @@ do
     end
 
     function testing.getContacts(hound)
-        env.info(mist.utils.tableShow(hound:getContacts()))
+        env.info(mist.utils.tableShow(hound:getSites()))
         hound:dumpIntelBrief()
     end
 
+    function testing.destroyEWR()
+        local unit = Unit.getByName("EWR-20-1")  or Unit.getByName("EWR-3-1") or Unit.getByName("EWR-9-1")
+        if HOUND.Utils.Dcs.isUnit(unit) then
+            testing.boom(unit)
+        end
+    end
+
     function testing.spawnPlatform(hound)
-        env.info("No. platforms before: " .. Length(hound.platform))
+        env.info("No. platforms before: " .. hound:countPlatforms())
         local newGrp = mist.cloneGroup("ELINT_C17_SPAWN",true)
         local newUnit = newGrp.units[1].name
         env.info("MIST Spawn - Grp:" .. newGrp.name .. " Unit: " .. newUnit)
         hound:addPlatform(newUnit)
-        env.info("No. platforms after: " .. Length(hound.platform))
+        env.info("No. platforms after: " .. hound:countPlatforms())
     end
 
     function testing.AddMarker()
@@ -89,18 +119,66 @@ do
         HOUND.FORCE_MANAGE_MARKERS = not HOUND.FORCE_MANAGE_MARKERS
     end
 
-    function testing.boom(unit)
-        local pos = unit:getPoint()
-        local life0 = unit:getLife0()
-        local life = unit:getLife()
-        local ittr = 1
-        while life > 1 and ittr < 10 do
-            local pwr = math.max(0.0055,(life-1)/life0)
-            env.info(ittr .. " | unit has " .. unit:getLife() .. " started with " .. life0 .. "explody power: " .. pwr)
-            trigger.action.explosion(pos,pwr)
-            life = unit:getLife()
-            ittr = ittr+1
-        end 
+    function testing.boom(DcsObject)
+        local units = {}
+        if getmetatable(DcsObject) == Unit then
+            table.insert(units,DcsObject)
+        end
+        if getmetatable(DcsObject) == Group then
+            units = DcsObject:getUnits()
+        end
+
+        for i=#units,1,-1 do
+            local unit = units[i]
+            if unit:hasSensors(Unit.SensorType.RADAR) and HOUND.setContains(HOUND.DB.Radars,unit:getTypeName()) then
+                local pos = unit:getPoint()
+                local life0 = unit:getLife0()
+                local life = unit:getLife()
+                local ittr = 1
+                while life > 1 and ittr < 10 do
+                    local pwr = math.max(0.0055,(life-1)/life0)
+                    env.info(ittr .. " | unit has " .. unit:getLife() .. " HP, started with " .. life0 .. " explody power: " .. pwr)
+                    trigger.action.explosion(pos,pwr)
+                    life = unit:getLife()
+                    ittr = ittr+1
+                end
+                if ittr > 1 then
+                    return -- only destroy one unit
+                end
+            end
+        end
+    end
+
+    function testing.testHasRadar(DcsObject)
+        local units = {}
+        if getmetatable(DcsObject) == Unit then
+            table.insert(units,DcsObject)
+        end
+        if getmetatable(DcsObject) == Group then
+            units = DcsObject:getUnits()
+        end
+        local lastUnit = units[#units]
+        env.info("*** BEFORE ***")
+        env.info(lastUnit:getName() .. " has radar? " .. tostring(lastUnit:hasSensors(Unit.SensorType.RADAR)))
+        env.info(mist.utils.tableShow(lastUnit:getSensors()))
+        env.info("*************")
+        for idx,unit in ipairs(units) do
+            if idx <=4 then
+                local pos = unit:getPoint()
+                local life0 = unit:getLife0()
+                local life = unit:getLife()
+                local ittr = 1
+                while life > 1 and ittr < 10 do
+                    trigger.action.explosion(pos,5)
+                    life = unit:getLife()
+                    ittr = ittr+1
+                end
+            end
+        end
+        env.info("*** AFTER ***")
+        env.info(lastUnit:getName() .. " has radar? " .. tostring(lastUnit:hasSensors(Unit.SensorType.RADAR)))
+        env.info(mist.utils.tableShow(lastUnit:getSensors()))
+        env.info("*************")
     end
 
     function testing.badaBoom(pos)
@@ -179,7 +257,6 @@ do
             end
         end
         env.info(mist.utils.tableShow(args))
-
     end
 
     function testing.GRPCtts(msg)
@@ -198,6 +275,9 @@ do
     missionCommands.addCommand("Mark PB",testing.Menu,testing.markPB,"PB-test-3")
 
     missionCommands.addCommand("Toggle SA-3 Activation",testing.Menu,testing.toggleGroup,"SA-3_late")
+    missionCommands.addCommand("BlowUp SA3",testing.Menu,testing.boom,Group.getByName("SA-3"))
+    missionCommands.addCommand("BlowUp SA10",testing.Menu,testing.testHasRadar,Group.getByName("SA10_1"))
+
     -- missionCommands.addCommand("Destroy C17",testing.Menu,Unit.destroy,Unit.getByName("ELINT_C17"))
     -- missionCommands.addCommand("Remove C17",testing.Menu,testing.removePlatform,{houndInstance=Elint_blue,unit_name="ELINT_C17"})
     missionCommands.addCommand("Spawn platform",testing.Menu,testing.spawnPlatform,Elint_blue)
@@ -205,14 +285,7 @@ do
     -- missionCommands.addCommand("Destroy transmitter",testing.Menu,Unit.destroy,	Unit.getByName("Migariya_Elint"))
     -- missionCommands.addCommand("Remove transmitter",testing.Menu,testing.removeTransmitter,Elint_blue.controller)
     -- missionCommands.addCommand("Get Contacts",testing.Menu,testing.getContacts,Elint_blue)
-    -- missionCommands.addCommand("Add test Marker",testing.Menu,testing.AddMarker)
-    -- missionCommands.addCommand("Toggle marker Counter",testing.Menu,testing.toggleMarkers)
-    -- missionCommands.addCommand("unit data",testing.Menu,testing.GrpData,'Elint')
-    -- missionCommands.addCommand("test gRPC",testing.Menu,testing.GRPCtts,'testing 1,2,3...')
-    -- missionCommands.addCommand("atis volume down",testing.Menu,testing.decreaseAtisVolume,Elint_blue)
-    -- missionCommands.addCommand("atis volume up",testing.Menu,testing.increaseAtisVolume,Elint_blue)
-    -- missionCommands.addCommand("unit data",testing.Menu,testing.GrpData,'Elint')
-    -- missionCommands.addCommand("unit data",testing.Menu,testing.UnitDrawArgs,'EMPTY_VIPER')
+    missionCommands.addCommand("Blow up EWR",testing.Menu,testing.destroyEWR)
 
 
 end
@@ -249,7 +322,9 @@ do
 
 
     -- env.info(Unit.getByName('P8'):getTypeName())
-    -- env.info(Unit.getByName('P3'):getTypeName())
+    env.info("KW is " .. Unit.getByName('KW'):getTypeName())
+    env.info("KWR is " .. Unit.getByName('KWR'):getTypeName())
+
  
     -- for grpName,grp in pairs( HOUND.Utils.Filter.groupsByPrefix("F-1")) do
     --     env.info(grpName.." | "..grp:getUnit(1):getTypeName())
@@ -260,4 +335,27 @@ do
     -- mist.debug.dump_G('hound_post_rename_G.lua')
     -- mist.debug.dumpDBs()
 
+    -- for _,unit in ipairs({StaticObject.getByName('Kokotse_Elint'),StaticObject.getByName('TV_TOWER'),StaticObject.getByName('COMMAND_CENTER')}) do
+    --     local data = unit:getDesc()
+    --     local pos = unit:getPosition().p
+    --     env.info("Hight of ".. unit:getTypeName() .. " is " .. unit:getDesc()["box"]["max"]["y"])
+    -- end
+    -- local balloon = StaticObject.getByName('BALLOON_ANCHOR')
+    -- env.info(mist.utils.tableShow(balloon:getDesc()))
+    
+    -- for cid,v in pairs(_G.env.mission.coalition.blue.country) do
+    --     if cid ~= nil and type(v) == "table" then
+    --         env.info("CID: " .. cid)
+    --         for k,v1 in pairs(v) do
+    --             if k == "name" then
+    --                 env.info("name: " .. v1)
+    --             end
+    --             -- if k == "static" then
+    --             --     for _,obj in pairs(v1) do
+    --             --         env.info(mist.utils.tableShow(obj))
+    --             --     end
+    --             -- end
+    --         end
+    --     end
+    -- end
 end

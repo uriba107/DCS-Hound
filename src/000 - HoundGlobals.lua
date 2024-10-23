@@ -17,8 +17,7 @@ do
 end
 
 do
-    --- HOUND global settings
-    -- Global settings and paramters
+    --- Global settings and paramters
     -- @table HOUND
     -- @field VERSION Hound Version
     -- @field DEBUG Hound will do extended debug output to log (for development)
@@ -28,11 +27,16 @@ do
     -- @field CONTACT_TIMEOUT Timout for emitter to be silent before being dropped from contacts
     -- @field MGRS_PRECISION Number of digits in MGRS conversion
     -- @field EXTENDED_INFO Hound will add more in depth uncertenty info to controller messages (default is true)
-    -- @field FORCE_MANAGE_MARKERS Force Hound to use internal counter for markIds (default is false).
+    -- @field FORCE_MANAGE_MARKERS Force Hound to use internal counter for markIds (default is true).
     -- @field USE_LEGACY_MARKERS Force Hound to use normal markers for radar positions (default is true)
-    -- @field PREFER_GRPC_TTS Hound will prefer DCS-gRPC as a TTS engine (default is true)
+    -- @field MARKER_MIN_ALPHA Minimum opacity for area markers
+    -- @field MARKER_MAX_ALPHA Maximum opacity for area markers
+    -- @field MARKER_LINE_OPACITY Opacity of the line around the area markers
+    -- @field MARKER_TEXT_POINTER Char/string used as pointer on text markers
+    -- @field TTS_ENGINE Hound will use the table to determin TTS engine priority
+    -- @field MENU_PAGE_LENGTH Number of Items Hound will put in a menu before starting a new menu page
     HOUND = {
-        VERSION = "0.3.5-TRUNK",
+        VERSION = "0.4.0-TRUNK",
         DEBUG = true,
         ELLIPSE_PERCENTILE = 0.6,
         DATAPOINTS_NUM = 30,
@@ -41,28 +45,38 @@ do
         MGRS_PRECISION = 5,
         EXTENDED_INFO = true,
         MIST_VERSION = tonumber(table.concat({mist.majorVersion,mist.minorVersion},".")),
-        FORCE_MANAGE_MARKERS = false,
+        FORCE_MANAGE_MARKERS = true,
         USE_LEGACY_MARKERS = true,
-        PREFER_GRPC_TTS = false -- disabled for now. will require fix planned for gRPC 0.7.2 to function correctly.
+        MARKER_MIN_ALPHA = 0.05,
+        MARKER_MAX_ALPHA = 0.2,
+        MARKER_LINE_OPACITY = 0.3,
+        MARKER_TEXT_POINTER = "⇙ ", -- "¤ « "
+        TTS_ENGINE = {'STTS','GRPC'},
+        MENU_PAGE_LENGTH = 9
     }
 
     --- Map Markers ENUM
     -- @table HOUND.MARKER
-    -- @field NONE no ellipse is drawn
+    -- @field NONE no markers are drawn
+    -- @field SITE_ONLY only site markers are drawn
+    -- @field POINT only draw point marker for emitters
     -- @field CIRCLE a circle of uncertenty will be drawn
     -- @field DIAMOND a diamond will be drawn with 4 points representing uncertenty ellipse
     -- @field OCTAGON ellipse will be drawn with 8 points (diamon with midpoints)
     -- @field POLYGON ellipse will be drawn as a 16 sides polygon
     HOUND.MARKER = {
         NONE = 0,
-        CIRCLE = 1,
-        DIAMOND = 2,
-        OCTAGON = 3,
-        POLYGON = 4
+        SITE_ONLY = 1,
+        POINT = 2,
+        CIRCLE = 3,
+        DIAMOND = 4,
+        OCTAGON = 5,
+        POLYGON = 6
     }
 
     --- Hound Events
     -- @table EVENTS
+    -- @field NO_CHANGE nothing changed in the object
     -- @field HOUND_ENABLED Hound Event
     -- @field HOUND_DISABLED Hound Event
     -- @field PLATFORM_ADDED Hound Event
@@ -77,10 +91,13 @@ do
     -- @field SITE_NEW Hound Event
     -- @field SITE_CREATED Hound Event
     -- @field SITE_UPDATED Hound Event
+    -- @field SITE_CLASSIFIED Hound Event
     -- @field SITE_REMOVED Hound Event
     -- @field SITE_ALIVE Hound Event
     -- @field SITE_ASLEEP Hound Event
+    -- @field SITE_LAUNCH Hound Event
     HOUND.EVENTS = {
+        NO_CHANGE     = 0,
         HOUND_ENABLED = 1,
         HOUND_DISABLED = 2,
         PLATFORM_ADDED = 3,
@@ -95,12 +112,14 @@ do
         RADAR_DESTROYED = 12,
         RADAR_ALIVE = 13,
         RADAR_ASLEEP = 14,
-        SITE_NEW = 15,      -- Placeholder
-        SITE_CREATED = 16,  -- Placeholder
-        SITE_UPDATED = 17,  -- Placeholder
-        SITE_REMOVED = 18,  -- Placeholder
-        SITE_ALIVE = 19,    -- Placeholder
-        SITE_ASLEEP = 20    -- Placeholder
+        SITE_NEW = 15,
+        SITE_CREATED = 16,
+        SITE_UPDATED = 17,
+        SITE_CLASSIFIED = 18,
+        SITE_REMOVED = 19,
+        SITE_ALIVE = 20,
+        SITE_ASLEEP = 21,
+        SITE_LAUNCH = 22,
     }
 
     --- Event structure
@@ -146,12 +165,14 @@ do
         HOUND.EventHandler.removeEventHandler(handler)
     end
 
+    -- setup for inheritance classes
+    HOUND.Contact = {}
     HOUND.Comms = {}
 
     --- helper code for class inheritance
     -- @local
     -- @param baseClass Base class to inherit from
-    function inheritsFrom( baseClass )
+    function HOUND.inheritsFrom( baseClass )
 
         local new_class = {}
         local class_mt = { __index = new_class }
@@ -199,18 +220,18 @@ do
     -- @local
     -- @param T table
     -- @return length of T
-    function Length(T)
+    function HOUND.Length(T)
         local count = 0
         if T ~= nil then for _ in pairs(T) do count = count + 1 end end
         return count
     end
 
-    --- check if set contains a provided key
+    --- check if set contains a provided key (case sensitive)
     -- @local
     -- @param set Hash table to check
     -- @param key to check
-    -- @return Bool. True if key exists in set
-    function setContains(set, key)
+    -- @return[type=bool] True if key exists in set
+    function HOUND.setContains(set, key)
         if not set or not key then return false end
         return set[key] ~= nil
     end
@@ -219,8 +240,8 @@ do
     -- @local
     -- @param set Table to check
     -- @param value Value to check
-    -- @return Bool. True if value exists in set
-    function setContainsValue(set,value)
+    -- @return[type=bool] True if value exists in set
+    function HOUND.setContainsValue(set,value)
         if not set or not value then return false end
         for _,v in pairs(set) do
             if v == value then
@@ -230,23 +251,40 @@ do
         return false
     end
 
+    --- return set intersection product
+    -- @local
+    -- @param a Table
+    -- @param b Table
+    -- @return Table
+    function HOUND.setIntersection(a,b)
+        local res = {}
+        for k in pairs(a) do
+          res[k] = b[k]
+        end
+        return res
+      end
+
     --- return Gaussian random number
     -- @local
     -- @param mean Mean value (i.e center of the gausssian curve)
     -- @param sigma amount of variance in the random value
     -- @return random number in gaussian space
-    function Gaussian(mean, sigma)
+    function HOUND.Gaussian(mean, sigma)
         return math.sqrt(-2 * sigma * math.log(math.random())) *
                    math.cos(2 * math.pi * math.random()) + mean
     end
 
-    -- function StDev()
-    --     local sum, sumsq, k = 0, 0, 0
-    --     return function(n)
-    --         sum, sumsq, k = sum + n, sumsq + n ^ 2, k + 1
-    --         return math.sqrt((sumsq / k) - (sum / k) ^ 2)
-    --     end
-    -- end
+    --- reverse table lookup
+    -- @local
+    -- @param #tbl table
+    -- @param value to search
+    -- @return the key wher value was found
+    function HOUND.reverseLookup(tbl,value)
+        if type(tbl) ~= "table" or type(value) == "nil" then return end
+        for k,v in pairs(tbl) do
+            if v == value then return k end
+        end
+    end
 
     --- Split String on delimited
     -- @local

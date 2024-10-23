@@ -9,59 +9,45 @@ do
         collectgarbage("collect")
     end
     function TestHoundFunctional:Test_01_init_00_unitSetup()
+        local function setupGroup(grp)
+            grp:enableEmission(false)
+            local control = grp:getController()
+            control:setOnOff(true)
+            control:setOption(0,2) -- ROE, Open_file
+            control:setOption(9,2) -- Alarm_State, RED
+            control:setOption(20,false) -- ENGAGE_AIR_WEAPONS, false
+        end
+
         local tor_golf = Group.getByName("TOR_SAIPAN")
         lu.assertIsTable(tor_golf)
         lu.assertEquals(tor_golf:getSize(),1)
-        tor_golf:enableEmission(false)
-        local control = tor_golf:getController()
-        control:setOnOff(true)
-        control:setOption(0,2) -- ROE, Open_file
-        control:setOption(9,2) -- Alarm_State, RED
-        control:setOption(20,false) -- ENGAGE_AIR_WEAPONS, false
+        setupGroup(tor_golf)
 
         local sa5 = Group.getByName('SA-5_SAIPAN')
         lu.assertIsTable(sa5)
         lu.assertEquals(sa5:getSize(),8)
-        sa5:enableEmission(false)
-
-        control = sa5:getController()
-        control:setOnOff(true)
-        control:setOption(0,2) -- ROE, Open_file
-        control:setOption(9,2) -- Alarm_State, RED
-        control:setOption(20,false) -- ENGAGE_AIR_WEAPONS, false
+        setupGroup(sa5)
 
         local ewr = Group.getByName('EWR_SAIPAN')
         lu.assertIsTable(ewr)
         lu.assertEquals(ewr:getSize(),1)
-        ewr:enableEmission(false)
+        setupGroup(ewr)
 
-        control = ewr:getController()
-        control:setOnOff(true)
-        control:setOption(0,2) -- ROE, Open_file
-        control:setOption(9,2) -- Alarm_State, RED
-        control:setOption(20,false) -- ENGAGE_AIR_WEAPONS, false
-
-        local kirov = Group.getByName('KIROV_NORTH')
-        lu.assertIsTable(kirov)
-        lu.assertEquals(kirov:getSize(),1)
-        kirov:enableEmission(false)
-
-        control = kirov:getController()
-        control:setOnOff(true)
-        control:setOption(0,2) -- ROE, Open_file
-        control:setOption(9,2) -- Alarm_State, RED
-        control:setOption(20,false) -- ENGAGE_AIR_WEAPONS, false
+        local ships = Group.getByName('SHIPS_NORTH')
+        lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(ships))
+        lu.assertEquals(ships:getSize(),2)
+        setupGroup(ships)
 
         local sa6 = Group.getByName('SA-6_TINIAN')
         lu.assertIsTable(sa6)
         lu.assertEquals(sa6:getSize(),5)
-        sa6:enableEmission(false)
+        setupGroup(sa6)
 
-        control = sa6:getController()
-        control:setOnOff(true)
-        control:setOption(0,2) -- ROE, Open_file
-        control:setOption(9,2) -- Alarm_State, RED
-        control:setOption(20,false) -- ENGAGE_AIR_WEAPONS, false
+        local sa3 = Group.getByName('SA-3_TINIAN')
+        lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(sa3))
+        lu.assertEquals(sa3:getSize(),6)
+        setupGroup(sa3)
+
     end
 
     function TestHoundFunctional:Test_01_init_01_BadInit()

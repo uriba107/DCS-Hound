@@ -52,16 +52,31 @@ do
     }
 
     --- Units that use DMM format
-    -- @table HOUND.DB.useDecMin
+    -- @table HOUND.DB.useDMM
     -- @field UnitType Bool Value
     -- @usage ['F-16C_blk50'] = true
-    HOUND.DB.useDecMin =  {
+    HOUND.DB.useDMM =  {
         ['F-16C_blk50'] = true,
         ['F-16C_50'] = true,
         ['M-2000C'] = true,
         ['A-10C'] = true,
         ['A-10C_2'] = true,
         ['AH-64D_BLK_II'] = true,
+        ['F-15ESE'] = true,
+        ['OH58D'] = true,
+        ['OH-58D'] = true
+    }
+
+    --- Units that prefer MGRS format (not in use)
+    -- @table HOUND.DB.useMGRS
+    -- @field UnitType Bool value
+    -- @usage ['A-10C'] = true
+    HOUND.DB.useMGRS = {
+        ['A-10C'] = true,
+        ['A-10C_2'] = true,
+        ['AH-64D_BLK_II'] = true,
+        ['OH58D'] = true,
+        ['OH-58D'] = true
     }
 
     --- Band vs wavelength
@@ -81,6 +96,20 @@ do
         ['J'] = 0.019986,
         ['K'] = 0.009993,
         ['L'] = 0.005996,
+    }
+
+    --- Radar types ENUM
+    -- @table HOUND.DB.RadarType
+    -- @field Radar type in hex
+    -- @usage ['EWR'] = 0x01
+    HOUND.DB.RadarType = {
+        ['NONE'] = 0x00,
+        ['EWR'] = 0x01,
+        ['RANGEFINDER'] = 0x02,
+        ['ANTISHIP'] = 0x04,
+        ['SEARCH'] = 0x08,
+        ['TRACK'] = 0x10,
+        ['NAVAL'] = 0x20
     }
 
     --- Hound callsigns

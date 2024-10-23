@@ -1,0 +1,786 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Hound Documentation</title>
+    <link rel="stylesheet" href="../ldoc_fixed.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Hound<br> ELINT for DCS</h1>
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Class_HOUND_Contact_Base">Class HOUND.Contact.Base </a></li>
+<li><a href="#Sector_Mangment">Sector Mangment </a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><a href="../modules/HOUND.html">HOUND</a></li>
+  <li><strong>HOUND.Contact.Base</strong></li>
+</ul>
+<h2>Scripts</h2>
+<ul class="nowrap">
+  <li><a href="../scripts/HoundElint.html">HoundElint</a></li>
+  <li><a href="../scripts/HoundElint.html">HoundElint</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>HOUND.Contact.Base</code></h1>
+<p>HOUND.Contact.Base
+ Contact class.</p>
+<p> containing related functions
+</p>
+
+
+<h2><a href="#Class_HOUND_Contact_Base">Class HOUND.Contact.Base </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Base:New">HOUND.Contact.Base:New (DcsObject, HoundCoalition)</a></td>
+	<td class="summary">create new HOUND.Contact instance</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Base:destroy">HOUND.Contact.Base:destroy ()</a></td>
+	<td class="summary">Destructor function</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Base:getDcsGroupName">HOUND.Contact.Base:getDcsGroupName ()</a></td>
+	<td class="summary">Get Contact Group Name</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Base:getDcsName">HOUND.Contact.Base:getDcsName ()</a></td>
+	<td class="summary">Get the DCS unit name</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Base:getDcsObject">HOUND.Contact.Base:getDcsObject ()</a></td>
+	<td class="summary">Get the underlying DCS Object</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Base:getLastSeen">HOUND.Contact.Base:getLastSeen ()</a></td>
+	<td class="summary">Get last seen in seconds</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Base:getObject">HOUND.Contact.Base:getObject ()</a></td>
+	<td class="summary">get DCS Object instane assoiciated with contact</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Base:hasPos">HOUND.Contact.Base:hasPos ()</a></td>
+	<td class="summary">check if contact has estimated position</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Base:getMaxWeaponsRange">HOUND.Contact.Base:getMaxWeaponsRange ()</a></td>
+	<td class="summary">get max weapons range</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Base:getRadarDetectionRange">HOUND.Contact.Base:getRadarDetectionRange ()</a></td>
+	<td class="summary">get max detection range</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Base:getTypeAssigned">HOUND.Contact.Base:getTypeAssigned ()</a></td>
+	<td class="summary">get type assinged string</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Base:getNatoDesignation">HOUND.Contact.Base:getNatoDesignation ()</a></td>
+	<td class="summary">get NATO designation</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Base:isActive">HOUND.Contact.Base:isActive ()</a></td>
+	<td class="summary">Check if contact is Active</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Base:isRecent">HOUND.Contact.Base:isRecent ()</a></td>
+	<td class="summary">check if contact is recent</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Base:isAccurate">HOUND.Contact.Base:isAccurate ()</a></td>
+	<td class="summary">check if contact position is accurate</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Base:getPreBriefed">HOUND.Contact.Base:getPreBriefed ()</a></td>
+	<td class="summary">get preBriefed status</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Base:setPreBriefed">HOUND.Contact.Base:setPreBriefed (state)</a></td>
+	<td class="summary">set preBriefed status</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Base:isTimedout">HOUND.Contact.Base:isTimedout ()</a></td>
+	<td class="summary">check if contact is timed out</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Base:getState">HOUND.Contact.Base:getState ()</a></td>
+	<td class="summary">Get current state</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Base:queueEvent">HOUND.Contact.Base:queueEvent (eventId)</a></td>
+	<td class="summary">Queue new event</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Base:getEventQueue">HOUND.Contact.Base:getEventQueue ()</a></td>
+	<td class="summary">get event queue</td>
+	</tr>
+</table>
+<h2><a href="#Sector_Mangment">Sector Mangment </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Base:getPrimarySector">HOUND.Contact.Base:getPrimarySector ()</a></td>
+	<td class="summary">Get primaty sector for contact</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Base:getSectors">HOUND.Contact.Base:getSectors ()</a></td>
+	<td class="summary">get sectors contact is threatening</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Base:isInSector">HOUND.Contact.Base:isInSector (sectorName)</a></td>
+	<td class="summary">check if threatens sector</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Base:updateSector">HOUND.Contact.Base:updateSector (sectorName, inSector, threatsSector)</a></td>
+	<td class="summary">Update sector data</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Base:addSector">HOUND.Contact.Base:addSector (sectorName)</a></td>
+	<td class="summary">add contact to names sector</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Base:removeSector">HOUND.Contact.Base:removeSector (sectorName)</a></td>
+	<td class="summary">remove contact from named sector</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Base:isThreatsSector">HOUND.Contact.Base:isThreatsSector (sectorName)</a></td>
+	<td class="summary">check if contact in names sector</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header has-description"><a name="Class_HOUND_Contact_Base"></a>Class HOUND.Contact.Base </h2>
+
+          <div class="section-description">
+          HOUND.Contact decleration
+ Contact class.  containing related functions
+          </div>
+    <dl class="function">
+    <dt>
+    <a name = "HOUND.Contact.Base:New"></a>
+    <strong>HOUND.Contact.Base:New (DcsObject, HoundCoalition)</strong>
+    </dt>
+    <dd>
+    create new HOUND.Contact instance
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">DcsObject</span>
+         emitter DCS Unit
+        </li>
+        <li><span class="parameter">HoundCoalition</span>
+         coalition Id of Hound Instace
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        HOUND.Contact instance
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Base:destroy"></a>
+    <strong>HOUND.Contact.Base:destroy ()</strong>
+    </dt>
+    <dd>
+    Destructor function
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Base:getDcsGroupName"></a>
+    <strong>HOUND.Contact.Base:getDcsGroupName ()</strong>
+    </dt>
+    <dd>
+    Get Contact Group Name
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        String
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Base:getDcsName"></a>
+    <strong>HOUND.Contact.Base:getDcsName ()</strong>
+    </dt>
+    <dd>
+    Get the DCS unit name
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        String
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Base:getDcsObject"></a>
+    <strong>HOUND.Contact.Base:getDcsObject ()</strong>
+    </dt>
+    <dd>
+    Get the underlying DCS Object
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        DCS Unit or DCS staticObject
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Base:getLastSeen"></a>
+    <strong>HOUND.Contact.Base:getLastSeen ()</strong>
+    </dt>
+    <dd>
+    Get last seen in seconds
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        number in seconds since contact was last seen
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Base:getObject"></a>
+    <strong>HOUND.Contact.Base:getObject ()</strong>
+    </dt>
+    <dd>
+    get DCS Object instane assoiciated with contact
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        DCS object (unit or group)
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Base:hasPos"></a>
+    <strong>HOUND.Contact.Base:hasPos ()</strong>
+    </dt>
+    <dd>
+    check if contact has estimated position
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">Bool</span></span>
+        True if contact has estimated position
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Base:getMaxWeaponsRange"></a>
+    <strong>HOUND.Contact.Base:getMaxWeaponsRange ()</strong>
+    </dt>
+    <dd>
+    get max weapons range
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Number max weapon range of contact
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Base:getRadarDetectionRange"></a>
+    <strong>HOUND.Contact.Base:getRadarDetectionRange ()</strong>
+    </dt>
+    <dd>
+    get max detection range
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Number max detection range of contact
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Base:getTypeAssigned"></a>
+    <strong>HOUND.Contact.Base:getTypeAssigned ()</strong>
+    </dt>
+    <dd>
+    get type assinged string
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        string
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Base:getNatoDesignation"></a>
+    <strong>HOUND.Contact.Base:getNatoDesignation ()</strong>
+    </dt>
+    <dd>
+    get NATO designation
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        string
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Base:isActive"></a>
+    <strong>HOUND.Contact.Base:isActive ()</strong>
+    </dt>
+    <dd>
+    Check if contact is Active
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">Bool</span></span>
+        True if seen in the last 15 seconds
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Base:isRecent"></a>
+    <strong>HOUND.Contact.Base:isRecent ()</strong>
+    </dt>
+    <dd>
+    check if contact is recent
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">Bool</span></span>
+        True if seen in the last 2 minutes
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Base:isAccurate"></a>
+    <strong>HOUND.Contact.Base:isAccurate ()</strong>
+    </dt>
+    <dd>
+    check if contact position is accurate
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">bool</span></span>
+        - True target is pre briefed
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Base:getPreBriefed"></a>
+    <strong>HOUND.Contact.Base:getPreBriefed ()</strong>
+    </dt>
+    <dd>
+    get preBriefed status
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">bool</span></span>
+        - True if target is prebriefed
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Base:setPreBriefed"></a>
+    <strong>HOUND.Contact.Base:setPreBriefed (state)</strong>
+    </dt>
+    <dd>
+    set preBriefed status
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">state</span>
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">bool</span></span>
+        - True if target is prebriefed
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Base:isTimedout"></a>
+    <strong>HOUND.Contact.Base:isTimedout ()</strong>
+    </dt>
+    <dd>
+    check if contact is timed out
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">Bool</span></span>
+        True if timed out
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Base:getState"></a>
+    <strong>HOUND.Contact.Base:getState ()</strong>
+    </dt>
+    <dd>
+    Get current state
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Contact state in <a href="../modules/HOUND.html#EVENTS">HOUND.EVENTS</a>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Base:queueEvent"></a>
+    <strong>HOUND.Contact.Base:queueEvent (eventId)</strong>
+    </dt>
+    <dd>
+    Queue new event
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">eventId</span>
+         <a href="../modules/HOUND.html#EVENTS">HOUND.EVENTS</a>
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Base:getEventQueue"></a>
+    <strong>HOUND.Contact.Base:getEventQueue ()</strong>
+    </dt>
+    <dd>
+    get event queue
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table of event skeletons
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Sector_Mangment"></a>Sector Mangment </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HOUND.Contact.Base:getPrimarySector"></a>
+    <strong>HOUND.Contact.Base:getPrimarySector ()</strong>
+    </dt>
+    <dd>
+    Get primaty sector for contact
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        name of sector the position is in
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Base:getSectors"></a>
+    <strong>HOUND.Contact.Base:getSectors ()</strong>
+    </dt>
+    <dd>
+    get sectors contact is threatening
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        list of sector names
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Base:isInSector"></a>
+    <strong>HOUND.Contact.Base:isInSector (sectorName)</strong>
+    </dt>
+    <dd>
+    check if threatens sector
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">sectorName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Boot True if theat
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Base:updateSector"></a>
+    <strong>HOUND.Contact.Base:updateSector (sectorName, inSector, threatsSector)</strong>
+    </dt>
+    <dd>
+    Update sector data
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">sectorName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         name of sector
+        </li>
+        <li><span class="parameter">inSector</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         true if contact is in the sector
+        </li>
+        <li><span class="parameter">threatsSector</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         true if contact threatens sector
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Base:addSector"></a>
+    <strong>HOUND.Contact.Base:addSector (sectorName)</strong>
+    </dt>
+    <dd>
+    add contact to names sector
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">sectorName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         name of sector
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Base:removeSector"></a>
+    <strong>HOUND.Contact.Base:removeSector (sectorName)</strong>
+    </dt>
+    <dd>
+    remove contact from named sector
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">sectorName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         name of sector
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Base:isThreatsSector"></a>
+    <strong>HOUND.Contact.Base:isThreatsSector (sectorName)</strong>
+    </dt>
+    <dd>
+    check if contact in names sector
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">sectorName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         name of sector
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">Bool</span></span>
+        True if contact thretens sector
+    </ol>
+
+
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+<i style="float:right;">Last updated 2024-10-19 20:06:31 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

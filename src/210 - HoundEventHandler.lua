@@ -7,7 +7,8 @@ do
     HOUND.EventHandler = {
         idx = 0,
         subscribers = {},
-        _internalSubscribers = {}
+        _internalSubscribers = {},
+        subscribeOn = {}
     }
 
     HOUND.EventHandler.__index = HOUND.EventHandler
@@ -24,6 +25,9 @@ do
     -- @param handler handler to remove
     function HOUND.EventHandler.removeEventHandler(handler)
         HOUND.EventHandler.subscribers[handler] = nil
+        for eventType,_ in pairs(HOUND.EventHandler.subscribeOn) do
+            HOUND.EventHandler.subscribeOn[eventType][handler] = nil
+        end
     end
 
     --- register new internal event handler
@@ -39,16 +43,31 @@ do
     -- @local
     -- @param handler handler to register
     function HOUND.EventHandler.removeInternalEventHandler(handler)
-        if setContains(HOUND.EventHandler._internalSubscribers,handler) then
+        if HOUND.setContains(HOUND.EventHandler._internalSubscribers,handler) then
             HOUND.EventHandler._internalSubscribers[handler] = nil
+        end
+    end
+
+    -- register using on pattern
+    -- @param eventType event to register
+    -- @param handler handler to register
+    function HOUND.EventHandler.on(eventType,handler)
+        if type(handler) == "function" then
+            if not HOUND.EventHandler.subscribeOn[eventType] then
+                HOUND.EventHandler.subscribeOn[eventType] = {}
+            end
+            HOUND.EventHandler.subscribeOn[eventType][handler] = handler
         end
     end
 
     --- Execute event on all registeres subscribers
     function HOUND.EventHandler.onHoundEvent(event)
         for _, handler in pairs(HOUND.EventHandler._internalSubscribers) do
-            if handler.onHoundEvent and type(handler.onHoundEvent) == "function" then
-                if handler and handler.settings then
+            if handler and getmetatable(handler) == HoundElint and handler:getId() == event.houndId then
+                if handler.onHoundInternalEvent and type(handler.onHoundInternalEvent) == "function" then
+                    handler:onHoundInternalEvent(event)
+                end
+                if handler.onHoundEvent and type(handler.onHoundEvent) == "function" then
                     handler:onHoundEvent(event)
                 end
             end
@@ -63,7 +82,9 @@ do
     --- publish event to subscribers
     -- @local
     function HOUND.EventHandler.publishEvent(event)
-        event.time = timer.getTime()
+        if not event.time then
+            event.time = timer.getTime()
+        end
         HOUND.EventHandler.onHoundEvent(event)
         -- return event.idx
     end

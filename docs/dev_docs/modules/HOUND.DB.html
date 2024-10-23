@@ -26,6 +26,7 @@
 <br/>
 <h1>Hound<br> ELINT for DCS</h1>
 
+
 <ul>
   <li><a href="../index.html">Index</a></li>
 </ul>
@@ -45,9 +46,11 @@
   <li><a href="../modules/HOUND.Config.html">HOUND.Config</a></li>
   <li><a href="../modules/HOUND.Utils.html">HOUND.Utils</a></li>
   <li><a href="../modules/HOUND.EventHandler.html">HOUND.EventHandler</a></li>
-  <li><a href="../modules/HOUND.Estimator.html">HOUND.Estimator</a></li>
-  <li><a href="../modules/HOUND.Datapoint.html">HOUND.Datapoint</a></li>
-  <li><a href="../modules/HOUND.Contact.html">HOUND.Contact</a></li>
+  <li><a href="../modules/HOUND.Contact.Base.html">HOUND.Contact.Base</a></li>
+  <li><a href="../modules/HOUND.Contact.Estimator.html">HOUND.Contact.Estimator</a></li>
+  <li><a href="../modules/HOUND.Contact.Datapoint.html">HOUND.Contact.Datapoint</a></li>
+  <li><a href="../modules/HOUND.Contact.Emitter.html">HOUND.Contact.Emitter</a></li>
+  <li><a href="../modules/HOUND.Contact.Site.html">HOUND.Contact.Site</a></li>
   <li><a href="../modules/HOUND.Comms.Manager.html">HOUND.Comms.Manager</a></li>
   <li><a href="../modules/HOUND.Comms.InformationSystem.html">HOUND.Comms.InformationSystem</a></li>
   <li><a href="../modules/HOUND.Comms.Controller.html">HOUND.Comms.Controller</a></li>
@@ -77,12 +80,20 @@
 	<td class="summary">Enums for Phonetic AlphaBet</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.DB.useDecMin">HOUND.DB.useDecMin</a></td>
+	<td class="name" nowrap><a href="#HOUND.DB.useDMM">HOUND.DB.useDMM</a></td>
 	<td class="summary">Units that use DMM format</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.DB.useMGRS">HOUND.DB.useMGRS</a></td>
+	<td class="summary">Units that prefer MGRS format (not in use)</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.DB.Bands">HOUND.DB.Bands</a></td>
 	<td class="summary">Band vs wavelength</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.DB.RadarType">HOUND.DB.RadarType</a></td>
+	<td class="summary">Radar types ENUM</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.DB.CALLSIGNS">HOUND.DB.CALLSIGNS</a></td>
@@ -108,20 +119,20 @@
 	<td class="summary">check if canidate Object is a valid platform</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.DB.getPlatformData">HOUND.DB.getPlatformData (DCS_Unit)</a></td>
+	<td class="name" nowrap><a href="#HOUND.DB.getPlatformData">HOUND.DB.getPlatformData (DcsObject)</a></td>
 	<td class="summary">Get Platform data</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.DB.getDefraction">HOUND.DB.getDefraction (band, antenna_size)</a></td>
+	<td class="name" nowrap><a href="#HOUND.DB.getDefraction">HOUND.DB.getDefraction (wavelength, antenna_size)</a></td>
 	<td class="summary">Get defraction
  for band and effective antenna size return angular resolution</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.DB.getApertureSize">HOUND.DB.getApertureSize (DCS_Unit)</a></td>
-	<td class="summary">get Effective Aperture size for unit</td>
+	<td class="name" nowrap><a href="#HOUND.DB.getApertureSize">HOUND.DB.getApertureSize (DcsObject)</a></td>
+	<td class="summary">get Effective Aperture size for platform</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.DB.getEmitterBand">HOUND.DB.getEmitterBand (DCS_Unit)</a></td>
+	<td class="name" nowrap><a href="#HOUND.DB.getEmitterBand">HOUND.DB.getEmitterBand (DcsUnit)</a></td>
 	<td class="summary">Get emitter Band</td>
 	</tr>
 	<tr>
@@ -162,8 +173,8 @@
 
 </dd>
     <dt>
-    <a name = "HOUND.DB.useDecMin"></a>
-    <strong>HOUND.DB.useDecMin</strong>
+    <a name = "HOUND.DB.useDMM"></a>
+    <strong>HOUND.DB.useDMM</strong>
     </dt>
     <dd>
     Units that use DMM format
@@ -182,6 +193,30 @@
     <h3>Usage:</h3>
     <ul>
         <pre class="example">[<span class="string">'F-16C_blk50'</span>] = <span class="keyword">true</span></pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "HOUND.DB.useMGRS"></a>
+    <strong>HOUND.DB.useMGRS</strong>
+    </dt>
+    <dd>
+    Units that prefer MGRS format (not in use)
+
+
+    <h3>Fields:</h3>
+    <ul>
+        <li><span class="parameter">UnitType</span>
+         Bool value
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">[<span class="string">'A-10C'</span>] = <span class="keyword">true</span></pre>
     </ul>
 
 </dd>
@@ -206,6 +241,30 @@
     <h3>Usage:</h3>
     <ul>
         <pre class="example">[<span class="string">'E'</span>] = <span class="number">0.119917</span></pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "HOUND.DB.RadarType"></a>
+    <strong>HOUND.DB.RadarType</strong>
+    </dt>
+    <dd>
+    Radar types ENUM
+
+
+    <h3>Fields:</h3>
+    <ul>
+        <li><span class="parameter">Radar</span>
+         type in hex
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">[<span class="string">'EWR'</span>] = <span class="number">0x01</span></pre>
     </ul>
 
 </dd>
@@ -243,16 +302,16 @@
     <h3>Fields:</h3>
     <ul>
         <li><span class="parameter">string</span>
-         Band Radio Band the radar operates in
+         Name NATO Name
         </li>
         <li><span class="parameter">table</span>
-         Role Role of radar in battery
+         Band Radio Band the radar operates in true is when tracking target
         </li>
         <li><span class="parameter">table</span>
-         Role Role of radar in battery
+         Band Radio Band the radar operates in true is when tracking target
         </li>
-        <li><span class="parameter">string</span>
-         Band Radio Band the radar operates in
+        <li><span class="parameter">table</span>
+         Band Radio Band the radar operates in true is when tracking target
         </li>
         <li><span class="parameter">bool</span>
          Primary set to True if this is a primary radar for site (usually FCR)
@@ -267,8 +326,11 @@
         <pre class="example">[<span class="string">'p-19 s-125 sr'</span>] = {
     [<span class="string">'Name'</span>] = <span class="string">"Flat Face"</span>,
     [<span class="string">'Assigned'</span>] = {<span class="string">"SA-2"</span>,<span class="string">"SA-3"</span>},
-    [<span class="string">'Role'</span>] = {<span class="string">"SR"</span>},
-    [<span class="string">'Band'</span>] = <span class="string">'C'</span>,
+    [<span class="string">'Role'</span>] = {HOUND.DB.RadarType.SEARCH},
+    [<span class="string">'Band'</span>] = {
+         [<span class="keyword">true</span>] = HOUND.DB.Bands.C,
+         [<span class="keyword">false</span>] = HOUND.DB.Bands.C
+     },
     [<span class="string">'Primary'</span>] = <span class="keyword">false</span>
 }
 </pre>
@@ -346,7 +408,8 @@
     <h3>Returns:</h3>
     <ol>
 
-        Bool. True if object is valid platform
+           <span class="types"><span class="type">bool</span></span>
+        True if object is valid platform
     </ol>
 
 
@@ -355,7 +418,7 @@
 </dd>
     <dt>
     <a name = "HOUND.DB.getPlatformData"></a>
-    <strong>HOUND.DB.getPlatformData (DCS_Unit)</strong>
+    <strong>HOUND.DB.getPlatformData (DcsObject)</strong>
     </dt>
     <dd>
     Get Platform data
@@ -363,7 +426,7 @@
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">DCS_Unit</span>
+        <li><span class="parameter">DcsObject</span>
          platform unit
         </li>
     </ul>
@@ -380,7 +443,7 @@
 </dd>
     <dt>
     <a name = "HOUND.DB.getDefraction"></a>
-    <strong>HOUND.DB.getDefraction (band, antenna_size)</strong>
+    <strong>HOUND.DB.getDefraction (wavelength, antenna_size)</strong>
     </dt>
     <dd>
     Get defraction
@@ -389,7 +452,7 @@
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">band</span>
+        <li><span class="parameter">wavelength</span>
          Radar transmission band (A-L) as defined in HOUND.DB
         </li>
         <li><span class="parameter">antenna_size</span>
@@ -409,15 +472,15 @@
 </dd>
     <dt>
     <a name = "HOUND.DB.getApertureSize"></a>
-    <strong>HOUND.DB.getApertureSize (DCS_Unit)</strong>
+    <strong>HOUND.DB.getApertureSize (DcsObject)</strong>
     </dt>
     <dd>
-    get Effective Aperture size for unit
+    get Effective Aperture size for platform
 
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">DCS_Unit</span>
+        <li><span class="parameter">DcsObject</span>
          Unit requested (used as platform)
         </li>
     </ul>
@@ -434,7 +497,7 @@
 </dd>
     <dt>
     <a name = "HOUND.DB.getEmitterBand"></a>
-    <strong>HOUND.DB.getEmitterBand (DCS_Unit)</strong>
+    <strong>HOUND.DB.getEmitterBand (DcsUnit)</strong>
     </dt>
     <dd>
     Get emitter Band
@@ -442,7 +505,7 @@
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">DCS_Unit</span>
+        <li><span class="parameter">DcsUnit</span>
          Radar unit
         </li>
     </ul>
@@ -471,7 +534,7 @@
          Instance of DCS Unit which is the detecting platform
         </li>
         <li><span class="parameter">emitterBand</span>
-         Radar Band (frequency) of radar (A-L)
+         Radar Band (frequency) of radar (A-L) or DCS Unit
         </li>
     </ul>
 
@@ -491,8 +554,8 @@
 </div> <!-- id="content" -->
 </div> <!-- id="main" -->
 <div id="about">
-<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2023-12-23 21:39:03 </i>
+<i>generated by <a href="http://github.com/lunarmodules/LDoc">LDoc 1.5.0</a></i>
+<i style="float:right;">Last updated 2024-10-23 14:24:49 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

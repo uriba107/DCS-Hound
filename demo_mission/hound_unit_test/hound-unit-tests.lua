@@ -1,12 +1,13 @@
 do
-    if not HoundWorkDir then
+    if HoundWorkDir == nil then
         HoundWorkDir = "E:\\Dropbox\\uri\\Dropbox\\DCS\\Mission Building\\HoundElint\\"
     end
     -- assert(loadfile(HoundWorkDir..'include\\DCS-SimpleTextToSpeech.lua'))()
+    -- HOUND.TTS_ENGINE = {'STTS'}
 
     function UserSpaceLogging(msg)
         trigger.action.outText(msg,10)
-        env.info(msg)
+        env.info("***** "..msg.." *****")
     end
 
     env.info("Loading UnitTesting")
@@ -20,7 +21,7 @@ do
             {name = "module", func = self.moduleTesting, next_test_delay = 10},
             {name = "hound init", func = self.initTesting, next_test_delay = 15},
             {name = "hound base", func = self.baseTesting, next_test_delay = 1*60},
-            {name = "hound functional 1 min", func = self.delayedTesting1m, next_test_delay = 5*60},
+            {name = "hound functional 1 min", func = self.delayedTesting1m, next_test_delay = 4*60},
             {name = "hound functional 5 min", func = self.delayedTesting5m, next_test_delay = 0}
 
         }
