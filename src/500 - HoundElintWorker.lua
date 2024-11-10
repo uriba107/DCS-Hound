@@ -426,7 +426,7 @@ do
 
                 if HoundUtils.Geo.checkLOS(platformData.pos, radarPos) then
                     local contact = self:getContact(radar)
-                    local sampleAngularResolution = HOUND.DB.getSensorPrecision(platform,contact.band[isRadarTracking])
+                    local sampleAngularResolution = HOUND.DB.getSensorPrecision(platform,contact.frequency[isRadarTracking])
                     if sampleAngularResolution < l_math.rad(10.0) then
                         local az,el = HoundUtils.Elint.getAzimuth( platformData.pos, radarPos, sampleAngularResolution )
                         if not platformData.isAerial then

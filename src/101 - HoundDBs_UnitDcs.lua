@@ -28,8 +28,8 @@ do
             ['Assigned'] = {"EWR"},
             ['Role'] = {HOUND.DB.RadarType.EWR},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.A,
-                [false] = HOUND.DB.Bands.A
+                [true] = {1.362693,0.302821},
+                [false] = {1.362693,0.302821},
             },
             ['Primary'] = false
         },
@@ -38,8 +38,8 @@ do
             ['Assigned'] = {"EWR"},
             ['Role'] = {HOUND.DB.RadarType.EWR},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.A,
-                [false] = HOUND.DB.Bands.A
+                [true] = {0.999308,8.993774},
+                [false] = {0.999308,8.993774}
             },
             ['Primary'] = false
         },
@@ -48,8 +48,8 @@ do
             ['Assigned'] = {"EWR"},
             ['Role'] = {HOUND.DB.RadarType.EWR},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.D,
-                [false] = HOUND.DB.Bands.D
+                [true] = {0.214137,0.032605},
+                [false] = {0.214137,0.032605},
             },
             ['Primary'] = false
         },
@@ -58,8 +58,8 @@ do
             ['Assigned'] = {"EWR"},
             ['Role'] = {HOUND.DB.RadarType.EWR},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.D,
-                [false] = HOUND.DB.Bands.D
+                [true] = {0.214137,0.032605},
+                [false] = {0.214137,0.032605},
             },
             ['Primary'] = false
         },
@@ -69,8 +69,8 @@ do
             ['Assigned'] = {"SA-2","SA-3"},
             ['Role'] = {HOUND.DB.RadarType.SEARCH},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.C,
-                [false] = HOUND.DB.Bands.C
+                [true] = {0.339901,0.021295},
+                [false] = {0.339901,0.021295}
             },
             ['Primary'] = false
         },
@@ -79,8 +79,8 @@ do
             ['Assigned'] = {"SA-2"},
             ['Role'] = {HOUND.DB.RadarType.TRACK},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.G,
-                [false] = HOUND.DB.Bands.G
+                [true] = {0.058898,0.002159},
+                [false] = {0.058898,0.000940}
             },
             ['Primary'] = true
         },
@@ -99,8 +99,8 @@ do
             ['Assigned'] = {"SA-3"},
             ['Role'] = {HOUND.DB.RadarType.TRACK},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.I,
-                [false] = HOUND.DB.Bands.I
+                [true] = {0.031893,0.001417},
+                [false] = {0.031893,0.001417}
             },
             ['Primary'] = true
         },
@@ -109,8 +109,8 @@ do
             ['Assigned'] = {"SA-6"},
             ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.G,
-                [false] = HOUND.DB.Bands.G
+                [true] = {0.029979,0.007495},
+                [false] = {0.037474,0.037474}
             },
             ['Primary'] = true
         },
@@ -119,8 +119,8 @@ do
             ['Assigned'] = {"SA-8"},
             ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.H,
-                [false] = HOUND.DB.Bands.C
+                [true] = {0.020256,0.000856},
+                [false] = {0.037474,0.012491}
             },
             ['Primary'] = true
         },
@@ -139,8 +139,8 @@ do
             ['Assigned'] = {"SA-10"},
             ['Role'] = {HOUND.DB.RadarType.SEARCH},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.C,
-                [false] = HOUND.DB.Bands.C
+                [true] = {0.090846,0.012531},
+                [false] = {0.090846,0.012531}
             },
             ['Primary'] = false
         },
@@ -149,8 +149,8 @@ do
             ['Assigned'] = {"SA-5"},
             ['Role'] = {HOUND.DB.RadarType.SEARCH},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.E,
-                [false] = HOUND.DB.Bands.E
+                [true] = {0.093685,0.011505},
+                [false] = {0.093685,0.011505}
             },
             ['Primary'] = false
         },
@@ -159,8 +159,8 @@ do
             ['Assigned'] = {"SA-10"},
             ['Role'] = {HOUND.DB.RadarType.SEARCH},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.I,
-                [false] = HOUND.DB.Bands.I
+                [true] = {0.093685,0.011505},
+                [false] = {0.093685,0.011505}
             },
             ['Primary'] = false
         },
@@ -169,8 +169,8 @@ do
             ['Assigned'] = {"SA-10"},
             ['Role'] = {HOUND.DB.RadarType.TRACK},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.J,
-                [false] = HOUND.DB.Bands.J
+                [true] = {0.014990,0.022484},
+                [false] = {0.014990,0.022484}
             },
             ['Primary'] = true
         },
@@ -179,8 +179,8 @@ do
             ['Assigned'] = {"SA-10"},
             ['Role'] = {HOUND.DB.RadarType.TRACK},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.J,
-                [false] = HOUND.DB.Bands.J
+                [true] = {0.014990,0.022484},
+                [false] = {0.014990,0.022484}
             },
             ['Primary'] = true
         },
@@ -189,8 +189,8 @@ do
             ['Assigned'] = {"SA-11"},
             ['Role'] = {HOUND.DB.RadarType.SEARCH},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.G,
-                [false] = HOUND.DB.Bands.G
+                [true] = {0.029979,0.019986},
+                [false] = {0.029979,0.019986}
             },
             ['Primary'] = true
         },
@@ -199,8 +199,8 @@ do
             ['Assigned'] = {"SA-11"},
             ['Role'] = {HOUND.DB.RadarType.TRACK},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.I,
-                [false] = HOUND.DB.Bands.H
+                [true] = {0.029979,0.019986},
+                [false] = {0.029979,0.019986}
             },
             ['Primary'] = false
         },
@@ -209,8 +209,8 @@ do
             ['Assigned'] = {"SA-15"},
             ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.H,
-                [false] = HOUND.DB.Bands.F
+                [true] = {0.037474,0.037474},
+                [false] = {0.037474,0.037474}
             },
             ['Primary'] = true
         },
@@ -239,8 +239,8 @@ do
             ['Assigned'] = {"Patriot"},
             ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.K,
-                [false] = HOUND.DB.Bands.K
+                [true] = {0.055008,0.011910},
+                [false] = {0.055008,0.011910}
             },
             ['Primary'] = true
         },
@@ -259,8 +259,8 @@ do
             ['Assigned'] = {"Hawk"},
             ['Role'] = {HOUND.DB.RadarType.TRACK},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.J,
-                [false] = HOUND.DB.Bands.J
+                [true] = {0.024983,0.012491},
+                [false] = {0.024983,0.012491}
             },
             ['Primary'] = true
         },
@@ -279,8 +279,8 @@ do
             ['Assigned'] = {"SA-5"},
             ['Role'] = {HOUND.DB.RadarType.TRACK},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.H,
-                [false] = HOUND.DB.Bands.H
+                [true] = {0.076870,0.116545},
+                [false] = {0.076870,0.116545}
             },
             ['Primary'] = true
         },
@@ -289,8 +289,8 @@ do
             ['Assigned'] = {"Roland"},
             ['Role'] = {HOUND.DB.RadarType.TRACK},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.H,
-                [false] = HOUND.DB.Bands.H
+                [true] = {0.024983,0.012491},
+                [false] = {0.149896,0.149896}
             },
             ['Primary'] = true
         },
@@ -299,8 +299,8 @@ do
             ['Assigned'] = {"Roland"},
             ['Role'] = {HOUND.DB.RadarType.SEARCH},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.C,
-                [false] = HOUND.DB.Bands.C
+                [true] = {0.149896,0.149896},
+                [false] = {0.149896,0.149896}
             },
             ['Primary'] = false
         },
@@ -319,8 +319,8 @@ do
             ['Assigned'] = {"Rapier"},
             ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.J,
-                [false] = HOUND.DB.Bands.F
+                [true] = {0.014990,0.014990},
+                [false] = {0.014990,0.014990}
             },
             ['Primary'] = true
         },
@@ -339,8 +339,8 @@ do
             ['Assigned'] = {"NASAMS"},
             ['Role'] = {HOUND.DB.RadarType.SEARCH},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.I,
-                [false] = HOUND.DB.Bands.I
+                [true] = {0.024983,0.012491},
+                [false] = {0.024983,0.012491}
             },
             ['Primary'] = true
         },
@@ -349,8 +349,8 @@ do
             ['Assigned'] = {"HQ-7"},
             ['Role'] = {HOUND.DB.RadarType.SEARCH},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.F,
-                [false] = HOUND.DB.Bands.F
+                [true] = {0.029979,0.019986},
+                [false] = {0.029979,0.019986}
             },
             ['Primary'] = false
         },
@@ -369,8 +369,8 @@ do
             ['Assigned'] = {"Tunguska"},
             ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.F,
-                [false] = HOUND.DB.Bands.E
+                [true] = {0.014990,0.014990},
+                [false] = {0.099931,0.049965}
             },
             ['Primary'] = true
         },
@@ -379,8 +379,8 @@ do
             ['Assigned'] = {"AAA"},
             ['Role'] = {HOUND.DB.RadarType.TRACK},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.J,
-                [false] = HOUND.DB.Bands.J
+                [true] = {0.009993,0.004997},
+                [false] = {0.009993,0.004997}
             },
             ['Primary'] = true
         },
@@ -389,8 +389,8 @@ do
             ['Assigned'] = {"AAA"},
             ['Role'] = {HOUND.DB.RadarType.TRACK},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.J,
-                [false] = HOUND.DB.Bands.J
+                [true] = {0.016655,0.008328},
+                [false] = {0.016655,0.008328}
             },
             ['Primary'] = true
         },
@@ -399,8 +399,8 @@ do
             ['Assigned'] = {"AAA"},
             ['Role'] = {HOUND.DB.RadarType.SEARCH},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.G,
-                [false] = HOUND.DB.Bands.G
+                [true] = {0.049965,0.049965},
+                [false] = {0.049965,0.049965}
             },
             ['Primary'] = true
         },
@@ -409,8 +409,8 @@ do
             ['Assigned'] = {"AAA"},
             ['Role'] = {HOUND.DB.RadarType.TRACK},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.E,
-                [false] = HOUND.DB.Bands.E
+                [true] = {0.103377,0.007658},
+                [false] = {0.103377,0.007658}
             },
             ['Primary'] = true
         },
@@ -431,8 +431,8 @@ do
             ['Assigned'] = {"AAA"},
             ['Role'] = {HOUND.DB.RadarType.TRACK},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.C,
-                [false] = HOUND.DB.Bands.C
+                [true] = {0.535344,0.000000},
+                [false] = {0.535344,0.000000}
             },
             ['Primary'] = false
         },
@@ -441,8 +441,8 @@ do
             ['Assigned'] = {"EWR"},
             ['Role'] = {HOUND.DB.RadarType.EWR},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.B,
-                [false] = HOUND.DB.Bands.B
+                [true] = {2.306096,0.192175},
+                [false] = {2.306096,0.192175}
             },
             ['Primary'] = false
         },
@@ -462,8 +462,8 @@ do
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.J,
-                [false] = HOUND.DB.Bands.E
+                [true] = {0.024983,0.012491},
+                [false] = {0.024983,0.012491}
             },
             ['Primary'] = true
         },
@@ -472,8 +472,8 @@ do
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.J,
-                [false] = HOUND.DB.Bands.E
+                [true] = {0.516884,0.082701},
+                [false] = {0.024983,0.012491}
             },
             ['Primary'] = true
         },
@@ -482,8 +482,8 @@ do
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.J,
-                [false] = HOUND.DB.Bands.E
+                [true] = {0.024983,0.012491},
+                [false] = {0.024983,0.012491}
             },
             ['Primary'] = true
         },
@@ -503,8 +503,8 @@ do
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.J,
-                [false] = HOUND.DB.Bands.E
+                [true] = {0.024983,0.012491},
+                [false] = {0.318251,0.034446}
             },
             ['Primary'] = true
         },
@@ -513,8 +513,8 @@ do
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.F,
-                [false] = HOUND.DB.Bands.F
+                [true] = {0.024983,0.012491},
+                [false] = {0.024983,0.012491}
             },
             ['Primary'] = true
         },
@@ -523,8 +523,8 @@ do
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.F,
-                [false] = HOUND.DB.Bands.F
+                [true] = {0.024983,0.012491},
+                [false] = {0.024983,0.012491}
             },
             ['Primary'] = true
         },
@@ -533,8 +533,8 @@ do
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.E,
-                [false] = HOUND.DB.Bands.E
+                [true] = {0.516884,0.082701},
+                [false] = {0.516884,0.082701}
             },
             ['Primary'] = true
         },
@@ -543,8 +543,8 @@ do
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.E,
-                [false] = HOUND.DB.Bands.E
+                [true] = {0.318251,0.034446},
+                [false] = {0.318251,0.034446}
             },
             ['Primary'] = true
         },
@@ -553,8 +553,8 @@ do
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.E,
-                [false] = HOUND.DB.Bands.E
+                [true] = {0.516884,0.082701},
+                [false] = {0.318251,0.034446}
             },
             ['Primary'] = true
         },
@@ -563,8 +563,8 @@ do
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.E,
-                [false] = HOUND.DB.Bands.E
+                [true] = {0.516884,0.082701},
+                [false] = {0.318251,0.034446}
             },
             ['Primary'] = true
         },
@@ -573,8 +573,8 @@ do
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.E,
-                [false] = HOUND.DB.Bands.E
+                [true] = {0.516884,0.082701},
+                [false] = {0.318251,0.034446}
             },
             ['Primary'] = true
         },
@@ -583,8 +583,8 @@ do
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.E,
-                [false] = HOUND.DB.Bands.E
+                [true] = {0.516884,0.082701},
+                [false] = {0.318251,0.034446}
             },
             ['Primary'] = true
         },
@@ -593,8 +593,8 @@ do
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.E,
-                [false] = HOUND.DB.Bands.E
+                [true] = {0.516884,0.082701},
+                [false] = {0.318251,0.034446}
             },
             ['Primary'] = true
         },
@@ -613,8 +613,8 @@ do
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.E,
-                [false] = HOUND.DB.Bands.E
+                [true] = {0.037474,0.012491},
+                [false] = {0.037474,0.012491}
             },
             ['Primary'] = true
         },
@@ -623,8 +623,8 @@ do
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.E,
-                [false] = HOUND.DB.Bands.E
+                [true] = {0.024983,0.012491},
+                [false] = {0.024983,0.012491}
             },
             ['Primary'] = true
         },
@@ -633,8 +633,8 @@ do
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.E,
-                [false] = HOUND.DB.Bands.E
+                [true] = {0.024983,0.012491},
+                [false] = {0.024983,0.012491}
             },
             ['Primary'] = true
         },
@@ -643,8 +643,8 @@ do
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.E,
-                [false] = HOUND.DB.Bands.E
+                [true] = {0.024983,0.012491},
+                [false] = {0.024983,0.012491}
             },
             ['Primary'] = true
         },
@@ -653,8 +653,8 @@ do
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.J,
-                [false] = HOUND.DB.Bands.E
+                [true] = {0.028552,0.000696},
+                [false] = {0.028552,0.000696}
             },
             ['Primary'] = true
         },
@@ -663,8 +663,8 @@ do
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.E,
-                [false] = HOUND.DB.Bands.E
+                [true] = {0.024983,0.012491},
+                [false] = {0.024983,0.012491}
             },
             ['Primary'] = true
         },
@@ -673,8 +673,8 @@ do
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.E,
-                [false] = HOUND.DB.Bands.E
+                [true] = {0.037474,0.012491},
+                [false] = {0.037474,0.012491}
             },
             ['Primary'] = true
         },
@@ -683,8 +683,8 @@ do
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.E,
-                [false] = HOUND.DB.Bands.E
+                [true] = {0.516884,0.082701},
+                [false] = {0.516884,0.082701}
             },
             ['Primary'] = true
         },
@@ -693,8 +693,8 @@ do
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.E,
-                [false] = HOUND.DB.Bands.E
+                [true] = {0.024983,0.012491},
+                [false] = {0.318251,0.034446}
             },
             ['Primary'] = true
         },
@@ -704,8 +704,8 @@ do
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.E,
-                [false] = HOUND.DB.Bands.E
+                [true] = {0.516884,0.082701},
+                [false] = {0.516884,0.082701}
             },
             ['Primary'] = true
         },
@@ -714,8 +714,8 @@ do
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.F,
-                [false] = HOUND.DB.Bands.F
+                [true] = {0.516884,0.082701},
+                [false] = {0.516884,0.082701}
             },
             ['Primary'] = true
         },
@@ -724,8 +724,8 @@ do
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.F,
-                [false] = HOUND.DB.Bands.F
+                [true] = {0.516884,0.082701},
+                [false] = {0.516884,0.082701}
             },
             ['Primary'] = true
         },
@@ -734,8 +734,8 @@ do
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.F,
-                [false] = HOUND.DB.Bands.F
+                [true] = {0.516884,0.082701},
+                [false] = {0.516884,0.082701}
             },
             ['Primary'] = true
         },
@@ -744,8 +744,8 @@ do
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.K,
-                [false] = HOUND.DB.Bands.K
+                [true] = {0.516884,0.082701},
+                [false] = {0.516884,0.082701}
             },
             ['Primary'] = true
         },
@@ -754,8 +754,8 @@ do
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.K,
-                [false] = HOUND.DB.Bands.K
+                [true] = {0.516884,0.082701},
+                [false] = {0.516884,0.082701}
             },
             ['Primary'] = true
         },
@@ -764,8 +764,8 @@ do
             ['Assigned'] = {"Naval"},
             ['Role'] = {HOUND.DB.RadarType.NAVAL},
             ['Band'] = {
-                [true] = HOUND.DB.Bands.E,
-                [false] = HOUND.DB.Bands.E
+                [true] = {0.516884,0.082701},
+                [false] = {0.136269,0.013627}
             },
             ['Primary'] = true
         },
@@ -787,6 +787,16 @@ do
             ['Band'] = {
                 [true] = HOUND.DB.Bands.E,
                 [false] = HOUND.DB.Bands.E
+            },
+            ['Primary'] = true
+        },
+        ['atconveyor'] = {
+            ['Name'] = "SS Atlantic Conveyor",
+            ['Assigned'] = {"Naval"},
+            ['Role'] = {HOUND.DB.RadarType.NAVAL},
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.D,
+                [false] = HOUND.DB.Bands.D
             },
             ['Primary'] = true
         },

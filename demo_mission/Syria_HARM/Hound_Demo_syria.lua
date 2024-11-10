@@ -116,7 +116,7 @@ do
             end
         end
         if DcsEvent.id == world.event.S_EVENT_PLAYER_LEAVE_UNIT then
-            if HoundBlue and DcsEvent.initiator and DcsEvent.initiator:getCoalition() == HoundBlue:getCoalition()
+            if HoundBlue and HOUND.Utils.Dcs.isUnit(DcsEvent.initiator) and DcsEvent.initiator:getCoalition() == HoundBlue:getCoalition()
                 and DcsEvent.initiator:getTypeName() == "AJS37" and HOUND.setContainsValue(HoundBlue:listPlatforms(),DcsEvent.initiator:getName())
             then
                 HoundBlue:removePlatform(DcsEvent.initiator:getName())

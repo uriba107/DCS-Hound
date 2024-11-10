@@ -89,10 +89,10 @@ function lint_src {
 function build_docs {
     # build Docs
     highlight "building public docs"
-    $LDOC -p "Hound<br> ELINT for DCS" --merge --multimodule  --style !fixed .
+    $LDOC -c config_general.ld -p "Hound<br> ELINT for DCS" --merge --multimodule  --style !fixed .
 
     highlight "Building Dev Docs$"
-    $LDOC -p "Hound<br> ELINT for DCS" -a -d docs/dev_docs --merge --multimodule  --style !fixed src
+    $LDOC -c config_developer.ld -p "Hound<br> ELINT for DCS" -a -d docs/dev_docs --merge --multimodule  --style !fixed src
 }
 
 function build_toc {

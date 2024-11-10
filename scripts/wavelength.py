@@ -1,5 +1,5 @@
 import math
-
+C = 299792458.0
 bands = {
     "A": {"Freq": 175000000.0},
     "B": {"Freq": 375000000.0},
@@ -13,6 +13,36 @@ bands = {
     "J": {"Freq": 15000000000.0},
     "K": {"Freq": 30000000000.0},
     "L": {"Freq": 50000000000.0}
+}
+
+# A Band: 30000000.0     -      250000000.0 Hz
+# B Band: 250000000.0    -     500000000.0 Hz
+# C Band: 500000000.0    -     1000000000.0 Hz
+# D Band: 1000000000.0   -    2000000000.0 Hz
+# E Band: 2000000000.0   -    3000000000.0 Hz
+# F Band: 3000000000.0   -    4000000000.0 Hz
+# G Band: 4000000000.0   -    6000000000.0 Hz
+# H Band: 6000000000.0   -    8000000000.0 Hz
+# I Band: 8000000000.0   -    10000000000.0 Hz
+# J Band: 10000000000.0  - 20000000000.0 Hz
+# K Band: 20000000000.0  - 40000000000.0 Hz
+# L Band: 40000000000.0  - 60000000000.0 Hz
+# M Band: 60000000000.0  - 100000000000.0 Hz
+
+bands_HL = {
+    "A": {"Freq": {"L": 30000000.0   , "H": 250000000.0}},
+    "B": {"Freq": {"L": 250000000.0  , "H": 500000000.0}},
+    "C": {"Freq": {"L": 500000000.0  , "H": 1000000000.0}},
+    "D": {"Freq": {"L": 1000000000.0 , "H": 2000000000.0}},
+    "E": {"Freq": {"L": 2000000000.0 , "H": 3000000000.0}},
+    "F": {"Freq": {"L": 3000000000.0 , "H": 4000000000.0}},
+    "G": {"Freq": {"L": 4000000000.0 , "H": 6000000000.0}},
+    "H": {"Freq": {"L": 6000000000.0 , "H": 8000000000.0}},
+    "I": {"Freq": {"L": 8000000000.0 , "H": 10000000000.0}},
+    "J": {"Freq": {"L": 10000000000.0, "H": 20000000000.0}},
+    "K": {"Freq": {"L": 20000000000.0, "H": 40000000000.0}},
+    "L": {"Freq": {"L": 40000000000.0, "H": 60000000000.0}},
+    "M": {"Freq":{"L": 60000000000.0, "H": 100000000000.0}},
 }
 
 platforms = {
@@ -64,8 +94,17 @@ platforms = {
 def genBandTable():
     print("HOUND.DB.Bands = {")
     for band in sorted(bands):
-        bands[band]["wavelength"] = (299792458.0/bands[band]["Freq"])
+        bands[band]["wavelength"] = (C/bands[band]["Freq"])
         print("    [\"%s\"] = %f,"%(band,bands[band]["wavelength"]))
+    print("}")
+
+def genBandTable_HL():
+    print("HOUND.DB.Bands = {")
+    for band in sorted(bands_HL.keys()):
+        H=299792458.0/bands_HL[band]["Freq"]["H"]
+        L=299792458.0/bands_HL[band]["Freq"]["L"]
+        R=L-H
+        print("    [\"%s\"] = {%f,%f},"%(band,H,R))
     print("}")
 
 def calcResolution(wavelength,antenna):
@@ -96,9 +135,11 @@ def showRes(band,antenna):
     return calcResolution(wavelength,antenna)
 
 print("=== Band wavelength data ===")
-genBandTable()
-print("\n=== ReadMe resolution data ===")
-genResolutionTable()
+genBandTable_HL()
+# genBandTable()
+
+# print("\n=== ReadMe resolution data ===")
+# genResolutionTable()
 
 # print("\n=== Other stuff ===")
 

@@ -16,6 +16,7 @@ do
         if not HOUND.DB.Radars[typeName] then return end
         local data = l_mist.utils.deepCopy(HOUND.DB.Radars[typeName])
         data.isEWR = HOUND.setContainsValue(data.Role,HOUND.DB.RadarType.EWR)
+        data.Freqency = HOUND.DB.getEmitterFrequencies(data.Band)
         return data
     end
 
@@ -103,7 +104,7 @@ do
     -- @local
     -- @param wavelength Radar transmission band (A-L) as defined in HOUND.DB
     -- @param antenna_size Effective antenna size for platform as defined in HOUND.DB
-    -- @return angular resolution in Radians for Band Antenna combo
+    -- @return angular resolution in Radians for wavelength and Antenna combo
 
     function HOUND.DB.getDefraction(wavelength,antenna_size)
         if wavelength == nil or antenna_size == nil or antenna_size == 0 then return l_math.rad(30) end
@@ -140,14 +141,29 @@ do
         return HOUND.DB.Bands.C
     end
 
+    --- Generate uniqe radar frequencies for contact
+    -- @local
+    -- @param[type=table] bands
+    -- @return table containig wavelengths in meters for the radar
+    function HOUND.DB.getEmitterFrequencies(bands)
+        local freqFactor = l_math.random()
+        return {
+            [true] = bands[true][1] + bands[true][2] * freqFactor,
+            [false] = bands[false][1] + bands[false][2] * freqFactor
+        }
+    end
+
     --- Elint Function - Get sensor precision
     -- @param platform Instance of DCS Unit which is the detecting platform
-    -- @param emitterBand Radar Band (frequency) of radar (A-L) or DCS Unit
+    -- @param emitter Radar wavelength (frequency) of radar (in meters) or DCS Unit
     -- @return angular resolution in Radians of platform against specific Radar frequency
-    function HOUND.DB.getSensorPrecision(platform,emitterBand)
-        if HOUND.Utils.Dcs.isUnit(emitterBand) then
-            emitterBand = HOUND.DB.getEmitterBand(emitterBand)
+    function HOUND.DB.getSensorPrecision(platform,emitter)
+        local wavelength = emitter
+        if HOUND.Utils.Dcs.isUnit(emitter) then
+            wavelength = HOUND.DB.getEmitterBand(emitter)
         end
-        return HOUND.DB.getDefraction(emitterBand,HOUND.DB.getApertureSize(platform)) or l_math.rad(20.0) -- precision
+
+        return HOUND.DB.getDefraction(wavelength,HOUND.DB.getApertureSize(platform)) or l_math.rad(20.0) -- precision
     end
+
 end

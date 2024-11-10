@@ -1,16 +1,17 @@
 --- Hound
 -- Elint system for DCS
 -- @author uri_ba
--- @copyright uri_ba 2020-2021
+-- @copyright uri_ba 2020-2024
 -- @module HOUND
 
 do
-    if STTS ~= nil then
+    if STTS ~= nil and STTS.DIRECTORY == "C:\\Users\\Ciaran\\Dropbox\\Dev\\DCS\\DCS-SRS\\install-build" then
         STTS.DIRECTORY = "C:\\Program Files\\DCS-SimpleRadio-Standalone"
     end
 
     -- randomize the randomness.
-    math.random()
+    
+    math.random(math.ceil(timer.getTime0()+timer.getTime()))
     for i=1,math.random(2,5) do
         math.random(math.random(math.floor(math.random()*300),300),math.random(math.floor(math.random()*10000),10000))
     end
@@ -36,7 +37,7 @@ do
     -- @field TTS_ENGINE Hound will use the table to determin TTS engine priority
     -- @field MENU_PAGE_LENGTH Number of Items Hound will put in a menu before starting a new menu page
     HOUND = {
-        VERSION = "0.4.0-TRUNK",
+        VERSION = "0.4.1-TRUNK",
         DEBUG = true,
         ELLIPSE_PERCENTILE = 0.6,
         DATAPOINTS_NUM = 30,

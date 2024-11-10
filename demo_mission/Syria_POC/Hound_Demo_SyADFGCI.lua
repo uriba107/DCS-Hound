@@ -72,14 +72,12 @@ do
     Elint_blue:setCallsign("Tabqa","IRONHIDE")
     Elint_blue:setZone("Tabqa","Tabqa")
 
-    if GRPC ~= nil and type(GRPC.tts) == "function" then
-        env.info("gRPC TTS is available enabling additional ATIS controllers")
-        Elint_blue:enableAtis("Homs",{freq="307.250", modulation = "AM"})
-        Elint_blue:enableAtis("Lebanon",{freq="308.250", modulation = "AM"})
-        Elint_blue:enableAtis("Palmyra",{freq="308.750", modulation = "AM"})
-        Elint_blue:enableAtis("Saykal",{freq="309.250", modulation = "AM"})
-        Elint_blue:enableAtis("Tabqa",{freq="310.250", modulation = "AM"})
-    end
+    Elint_blue:enableAtis("Homs",{freq="307.250", modulation = "AM"})
+    Elint_blue:enableAtis("Lebanon",{freq="308.250", modulation = "AM"})
+    Elint_blue:enableAtis("Palmyra",{freq="308.750", modulation = "AM"})
+    Elint_blue:enableAtis("Saykal",{freq="309.250", modulation = "AM"})
+    Elint_blue:enableAtis("Tabqa",{freq="310.250", modulation = "AM"})
+    
     
     Elint_blue:enableText("all")
 

@@ -64,7 +64,8 @@ do
             instance.band = contactData.Band
             instance.isPrimary = contactData.isPrimary
             instance.radarRoles = contactData.Role
-            -- HOUND.Logger.debug(mist.utils.tableShow(instance.radarRole))
+            instance.frequency = contactData.Freqency
+            -- HOUND.Logger.debug(instance.DcsObjectName .. " | " ..mist.utils.tableShow(instance.frequency))
         end
 
         instance.uncertenty_data = nil

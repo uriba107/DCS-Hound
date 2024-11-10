@@ -480,15 +480,15 @@ do
     -- @param[type=string] sectorName name of the sector to transmit on.
     -- @param[type=string] msg message to broadcast
     -- @param[type=?number] priority message priority
-    function HoundElint:transmitOnController(sectorName,msg)
+    function HoundElint:transmitOnController(sectorName,msg,priority)
         if not sectorName or not msg then return end
         if self.sectors[sectorName] then
-            self.sectors[sectorName]:transmitOnController(msg)
+            self.sectors[sectorName]:transmitOnController(msg,priority)
             return
         end
         if sectorName == "all" then
             for _,sector in pairs(self.sectors) do
-                sector:transmitOnController(msg)
+                sector:transmitOnController(msg,priority)
             end
         end
     end
@@ -705,12 +705,12 @@ do
     function HoundElint:transmitOnNotifier(sectorName,msg,priority)
         if not sectorName or not msg then return end
         if self.sectors[sectorName] then
-            self.sectors[sectorName]:transmitOnNotifier(msg)
+            self.sectors[sectorName]:transmitOnNotifier(msg,priority)
             return
         end
         if sectorName == "all" then
             for _,sector in pairs(self.sectors) do
-                sector:transmitOnNotifier(msg)
+                sector:transmitOnNotifier(msg,priority)
             end
         end
     end
