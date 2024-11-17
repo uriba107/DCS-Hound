@@ -45,7 +45,7 @@ do
         elintDatapoint.platformId = tonumber(platform0:getID())
         elintDatapoint.platformName = platform0:getName()
         elintDatapoint.platformStatic = isPlatformStatic or false
-        elintDatapoint.platformPrecision = angularResolution or l_math.rad(20)
+        elintDatapoint.platformPrecision = angularResolution or l_math.rad(HOUND.MAX_ANGULAR_RES_DEG)
         elintDatapoint.estimatedPos = elintDatapoint:estimatePos()
         elintDatapoint.posPolygon = {}
         elintDatapoint.posPolygon["2D"],elintDatapoint.posPolygon["3D"],elintDatapoint.posPolygon["EllipseParams"] = elintDatapoint:calcPolygons()
@@ -165,15 +165,15 @@ do
                     ellipse.minor = point
                 elseif i == numSteps/2 then
                     ellipse.major = point
-                    ellipse.majorCG = l_mist.utils.get2DDist(self:getPos(),point)
+                    ellipse.majorCG = HoundUtils.Geo.get2DDistance(self:getPos(),point)
                 elseif i == 3*(numSteps/4) then
                     if HoundUtils.Dcs.isPoint(ellipse.minor) then
-                        ellipse.minor = l_mist.utils.get2DDist(ellipse.minor,point)
+                        ellipse.minor = HoundUtils.Geo.get2DDistance(ellipse.minor,point)
                     end
                 elseif i == numSteps then
                     if HoundUtils.Dcs.isPoint(ellipse.major) then
-                        ellipse.major = l_mist.utils.get2DDist(ellipse.major,point)
-                        ellipse.majorCG = ellipse.majorCG / (ellipse.majorCG + l_mist.utils.get2DDist(self:getPos(),point))
+                        ellipse.major = HoundUtils.Geo.get2DDistance(ellipse.major,point)
+                        ellipse.majorCG = ellipse.majorCG / (ellipse.majorCG + HoundUtils.Geo.get2DDistance(self:getPos(),point))
                     end
                 end
             end

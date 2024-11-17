@@ -10,7 +10,6 @@ do
     end
 
     -- randomize the randomness.
-    
     math.random(math.ceil(timer.getTime0()+timer.getTime()))
     for i=1,math.random(2,5) do
         math.random(math.random(math.floor(math.random()*300),300),math.random(math.floor(math.random()*10000),10000))
@@ -26,6 +25,7 @@ do
     -- @field DATAPOINTS_NUM Number of datapoints per platform a contact keeps (FIFO)
     -- @field DATAPOINTS_INTERVAL Time between stored data points
     -- @field CONTACT_TIMEOUT Timout for emitter to be silent before being dropped from contacts
+    -- @field MAX_ANGULAR_RES_DEG The maximum (worst) platform angular resolution acceptable
     -- @field MGRS_PRECISION Number of digits in MGRS conversion
     -- @field EXTENDED_INFO Hound will add more in depth uncertenty info to controller messages (default is true)
     -- @field FORCE_MANAGE_MARKERS Force Hound to use internal counter for markIds (default is true).
@@ -40,9 +40,10 @@ do
         VERSION = "0.4.1-TRUNK",
         DEBUG = true,
         ELLIPSE_PERCENTILE = 0.6,
-        DATAPOINTS_NUM = 30,
+        DATAPOINTS_NUM = 20,
         DATAPOINTS_INTERVAL = 30,
         CONTACT_TIMEOUT = 900,
+        MAX_ANGULAR_RES_DEG = 20,
         MGRS_PRECISION = 5,
         EXTENDED_INFO = true,
         MIST_VERSION = tonumber(table.concat({mist.majorVersion,mist.minorVersion},".")),

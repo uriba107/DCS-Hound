@@ -5,6 +5,7 @@ do
     -- local l_mist = mist
     local PI_2 = 2*l_math.pi
     local HoundUtils = HOUND.Utils
+    local matrix = HOUND.Matrix
 
     -- @type HOUND.Contact.Datapoint
     HOUND.Contact.Estimator = {}
@@ -181,4 +182,192 @@ do
 
         return Kalman
     end
+
+
+    --- UB-PLKF (Unbiased Pseudo-Linear Kalman Filter)
+    -- Implementation taken from https://www.mdpi.com/2072-4292/13/15/2915 
+    HOUND.Contact.Estimator.UPLKF = {}
+    HOUND.Contact.Estimator.UPLKF.__index = HOUND.Contact.Estimator.UPLKF
+
+    --- Create PLKF instance
+    -- @param p0 Initial position (DCS point)
+    -- @param[type=?table] v0 Initial velocity (vector2) 
+    -- @param[type=?number] timestamp Initial time
+    -- @param[type=?number] uncertainty_r Uncertainty of position measurement 
+    -- @param[type=?boolean] isMobile Is the platform mobile? 
+    function HOUND.Contact.Estimator.UPLKF:create(p0,v0,timestamp,uncertenty_r,isMobile)
+        if not HoundUtils.Dcs.isPoint(p0) then return nil end
+        local instance = {}
+        setmetatable( instance,HOUND.Contact.Estimator.UPLKF )
+        instance.t0 = timestamp or timer.getAbsTime()
+        instance.mobile = isMobile or false
+        v0 = v0 or {z=0,x=0}
+
+        -- intialize the State Matrix
+        -- DCS is wierd. X is north, Z is east, Y is up. so values are flipped so it will conform to normal X,Y used in the whitepaper
+        instance.state = matrix({
+            {p0.z},
+            {p0.x},
+            {v0.z},
+            {v0.x}
+        })
+        -- initialize State Covariance Matrix
+        local position_accuracy = uncertenty_r or 10000
+        -- position_accuracy = l_math.min(position_accuracy,10000)
+        local velocity_accuracy = 1
+        instance.P = matrix({
+            {l_math.pow(position_accuracy,2),0,0,0},
+            {0,l_math.pow(position_accuracy,2),0,0},
+            {0,0,l_math.pow(velocity_accuracy,2),0},
+            {0,0,0,l_math.pow(velocity_accuracy,2)}
+        })
+
+        -- if not instance.mobile then
+        --     instance.P[3][3] = 0
+        --     instance.P[4][4] = 0
+        --     instance.Q[3][3] = 0
+        --     instance.Q[4][4] = 0
+        -- end
+
+        if HOUND.DEBUG then
+            instance.marker = HoundUtils.Marker.create()
+            trigger.action.outText("new KF: x:" .. instance.state[2][1] .. "| y: " .. instance.state[1][1],20)
+        end
+        return instance
+    end
+    function HOUND.Contact.Estimator.UPLKF:getEstimatedPos(state)
+        local X_k = state or self.state
+        local pos = {x = X_k[2][1], z = X_k[1][1]}
+        if HoundUtils.Dcs.isPoint(pos) then
+            pos = HoundUtils.Geo.setPointHeight(pos)
+            return pos
+        end
+    end
+
+    --- update debug marker
+    function HOUND.Contact.Estimator.UPLKF:updateMarker()
+        HOUND.Logger.trace("updating marker")
+        local pos = self:getEstimatedPos()
+        self.marker:update({useLegacyMarker = false
+        ,pos=pos,text="UB-PLKF",coalition=-1})
+    end
+
+    --- create Ft matrix
+    -- @param deltaT
+    -- @return Ft matrix
+    function HOUND.Contact.Estimator.UPLKF:getFt(deltaT)
+        local Ft = matrix(4,"I")
+        Ft[1][3] = deltaT
+        Ft[2][4] = deltaT
+        return Ft
+    end
+
+    --- create the Q matrix
+    -- @param deltaT
+    -- @return Q matrix
+    function HOUND.Contact.Estimator.UPLKF:getQ(deltaT,sigma)
+        -- initialize Process Noise Covariance Matrix
+        local dT = deltaT or 5
+        local sigma_a = sigma or 0.1
+        sigma_a = sigma_a/2
+
+        -- return matrix({
+        --     {0.25*l_math.pow(dT,4)*sigma_a,0,0.5*l_math.pow(dT,3)*sigma_a,0},
+        --     {0,0.25*l_math.pow(dT,4)*sigma_a,0,0.5*l_math.pow(dT,3)*sigma_a},
+        --     {0.5*l_math.pow(dT,3)*sigma_a,0,l_math.pow(dT,2)*sigma_a,0},
+        --     {0,0.5*l_math.pow(dT,3)*sigma_a,0,l_math.pow(dT,2)*sigma_a},
+        -- })
+
+        return matrix(4,4)
+
+    end
+
+    function HOUND.Contact.Estimator.UPLKF:predictStep(X,P,deltaT,Q)
+        local Ft = self:getFt(deltaT)
+        local Q = Q or self:getQ(deltaT)
+        -- predict state
+        local x_hat = Ft * X + Q
+        -- Predicted state covariance matrix
+        local P_hat = Ft * P * Ft:transpose() + Q
+        
+        x_hat[3][1] = HoundUtils.Mapping.clamp(x_hat[3][1],-25.0,25.0)
+        x_hat[4][1] = HoundUtils.Mapping.clamp(x_hat[4][1],-25.0,25.0)
+        return x_hat,P_hat
+    end
+
+    function HOUND.Contact.Estimator.UPLKF:predict(timestamp)
+        timestamp = timestamp or timer.getAbsTime()
+        local deltaT = timestamp - self.t0
+        self.t0 = timestamp
+
+        -- do UKF magic update position from pos+velocity
+        local Ft = self:getFt(deltaT)
+        local Q = self:getQ(deltaT)
+        -- predict state
+        self.state,self.P = self:predictStep(self.state,self.P,deltaT)
+
+
+    end
+
+    function HOUND.Contact.Estimator.UPLKF:update(p0,theta,timestamp,thetaErr)
+        HOUND.Logger.debug("pre:\n state " .. mist.utils.tableShow(self.state) .."\n P: " .. mist.utils.tableShow(self.P))
+
+        timestamp = timestamp or timer.getAbsTime()
+        local deltaT = timestamp - self.t0
+        self.t0 = timestamp
+
+        -- predict state and covariance matrix
+        -- local F = self:getFt(deltaT)
+        local Q = self:getQ(deltaT,Ri)
+        -- clamp velocities
+
+        -- x_hat[3][1] = HoundUtils.Mapping.linear(x_hat[3][1],-25.0,25.0,-25.0,25.0,true)
+        -- x_hat[4][1] = HoundUtils.Mapping.linear(x_hat[4][1],-25.0,25.0,-25.0,25.0,true)
+
+        local x_hat,P_k = self:predictStep(self.state,self.P,deltaT,Q)
+
+        
+        local Ri = thetaErr/2 or l_math.rad(HOUND.MAX_ANGULAR_RES_DEG/2)
+
+        local estimatedPos = self:getEstimatedPos(x_hat)
+        local beta_k = HoundUtils.Elint.getAzimuth(p0,estimatedPos)
+
+        local cos_beta_k,sin_beta_k = l_math.cos(beta_k),l_math.sin(beta_k)
+        local m_k = cos_beta_k*estimatedPos.z + sin_beta_k*estimatedPos.x - HoundUtils.Geo.get2DDistance(p0,estimatedPos)
+        local H_k = matrix({
+            {sin_beta_k/m_k,-cos_beta_k/m_k,0,0}
+        })
+        local z_k = matrix({{theta}})/m_k
+
+
+        -- compute innovation convariance (chatGPT)
+        local R_k = matrix({{Ri}})
+        -- local S_k = (H_k * P_pred * H_k:transpose()) + R_k
+
+        -- generate new s_K based on item 47 
+        -- local R_k = matrix({{l_math.sqrt(Ri)}})
+        local S_k = R_k + H_k * P_k * H_k:transpose()
+        
+
+        -- Kalman Gain
+        local K_k = P_k * H_k:transpose() * S_k:invert()
+
+        -- update state with mesurment z_k
+        local y_k = z_k - H_k * x_hat
+        
+        -- update globals
+
+
+        self.state = x_hat + (K_k * y_k)
+        self.P = (matrix(4,"I") - K_k * H_k) * P_k
+        -- self.state[3][1] = HoundUtils.Mapping.linear(self.state[3][1],-25.0,25.0,-25.0,25.0,true)
+        -- self.state[4][1] = HoundUtils.Mapping.linear(self.state[4][1],-25.0,25.0,-25.0,25.0,true)
+
+        if HOUND.DEBUG then
+            self:updateMarker()
+        end
+    end
+
+    setmetatable(HOUND.Contact.Estimator.UPLKF,{ __call = function( ... ) return HOUND.Contact.Estimator.UPLKF.create( ... ) end } )
+
 end

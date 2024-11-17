@@ -77,6 +77,8 @@ do
         instance.state = HOUND.EVENTS.RADAR_NEW
         instance.preBriefed = false
         instance.unitAlive = true
+        instance.Kalman = nil
+
         return instance
     end
 
@@ -210,10 +212,28 @@ do
         return count
     end
 
+    function HOUND.Contact.Emitter:KalmanPredict(timestamp)
+        timestamp = timestamp or timer.getAbsTime()
+        if self.Kalman then
+            HOUND.Logger.debug(self:getName() .. " is KalmanPredict")
+            self.Kalman:predict(timestamp)
+        end
+        
+    end
     --- Add Datapoint to content
     -- @param datapoint @{HOUND.Contact.Datapoint}
     function HOUND.Contact.Emitter:AddPoint(datapoint)
+        -- if HoundUtils.Dcs.isPoint(self.pos.p) and not self.Kalman then
+        --     -- local pos = self:getObject():getPoint() or self.pos.p
+        --     self.Kalman = HOUND.Contact.Estimator.UPLKF(self.pos.p,{x=0,z=0},self.last_seen,self.uncertenty_data.r)
+        -- end
         self.last_seen = datapoint.t
+        if self.Kalman then
+            HOUND.Logger.debug(self:getName() .. " is KalmanUpdate")
+            self.Kalman:update(datapoint.platformPos,datapoint.az,datapoint.t,datapoint.platformPrecision)
+            -- return
+        end
+
         if HOUND.Length(self._dataPoints[datapoint.platformId]) == 0 then
             self._dataPoints[datapoint.platformId] = {}
         end
@@ -257,10 +277,13 @@ do
                 i=1
             end
         end
-        local pointsPerPlatform = l_math.ceil(HOUND.DATAPOINTS_NUM/self:countPlatforms(true))
-        while HOUND.Length(self._dataPoints[datapoint.platformId]) > pointsPerPlatform do
-            table.remove(self._dataPoints[datapoint.platformId])
-        end
+
+        if self:countPlatforms(true) > 0 then
+            local pointsPerPlatform = l_math.ceil(HOUND.DATAPOINTS_NUM/self:countPlatforms(true))
+            while HOUND.Length(self._dataPoints[datapoint.platformId]) > pointsPerPlatform do
+                table.remove(self._dataPoints[datapoint.platformId])
+            end  
+        end      
     end
 
     --- Take two HOUND.Contact.Datapoints and return the location of intersection
@@ -378,9 +401,9 @@ do
             if type(self.DcsObject) == "table" and type(self.DcsObject.isExist) == "function" and self.DcsObject:isExist()
                 then
                     local unitPos = self.DcsObject:getPosition()
-                    if l_mist.utils.get2DDist(unitPos.p,self.pos.p) < 0.25 then return end
+                    if HoundUtils.Geo.get2DDistance(unitPos.p,self.pos.p) < 0.25 then return end
                     -- HOUND.Logger.debug(self:getName().. " has moved")
-                    -- HOUND.Logger.debug("3D: ".. l_mist.utils.get3DDist(unitPos.p,self.pos.p) .. " | 2D: "..l_mist.utils.get2DDist(unitPos.p,self.pos.p))
+                    -- HOUND.Logger.debug("3D: ".. HoundUtils.Geo.get3DDistance(unitPos.p,self.pos.p) .. " | 2D: "..HoundUtils.Geo.get2DDistance(unitPos.p,self.pos.p))
                     if self:isActive() then
                         HOUND.Logger.debug(self:getName().. " is active and moved.. not longer PB")
                         self:setPreBriefed(false)
@@ -394,6 +417,15 @@ do
         if not self:isRecent() and self.state ~= HOUND.EVENTS.RADAR_NEW then
             return self.state
         end
+
+        -- if self.kalman then
+        --     self.pos.p = self.kalman:getEstimatedPos()
+        --     self:calculateExtrasPosData(self.pos)
+        --     self.state = HOUND.EVENTS.RADAR_UPDATED
+        --     self:queueEvent(self.state)
+        --     return self.state
+        -- end
+
 
         local newContact = (self.state == HOUND.EVENTS.RADAR_NEW)
         local mobileDataPoints = {}
@@ -523,8 +555,7 @@ do
             refPos = {x=0,y=0,z=0}
         end
         local angleStep = pi_2/numPoints
-        local theta = l_math.rad(uncertenty_data.az)
-
+        local theta = l_math.rad(uncertenty_data.az) - HoundUtils.getMagVar(refPos)
         -- generate ellips points
         for i = 1, numPoints do
             local pointAngle = i * angleStep

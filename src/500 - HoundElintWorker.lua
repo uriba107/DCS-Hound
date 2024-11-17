@@ -401,6 +401,9 @@ do
     function HOUND.ElintWorker:Sniff(GroupName)
         self:removeDeadPlatforms()
 
+        for _, contact in pairs(self.contacts) do
+            contact:KalmanPredict()
+        end
         if HOUND.Length(self.platforms) == 0 then return end
         local Radars = {}
         if GroupName then
