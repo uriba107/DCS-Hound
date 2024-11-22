@@ -44,7 +44,7 @@ do
         instance.state = HOUND.EVENTS.SITE_NEW
         instance.preBriefed = HoundContact:isAccurate()
         instance.DcsRadarUnits = HoundUtils.Dcs.getRadarUnitsInGroup(instance.DcsObject)
-
+        setmetatable(instance.emitters,{__mode="v"})
         return instance
     end
 

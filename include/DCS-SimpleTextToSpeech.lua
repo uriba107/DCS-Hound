@@ -136,7 +136,7 @@ function STTS.TextToSpeech(message,freqs,modulations, volume,name, coalition,poi
 
     message = message:gsub("\"","\\\"")
     
-    local pwsh = string.format("Start-Process -WindowStyle Hidden -WorkingDirectory \"%s\" -FilePath \"%s\"", STTS.DIRECTORY, STTS.EXECUTABLE )
+    local pwsh = string.format("Start-Process -WindowStyle Hidden -NoNewWindow -WorkingDirectory \"%s\" -FilePath \"%s\"", STTS.DIRECTORY, STTS.EXECUTABLE )
 
     local cmdArgs = {
         ["-f"] = freqs,
@@ -197,7 +197,8 @@ function STTS.TextToSpeech(message,freqs,modulations, volume,name, coalition,poi
         local script = io.open(filename,"w+")
         script:write(pwsh)
         script:close()
-        pwsh = string.format('powershell.exe  -ExecutionPolicy Unrestricted -WindowStyle Hidden -Command "%s"',filename)
+        pwsh = string.format('start /min "" powershell.exe -ExecutionPolicy Unrestricted -WindowStyle Hidden -NoNewWindow -Command "%s"',filename)
+        -- pwsh = string.format('powershell.exe -ExecutionPolicy Unrestricted -WindowStyle Hidden -NoNewWindow -Command "%s"',filename)
         timer.scheduleFunction(os.remove, filename, timer.getTime() + 1) 
     end
     if string.len(pwsh) > 255 then

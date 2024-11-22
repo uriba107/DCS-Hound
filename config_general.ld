@@ -10,6 +10,8 @@ file.exclude = {
 'src/103 - HoundDBs_func.lua',
 'src/110 - HoundConfig.lua',
 'src/200 - HoundUtils.lua',
+'src/201 - HoundUtils_Adv.lua',
+'src/202 - HoundMatrix.lua',
 'src/210 - HoundEventHandler.lua',
 'src/300 - HoundContactBase.lua',
 'src/301 - HoundContactEstimator.lua',

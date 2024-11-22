@@ -9,13 +9,14 @@ do
     local l_math = math
     function HOUND.ElintWorker.create(HoundInstanceId)
         local instance = {}
+        setmetatable(instance, HOUND.ElintWorker)
+
         instance.contacts = {}
         instance.platforms = {}
         instance.sites = {}
         instance.settings =  HOUND.Config.get(HoundInstanceId)
         instance.coalitionId = nil
         instance.TrackIdCounter = 0
-        setmetatable(instance, HOUND.ElintWorker)
         return instance
     end
 

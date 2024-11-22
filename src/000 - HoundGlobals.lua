@@ -40,7 +40,7 @@ do
         VERSION = "0.4.1-TRUNK",
         DEBUG = true,
         ELLIPSE_PERCENTILE = 0.6,
-        DATAPOINTS_NUM = 20,
+        DATAPOINTS_NUM = 30,
         DATAPOINTS_INTERVAL = 30,
         CONTACT_TIMEOUT = 900,
         MAX_ANGULAR_RES_DEG = 20,
@@ -54,7 +54,8 @@ do
         MARKER_LINE_OPACITY = 0.3,
         MARKER_TEXT_POINTER = "⇙ ", -- "¤ « "
         TTS_ENGINE = {'STTS','GRPC'},
-        MENU_PAGE_LENGTH = 9
+        MENU_PAGE_LENGTH = 9,
+        ENABLE_KALMAN = false,
     }
 
     --- Map Markers ENUM

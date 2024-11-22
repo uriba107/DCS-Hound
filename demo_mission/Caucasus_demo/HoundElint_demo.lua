@@ -15,11 +15,11 @@ do
     Elint_blue:preBriefedContact('PB-test-1')
     Elint_blue:systemOn()
 
-    -- Elint_blue:addPlatform("ELINT_C17")
-    -- Elint_blue:addPlatform("ELINT_C130")
-    Elint_blue:addPlatform("Kokotse_Elint")
-    Elint_blue:addPlatform("Khvamli_Elint")
-    Elint_blue:addPlatform("Migariya_Elint")
+    Elint_blue:addPlatform("ELINT_C17")
+    Elint_blue:addPlatform("ELINT_C130")
+    -- Elint_blue:addPlatform("Kokotse_Elint")
+    -- Elint_blue:addPlatform("Khvamli_Elint")
+    -- Elint_blue:addPlatform("Migariya_Elint")
     -- Elint_blue:addPlatform("Cow")
 
     tts_args = {
@@ -48,7 +48,9 @@ do
     Elint_blue:enableAtis()
     Elint_blue:enableNotifier()
     -- Elint_blue:disableBDA()
-    Elint_blue:setMarkerType(HOUND.MARKER.POLYGON)
+    -- Elint_blue:setMarkerType(HOUND.MARKER.POLYGON)
+    -- Elint_blue:setMarkerType(HOUND.MARKER.POINT)
+
     -- Elint_blue:setMarkerType(HOUND.MARKER.SITE_ONLY)
 
 

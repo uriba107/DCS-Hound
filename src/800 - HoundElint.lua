@@ -59,7 +59,6 @@ do
         self:purgeRadioMenu()
         self.contacts = nil
         self.settings = nil
-        collectgarbage("collect")
         return nil
     end
 

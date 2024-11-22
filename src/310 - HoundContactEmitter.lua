@@ -72,13 +72,11 @@ do
         instance.maxWeaponsRange = HoundUtils.Dcs.getSamMaxRange(DcsObject)
         instance.detectionRange = HoundUtils.Dcs.getRadarDetectionRange(DcsObject)
         instance._dataPoints = {}
-
         instance.detected_by = {}
         instance.state = HOUND.EVENTS.RADAR_NEW
         instance.preBriefed = false
         instance.unitAlive = true
         instance.Kalman = nil
-
         return instance
     end
 
@@ -214,7 +212,7 @@ do
 
     function HOUND.Contact.Emitter:KalmanPredict(timestamp)
         timestamp = timestamp or timer.getAbsTime()
-        if self.Kalman then
+        if HOUND.ENABLE_KALMAN and self.Kalman then
             HOUND.Logger.debug(self:getName() .. " is KalmanPredict")
             self.Kalman:predict(timestamp)
         end
@@ -223,12 +221,13 @@ do
     --- Add Datapoint to content
     -- @param datapoint @{HOUND.Contact.Datapoint}
     function HOUND.Contact.Emitter:AddPoint(datapoint)
-        -- if HoundUtils.Dcs.isPoint(self.pos.p) and not self.Kalman then
-        --     -- local pos = self:getObject():getPoint() or self.pos.p
-        --     self.Kalman = HOUND.Contact.Estimator.UPLKF(self.pos.p,{x=0,z=0},self.last_seen,self.uncertenty_data.r)
-        -- end
+        if HOUND.ENABLE_KALMAN and not self.Kalman and HoundUtils.Dcs.isPoint(self.pos.p) then
+            if self.uncertenty_data.r < 5000 then
+                self.Kalman = HOUND.Contact.Estimator.UPLKF(self.pos.p,{x=0,z=0},self.last_seen,self.uncertenty_data.r)
+            end
+        end
         self.last_seen = datapoint.t
-        if self.Kalman then
+        if HOUND.ENABLE_KALMAN and self.Kalman then
             HOUND.Logger.debug(self:getName() .. " is KalmanUpdate")
             self.Kalman:update(datapoint.platformPos,datapoint.az,datapoint.t,datapoint.platformPrecision)
             -- return
@@ -261,17 +260,20 @@ do
             return
         else
             local DeltaT = self._dataPoints[datapoint.platformId][2]:getAge() - datapoint:getAge()
-            if  DeltaT >= HOUND.DATAPOINTS_INTERVAL then
+            if  DeltaT >= HOUND.DATAPOINTS_INTERVAL then 
                 table.insert(self._dataPoints[datapoint.platformId], 1, datapoint)
             else
+                local deallocate = self._dataPoints[datapoint.platformId][1]
                 self._dataPoints[datapoint.platformId][1] = datapoint
+                deallocate = nil
             end
         end
 
         -- cleanup
         for i=HOUND.Length(self._dataPoints[datapoint.platformId]),1,-1 do
             if self._dataPoints[datapoint.platformId][i]:getAge() > HOUND.CONTACT_TIMEOUT then
-                table.remove(self._dataPoints[datapoint.platformId])
+                local deallocate = table.remove(self._dataPoints[datapoint.platformId])
+                deallocate = nil
             else
                 -- as list is always ordered, if you no longer need to pop the last one out, break out
                 i=1
@@ -281,7 +283,8 @@ do
         if self:countPlatforms(true) > 0 then
             local pointsPerPlatform = l_math.ceil(HOUND.DATAPOINTS_NUM/self:countPlatforms(true))
             while HOUND.Length(self._dataPoints[datapoint.platformId]) > pointsPerPlatform do
-                table.remove(self._dataPoints[datapoint.platformId])
+                local deallocate = table.remove(self._dataPoints[datapoint.platformId])
+                deallocate = nil
             end  
         end      
     end
@@ -523,7 +526,9 @@ do
             for key,_ in pairs(platforms) do
                 table.insert(detected_by,key)
             end
+            local deallocate = self.detected_by
             self.detected_by = detected_by
+            deallocate = nil
         end
 
         if newContact and HoundUtils.Dcs.isPoint(self.pos.p) ~= nil and self.isEWR == false then
@@ -590,7 +595,7 @@ do
         local fillColor = {0,0,0,alpha}
         local lineColor = {0,0,0,HOUND.MARKER_LINE_OPACITY}
         local lineType = 2
-        if (HoundUtils.absTimeDelta(self.last_seen) < 15) then
+        if (HoundUtils.absTimeDelta(self.last_seen) < 30) then
             lineType = 1
         end
         if self._platformCoalition == coalition.side.BLUE then
@@ -635,7 +640,8 @@ do
         if not self:isAccurate() and HOUND.USE_LEGACY_MARKERS then
             markerArgs.text = markerArgs.text .. " (" .. self.uncertenty_data.major .. "/" .. self.uncertenty_data.minor .. "@" .. self.uncertenty_data.az .. ")"
         end
-        if MarkerType > HOUND.MARKER.POINT then
+        if MarkerType >= HOUND.MARKER.POINT then
+            -- HOUND.Logger.debug("skip update markpoint")
             self._markpoints.pos:update(markerArgs)
         end
 
