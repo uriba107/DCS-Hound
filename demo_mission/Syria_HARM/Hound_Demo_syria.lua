@@ -28,14 +28,14 @@ do
                         timer.scheduleFunction(HOUND_MISSION.SA6.cleanup, SAM, timer.getTime() + math.random(30,60))
                 end
             end
-            if event.id == HOUND.EVENTS.HOUND_ENABLED then
-                HoundTriggers.taskId = timer.scheduleFunction( HoundTriggers.dumpCsv, 300, timer.getTime() + 30 )
-            end
-            if event.id == HOUND.EVENTS.HOUND_DISABLED then
-                if HoundTriggers.taskId then
-                    timer.removeFunction(HoundTriggers.taskId)
-                end
-            end
+            -- if event.id == HOUND.EVENTS.HOUND_ENABLED then
+            --     HoundTriggers.taskId = timer.scheduleFunction( HoundTriggers.dumpCsv, 300, timer.getTime() + 30 )
+            -- end
+            -- if event.id == HOUND.EVENTS.HOUND_DISABLED then
+            --     if HoundTriggers.taskId then
+            --         timer.removeFunction(HoundTriggers.taskId)
+            --     end
+            -- end
         end
     end
 
@@ -83,7 +83,7 @@ do
     HoundBlue:setZone("Lebanon","Sector_Lebanon")
     HoundBlue:setZone("Northern Israel","Sector_Israel")
 
-    HoundBlue:setMarkerType(HOUND.MARKER.POLYGON)
+    -- HoundBlue:setMarkerType(HOUND.MARKER.POLYGON)
     HoundBlue:enableMarkers()
     HoundBlue:enableBDA()
 
@@ -100,29 +100,29 @@ do
     })
     HoundBlue:systemOn()
 
-    humanElint = {}
-    function humanElint:onEvent(DcsEvent)
-        if DcsEvent.id == world.event.S_EVENT_BIRTH then
-            if HoundBlue and DcsEvent.initiator and DcsEvent.initiator:getCoalition() == HoundBlue:getCoalition()
-            and DcsEvent.initiator:getTypeName() == "AJS37" and DcsEvent.initiator:getPlayerName()
-            then
-                env.info("Adding Human Viggen " .. DcsEvent.initiator:getPlayerName())
-                HoundBlue:addPlatform(DcsEvent.initiator:getName())
+    -- humanElint = {}
+    -- function humanElint:onEvent(DcsEvent)
+    --     if DcsEvent.id == world.event.S_EVENT_BIRTH then
+    --         if HoundBlue and DcsEvent.initiator and DcsEvent.initiator:getCoalition() == HoundBlue:getCoalition()
+    --         and DcsEvent.initiator:getTypeName() == "AJS37" and DcsEvent.initiator:getPlayerName()
+    --         then
+    --             env.info("Adding Human Viggen " .. DcsEvent.initiator:getPlayerName())
+    --             HoundBlue:addPlatform(DcsEvent.initiator:getName())
 
-                -- Remove the C-130s
-                -- HoundBlue:removePlatform("ELINT North") -- C-130
-                -- HoundBlue:removePlatform("ELINT South") -- C-130
-                -- HoundBlue:removePlatform("ELINT Galil") -- C-130
-            end
-        end
-        if DcsEvent.id == world.event.S_EVENT_PLAYER_LEAVE_UNIT then
-            if HoundBlue and HOUND.Utils.Dcs.isUnit(DcsEvent.initiator) and DcsEvent.initiator:getCoalition() == HoundBlue:getCoalition()
-                and DcsEvent.initiator:getTypeName() == "AJS37" and HOUND.setContainsValue(HoundBlue:listPlatforms(),DcsEvent.initiator:getName())
-            then
-                HoundBlue:removePlatform(DcsEvent.initiator:getName())
-            end
-        end
-    end
+    --             -- Remove the C-130s
+    --             -- HoundBlue:removePlatform("ELINT North") -- C-130
+    --             -- HoundBlue:removePlatform("ELINT South") -- C-130
+    --             -- HoundBlue:removePlatform("ELINT Galil") -- C-130
+    --         end
+    --     end
+    --     if DcsEvent.id == world.event.S_EVENT_PLAYER_LEAVE_UNIT then
+    --         if HoundBlue and HOUND.Utils.Dcs.isUnit(DcsEvent.initiator) and DcsEvent.initiator:getCoalition() == HoundBlue:getCoalition()
+    --             and DcsEvent.initiator:getTypeName() == "AJS37" and HOUND.setContainsValue(HoundBlue:listPlatforms(),DcsEvent.initiator:getName())
+    --         then
+    --             HoundBlue:removePlatform(DcsEvent.initiator:getName())
+    --         end
+    --     end
+    -- end
 
-    world.addEventHandler(humanElint)
+    -- world.addEventHandler(humanElint)
 end

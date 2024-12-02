@@ -817,7 +817,7 @@ do
         },
         [Object.Category.UNIT] = {
             -- Ground Units
-            ['MLRS FDDM'] = {antenna = {size = 15, factor = 1},ins_error=0},
+            ['SAM Patriot CR (AMG AN/MRC-137)'] = {antenna = {size = 15, factor = 1},ins_error=0},
             ['SPK-11'] = {antenna = {size = 15, factor = 1},ins_error=0},
             -- Helicopters
             ['CH-47D'] = {antenna = {size = 12, factor = 1},ins_error=0},
@@ -839,7 +839,10 @@ do
             ['Tu-95MS'] = {antenna = {size = 50, factor = 1},ins_error=50},
             ['Tu-142'] = {antenna = {size = 50, factor = 1},ins_error=0},
             ['IL-76MD'] = {antenna = {size = 48, factor = 0.8},ins_error=50},
-            ['H-6J'] = {antenna = {size = 3.5, factor = 1},ins_error=100},
+            ['H-6J'] = {antenna = {size = 3.5, factor = 1}, require = {CLSID='{Fantasmagoria}'},ins_error=100},
+            ['Su-24M'] = {antenna = {size = 3.5, factor = 1}, require = {CLSID='{Fantasmagoria}'},ins_error=50},
+            ['Su-24MR'] = {antenna = {size = 4.5, factor = 1}, require = {CLSID='{Tangazh}'},ins_error=50},
+            ['Su-25TM'] = {antenna = {size = 3.5, factor = 1}, require = {CLSID='{Fantasmagoria}'},ins_error=50},
             ['An-30M'] = {antenna = {size = 25, factor = 1},ins_error=50},
             ['A-50'] = {antenna = {size = 9, factor = 0.5},ins_error=0},
             ['An-26B'] = {antenna = {size = 26, factor = 1},ins_error=100},

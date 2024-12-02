@@ -142,7 +142,9 @@ More examples are available in the [demo missions](./demo_mission/).
 | Tu-95     | 0.46 / 0.05 | A ||
 | Tu-142    | 0.46 / 0.05 | A ||
 | IL-76MD   | 0.60 / 0.06 | A ||
-| H-6J      | 6.54 / 0.70 | C ||
+| H-6J      | 6.54 / 0.70 | C | Fantasmagoria |
+| Su-24M    | 6.54 / 0.70 | C | Fantasmagoria | 
+| Su-24MR   | 5.09 / 0.55 | C | Tangazh |  
 | C-47      | 1.91 / 0.20 | A ||
 | S-3B      | 1.59 / 0.17 | A ||
 | E-2D      | 6.54 / 0.70 | C ||
@@ -151,6 +153,7 @@ More examples are available in the [demo missions](./demo_mission/).
 | A-50      | 5.09 / 0.55 | C ||
 | Viggen    | 5.09 / 0.55 | C | U22 |
 | Su-25T    | 6.54 / 0.70 | C | Fantasmagoria |  
+| Su-25TM   | 6.54 / 0.70 | C | Fantasmagoria |  
 | JF-17     | 7.05 / 0.76 | C | KG-600 SPJ |
 | F-16C     | 15.79 / 1.69| D | Block 50 w/HTS |
 | Mirage F1 |  6.19 / 0.66  | C | Cyril pod |
@@ -188,7 +191,7 @@ More examples are available in the [demo missions](./demo_mission/).
 | Platform  | Accuracy Deg. (C/H Bands) | Min. Band |
 | --------  | --------    | - |
 | SPK-11    | 1.53 / 0.16 | A |
-| MLRS FDDM | 1.53 / 0.16 | A | 
+| SAM Patriot CR | 1.53 / 0.16 | A | 
 
 ### Static Objects
 | Platform  | Accuracy Deg. (C/H Bands) | Min. Band |

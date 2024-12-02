@@ -5,8 +5,7 @@ do
     end
     HOUND.USE_LEGACY_MARKS = false
     -- HOUND.TTS_ENGINE = {'STTS','GRPC'}
-
-
+    -- HOUND.ENABLE_KALMAN = true
 end
 
 do
@@ -49,9 +48,11 @@ do
     Elint_blue:enableNotifier()
     -- Elint_blue:disableBDA()
     -- Elint_blue:setMarkerType(HOUND.MARKER.POLYGON)
+    -- Elint_blue:setMarkerType(HOUND.MARKER.DIAMOND)
+
     -- Elint_blue:setMarkerType(HOUND.MARKER.POINT)
 
-    -- Elint_blue:setMarkerType(HOUND.MARKER.SITE_ONLY)
+    Elint_blue:setMarkerType(HOUND.MARKER.SITE_ONLY)
 
 
     Elint_blue:addSector("Fake")

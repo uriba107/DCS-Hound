@@ -75,6 +75,7 @@ platforms = {
             "A-50": {"category": 2, "antenna":{"size":9, "factor":0.5}},
             "An-26B": {"category": 2, "antenna":{"size":26, "factor":0.9}},
             "Su-25T": {"category": 2, "antenna":{"size":3.5, "factor":1}},
+            "Su-24MR": {"category": 2, "antenna":{"size":4.5, "factor":1}},
             "AJS37": {"category": 2, "antenna":{"size":4.5, "factor":1}},
             "F-16C": {"category": 2, "antenna":{"size":1.45, "factor":1}},
             "JF-17": {"category": 2, "antenna":{"size":3.25, "factor":1}},
@@ -107,6 +108,8 @@ def genBandTable_HL():
         print("    [\"%s\"] = {%f,%f},"%(band,H,R))
     print("}")
 
+    
+
 def calcResolution(wavelength,antenna):
     return math.degrees(wavelength/antenna)
 
@@ -134,12 +137,12 @@ def showRes(band,antenna):
     print("%.2f antenna on %s Band resolution is %f deg"%(antenna,band,calcResolution(wavelength,antenna)))
     return calcResolution(wavelength,antenna)
 
-print("=== Band wavelength data ===")
-genBandTable_HL()
-# genBandTable()
+# print("=== Band wavelength data ===")
+# genBandTable_HL()
+genBandTable()
 
-# print("\n=== ReadMe resolution data ===")
-# genResolutionTable()
+print("\n=== ReadMe resolution data ===")
+genResolutionTable()
 
 # print("\n=== Other stuff ===")
 
