@@ -442,8 +442,9 @@ do
     --- Update marker positions
     -- @param MarkerType type of marker to use
     function HOUND.Contact.Site:updateMarker(MarkerType)
-        if not self:getPos() or type(self.maxWeaponsRange) ~= "number"  then return end
-        -- if self:isAccurate() and self._markpoints.pos:isDrawn() then return end
+        if not HoundUtils.Dcs.isPoint(self:getPos()) or type(self.maxWeaponsRange) ~= "number"  then return end
+        self._markpoints.area:remove()
+
         local textColor = 0
         local textAlpha = 1
         if not self:isAccurate() then
@@ -471,14 +472,14 @@ do
         }
         self._markpoints.pos:update(markerArgs)
 
-        if MarkerType <= HOUND.MARKER.SITE_ONLY then
-            -- if self._markpoints.area:isDrawn() then
-                self._markpoints.area:remove()
-            -- end
-            return
-        -- elseif MarkerType > HOUND.MARKER.SITE_ONLY then
-        --     self:drawAreaMarker()
-        end
+        -- if MarkerType <= HOUND.MARKER.SITE_ONLY then
+        --     -- if self._markpoints.area:isDrawn() then
+        --         self._markpoints.area:remove()
+        --     -- end
+        --     return
+        -- -- elseif MarkerType > HOUND.MARKER.SITE_ONLY then
+        -- --     self:drawAreaMarker()
+        -- end
     end
 
     --- update position markers for site and radars
@@ -498,7 +499,6 @@ do
             HOUND.Logger.debug("Update marker for site " .. self:getName())
             self:updateMarker(HOUND.MARKER.SITE_ONLY)
             HOUND.Logger.debug(self:getName() .. " Done")
-
         end
     end
 
