@@ -216,7 +216,7 @@ do
             HOUND.Logger.debug(self:getName() .. " is KalmanPredict")
             self.Kalman:predict(timestamp)
         end
-        
+
     end
     --- Add Datapoint to content
     -- @param datapoint @{HOUND.Contact.Datapoint}
@@ -260,7 +260,7 @@ do
             return
         else
             local DeltaT = self._dataPoints[datapoint.platformId][2]:getAge() - datapoint:getAge()
-            if  DeltaT >= HOUND.DATAPOINTS_INTERVAL then 
+            if  DeltaT >= HOUND.DATAPOINTS_INTERVAL then
                 table.insert(self._dataPoints[datapoint.platformId], 1, datapoint)
             else
                 local deallocate = self._dataPoints[datapoint.platformId][1]
@@ -285,8 +285,8 @@ do
             while HOUND.Length(self._dataPoints[datapoint.platformId]) > pointsPerPlatform do
                 local deallocate = table.remove(self._dataPoints[datapoint.platformId])
                 deallocate = nil
-            end  
-        end      
+            end
+        end
     end
 
     --- Take two HOUND.Contact.Datapoints and return the location of intersection
@@ -316,7 +316,6 @@ do
 
         return pos
     end
-
 
     --- Calculate Cotact's Ellipse of uncertenty
     -- @local
@@ -561,6 +560,7 @@ do
         end
         local angleStep = pi_2/numPoints
         local theta = l_math.rad(uncertenty_data.az) - HoundUtils.getMagVar(refPos)
+        local cos_theta,sin_theta = l_math.cos(theta),l_math.sin(theta)
         -- generate ellips points
         for i = 1, numPoints do
             local pointAngle = i * angleStep
@@ -568,14 +568,16 @@ do
             point.x = uncertenty_data.major/2 * l_math.cos(pointAngle)
             point.z = uncertenty_data.minor/2 * l_math.sin(pointAngle)
             -- rotate and translate into correct position
-            local x = point.x * l_math.cos(theta) - point.z * l_math.sin(theta)
-            local z = point.x * l_math.sin(theta) + point.z * l_math.cos(theta)
+            local x = point.x * cos_theta - point.z * sin_theta
+            local z = point.x * sin_theta + point.z * cos_theta
             point.x = x + refPos.x
             point.z = z + refPos.z
-
-            table.insert(polygonPoints, point)
+            local mgrs = coord.LLtoMGRS(coord.LOtoLL( point ))
+            if type(mgrs) == "table" and type(mgrs.Easting) == "number" and type(mgrs.Northing ) == "number" then
+                table.insert(polygonPoints, point)
+            end
         end
-        HoundUtils.Geo.setHeight(polygonPoints)
+        -- HoundUtils.Geo.setHeight(polygonPoints,10)
 
         return polygonPoints
     end
@@ -601,9 +603,7 @@ do
         if self._platformCoalition == coalition.side.BLUE then
             fillColor[1] = 1
             lineColor[1] = 1
-        end
-
-        if self._platformCoalition == coalition.side.RED then
+        elseif self._platformCoalition == coalition.side.RED then
             fillColor[3] = 1
             lineColor[3] = 1
         end

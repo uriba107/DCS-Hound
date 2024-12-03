@@ -1123,10 +1123,10 @@ do
             end
 
             if doProcess then
-                local fastloop = StopWatch:Start("contact processing " .. timer.getAbsTime())
+                local processLoop = StopWatch:Start("contact processing " .. timer.getAbsTime())
                 self.contacts:Process()
                 self:updateSectorMembership()
-                fastloop:Stop()
+                processLoop:Stop()
 
                 self.timingCounters.lastProcess = runTime
                 if not self.timingCounters.lastMarkers then
@@ -1136,6 +1136,7 @@ do
                     self.timingCounters.lastMenus = runTime
                 end
             end
+            local UILoop = StopWatch:Start("UI update " .. timer.getAbsTime())
 
             if doMenus then
                 self:populateRadioMenu()
@@ -1143,11 +1144,10 @@ do
             end
 
             if doMarkers then
-                local slowLoop = StopWatch:Start("marker update " .. timer.getAbsTime())
                 self.contacts:UpdateMarkers()
                 self.timingCounters.lastMarkers = runTime
-                slowLoop:Stop()
             end
+            UILoop:Stop()
         end
         if self.settings:getOnScreenDebug() then
             HOUND.Logger.onScreenDebug(self:printDebugging(),self.settings.intervals.scan*0.75)

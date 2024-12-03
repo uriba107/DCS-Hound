@@ -456,22 +456,50 @@ do
 
         local lineColor = {textColor,textColor,textColor,textAlpha}
 
+        if self._platformCoalition == coalition.side.BLUE then
+            lineColor[1] = 0.7
+        elseif self._platformCoalition == coalition.side.RED then
+            lineColor[3] = 0.7
+        end
+
         local markerArgs = {
             text = self:getName() .. " (" .. self:getDesignation(true).. ")",
             pos = self:getPos(),
             coalition = self._platformCoalition,
-            lineColor = lineColor
+            lineColor = lineColor,
+            useLegacyMarker = false
         }
         self._markpoints.pos:update(markerArgs)
 
-        if MarkerType == HOUND.MARKER.NONE then
+        if MarkerType <= HOUND.MARKER.SITE_ONLY then
             -- if self._markpoints.area:isDrawn() then
                 self._markpoints.area:remove()
             -- end
             return
-        elseif MarkerType > HOUND.MARKER.NONE then
-            self:drawAreaMarker()
+        -- elseif MarkerType > HOUND.MARKER.SITE_ONLY then
+        --     self:drawAreaMarker()
         end
-
     end
+
+    --- update position markers for site and radars
+    -- @param markerType requested HOUND.MARKER type
+    -- @param[type=?boolean] drawSite requested HOUND.MARKER for the site.
+    function HOUND.Contact.Site:updateMarkers(markerType,drawSite)
+        -- update markers of all sites with markerType
+        if (type(markerType) ~= "number" or markerType == HOUND.MARKER.NONE) and not drawSite then return end
+        if markerType > HOUND.MARKER.SITE_ONLY then
+            for _,emitter in pairs(self.emitters) do
+                HOUND.Logger.debug("update marker for " .. emitter:getName())
+                emitter:updateMarker(markerType)
+                HOUND.Logger.debug(emitter:getName() .. " Done")
+            end
+        end
+        if drawSite then
+            HOUND.Logger.debug("Update marker for site " .. self:getName())
+            self:updateMarker(HOUND.MARKER.SITE_ONLY)
+            HOUND.Logger.debug(self:getName() .. " Done")
+
+        end
+    end
+
 end

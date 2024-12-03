@@ -817,7 +817,7 @@ do
         },
         [Object.Category.UNIT] = {
             -- Ground Units
-            ['SAM Patriot CR (AMG AN/MRC-137)'] = {antenna = {size = 15, factor = 1},ins_error=0},
+            ['Patriot AMG'] = {antenna = {size = 15, factor = 1},ins_error=0},
             ['SPK-11'] = {antenna = {size = 15, factor = 1},ins_error=0},
             -- Helicopters
             ['CH-47D'] = {antenna = {size = 12, factor = 1},ins_error=0},

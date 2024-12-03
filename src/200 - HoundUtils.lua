@@ -544,6 +544,10 @@ do
     -- @return[type=Bool] True if is valid point
     function HOUND.Utils.Dcs.isPoint(point)
         if type(point) ~= "table" then return false end
+        -- local point_meta = getmetatable(point)
+        -- local vec2_meta = getmetatable({x=0,z=0})
+        -- local vec3_meta = getmetatable({x=0,z=0,y=0})
+        -- return point_meta == vec3_meta or point_meta == vec2_meta
         return (type(point.x) == "number") and (type(point.z) == "number")
     end
 
@@ -650,7 +654,7 @@ do
     -- @return (bool) true if both units have LOS between them
 
     function HOUND.Utils.Geo.checkLOS(pos0,pos1)
-        if not pos0 or not pos1 then return false end
+        if not HOUND.Utils.Dcs.isPoint(pos0) or not HOUND.Utils.Dcs.isPoint(pos1) then return false end
         local dist = l_mist.utils.get2DDist(pos0,pos1)
         local radarHorizon = HOUND.Utils.Geo.EarthLOS(pos0.y,pos1.y)
         return (dist <= radarHorizon*1.025 and land.isVisible(pos0,pos1))
@@ -678,7 +682,7 @@ do
     -- @return DCS point of intersection with ground
     function HOUND.Utils.Geo.getProjectedIP(p0,az,el)
         if not HOUND.Utils.Dcs.isPoint(p0) or type(az) ~= "number" or type(el) ~= "number" then return end
-        local maxSlant = HOUND.Utils.Geo.EarthLOS(p0.y)*1.2
+        local maxSlant = HOUND.Utils.Geo.EarthLOS(p0.y)*1.1
         -- local maxSlant = (p0.y/l_math.abs(l_math.sin(el)))+100
 
         local unitVector = HOUND.Utils.Vector.getUnitVector(az,el)
@@ -688,24 +692,28 @@ do
     --- Ensure Inpoint DCS point has Elevation
     -- @local
     -- @param point DCS point
+    -- @param[type=?number] offset offset in meters from actual height
     -- @return Point but with elevation
-    function HOUND.Utils.Geo.setPointHeight(point)
+    function HOUND.Utils.Geo.setPointHeight(point,offset)
         if HOUND.Utils.Dcs.isPoint(point) and type(point.y) ~= "number" then
-            point.y = land.getHeight({x=point.x,y=point.z})
+            offset = offset or 0
+            point.y = land.getHeight({x=point.x,y=point.z}) + offset
         end
         return point
     end
 
     --- Ensure input point or point table all have valid Elevation
     -- @param point DCS point
+    -- @param[type=?number] offset offset in meters from actual height
     -- @return same as input, but with elevation. will return original value if is not DCS point
-    function HOUND.Utils.Geo.setHeight(point)
+    function HOUND.Utils.Geo.setHeight(point,offset)
         if type(point) == "table" then
+            offset = offset or 0
             if HOUND.Utils.Dcs.isPoint(point) then
-                return HOUND.Utils.Geo.setPointHeight(point)
+                return HOUND.Utils.Geo.setPointHeight(point,offset)
             end
             for _,pt in pairs(point) do
-                pt = HOUND.Utils.Geo.setPointHeight(pt)
+                pt = HOUND.Utils.Geo.setPointHeight(pt,offset)
             end
         end
         return point
@@ -870,9 +878,13 @@ do
         -- @param self Hound Marker instance
         instance.remove = function(self)
             if self.id > 0 then
+                local GC = (self.id % 5 == 0)
                 trigger.action.removeMark(self.id)
                 self.id = -1
                 self.type = HOUND.Utils.Marker.Type.NONE
+                if GC then
+                    collectgarbage("collect")
+                end
             end
         end
 
@@ -916,7 +928,7 @@ do
                 self.type = HOUND.Utils.Marker.Type.FREEFORM
                 trigger.action.markupToAll(6,coalition,self.id,
                     pos[1], pos[2], pos[3], pos[4],
-                    lineColor,fillColor,lineType)
+                    lineColor,fillColor,lineType,true)
             end
 
             if HOUND.Length(pos) == 8 then
@@ -924,7 +936,7 @@ do
                 trigger.action.markupToAll(7,coalition,self.id,
                     pos[1], pos[2], pos[3], pos[4],
                     pos[5], pos[6], pos[7], pos[8],
-                    lineColor,fillColor,lineType)
+                    lineColor,fillColor,lineType,true)
             end
 
             if HOUND.Length(pos) == 16 then
@@ -934,7 +946,7 @@ do
                     pos[5], pos[6], pos[7], pos[8],
                     pos[9], pos[10], pos[11], pos[12],
                     pos[13], pos[14], pos[15], pos[16],
-                    lineColor,fillColor,lineType)
+                    lineColor,fillColor,lineType,true)
             end
         end
 
@@ -1403,7 +1415,7 @@ do
     -- @param sensorPrecision angular resolution (in rad) of platform against radar
     -- @return[type=number] Azimuth from source to destination in radians (0 to 2*pi)
     -- @return[type=number] Elevation angle from source to destination in radians (-pi to pi)
-    -- @retrun[type=table] the vector betweeb the points
+    -- @return[type=table] the vector betweeb the points
     function HOUND.Utils.Elint.getAzimuth(src, dst, sensorPrecision)
         if not HOUND.Utils.Dcs.isPoint(src) or not HOUND.Utils.Dcs.isPoint(dst) then return end
         -- local pi_2 = 2*l_math.pi

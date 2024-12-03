@@ -389,6 +389,4 @@ do
 
         return returnTable
     end
-
-    
 end

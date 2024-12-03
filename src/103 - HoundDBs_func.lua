@@ -143,7 +143,7 @@ do
 
     --- Generate uniqe radar frequencies for contact
     -- @local
-    -- @param[type=table] bands
+    -- @param[type=tab] bands
     -- @return table containig wavelengths in meters for the radar
     function HOUND.DB.getEmitterFrequencies(bands)
         local freqFactor = l_math.random()

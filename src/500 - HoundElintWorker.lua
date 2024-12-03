@@ -386,15 +386,25 @@ do
     -- update all emitters
     function HOUND.ElintWorker:UpdateMarkers()
         if self.settings:getUseMarkers() then
-            for _,contact in pairs(self.contacts) do
-                contact:updateMarker(self.settings:getMarkerType())
-            end
-        end
-        if self.settings:getMarkSites() then
+            local drawSites = self.settings:getMarkSites()
+            local emitterMarker = self.settings:getMarkerType()
             for _,site in pairs(self.sites) do
-                site:updateMarker(HOUND.MARKER.NONE)
+                site:updateMarkers(emitterMarker,drawSites)
             end
         end
+        -- current
+        -- if self.settings:getUseMarkers() then
+        --     for _,contact in pairs(self.contacts) do
+        --         HOUND.Logger.debug("Updating marker for " .. contact:getName())
+        --         contact:updateMarker(self.settings:getMarkerType())
+        --     end
+        -- end
+        -- if self.settings:getMarkSites() then
+        --     for _,site in pairs(self.sites) do
+        --         HOUND.Logger.debug("Updating marker for " .. site:getName())
+        --         site:updateMarker(HOUND.MARKER.NONE)
+        --     end
+        -- end
     end
 
     --- Perform a sample of all emitting radars against all platforms

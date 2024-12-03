@@ -3,7 +3,8 @@
 do
     local l_math = math
     -- local l_mist = mist
-    local PI_2 = 2*l_math.pi
+    local TwoPI = 2*l_math.pi
+    local HalfPi = l_math.pi / 2
     local HoundUtils = HOUND.Utils
     local matrix = HOUND.Matrix
 
@@ -105,7 +106,7 @@ do
             self.P = self.P + l_math.sqrt(noiseP) -- add "process noise" in the form of standard diviation
             local K = self.P / (self.P+self.noise)
             local deltaAz = newAz-predAz
-            self.estimated = ((self.estimated + K * (deltaAz)) + PI_2) % PI_2
+            self.estimated = ((self.estimated + K * (deltaAz)) + TwoPI) % TwoPI
             self.P = (1-K) * self.P
         end
 
@@ -189,23 +190,24 @@ do
     -- @section UB-PLKF
 
     --- UB-PLKF (Unbiased Pseudo-Linear Kalman Filter)
-    -- Implementation taken from https://www.mdpi.com/2072-4292/13/15/2915 
+    -- Implementation of algorithem described in https://www.mdpi.com/2072-4292/13/15/2915
     HOUND.Contact.Estimator.UPLKF = {}
     HOUND.Contact.Estimator.UPLKF.__index = HOUND.Contact.Estimator.UPLKF
 
     --- Create PLKF instance
     -- @local
     -- @param p0 Initial position (DCS point)
-    -- @param[type=?table] v0 Initial velocity (x,z) 
+    -- @param[type=?table] v0 Initial velocity (x,z)
     -- @param[type=?number] timestamp Initial time
-    -- @param[type=?number] initialPosError Uncertainty of position measurement 
-    -- @param[type=?boolean] isMobile Is the platform mobile? 
+    -- @param[type=?number] initialPosError Uncertainty of position measurement
+    -- @param[type=?boolean] isMobile Is the platform mobile?
     function HOUND.Contact.Estimator.UPLKF:create(p0,v0,timestamp,initialPosError,isMobile)
         if not HoundUtils.Dcs.isPoint(p0) then return nil end
         local instance = {}
         setmetatable( instance,HOUND.Contact.Estimator.UPLKF )
         instance.t0 = timestamp or timer.getAbsTime()
         instance.mobile = isMobile or false
+        instance._maxNoise = 0
         v0 = v0 or {z=0,x=0}
 
         -- intialize the State Matrix
@@ -254,6 +256,18 @@ do
         end
     end
 
+    --- normalize azimuth to East aligned counterclockwise
+    -- @local
+    -- @number azimuth in radians (0-2Pi)
+    -- @return angle in radian (-pi to pi) east aligned counterclockwise rotation
+    function HOUND.Contact.Estimator.UPLKF.normalizeAz(azimuth)
+        -- return (((HalfPi - azimuth) + l_math.pi) % TwoPI) - l_math.pi
+        -- try normlize to +- pi without changing direction or 0
+        -- return (((azimuth) + l_math.pi) % TwoPI) - l_math.pi
+        -- try normlize to +- pi counterclockwise
+        return (((TwoPI - azimuth) + l_math.pi) % TwoPI) - l_math.pi
+    end
+
     --- update debug marker
     -- draw a debug marker from current self.state
     -- @local
@@ -283,17 +297,17 @@ do
     function HOUND.Contact.Estimator.UPLKF:getQ(deltaT,sigma)
         -- initialize Process Noise Covariance Matrix
         local dT = deltaT or 10
-        local sigma_a = sigma or 0.1
+        local sigma_a = sigma or self._maxNoise
         sigma_a = sigma_a/2
 
-        -- return matrix({
-        --     {0.25*l_math.pow(dT,4)*sigma_a,0,0.5*l_math.pow(dT,3)*sigma_a,0},
-        --     {0,0.25*l_math.pow(dT,4)*sigma_a,0,0.5*l_math.pow(dT,3)*sigma_a},
-        --     {0.5*l_math.pow(dT,3)*sigma_a,0,l_math.pow(dT,2)*sigma_a,0},
-        --     {0,0.5*l_math.pow(dT,3)*sigma_a,0,l_math.pow(dT,2)*sigma_a},
-        -- })
+        return matrix({
+            {0.25*l_math.pow(dT,4)*sigma_a,0,0.5*l_math.pow(dT,3)*sigma_a,0},
+            {0,0.25*l_math.pow(dT,4)*sigma_a,0,0.5*l_math.pow(dT,3)*sigma_a},
+            {0.5*l_math.pow(dT,3)*sigma_a,0,l_math.pow(dT,2)*sigma_a,0},
+            {0,0.5*l_math.pow(dT,3)*sigma_a,0,l_math.pow(dT,2)*sigma_a},
+        })
 
-        return matrix(4,4)
+        -- return matrix(4,4)
 
     end
 
@@ -312,7 +326,7 @@ do
         local x_hat = Ft * X + Q
         -- Predicted state covariance matrix
         local P_hat = Ft * P * Ft:transpose() + Q
-        
+
         x_hat[3][1] = HoundUtils.Mapping.clamp(x_hat[3][1],-25.0,25.0)
         x_hat[4][1] = HoundUtils.Mapping.clamp(x_hat[4][1],-25.0,25.0)
         return x_hat,P_hat
@@ -326,9 +340,6 @@ do
         local deltaT = timestamp - self.t0
         self.t0 = timestamp
 
-        -- do UKF magic update position from pos+velocity
-        local Ft = self:getFt(deltaT)
-        local Q = self:getQ(deltaT)
         -- predict state
         self.state,self.P = self:predictStep(self.state,self.P,deltaT)
     end
@@ -339,16 +350,19 @@ do
     -- @param[type=number] theta mesured azimuth
     -- @param[type=number] timestamp time of mesurment
     -- @param[type=number] thetaErr maximum error in mesurment (radians)
-    function HOUND.Contact.Estimator.UPLKF:update(p0,theta,timestamp,thetaErr)
+    function HOUND.Contact.Estimator.UPLKF:update(p0,z,timestamp,z_err)
         HOUND.Logger.debug("pre:\n state " .. mist.utils.tableShow(self.state) .."\n P: " .. mist.utils.tableShow(self.P))
 
         timestamp = timestamp or timer.getAbsTime()
         local deltaT = timestamp - self.t0
         self.t0 = timestamp
+        local err = z_err or l_math.rad(HOUND.MAX_ANGULAR_RES_DEG)
+        local Ri = err/2
+        self._maxNoise = l_math.max(self._maxNoise,err)
 
         -- predict state and covariance matrix
         -- local F = self:getFt(deltaT)
-        local Q = self:getQ(deltaT,Ri)
+        local Q = self:getQ(deltaT)
         -- clamp velocities
 
         -- x_hat[3][1] = HoundUtils.Mapping.linear(x_hat[3][1],-25.0,25.0,-25.0,25.0,true)
@@ -356,49 +370,28 @@ do
 
         local x_hat,P_k = self:predictStep(self.state,self.P,deltaT,Q)
 
-        local Ri = thetaErr/2 or l_math.rad(HOUND.MAX_ANGULAR_RES_DEG/2)
-
         local estimatedPos = self:getEstimatedPos(x_hat)
-        local beta_k = HoundUtils.Elint.getAzimuth(p0,estimatedPos)
+        local d_k = HoundUtils.Geo.get2DDistance(p0,estimatedPos)
 
-        -- full PLKF whitepaper
-        local cos_beta_k,sin_beta_k = l_math.cos(beta_k),l_math.sin(beta_k)
-        local m_k = cos_beta_k*estimatedPos.z + sin_beta_k*estimatedPos.x - HoundUtils.Geo.get2DDistance(p0,estimatedPos)
+        -- -- full PLKF whitepaper
+        local z_hat = self.normalizeAz(HoundUtils.Elint.getAzimuth(p0,estimatedPos))
+        local cos_beta_k,sin_beta_k = l_math.cos(z_hat),l_math.sin(z_hat)
+        local m_k = cos_beta_k*estimatedPos.z + sin_beta_k*estimatedPos.x - d_k
         local H_k = matrix({
             {sin_beta_k/m_k,-cos_beta_k/m_k,0,0}
         })
-        local z_k = matrix({{theta}})/m_k
+        local z_k = matrix({{self.normalizeAz(z)}})/m_k
 
-        -- simplified Adjusted for for scaling.
-        -- local m_k = HoundUtils.Geo.get2DDistance(p0,estimatedPos)
-        -- local H_k = matrix({
-        --         -- {(estimatedPos.x-p0.x)/m_k*m_k,-(estimatedPos.z-p0.z)/m_k*m_k,0,0}
-        --         {sin_beta_k/m_k*m_k,-cos_beta_k/m_k*m_k,0,0}
-        --     })
-        -- local z_k = matrix({{theta}})
-
-        --PL-MMSE
-        -- local z_k = p0.z * l_math.math.sin(theta) - p0.x * l_math.cos(theta)
-        -- local H_k = matrix({{l_math.sin(theta), -l_math.cos(theta), 0, 0}})
-        
-        -- compute innovation convariance (chatGPT)
-        -- local R_k = matrix({{Ri/m_k}})
-        -- local S_k = (H_k * P_pred * H_k:transpose()) + R_k
-
-        -- generate new s_K based on item 47 
+        -- generate new s_K based on item 47
         local R_k = matrix({{l_math.sqrt(Ri)}})
         local S_k = H_k * P_k * H_k:transpose() + R_k
 
         -- Kalman Gain
         local K_k = P_k * H_k:transpose() * S_k:invert()
 
-        -- update state with mesurment z_k
-        -- local z_hat = H_k * x_hat
-        -- local residual = z_k[1][1] - z_hat[1][1]
-        -- local y_k = matrix({{HoundUtils.normalizeAngle(residual)}})
         local y_k = z_k - H_k * x_hat
 
-        HOUND.Logger.debug("theta/beta_k: " .. theta .. "/".. beta_k .. "\nzk: " .. mist.utils.tableShow(z_k).."\n HK: ".. mist.utils.tableShow(H_k) .. "\n yk: ".. mist.utils.tableShow(y_k) .. "\nK: " .. mist.utils.tableShow(K_k))
+        HOUND.Logger.debug("HK: ".. mist.utils.tableShow(H_k) .. "\n yk: ".. mist.utils.tableShow(y_k) .. "\nK: " .. mist.utils.tableShow(K_k))
         -- update globals
         self.state = x_hat + (K_k * y_k)
         self.P = (matrix(4,"I") - K_k * H_k) * P_k

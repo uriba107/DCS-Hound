@@ -1,5 +1,5 @@
 --- HOUND.Matrix
--- This class holds matrix math function 
+-- This class holds matrix math function
 -- code is Directly taken from https://github.com/davidm/lua-matrix
 -- @module HOUND.Matrix
 
@@ -10,7 +10,7 @@ do
     --/////////////////////////////
     --// Get 'new' matrix object //
     --/////////////////////////////
-    
+
     --- Get new matrix object
     -- @param rows number or rows or table to convert to matrix object
     -- if rows is a table then sets rows as matrix
@@ -57,31 +57,30 @@ do
         -- return matrix with shared metatable
         return setmetatable( mtx,HOUND.Matrix )
     end
-    
+
     --// matrix ( rows [, comlumns [, value]] )
     -- set __call behaviour of matrix
     -- for matrix( ... ) as HOUND.Matrix.new( ... )
     setmetatable( HOUND.Matrix, { __call = function( ... ) return HOUND.Matrix.new( ... ) end } )
-    
-    
+
     -- functions are designed to be light on checks
     -- so we get Lua errors instead on wrong input
     -- HOUND.Matrix.<functions> should handle any table of structure t[i][j] = value
     -- we always return a matrix with scripts metatable
     -- cause its faster than setmetatable( mtx, getmetatable( input matrix ) )
-    
+
     --///////////////////////////////
     --// matrix 'matrix' functions //
     --///////////////////////////////
-    
+
     --// for real, complex and symbolic matrices //--
-    
+
     -- note: real and complex matrices may be added, subtracted, etc.
     --		real and symbolic matrices may also be added, subtracted, etc.
     --		but one should avoid using symbolic matrices with complex ones
     --		since it is not clear which metatable then is used
-    
-    --- add matrices 
+
+    --- add matrices
     -- @param m1 Matrix
     -- @param m2 Matrix
     -- @return Matrix, sum of m1 and m2
@@ -97,7 +96,7 @@ do
         end
         return setmetatable( mtx, HOUND.Matrix )
     end
-    
+
     --- Subtract two matrices
     -- @param m1 Matrix
     -- @param m2 Matrix
@@ -150,7 +149,7 @@ do
         if not m2 then return m2, rank end -- singular
         return HOUND.Matrix.mul( m1, m2 )
     end
-    
+
     --// HOUND.Matrix.mulnum ( m1, num )
     --- Multiply matrix with a number
     -- num may be of type 'number' or 'complex number'
@@ -218,11 +217,11 @@ do
         end
         return mtx
     end
-    
+
     local function number_norm2(x)
       return x * x
     end
-    
+
     --- Calculate the determinant of a matrix
     -- m1 needs to be square
     -- Can calc the det for symbolic matrices up to 3x3 too
@@ -236,30 +235,29 @@ do
     -- @return Matrix
     -- @local
     function HOUND.Matrix.det( m1 )
-    
         -- check if matrix is quadratic
         assert(#m1 == #m1[1], "matrix not square")
-        
+
         local size = #m1
-        
+
         if size == 1 then
             return m1[1][1]
         end
-        
+
         if size == 2 then
             return m1[1][1]*m1[2][2] - m1[2][1]*m1[1][2]
         end
-        
+
         if size == 3 then
             return ( m1[1][1]*m1[2][2]*m1[3][3] + m1[1][2]*m1[2][3]*m1[3][1] + m1[1][3]*m1[2][1]*m1[3][2]
                 - m1[1][3]*m1[2][2]*m1[3][1] - m1[1][1]*m1[2][3]*m1[3][2] - m1[1][2]*m1[2][1]*m1[3][3] )
         end
-        
+
         --// no symbolic matrix supported below here
         local e = m1[1][1]
         local zero  = type(e) == "table" and e.zero or 0
         local norm2 = type(e) == "table" and e.norm2 or number_norm2
-    
+
         --// matrix is bigger than 3x3
         -- get determinant
         -- using Gauss elimination and Laplace
@@ -323,13 +321,13 @@ do
         -- det ready to return
         return det
     end
-    
+
     --// HOUND.Matrix.dogauss ( mtx )
     --- Gauss elimination, Gauss-Jordan Method
     -- this function changes the matrix itself
     -- returns on success: true,
     -- returns on failure: false,'rank of matrix'
-    
+
     -- locals
     -- checking here for the element nearest but not equal to zero (smallest pivot element).
     -- This way the `factor` in `dogauss` will be >= 1, which
@@ -361,11 +359,11 @@ do
             end
         return false
     end
-    
+
     local function copy(x)
         return type(x) == "table" and x.copy(x) or x
     end
-    
+
     -- note: in --// ... //-- we have a way that does no divison,
     -- however with big number and matrices we get problems since we do no reducing
     function HOUND.Matrix.dogauss( mtx )
@@ -373,7 +371,7 @@ do
         local zero = type(e) == "table" and e.zero or 0
         local one  = type(e) == "table" and e.one  or 1
         local norm2 = type(e) == "table" and e.norm2 or number_norm2
-    
+
         local rows,columns = #mtx,#mtx[1]
         -- stairs left -> right
         for j = 1,rows do
@@ -412,7 +410,7 @@ do
             end
             -- start parsing rows
             for i = j-1,1,-1 do
-                -- check if element is not already zero			
+                -- check if element is not already zero
                 if mtx[i][j] ~= zero then
                     local factor = mtx[i][j]
                     for _j = j+1,columns do
@@ -425,7 +423,7 @@ do
         end
         return true
     end
-    
+
     --// HOUND.Matrix.invert ( m1 )
     --- Get the inverted matrix or m1
     -- matrix must be square and not singular
@@ -456,7 +454,7 @@ do
             return nil,rank
         end
     end
-    
+
     --// HOUND.Matrix.sqrt ( m1 [,iters] )
     -- calculate the square root of a matrix using "Denman Beavers square root iteration"
     -- condition: matrix rows == matrix columns; must have a invers matrix and a square root
@@ -505,7 +503,7 @@ do
         end
         return y,z,get_abs_avg(HOUND.Matrix.mul(y,y),m1)
     end
-    
+
     --// HOUND.Matrix.root ( m1, root [,iters] )
     -- calculate any root of a matrix
     -- source: http://www.dm.unipi.it/~cortona04/slides/bruno.pdf
@@ -539,10 +537,9 @@ do
         end
         return mx,my,get_abs_avg(HOUND.Matrix.pow(mx,root),m1)
     end
-    
-    
+
     --// Norm functions //--
-    
+
     --// HOUND.Matrix.normf ( mtx )
     -- calculates the Frobenius norm of the matrix.
     --   ||mtx||_F = sqrt(SUM_{i,j} |a_{i,j}|^2)
@@ -560,7 +557,7 @@ do
         local sqrt = (type(result) == "number") and math.sqrt or result.sqrt
         return sqrt(result)
     end
-    
+
     --// HOUND.Matrix.normmax ( mtx )
     -- calculates the max norm of the matrix.
     --   ||mtx||_{max} = max{|a_{i,j}|}
@@ -577,11 +574,10 @@ do
         end
         return result
     end
-    
-    
+
     --// only for number and complex type //--
     -- Functions changing the matrix itself
-    
+
     --// HOUND.Matrix.round ( mtx [, idp] )
     -- perform round on elements
     local numround = function( num,mult )
@@ -603,7 +599,7 @@ do
         end
         return mtx
     end
-    
+
     --// HOUND.Matrix.random( mtx [,start] [, stop] [, idip] )
     -- fillmatrix with random values
     local numfill = function( _,start,stop,idp )
@@ -625,14 +621,13 @@ do
         end
         return mtx
     end
-    
-    
+
     --//////////////////////////////
     --// Object Utility Functions //
     --//////////////////////////////
-    
+
     --// for all types and matrices //--
-    
+
     --// HOUND.Matrix.type ( mtx )
     -- get type of matrix, normal/complex/symbol or tensor
     function HOUND.Matrix.type( mtx )
@@ -645,7 +640,7 @@ do
         end
         return "number"
     end
-        
+
     -- local functions to copy matrix values
     local num_copy = function( num )
         return num
@@ -657,7 +652,7 @@ do
         end
         return newt
     end
-    
+
     --// HOUND.Matrix.copy ( m1 )
     -- Copy a matrix
     -- simple copy, one can write other functions oneself
@@ -672,7 +667,7 @@ do
         end
         return setmetatable( mtx, HOUND.Matrix )
     end
-    
+
     --// HOUND.Matrix.transpose ( m1 )
     -- Transpose a matrix
     -- switch rows and columns
@@ -687,7 +682,7 @@ do
         end
         return setmetatable( mtx, HOUND.Matrix )
     end
-    
+
     --// HOUND.Matrix.subm ( m1, i1, j1, i2, j2 )
     -- Submatrix out of a matrix
     -- input: i1,j1,i2,j2
@@ -707,7 +702,7 @@ do
         end
         return setmetatable( mtx, HOUND.Matrix )
     end
-    
+
     --// HOUND.Matrix.concath( m1, m2 )
     -- Concatenate two matrices, horizontal
     -- will return m1m2; rows have to be the same
@@ -728,7 +723,7 @@ do
         end
         return setmetatable( mtx, HOUND.Matrix )
     end
-    
+
     --// HOUND.Matrix.concatv ( m1, m2 )
     -- Concatenate two matrices, vertical
     -- will return	m1
@@ -754,7 +749,7 @@ do
         end
         return setmetatable( mtx, HOUND.Matrix )
     end
-    
+
     --// matrix.rotl ( m1 )
     -- Rotate Left, 90 degrees
     function HOUND.Matrix.rotl( m1 )
@@ -767,7 +762,7 @@ do
         end
         return mtx
     end
-    
+
     --// matrix.rotr ( m1 )
     -- Rotate Right, 90 degrees
     function HOUND.Matrix.rotr( m1 )
@@ -780,7 +775,7 @@ do
         end
         return mtx
     end
-    
+
     local function tensor_tostring( t,fstr )
         if not fstr then return "["..table.concat(t,",").."]" end
         local tval = {}
@@ -792,7 +787,7 @@ do
     local function number_tostring( e,fstr )
         return fstr and string.format( fstr,e ) or e
     end
-    
+
     --// matrix.tostring ( mtx, formatstr )
     -- tostring function
     function HOUND.Matrix.tostring( mtx, formatstr )
@@ -810,13 +805,13 @@ do
         end
         return table.concat(ts, "\n")
     end
-    
+
     --// matrix.print ( mtx [, formatstr] )
     -- print out the matrix, just calls tostring
     -- function HOUND.Matrix.print( ... )
     --     print( HOUND.Matrix.tostring( ... ) )
     -- end
-    
+
     --// matrix.latex ( mtx [, align] )
     -- LaTeX output
     function HOUND.Matrix.latex( mtx, align )
@@ -840,22 +835,21 @@ do
         end
         return str.."\\end{array} \\right)$"
     end
-    
-    
+
     --// Functions not changing the matrix
-    
+
     --// matrix.rows ( mtx )
     -- return number of rows
     function HOUND.Matrix.rows( mtx )
         return #mtx
     end
-    
+
     --// matrix.columns ( mtx )
     -- return number of columns
     function HOUND.Matrix.columns( mtx )
         return #mtx[1]
     end
-    
+
     --//  matrix.size ( mtx )
     -- get matrix size as string rows,columns
     function HOUND.Matrix.size( mtx )
@@ -864,7 +858,7 @@ do
         end
         return #mtx,#mtx[1]
     end
-    
+
     --// HOUND.Matrix.getelement ( mtx, i, j )
     -- return specific element ( row,column )
     -- returns element on success and nil on failure
@@ -873,7 +867,7 @@ do
             return mtx[i][j]
         end
     end
-    
+
     --// HOUND.Matrix.setelement( mtx, i, j, value )
     -- set an element ( i, j, value )
     -- returns 1 on success and nil on failure
@@ -884,7 +878,7 @@ do
             return 1
         end
     end
-    
+
     --// HOUND.Matrix.ipairs ( mtx )
     -- iteration, same for complex
     function HOUND.Matrix.ipairs( mtx )
@@ -900,20 +894,20 @@ do
         end
         return iter
     end
-    
+
     --///////////////////////////////
     --// matrix 'vector' functions //
     --///////////////////////////////
-    
+
     -- a vector is defined as a 3x1 matrix
     -- get a vector; vec = matrix{{ 1,2,3 }}^'T'
-    
+
     --// HOUND.Matrix.scalar ( m1, m2 )
     -- returns the Scalar Product of two 3x1 matrices (vectors)
     function HOUND.Matrix.scalar( m1, m2 )
         return m1[1][1]*m2[1][1] + m1[2][1]*m2[2][1] +  m1[3][1]*m2[3][1]
     end
-    
+
     --// HOUND.Matrix.cross ( m1, m2 )
     -- returns the Cross Product of two 3x1 matrices (vectors)
     function HOUND.Matrix.cross( m1, m2 )
@@ -923,14 +917,13 @@ do
         mtx[3] = { m1[1][1]*m2[2][1] - m1[2][1]*m2[1][1] }
         return setmetatable( mtx, HOUND.Matrix )
     end
-    
+
     --// HOUND.Matrix.len ( m1 )
     -- returns the Length of a 3x1 matrix (vector)
     function HOUND.Matrix.len( m1 )
         return math.sqrt( m1[1][1]^2 + m1[2][1]^2 + m1[3][1]^2 )
     end
-    
-    
+
     --// HOUND.Matrix.replace (mtx, func, ...)
     -- for each element e in the matrix mtx, replace it with func(mtx, ...).
     function HOUND.Matrix.replace( m1, func, ... )
@@ -945,7 +938,7 @@ do
         end
         return setmetatable( mtx, HOUND.Matrix )
     end
-    
+
     --// HOUND.Matrix.remcomplex ( mtx )
     -- set the matrix elements to strings
     -- IMPROVE: tostring v.s. tostringelements confusing
@@ -954,7 +947,7 @@ do
         local tostring = type(e) == "table" and e.tostring or tostring
         return HOUND.Matrix.replace(mtx, tostring)
     end
-    
+
     --// HOUND.Matrix.solve ( m1 )
     -- solve; tries to solve a symbolic matrix to a number
     function HOUND.Matrix.solve( m1 )
@@ -968,28 +961,28 @@ do
         end
         return setmetatable( mtx, HOUND.Matrix )
     end
-    
+
     --////////////////////////--
     --// METATABLE HANDLING //--
     --////////////////////////--
-    
+
     --// MetaTable
     -- as we declaired on top of the page
     -- local/shared metatable
     -- HOUND.Matrix
-    
+
     -- note '...' is always faster than 'arg1,arg2,...' if it can be used
-    
+
     -- Set add "+" behaviour
     HOUND.Matrix.__add = function( ... )
         return HOUND.Matrix.add( ... )
     end
-    
+
     -- Set subtract "-" behaviour
     HOUND.Matrix.__sub = function( ... )
         return HOUND.Matrix.sub( ... )
     end
-    
+
     -- Set multiply "*" behaviour
     HOUND.Matrix.__mul = function( m1,m2 )
         if getmetatable( m1 ) ~= HOUND.Matrix then
@@ -999,7 +992,7 @@ do
         end
         return HOUND.Matrix.mul( m1,m2 )
     end
-    
+
     -- Set division "/" behaviour
     HOUND.Matrix.__div = function( m1,m2 )
         if getmetatable( m1 ) ~= HOUND.Matrix then
@@ -1009,12 +1002,12 @@ do
         end
         return HOUND.Matrix.div( m1,m2 )
     end
-    
+
     -- Set unary minus "-" behavior
     HOUND.Matrix.__unm = function( mtx )
         return HOUND.Matrix.mulnum( mtx,-1 )
     end
-    
+
     -- Set power "^" behaviour
     -- if opt is any integer number will do mtx^opt
     --   (returning nil if answer doesn't exist)
@@ -1030,7 +1023,7 @@ do
     HOUND.Matrix.__pow = function( m1, opt )
         return option[opt] and option[opt]( m1 ) or HOUND.Matrix.pow( m1,opt )
     end
-    
+
     -- Set equal "==" behaviour
     HOUND.Matrix.__eq = function( m1, m2 )
         -- check same type
@@ -1051,7 +1044,7 @@ do
         end
         return true
     end
-    
+
     -- -- Set tostring "tostring( mtx )" behaviour
     -- matrix_meta.__tostring = function( ... )
     --     return HOUND.Matrix.tostring( ... )
@@ -1061,7 +1054,7 @@ do
     -- matrix_meta.__call = function( ... )
     --     HOUND.Matrix.print( ... )
     -- end
-    
+
     --// __index handling
     -- HOUND.Matrix.__index = HOUND.Matrix
     -- for k,v in pairs( HOUND.Matrix ) do
