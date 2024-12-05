@@ -577,7 +577,7 @@ do
                 table.insert(polygonPoints, point)
             end
         end
-        -- HoundUtils.Geo.setHeight(polygonPoints,10)
+        HoundUtils.Geo.setHeight(polygonPoints)
 
         return polygonPoints
     end
