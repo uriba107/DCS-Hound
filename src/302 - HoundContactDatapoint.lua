@@ -2,7 +2,7 @@
     -- @module HOUND.Contact.Datapoint
 do
     local l_math = math
-    local l_mist = mist
+    local l_mist = HOUND.Mist
     local PI_2 = 2*l_math.pi
     local HoundUtils = HOUND.Utils
 
@@ -151,7 +151,7 @@ do
         local numSteps = 16
         local angleStep = PI_2/numSteps
         for i = 1,numSteps do
-            local pointAngle = (i*angleStep)
+            local pointAngle = PI_2 - (i*angleStep)
             local azStep = self.az + (self.platformPrecision * l_math.sin(pointAngle))
             local elStep = self.el + (self.platformPrecision * l_math.cos(pointAngle))
             local point = HoundUtils.Geo.getProjectedIP(self.platformPos, azStep,elStep) or {x=maxSlant*l_math.cos(azStep) + self.platformPos.x,z=maxSlant*l_math.sin(azStep) + self.platformPos.z}

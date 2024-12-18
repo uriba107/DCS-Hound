@@ -3,7 +3,7 @@
 -- @module HOUND.DB
 -- @field HOUND.DB
 do
-    local l_mist = mist
+    local l_mist = HOUND.Mist
     local l_math = math
 
     --- DB functions

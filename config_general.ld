@@ -4,6 +4,8 @@ dir='docs'
 file = {'src'}
 file.exclude = {
 'src/010 - HoundLogger.lua',
+'src/020 - HoundMist.lua',
+'src/021 - HoundMatrix.lua',
 'src/100 - HoundDBs.lua',
 'src/101 - HoundDBs_UnitDcs.lua',
 'src/102 - HoundDBs_UnitMods.lua',
@@ -11,7 +13,6 @@ file.exclude = {
 'src/110 - HoundConfig.lua',
 'src/200 - HoundUtils.lua',
 'src/201 - HoundUtils_Adv.lua',
-'src/202 - HoundMatrix.lua',
 'src/210 - HoundEventHandler.lua',
 'src/300 - HoundContactBase.lua',
 'src/301 - HoundContactEstimator.lua',

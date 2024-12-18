@@ -46,7 +46,6 @@ do
         MAX_ANGULAR_RES_DEG = 20,
         MGRS_PRECISION = 5,
         EXTENDED_INFO = true,
-        MIST_VERSION = tonumber(table.concat({mist.majorVersion,mist.minorVersion},".")),
         FORCE_MANAGE_MARKERS = true,
         USE_LEGACY_MARKERS = true,
         MARKER_MIN_ALPHA = 0.05,

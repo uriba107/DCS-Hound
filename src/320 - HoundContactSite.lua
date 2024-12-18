@@ -10,8 +10,7 @@ do
     HOUND.Contact.Site = HOUND.inheritsFrom(HOUND.Contact.Base)
 
     local l_math = math
-    local l_mist = mist
-    -- local pi_2 = l_math.pi*2
+    local l_mist = HOUND.Mist
     local HoundUtils = HOUND.Utils
 
     --- create new HOUND.Contact.Site instance

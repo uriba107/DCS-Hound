@@ -136,8 +136,11 @@ function compile {
     sed ${SED_ARGS} '/^[[:space:]]*--/d' ${TARGET_FILE}
     sed ${SED_ARGS} '$!N;/^[[:space:]]*$/{$q;D;};P;D;' ${TARGET_FILE}
 
-    GIT_BRANCH="-$(git branch --show-current | sed 's/[^a-zA-Z 0-9]/\\&/g')-$(date +%Y%m%d)"
-    if [ ${GIT_BRANCH} == "-main-$(date +%Y%m%d)" ] || [ $RELEASE -eq 1 ]; 
+    # GIT_BRANCH="-$(git branch --show-current | sed 's/[^a-zA-Z 0-9]/\\&/g')-$(date +%Y%m%d)"
+#    if [ ${GIT_BRANCH} == "-main-$(date +%Y%m%d)" ] || [ $RELEASE -eq 1 ]; 
+
+    GIT_BRANCH="-TRUNK-$(date +%Y%m%d)"
+    if [ $RELEASE -eq 1 ]; 
        then GIT_BRANCH="";
     fi
     sed ${SED_ARGS} "s/-TRUNK/""${GIT_BRANCH}""/" ${TARGET_FILE}

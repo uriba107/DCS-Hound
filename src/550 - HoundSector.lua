@@ -1,7 +1,7 @@
     --- HOUND.Sector
     -- @module HOUND.Sector
 do
-    local l_mist = mist
+    local l_mist = HOUND.Mist
     local l_math = math
     local HoundUtils = HOUND.Utils
 
@@ -614,13 +614,16 @@ do
     function HOUND.Sector.checkIn(args,skipAck)
         local gSelf = args["self"]
         local player = args["player"]
-        if not HOUND.setContains(gSelf.comms.enrolled, player) then
-            gSelf.comms.enrolled[player] = player
-            -- HOUND.Logger.debug("added player: " .. mist.utils.tableShow(player))
-            -- table.insert(gSelf.comms.enrolled,player)
-        end
-        for _,otherPlayer in pairs(gSelf:findGrpInPlayerList(player.groupId,l_mist.DBs.humansByName)) do
-            gSelf.comms.enrolled[otherPlayer] = otherPlayer
+        -- if not HOUND.setContains(gSelf.comms.enrolled, player) then
+        --     gSelf.comms.enrolled[player] = player
+        --     -- HOUND.Logger.debug("added player: " .. mist.utils.tableShow(player))
+        --     -- table.insert(gSelf.comms.enrolled,player)
+        -- end
+        -- for _,otherPlayer in pairs(gSelf:findGrpInPlayerList(player.groupId,l_mist.DBs.humansByName)) do
+        --     gSelf.comms.enrolled[otherPlayer] = otherPlayer
+        -- end
+        for _,PlayerInGrp in pairs(HOUND.Utils.Dcs.getPlayersInGroup(player.groupName)) do
+            gSelf.comms.enrolled[PlayerInGrp] = PlayerInGrp
         end
         gSelf:populateRadioMenu()
         if not skipAck then
@@ -639,8 +642,11 @@ do
         gSelf.comms.enrolled[player] = nil
 
         if not onlyPlayer then
-            for _,otherPlayer in pairs(gSelf:findGrpInPlayerList(player.groupId)) do
-                gSelf.comms.enrolled[otherPlayer] = nil
+            -- for _,otherPlayer in pairs(gSelf:findGrpInPlayerList(player.groupId)) do
+            for _,PlayerInGrp in pairs(HOUND.Utils.Dcs.getPlayersInGroup(player.groupName)) do
+                if player.unitName ~= PlayerInGrp.unitName then
+                    gSelf.comms.enrolled[PlayerInGrp] = nil
+                end
             end
         end
         gSelf:populateRadioMenu()

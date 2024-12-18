@@ -2,10 +2,10 @@
 -- This class holds generic function used by all of Hound Components
 -- @module HOUND.Utils
 do
-    local l_mist = mist
+    local l_mist = HOUND.Mist
     local l_math = math
     local l_grpc = GRPC
-    local pi_2 = 2*l_math.pi
+    local PI_2 = 2*l_math.pi
 
 --- HOUND.Utils decleration
 -- @table HOUND.Utils
@@ -88,14 +88,14 @@ do
     function HOUND.Utils.angleDeltaRad(rad1,rad2)
         if not rad1 or not rad2 then return end
         -- return l_math.abs(l_math.abs(rad1-l_math.pi)-l_math.abs(rad2-l_math.pi))
-        return l_math.pi - l_math.abs(l_math.pi - l_math.abs(rad1-rad2) % pi_2)
+        return l_math.pi - l_math.abs(l_math.pi - l_math.abs(rad1-rad2) % PI_2)
     end
 
     --- normlize angle in radians
     -- @param[type=number] rad
     -- @return normlized angle in rad (0-2Pi)
     function HOUND.Utils.normalizeAngle(rad)
-        return rad - (pi_2) * l_math.floor((rad + l_math.pi) / (pi_2))
+        return rad - (PI_2) * l_math.floor((rad + l_math.pi) / (PI_2))
     end
 
     --- return avarage azimuth
@@ -112,7 +112,7 @@ do
             sumSin = sumSin + l_math.sin(azimuths[i])
             sumCos = sumCos + l_math.cos(azimuths[i])
         end
-        return (l_math.atan2(sumSin,sumCos) + pi_2) % pi_2
+        return (l_math.atan2(sumSin,sumCos) + PI_2) % PI_2
     end
 
     --- Return magnetic variation in point
@@ -155,7 +155,7 @@ do
             end
             if biasVector == nil then biasVector = V else biasVector = l_mist.vec.add(biasVector,V) end
         end
-        return (l_math.atan2(biasVector.z,biasVector.x) + magVar) % pi_2
+        return (l_math.atan2(biasVector.z,biasVector.x) + magVar) % PI_2
     end
 
     --- returns a random angle
@@ -575,6 +575,50 @@ do
         return getmetatable(obj) == StaticObject
     end
 
+    --- check if object is a human unit
+    -- @param obj DCS Object canidate
+    -- @return[type=Bool] True if object is a Human unit
+    function HOUND.Utils.Dcs.isHuman(obj)
+        if not HOUND.Utils.Dcs.isUnit(obj) then return false end
+        return obj:getPlayerName() ~= nil
+    end
+
+    --- get list of human clinets for hound.
+    -- @param coalitionId
+    -- @return list of units
+    function HOUND.Utils.Dcs.getPlayers(coalitionId)
+        local unitList = {}
+        if type(coalitionId) ~= "number" and (coalitionId > 2 or coalitionId < 0) then return unitList end
+        local players = coalition.getPlayers(coalitionId)
+        for i = 1, #players do
+            local playerUnit = players[i]
+            local _,catEx = playerUnit:getCategory()
+            if HOUND.setContainsValue({Unit.Category.AIRPLANE,Unit.Category.HELICOPTER},catEx) then
+                local unit_data = HOUND.Utils.Dcs.generateMistDbEntry(playerUnit)
+                unitList[unit_data.unitName] = unit_data
+            end
+        end
+        return unitList
+    end
+
+    --- get human players in group
+    --@param[type=tab] DcsGroup
+    --@return table of players in group
+    function HOUND.Utils.Dcs.getPlayersInGroup(DcsGroup)
+        local unitList = {}
+        if type(DcsGroup) ~= "string" then
+            DcsGroup = Group.getByName(DcsGroup)
+        end
+        if not HOUND.Utils.Dcs.isGroup(DcsGroup) then return {} end
+        for _,unit in ipairs(DcsGroup:getUnits()) do
+            if unit:getPlayerName() then
+                local unit_data = HOUND.Utils.Dcs.generateMistDbEntry(unit)
+                unitList[unit_data.unitName] = unit_data
+            end
+        end
+        return unitList
+    end
+
     --- check if Unit is tracking anything with it's radar
     -- @param DcsUnit
     -- @return[type=bool] True if tracking
@@ -642,6 +686,153 @@ do
             end
         end
         return radarUnits
+    end
+
+    --- get all current Groups, name only
+    -- @param[type=?string] prefix return only groups starting with prefix
+    -- @return table of currently existing DCS group names
+    function HOUND.Utils.Dcs.getGroupNames(prefix)
+        local groups = {}
+        if type(prefix) ~= "string" then
+            prefix = nil
+        end
+        for _,coalitionName in pairs(coalition.side) do
+            for _,group in pairs(coalition.getGroups(coalitionName)) do
+                local groupName = group:getName()
+                if prefix == nil or (prefix ~= "" and string.find(groupName, prefix, 1, true) == 1) then
+                    groups[groupName] = group:getID()
+                end
+            end
+        end
+        return groups
+    end
+
+        --- get all current Groups, name only
+    -- @param[type=?string] prefix return only groups starting with prefix
+    -- @return table of currently existing DCS group names
+    function HOUND.Utils.Dcs.getUnitNames(prefix)
+        local units = {}
+        if type(prefix) ~= "string" then
+            prefix = nil
+        end
+        for _,coalitionName in pairs(coalition.side) do
+            for _,group in pairs(coalition.getGroups(coalitionName)) do
+                for _,unit in pairs(group:getUnits()) do
+                    local unitName = unit:getName()
+                    if prefix == nil or (prefix ~= "" and string.find(unitName, prefix, 1, true) == 1) then
+                        units[unitName] = HOUND.Utils.Dcs.generateMistDbEntry(unit)
+                    end
+                end
+            end
+        end
+        return units
+    end
+
+    --- get all current static objects, name only
+    -- @return table of currently existing DCS static object names
+    function HOUND.Utils.Dcs.getStaticObjectNames(prefix)
+        local staticObjs = {}
+        if type(prefix) ~= "string" then
+            prefix = nil
+        end
+        for _,coalitionName in pairs(coalition.side) do
+            for _,staticObj in pairs(coalition.getStaticObjects(coalitionName)) do
+                local name = staticObj:getName()
+                if prefix == nil or (prefix ~= "" and string.find(name, prefix, 1, true) == 1) then
+                    staticObjs[name] = name
+                end
+
+            end
+        end
+        return staticObjs
+    end
+
+
+    --- creaate a partial "humanByName" mist record from unit
+    -- use subset of mist format https://github.com/mrSkortch/MissionScriptingTools/blob/master/Example%20DBs/mist_DBs_humansByName.lua
+    --@param DcsUnit
+    --@return table
+    function HOUND.Utils.Dcs.generateMistDbEntry(DcsUnit)
+        if not HOUND.Utils.Dcs.isUnit(DcsUnit) then return {} end
+        -- {
+        --     ["type"] = "F-15C",
+        --     ["unitId"] = 10,
+        --     ["unitName"] = "F-15C Client #2_unit",
+        --     ["groupId"] = 5,
+        --     ["groupName"] = "F-15C Client #2",
+        --     ["callsign"] = {
+        --         [1] = 2,
+        --         [2] = 1,
+        --         [3] = 1,
+        --         ["name"] = "Springfield11",
+        --     }, -- end of ["callsign"]
+        -- }
+        local grp = DcsUnit:getGroup()
+        local unitCallsign = DcsUnit:getCallsign()
+        local parsedCallsign = {unitCallsign:match("([%a]+)(%d+)%-(%d+)")}
+        if #parsedCallsign ~= 3 then
+            parsedCallsign = {unitCallsign:match("([%a]+)(%d)(%d)")}
+        end
+        local unitData = {
+            type = DcsUnit:getTypeName(),
+            unitId = DcsUnit:getID(),
+            unitName = DcsUnit:getName(),
+            groupId = grp:getID(),
+            groupName = grp:getName(),
+            callsign = {
+                [1] = parsedCallsign[1],
+                [2] = tonumber(parsedCallsign[2]),
+                [3] = tonumber(parsedCallsign[3]),
+                name = unitCallsign
+            }
+        }
+        return unitData
+    end
+
+    function HOUND.Utils.Dcs.getGroupPoints(groupIdent)
+        -- search by groupId and allow groupId and groupName as inputs
+        local gpId = groupIdent
+        if type(groupIdent) == 'string' and not tonumber(groupIdent) then
+            for grpName,grpId in pairs(HOUND.Utils.Dcs.getGroupNames(groupIdent)) do
+                if grpName == groupIdent then
+                    gpId = grpId
+                end
+            end
+            if gpId == groupIdent then
+                log:error("Group not found: $1", groupIdent)
+            end
+        end
+
+        for coa_name, coa_data in pairs(env.mission.coalition) do
+            if  type(coa_data) == 'table' then
+                if coa_data.country then --there is a country table
+                    for cntry_id, cntry_data in pairs(coa_data.country) do
+                        for obj_cat_name, obj_cat_data in pairs(cntry_data) do
+                            if obj_cat_name == "helicopter" or obj_cat_name == "ship" or obj_cat_name == "plane" or obj_cat_name == "vehicle" then	-- only these types have points
+                                if ((type(obj_cat_data) == 'table') and obj_cat_data.group and (type(obj_cat_data.group) == 'table') and (#obj_cat_data.group > 0)) then	--there's a group!
+                                    for group_num, group_data in pairs(obj_cat_data.group) do
+                                        if group_data and group_data.groupId == gpId then -- this is the group we are looking for
+                                            if group_data.route and group_data.route.points and #group_data.route.points > 0 then
+                                                local points = {}
+                                                for point_num, point in pairs(group_data.route.points) do
+                                                    if not point.point then
+                                                        points[point_num] = { x = point.x, y = point.y }
+                                                    else
+                                                        points[point_num] = point.point	--it's possible that the ME could move to the point = Vec2 notation.
+                                                    end
+                                                end
+                                                return points
+                                            end
+                                            return
+                                        end	--if group_data and group_data.name and group_data.name == 'groupname'
+                                    end --for group_num, group_data in pairs(obj_cat_data.group) do
+                                end --if ((type(obj_cat_data) == 'table') and obj_cat_data.group and (type(obj_cat_data.group) == 'table') and (#obj_cat_data.group > 0)) then
+                            end --if obj_cat_name == "helicopter" or obj_cat_name == "ship" or obj_cat_name == "plane" or obj_cat_name == "vehicle" or obj_cat_name == "static" then
+                        end --for obj_cat_name, obj_cat_data in pairs(cntry_data) do
+                    end --for cntry_id, cntry_data in pairs(coa_data.country) do
+                end --if coa_data.country then --there is a country table
+            end --if coa_name == 'red' or coa_name == 'blue' and type(coa_data) == 'table' then
+        end --for coa_name, coa_data in pairs(mission.coalition) do
     end
 
     --- Geo Function
@@ -1418,16 +1609,15 @@ do
     -- @return[type=table] the vector betweeb the points
     function HOUND.Utils.Elint.getAzimuth(src, dst, sensorPrecision)
         if not HOUND.Utils.Dcs.isPoint(src) or not HOUND.Utils.Dcs.isPoint(dst) then return end
-        -- local pi_2 = 2*l_math.pi
         local AngularErr = HOUND.Utils.Elint.generateAngularError(sensorPrecision)
 
         local vec = l_mist.vec.sub(dst, src)
         local az = l_math.atan2(vec.z,vec.x) + AngularErr.az
         if az < 0 then
-            az = az + pi_2
+            az = az + PI_2
         end
-        if az > pi_2 then
-            az = az - pi_2
+        if az > PI_2 then
+            az = az - PI_2
         end
 
         local el = (l_math.atan(vec.y/l_math.sqrt(vec.x^2 + vec.z^2)) + AngularErr.el)
@@ -1534,7 +1724,7 @@ do
         if type(variance) ~= 'number' or variance == 0 then return {x=0,y=0,z=0} end
         local stddev = variance / 2
         local Magnitude = l_math.sqrt(-2 * l_math.log(l_math.random())) * stddev
-        local Theta = pi_2 * l_math.random()
+        local Theta = PI_2 * l_math.random()
         local epsilon = HOUND.Utils.Vector.getUnitVector(Theta)
         for axis,value in pairs(epsilon) do
             epsilon[axis] = value * Magnitude
@@ -1551,8 +1741,8 @@ do
         if type(variance) ~= 'number' or variance == 0 then return {x=0,y=0,z=0} end
         local stddev = variance /2
         local Magnitude = l_math.sqrt(-2 * l_math.log(l_math.random())) * stddev
-        local Theta = pi_2 * l_math.random()
-        local Phi = pi_2 * l_math.random()
+        local Theta = PI_2 * l_math.random()
+        local Phi = PI_2 * l_math.random()
 
         -- from radius and angle you can get the point on the circles
         local epsilon = HOUND.Utils.Vector.getUnitVector(Theta,Phi)
@@ -1615,10 +1805,10 @@ do
                             theta = l_math.rad(drawObject["angle"])
                             local r1,r2 = drawObject["r1"],drawObject["r2"]
                             local numPoints = 16
-                            local angleStep = pi_2/numPoints
+                            local angleStep = PI_2/numPoints
 
                             for i = 1, numPoints do
-                                local pointAngle = i * angleStep
+                                local pointAngle = PI_2 - (i * angleStep)
                                 local x = r1 * l_math.cos(pointAngle)
                                 local y = r2 * l_math.sin(pointAngle)
                                 table.insert(points,{x=x,y=y})
@@ -1650,12 +1840,10 @@ do
     -- @param GroupName
     -- @return table of points if group exists or nil
     function HOUND.Utils.Zone.getGroupRoute(GroupName)
-        if type(GroupName) == "string" and Group.getByName(GroupName) then
-            return mist.getGroupPoints(GroupName)
+        if type(GroupName) == "string" and HOUND.Utils.Dcs.isGroup(Group.getByName(GroupName)) then
+            return HOUND.Utils.Dcs.getGroupPoints(Group.getByName(GroupName):getID())
         end
     end
-
-
 
     --- Sort Functions
     -- @section Sort
@@ -1746,37 +1934,29 @@ do
     -- @section Filter
 
     --- get Groups by prefix
-    -- Implementation taken from Skynet-IADS
     -- @param prefix string
     -- @return table of DCS groups indexed by group name
     function HOUND.Utils.Filter.groupsByPrefix(prefix)
         if type(prefix) ~= "string" then return {} end
         local groups = {}
-        for groupName, groupData in pairs(l_mist.DBs.groupsByName) do
-            local pos = string.find(groupName, prefix, 1, true)
-            if pos and pos == 1 then
-                --mist returns groups, units and, StaticObjects
-                local dcsObject = Group.getByName(groupName)
-                if dcsObject then
-                    groups[groupName] = dcsObject
-                end
+        for groupName, _ in pairs(HOUND.Utils.Dcs.getGroupNames(prefix)) do
+            local dcsObject = Group.getByName(groupName)
+            if HOUND.Utils.Dcs.isGroup(dcsObject) then
+                groups[groupName] = dcsObject
             end
         end
         return groups
     end
 
     --- get Units by prefix
-    -- Implementation taken from Skynet-IADS
     -- @param prefix string
     -- @return table of DCS Units indexed by Unit name
     function HOUND.Utils.Filter.unitsByPrefix(prefix)
         if type(prefix) ~= "string" then return {} end
         local units = {}
-        for unitName, unit in pairs(l_mist.DBs.unitsByName) do
-            local pos = string.find(unitName, prefix, 1, true)
-            --somehow the MIST unit db contains StaticObject, we check to see we only add Units
+        for unitName, _ in pairs(HOUND.Utils.Dcs.getUnitNames(prefix)) do
             local dcsUnit = Unit.getByName(unitName)
-            if pos and pos == 1 and dcsUnit then
+            if HOUND.Utils.Dcs.isUnit(dcsUnit) then
                 units[unitName] = dcsUnit
             end
         end
@@ -1784,17 +1964,14 @@ do
     end
 
     --- get StatcObjects by prefix
-    -- Implementation taken from Skynet-IADS
     -- @param prefix string
     -- @return table of DCS StaticObjects indexed by object name
     function HOUND.Utils.Filter.staticObjectsByPrefix(prefix)
         if type(prefix) ~= "string" then return {} end
         local objects = {}
-        for objectName, unit in pairs(l_mist.DBs.unitsByName) do
-            local pos = string.find(objectName, prefix, 1, true)
-            --somehow the MIST unit db contains StaticObject, we check to see we only add Units
+        for objectName, _ in pairs(HOUND.Utils.Dcs.getStaticObjectNames(prefix)) do
             local dcsObject = StaticObject.getByName(objectName)
-            if pos and pos == 1 and dcsObject then
+            if HOUND.Utils.Dcs.isStaticObject(dcsObject) then
                 objects[objectName] = dcsObject
             end
         end

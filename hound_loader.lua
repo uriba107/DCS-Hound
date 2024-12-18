@@ -1,7 +1,7 @@
 do
     if HoundWorkDir == nil then
-        -- HoundWorkDir = "C:\\Users\\me\\Dropbox\\DCS\\Mission Building\\HoundElint\\"
         HoundWorkDir = "E:\\Dropbox\\uri\\Dropbox\\DCS\\Mission Building\\HoundElint\\"
+        -- HoundWorkDir = "E:\\Dropbox\\uri\\Dropbox\\DCS\\Mission Building\\DCS-Hound\\"
     end
     assert(loadfile(HoundWorkDir..'HoundElint_devel.lua'))()
 

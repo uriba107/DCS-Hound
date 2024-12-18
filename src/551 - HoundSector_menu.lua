@@ -2,7 +2,7 @@
 -- @module HOUND.Sector
 
 do
-    local l_mist = mist
+    local l_mist = HOUND.Mist
     -------------- Radio Menu stuff -----------------------------
     --- Radio Menu
     -- @section menu
@@ -43,10 +43,12 @@ do
         end
         -- now do work
         grpMenuDone = {}
-        for _,player in pairs(l_mist.DBs.humansByName) do
+        -- for _,player in pairs(l_mist.DBs.humansByName) do
+        for _,player in pairs(HOUND.Utils.Dcs.getPlayers(self._hSettings:getCoalition())) do
             local grpId = player.groupId
             local playerUnit = Unit.getByName(player.unitName)
-            if playerUnit and not grpMenuDone[grpId] and playerUnit:getCoalition() == self._hSettings:getCoalition() then
+            -- if playerUnit and not grpMenuDone[grpId] and playerUnit:getCoalition() == self._hSettings:getCoalition() then
+            if playerUnit and not grpMenuDone[grpId] then
                 grpMenuDone[grpId] = true
 
                 if not self.comms.menu[player] then
@@ -84,7 +86,6 @@ do
                 end
             end
         end
-
     end
 
     --- Populate sector radio menu

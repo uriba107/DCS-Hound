@@ -104,31 +104,35 @@ do
         end
 
         if not self:isRunning() then return end
+        -- HOUND.Logger.debug(mist.utils.tableShow(DcsEvent))
 
-        if DcsEvent.id == world.event.S_EVENT_BIRTH
+        if (DcsEvent.id == world.event.S_EVENT_PLAYER_ENTER_UNIT or DcsEvent.id == world.event.S_EVENT_BIRTH)
             and DcsEvent.initiator:getCoalition() == self.settings:getCoalition()
-            and DcsEvent.initiator.getPlayerName ~= nil
-            and DcsEvent.initiator:getPlayerName() ~= nil
-            and HOUND.setContains(mist.DBs.humansByName,DcsEvent.initiator:getName())
-            then return self:populateRadioMenu()
+            and HoundUtils.Dcs.isHuman(DcsEvent.initiator)
+        then
+            local _,catEx = DcsEvent.initiator:getCategory()
+            if not HOUND.setContainsValue({Unit.Category.AIRPLANE,Unit.Category.HELICOPTER},catEx) then return end
+            return self:populateRadioMenu()
         end
 
         if (DcsEvent.id == world.event.S_EVENT_PLAYER_LEAVE_UNIT
             or DcsEvent.id == world.event.S_EVENT_PILOT_DEAD
             or DcsEvent.id == world.event.S_EVENT_EJECTION)
             and DcsEvent.initiator:getCoalition() == self.settings:getCoalition()
-            and type(DcsEvent.initiator.getName) == "function"
-            and HOUND.setContains(mist.DBs.humansByName,DcsEvent.initiator:getName())
-                then return self:populateRadioMenu()
+            and HoundUtils.Dcs.isHuman(DcsEvent.initiator)
+        then
+            local _,catEx = DcsEvent.initiator:getCategory()
+            if not HOUND.setContainsValue({Unit.Category.AIRPLANE,Unit.Category.HELICOPTER},catEx) then return end
+            return self:populateRadioMenu()
         end
 
         if DcsEvent.id == world.event.S_EVENT_SHOT
-        and DcsEvent.initiator:getCoalition() ~= self.settings:getCoalition()
-        and DcsEvent.initiator:hasAttribute("Air Defence")
-        and DcsEvent.initiator:getCategory() == Object.Category.UNIT
+            and DcsEvent.initiator:getCoalition() ~= self.settings:getCoalition()
+            and DcsEvent.initiator:hasAttribute("Air Defence")
+            and DcsEvent.initiator:getCategory() == Object.Category.UNIT
         then
             local _,catEx = DcsEvent.initiator:getCategory()
-            if not HOUND.setContains({Unit.Category.GROUND_UNIT,Unit.Category.SHIP},catEx) then return end
+            if not HOUND.setContainsValue({Unit.Category.GROUND_UNIT,Unit.Category.SHIP},catEx) then return end
             local grp = DcsEvent.initiator:getGroup()
             if HoundUtils.Dcs.isGroup(grp) then
                 self.contacts:Sniff(grp:getName())
@@ -143,8 +147,6 @@ do
                 end
                 self.contacts:ensureSitePrimaryHasPos(grp:getName(),tgtPos)
                 self:AlertOnLaunch(grp)
-                -- HOUND.Logger.trace("triggered S_EVENT_SHOT for " .. DcsEvent.initiator:getName() .. " Part of Group " .. grp:getName())
-
             end
         end
     end

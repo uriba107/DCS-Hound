@@ -2,7 +2,7 @@
 -- @module HOUND.Contact.Site
 do
     -- local l_math = math
-    local l_mist = mist
+    local l_mist = HOUND.Mist
     local HoundUtils = HOUND.Utils
 
     --- return Information used in Text messages primary emitter

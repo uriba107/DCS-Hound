@@ -4,8 +4,8 @@
 do
 
     local l_math = math
-    local l_mist = mist
-    local pi_2 = l_math.pi*2
+    local l_mist = HOUND.Mist
+    local PI_2 = l_math.pi*2
     local HoundUtils = HOUND.Utils
 
     --- HOUND.Contact decleration (Extends HOUND.Contact.Base)
@@ -361,7 +361,7 @@ do
         local uncertenty_data = {}
         uncertenty_data.major = l_math.max(a,b)
         uncertenty_data.minor = l_math.min(a,b)
-        uncertenty_data.theta = (Theta + pi_2) % pi_2
+        uncertenty_data.theta = (Theta + PI_2) % PI_2
         uncertenty_data.az = l_mist.utils.round(l_math.deg(uncertenty_data.theta))
         uncertenty_data.r  = (a+b)/4
 
@@ -510,7 +510,7 @@ do
                 self.uncertenty_data = self.calculateEllipse(staticClipPolygon2D,self.pos.p,true)
             end
 
-            self.uncertenty_data.az = l_mist.utils.round(l_math.deg((self.uncertenty_data.theta+l_mist.getNorthCorrection(self.pos.p)+pi_2)%pi_2))
+            self.uncertenty_data.az = l_mist.utils.round(l_math.deg((self.uncertenty_data.theta+l_mist.getNorthCorrection(self.pos.p)+PI_2)%PI_2))
 
             self:calculateExtrasPosData(self.pos)
 
@@ -558,12 +558,12 @@ do
         if not HoundUtils.Dcs.isPoint(refPos) then
             refPos = {x=0,y=0,z=0}
         end
-        local angleStep = pi_2/numPoints
+        local angleStep = PI_2/numPoints
         local theta = l_math.rad(uncertenty_data.az) - HoundUtils.getMagVar(refPos)
         local cos_theta,sin_theta = l_math.cos(theta),l_math.sin(theta)
         -- generate ellips points
         for i = 1, numPoints do
-            local pointAngle = i * angleStep
+            local pointAngle = PI_2 - (i * angleStep)
             local point = {}
             point.x = uncertenty_data.major/2 * l_math.cos(pointAngle)
             point.z = uncertenty_data.minor/2 * l_math.sin(pointAngle)

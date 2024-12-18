@@ -2,10 +2,10 @@
     -- This class holds generic function used by all of Hound Components
     -- @module HOUND.Utils
 do
-    local l_mist = mist
+    local l_mist = HOUND.Mist
     local l_math = math
     local l_grpc = GRPC
-    local pi_2 = 2*l_math.pi
+    local PI_2 = 2*l_math.pi
 
     HOUND.Utils.Polygon ={}
     HOUND.Utils.Cluster = {}
@@ -264,7 +264,7 @@ do
             pt.refAz = l_mist.utils.getDir(l_mist.vec.sub(pt,refPos))
         end
 
-        table.sort(points,function (a,b) return (a.refAz+pi_2) < (b.refAz+pi_2) end)
+        table.sort(points,function (a,b) return (a.refAz+PI_2) < (b.refAz+PI_2) end)
         local leftMost = table.remove(points,1)
         local rightMost = table.remove(points)
         return HOUND.Utils.angleDeltaRad(leftMost.refAz,rightMost.refAz),(leftMost),(rightMost)
