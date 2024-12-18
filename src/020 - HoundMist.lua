@@ -26,7 +26,6 @@ do
 		return l_math.atan2(north_posit.z - point.z, north_posit.x - point.x)
 	end
 
-	
 function HOUND.Mist.getAvgPoint(points)
 	local avgX, avgY, avgZ, totNum = 0, 0, 0, 0
 	for i = 1, #points do
@@ -223,7 +222,7 @@ do -- HOUND.Mist.util scope
                 val[2] = tonumber("0x"..hex:sub(3,4)) / int
                 val[3] = tonumber("0x"..hex:sub(5,6)) / int
                 val[4] = tonumber("0x"..hex:sub(7,8)) / int
-                
+
                 return val
             end
         end
@@ -387,14 +386,14 @@ function HOUND.Mist.utils.tableShowSorted(tbls, v)
 	local indent = vars.indent or ""
 	local tableshow_tbls = vars.tableshow_tbls or {}
 	local tbl = tbls or {}
-	
+
 	if type(tbl) == 'table' then --function only works for tables!
 		tableshow_tbls[tbl] = loc
 
 		local tbl_str = {}
 
 		tbl_str[#tbl_str + 1] = indent .. '{\n'
-		
+
 		local sorted = {}
 		local function byteCompare(str1, str2)
 			local shorter = string.len(str1)
@@ -404,13 +403,13 @@ function HOUND.Mist.utils.tableShowSorted(tbls, v)
 			for i = 1, shorter do
 				local b1 = string.byte(str1, i)
 				local b2 = string.byte(str2, i)
-	
+
 				if b1 < b2 then
 					return true
 				elseif b1 > b2 then
 					return false
 				end
-			
+
 			end
 			return false
 		end
@@ -437,7 +436,7 @@ function HOUND.Mist.utils.tableShowSorted(tbls, v)
 		for i = 1, #sorted do
 			local ind = sorted[i].ind
 			local val = sorted[i].val
-			
+
 			if type(ind) == "number" then
 				tbl_str[#tbl_str + 1] = indent
 				tbl_str[#tbl_str + 1] = loc .. '['
@@ -492,8 +491,7 @@ function HOUND.Mist.utils.tableShowSorted(tbls, v)
 		tbl_str[#tbl_str + 1] = indent .. '}'
 		return table.concat(tbl_str)
 	end
-	
-	
+
 end
 
 --- Returns table in a easy readable string representation.
@@ -581,7 +579,7 @@ do
             elseif shape2[1] then
                  return HOUND.Mist.shape.circleInPoly(shape1, shape2, full)
             end
-        
+
         elseif shape1[1] then -- shape1 is probably a polygon
             if shape2.radius then
                 return  HOUND.Mist.shape.polyInCircle(shape1, shape2, full)
@@ -591,7 +589,7 @@ do
         end
         return false
     end
-    
+
     function HOUND.Mist.shape.circleInCircle(c1, c2, full)
         if not full then -- quick partial check
             if HOUND.Mist.utils.get2DDist(c1.point, c2.point) <= c2.radius then
@@ -606,10 +604,8 @@ do
         end
         return false
     end
-    
-    
-    function HOUND.Mist.shape.circleInPoly(circle, poly, full) 
-    
+    function HOUND.Mist.shape.circleInPoly(circle, poly, full)
+
         if poly and type(poly) == 'table' and circle and type(circle) == 'table' and circle.radius and circle.point then
             if not full then 
                 for i = 1, #poly do
@@ -630,26 +626,22 @@ do
                 -- offset 
                 local pPoint = HOUND.Mist.projectPoint(circle.point, circle.radius, theta - (math.pi/180))
                 local oPoint = HOUND.Mist.projectPoint(circle.point, circle.radius, theta + (math.pi/180))
-    
-               
                 if HOUND.Mist.pointInPolygon(pPoint, poly) == true then
                      if (full and HOUND.Mist.pointInPolygon(oPoint, poly) == true) or not full then
                         return true
-                    
+
                     end
-                   
+
                 end
             end      
-            
+
         end
         return false
     end
-    
-    
     function HOUND.Mist.shape.polyInPoly(p1, p2, full)
         local count = 0
         for i = 1, #p1 do
-            
+
             if HOUND.Mist.pointInPolygon(p1[i], p2) then
                 count = count + 1
             end
@@ -660,10 +652,10 @@ do
         if count == #p1 then
             return true
         end
-        
+
         return false
     end
-    
+
     function HOUND.Mist.shape.polyInCircle(poly, circle, full)
             local count = 0
             for i = 1, #poly do
@@ -678,20 +670,18 @@ do
             if count == #poly then
                 return true
             end
-    
+
         return false
     end
-    
+
     function HOUND.Mist.shape.getPointOnSegment(point, seg, isSeg)
         local p = HOUND.Mist.utils.makeVec2(point)
         local s1 = HOUND.Mist.utils.makeVec2(seg[1])
         local s2 = HOUND.Mist.utils.makeVec2(seg[2])
-        
-        
         local cx, cy = p.x - s1.x, p.y - s1.y
         local dx, dy = s2.x - s1.x, s2.y - s1.y
         local d = (dx*dx + dy*dy)
-          
+
         if d == 0 then
            return {x = s1.x, y = s1.y}
         end
@@ -705,19 +695,17 @@ do
         end
         return {x = s1.x + u*dx, y = s1.y + u*dy}
     end
-    
-    
-    
+
     function HOUND.Mist.shape.segmentIntersect(seg1, seg2)
         local segA = {mist.utils.makeVec2(seg1[1]), HOUND.Mist.utils.makeVec2(seg1[2])}
         local segB = {mist.utils.makeVec2(seg2[1]), HOUND.Mist.utils.makeVec2(seg2[2])}
-         
+
         local dx1, dy1 = segA[2].x - segA[1].x, segA[2].y - segA[1].y
         local dx2, dy2 = segB[2].x - segB[1].x, segB[2].y - segB[1].y
         local dx3, dy3 = segA[1].x - segB[1].x, segA[1].y - segB[1].y
-        
+
         local d = dx1*dy2 - dy1*dx2
-        
+
         if d == 0 then
            return false
         end
@@ -732,30 +720,20 @@ do
           -- point of intersection
           return true, {x = segA[1].x + t1*dx1, y = segA[1].y + t1*dy1}
     end
-    
-    
     function HOUND.Mist.pointInPolygon(point, poly, maxalt) --raycasting point in polygon. Code from http://softsurfer.com/Archive/algorithm_0103/algorithm_0103.htm
-        --[[local type_tbl = {
-            point = {'table'},
-            poly = {'table'},
-            maxalt = {'number', 'nil'},
-            }
-    
-        local err, errmsg = HOUND.Mist.utils.typeCheck('mist.pointInPolygon', type_tbl, {point, poly, maxalt})
-        assert(err, errmsg)
-        ]]
+
         point = HOUND.Mist.utils.makeVec3(point)
         local px = point.x
         local pz = point.z
         local cn = 0
         local newpoly = HOUND.Mist.utils.deepCopy(poly)
-    
+
         if not maxalt or (point.y <= maxalt) then
             local polysize = #newpoly
             newpoly[#newpoly + 1] = newpoly[1]
-    
+
             newpoly[1] = HOUND.Mist.utils.makeVec3(newpoly[1])
-    
+
             for k = 1, polysize do
                 newpoly[k+1] = HOUND.Mist.utils.makeVec3(newpoly[k+1])
                 if ((newpoly[k].z <= pz) and (newpoly[k+1].z > pz)) or ((newpoly[k].z > pz) and (newpoly[k+1].z <= pz)) then
@@ -765,7 +743,7 @@ do
                     end
                 end
             end
-    
+
             return cn%2 == 1
         else
             return false
@@ -781,7 +759,7 @@ do
 		   newPoint.y = HOUND.Mist.utils.round(math.sin(theta) * dist + point.y, 3)
 		end
 		newPoint.x = HOUND.Mist.utils.round(math.cos(theta) * dist + point.x, 3)
-	
+
 		return newPoint
 	end
 end
@@ -818,4 +796,3 @@ do
 	end
 end
 end
-
