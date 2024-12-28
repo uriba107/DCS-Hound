@@ -489,13 +489,13 @@ do
         if (type(markerType) ~= "number" or markerType == HOUND.MARKER.NONE) and not drawSite then return end
         if markerType > HOUND.MARKER.SITE_ONLY then
             for _,emitter in pairs(self.emitters) do
-                HOUND.Logger.debug("update marker for " .. emitter:getName())
+                -- HOUND.Logger.debug("update marker for " .. emitter:getName())
                 emitter:updateMarker(markerType)
-                HOUND.Logger.debug(emitter:getName() .. " Done")
+                -- HOUND.Logger.debug(emitter:getName() .. " Done")
             end
         end
         if drawSite then
-            HOUND.Logger.debug("Update marker for site " .. self:getName())
+            -- HOUND.Logger.debug("Update marker for site " .. self:getName())
             self:updateMarker(HOUND.MARKER.SITE_ONLY)
             HOUND.Logger.debug(self:getName() .. " Done")
         end

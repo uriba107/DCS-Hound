@@ -1172,11 +1172,14 @@ do
             return
         end
         local menuTimer = StopWatch:Start("Draw Menus " .. timer.getAbsTime())
+        HOUND.DB.updateHumanDb(self.settings:getCoalition())
         local sectors = self:getSectors()
         table.sort(sectors,HoundUtils.Sort.sectorsByPriorityLowLast)
         for _,sector in pairs(sectors) do
             sector:populateRadioMenu()
         end
+        -- HOUND.DB.HumanUnits.cleanup = timer.scheduleFunction(HOUND.DB.cleanHumanDb,self.settings:getCoalition(),timer.getTime() + 15)
+        HOUND.DB.cleanHumanDb(self.settings:getCoalition())
         menuTimer:Stop()
     end
 

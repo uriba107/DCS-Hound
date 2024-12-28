@@ -124,6 +124,13 @@ do
         return self.pos.p
     end
 
+    --- get radar transmission wavelength
+    -- @ param[type=bool] isTracking detemins which frequency range will be retunred
+    function HOUND.Contact.Emitter:getWavelenght(isTracking)
+        isTracking = isTracking or false
+        return self.frequency[isTracking]
+    end
+
     --- get current estimated position elevation
     -- @return[type=int] Elevation in ft.
     function HOUND.Contact.Emitter:getElev()

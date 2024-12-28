@@ -106,7 +106,7 @@ do
         if not self:isRunning() then return end
         -- HOUND.Logger.debug(mist.utils.tableShow(DcsEvent))
 
-        if (DcsEvent.id == world.event.S_EVENT_PLAYER_ENTER_UNIT or DcsEvent.id == world.event.S_EVENT_BIRTH)
+        if (DcsEvent.id == world.event.S_EVENT_BIRTH)
             and DcsEvent.initiator:getCoalition() == self.settings:getCoalition()
             and HoundUtils.Dcs.isHuman(DcsEvent.initiator)
         then

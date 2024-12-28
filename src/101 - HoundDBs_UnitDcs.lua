@@ -209,8 +209,8 @@ do
             ['Assigned'] = {"SA-15"},
             ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
             ['Band'] = {
-                [true] = {0.037474,0.037474},
-                [false] = {0.037474,0.037474}
+                [true] = HOUND.DB.Bands.H,
+                [false] = HOUND.DB.Bands.H
             },
             ['Primary'] = true
         },

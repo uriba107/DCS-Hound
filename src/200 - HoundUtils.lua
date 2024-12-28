@@ -587,18 +587,18 @@ do
     -- @param coalitionId
     -- @return list of units
     function HOUND.Utils.Dcs.getPlayers(coalitionId)
-        local unitList = {}
-        if type(coalitionId) ~= "number" and (coalitionId > 2 or coalitionId < 0) then return unitList end
+        if type(coalitionId) ~= "number" or (coalitionId > 2 or coalitionId < 0) then return {} end
         local players = coalition.getPlayers(coalitionId)
+        local humanUnits = {}
         for i = 1, #players do
             local playerUnit = players[i]
             local _,catEx = playerUnit:getCategory()
             if HOUND.setContainsValue({Unit.Category.AIRPLANE,Unit.Category.HELICOPTER},catEx) then
-                local unit_data = HOUND.Utils.Dcs.generateMistDbEntry(playerUnit)
-                unitList[unit_data.unitName] = unit_data
+                local unit_data = HOUND.DB.generateMistDbEntry(playerUnit)
+                humanUnits[unit_data.unitName] = unit_data
             end
         end
-        return unitList
+        return humanUnits
     end
 
     --- get human players in group
@@ -606,13 +606,13 @@ do
     --@return table of players in group
     function HOUND.Utils.Dcs.getPlayersInGroup(DcsGroup)
         local unitList = {}
-        if type(DcsGroup) ~= "string" then
+        if type(DcsGroup) == "string" then
             DcsGroup = Group.getByName(DcsGroup)
         end
         if not HOUND.Utils.Dcs.isGroup(DcsGroup) then return {} end
         for _,unit in ipairs(DcsGroup:getUnits()) do
-            if unit:getPlayerName() then
-                local unit_data = HOUND.Utils.Dcs.generateMistDbEntry(unit)
+            if HOUND.Utils.Dcs.isHuman(unit) then
+                local unit_data = HOUND.DB.generateMistDbEntry(unit)
                 unitList[unit_data.unitName] = unit_data
             end
         end
@@ -720,7 +720,7 @@ do
                 for _,unit in pairs(group:getUnits()) do
                     local unitName = unit:getName()
                     if prefix == nil or (prefix ~= "" and string.find(unitName, prefix, 1, true) == 1) then
-                        units[unitName] = HOUND.Utils.Dcs.generateMistDbEntry(unit)
+                        units[unitName] = HOUND.DB.generateMistDbEntry(unit)
                     end
                 end
             end
@@ -745,48 +745,6 @@ do
             end
         end
         return staticObjs
-    end
-
-
-    --- creaate a partial "humanByName" mist record from unit
-    -- use subset of mist format https://github.com/mrSkortch/MissionScriptingTools/blob/master/Example%20DBs/mist_DBs_humansByName.lua
-    --@param DcsUnit
-    --@return table
-    function HOUND.Utils.Dcs.generateMistDbEntry(DcsUnit)
-        if not HOUND.Utils.Dcs.isUnit(DcsUnit) then return {} end
-        -- {
-        --     ["type"] = "F-15C",
-        --     ["unitId"] = 10,
-        --     ["unitName"] = "F-15C Client #2_unit",
-        --     ["groupId"] = 5,
-        --     ["groupName"] = "F-15C Client #2",
-        --     ["callsign"] = {
-        --         [1] = 2,
-        --         [2] = 1,
-        --         [3] = 1,
-        --         ["name"] = "Springfield11",
-        --     }, -- end of ["callsign"]
-        -- }
-        local grp = DcsUnit:getGroup()
-        local unitCallsign = DcsUnit:getCallsign()
-        local parsedCallsign = {unitCallsign:match("([%a]+)(%d+)%-(%d+)")}
-        if #parsedCallsign ~= 3 then
-            parsedCallsign = {unitCallsign:match("([%a]+)(%d)(%d)")}
-        end
-        local unitData = {
-            type = DcsUnit:getTypeName(),
-            unitId = DcsUnit:getID(),
-            unitName = DcsUnit:getName(),
-            groupId = grp:getID(),
-            groupName = grp:getName(),
-            callsign = {
-                [1] = parsedCallsign[1],
-                [2] = tonumber(parsedCallsign[2]),
-                [3] = tonumber(parsedCallsign[3]),
-                name = unitCallsign
-            }
-        }
-        return unitData
     end
 
     function HOUND.Utils.Dcs.getGroupPoints(groupIdent)
@@ -951,15 +909,13 @@ do
     -- return the next available MarkId
     -- @return Next MarkId
     function HOUND.Utils.Marker.getId()
-        if HOUND.FORCE_MANAGE_MARKERS then
+        -- if HOUND.FORCE_MANAGE_MARKERS then
+        --     HOUND.Utils.Marker._MarkId = HOUND.Utils.Marker._MarkId + 1
+        -- elseif UTILS and UTILS.GetMarkID then
+        --     HOUND.Utils.Marker._MarkId = UTILS.GetMarkID()
+        -- else
             HOUND.Utils.Marker._MarkId = HOUND.Utils.Marker._MarkId + 1
-        elseif UTILS and UTILS.GetMarkID then
-            HOUND.Utils.Marker._MarkId = UTILS.GetMarkID()
-        elseif HOUND.MIST_VERSION >= 4.6 or (HOUND.MIST_VERSION == 4.5 and l_mist.build >= 106 ) then
-            HOUND.Utils.Marker._MarkId = l_mist.marker.getNextId()
-        else
-            HOUND.Utils.Marker._MarkId = HOUND.Utils.Marker._MarkId + 1
-        end
+        -- end
         return HOUND.Utils.Marker._MarkId
     end
 

@@ -1,18 +1,12 @@
 --- HOUND.Mist
 -- This class holds a subset function from MIST framework required by Hound.
--- The are included in Hound to eliminate external dependencies
+-- They are included in Hound to eliminate external dependencies
 -- Original code, with more extensive functionality can be found at https://github.com/mrSkortch/MissionScriptingTools
 -- Code was taken from Mist 4.5.126
 -- @module HOUND.Mist
-
 do
     local l_math = math
-    HOUND.Mist = {
-		majorVersion = 4,
-		minorVersion = 5,
-		build = 127
-	}
-	HOUND.MIST_VERSION = tonumber(table.concat({HOUND.Mist.majorVersion,HOUND.Mist.minorVersion},"."))
+    HOUND.Mist = {}
     HOUND.Mist.__index = HOUND.Mist
 
     function HOUND.Mist.getNorthCorrection(gPoint)	--gets the correction needed for true north
@@ -155,7 +149,7 @@ do -- HOUND.Mist.vec scope
 
     function HOUND.Mist.vec.normalize(vec3)
         local mag =  HOUND.Mist.vec.mag(vec3)
-        if mag ~= 0 then 
+        if mag ~= 0 then
             return HOUND.Mist.vec.scalar_mult(vec3, 1.0 / mag)
         end
     end
@@ -217,7 +211,7 @@ do -- HOUND.Mist.util scope
         if hex and type(hex) == 'string' then
             local val = {}
             hex = string.gsub(hex, '0x', '')
-            if string.len(hex) == 8 then 
+            if string.len(hex) == 8 then
                 val[1] = tonumber("0x"..hex:sub(1,2)) / int
                 val[2] = tonumber("0x"..hex:sub(3,4)) / int
                 val[3] = tonumber("0x"..hex:sub(5,6)) / int
@@ -271,12 +265,12 @@ do -- HOUND.Mist.util scope
 		end
 	end
 
-    function HOUND.Mist.utils.getHeadingPoints(point1, point2, north) -- sick of writing this out. 
-        if north then 
+    function HOUND.Mist.utils.getHeadingPoints(point1, point2, north) -- sick of writing this out.
+        if north then
 			local p1 = HOUND.Mist.utils.get3DDist(point1)
-            return HOUND.Mist.utils.getDir(mist.vec.sub(mist.utils.makeVec3(point2), p1), p1)
+            return HOUND.Mist.utils.getDir(HOUND.Mist.vec.sub(HOUND.Mist.utils.makeVec3(point2), p1), p1)
         else
-            return HOUND.Mist.utils.getDir(mist.vec.sub(mist.utils.makeVec3(point2), HOUND.Mist.utils.makeVec3(point1))) 
+            return HOUND.Mist.utils.getDir(HOUND.Mist.vec.sub(HOUND.Mist.utils.makeVec3(point2), HOUND.Mist.utils.makeVec3(point1)))
         end
     end
 
@@ -302,10 +296,10 @@ do -- HOUND.Mist.util scope
 	-- @treturn number distance between given points.
 	function HOUND.Mist.utils.get2DDist(point1, point2)
         if not point1 then
-            log:warn("mist.utils.get2DDist  1st input value is nil") 
+            log:warn("HOUND.Mist.utils.get2DDist  1st input value is nil")
         end
         if not point2 then
-            log:warn("mist.utils.get2DDist  2nd input value is nil") 
+            log:warn("HOUND.Mist.utils.get2DDist  2nd input value is nil")
         end
 		point1 = HOUND.Mist.utils.makeVec3(point1)
 		point2 = HOUND.Mist.utils.makeVec3(point2)
@@ -318,10 +312,10 @@ do -- HOUND.Mist.util scope
 	-- @treturn number distancen between given points in 3D space.
 	function HOUND.Mist.utils.get3DDist(point1, point2)
         if not point1 then
-            log:warn("mist.utils.get2DDist  1st input value is nil") 
+            log:warn("HOUND.Mist.utils.get2DDist  1st input value is nil")
         end
         if not point2 then
-            log:warn("mist.utils.get2DDist  2nd input value is nil") 
+            log:warn("HOUND.Mist.utils.get2DDist  2nd input value is nil")
         end
 		return HOUND.Mist.vec.mag({x = point1.x - point2.x, y = point1.y - point2.y, z = point1.z - point2.z})
 	end
@@ -421,7 +415,7 @@ function HOUND.Mist.utils.tableShowSorted(tbls, v)
 				local found = false
 				for i = 1, #sorted do
 					if byteCompare(indS, tostring(sorted[i].ind)) == true then
-						index = i 
+						index = i
 						break
 					end
 				end
@@ -596,18 +590,18 @@ do
                 return true
             end
         end
-        local theta = HOUND.Mist.utils.getHeadingPoints(c2.point, c1.point) -- heading from 
+        local theta = HOUND.Mist.utils.getHeadingPoints(c2.point, c1.point) -- heading from
         if full then
-            return  HOUND.Mist.utils.get2DDist(mist.projectPoint(c1.point, c1.radius, theta), c2.point) <= c2.radius
+            return  HOUND.Mist.utils.get2DDist(HOUND.Mist.projectPoint(c1.point, c1.radius, theta), c2.point) <= c2.radius
         else
-            return HOUND.Mist.utils.get2DDist(mist.projectPoint(c1.point, c1.radius, theta + math.pi), c2.point) <= c2.radius
+            return HOUND.Mist.utils.get2DDist(HOUND.Mist.projectPoint(c1.point, c1.radius, theta + math.pi), c2.point) <= c2.radius
         end
         return false
     end
     function HOUND.Mist.shape.circleInPoly(circle, poly, full)
 
         if poly and type(poly) == 'table' and circle and type(circle) == 'table' and circle.radius and circle.point then
-            if not full then 
+            if not full then
                 for i = 1, #poly do
                     if HOUND.Mist.utils.get2DDist(circle.point, poly[i]) <= circle.radius then
                         return true
@@ -623,7 +617,7 @@ do
                 else
                     theta = HOUND.Mist.utils.getHeadingPoints(poly[i],poly[i+1])
                 end
-                -- offset 
+                -- offset
                 local pPoint = HOUND.Mist.projectPoint(circle.point, circle.radius, theta - (math.pi/180))
                 local oPoint = HOUND.Mist.projectPoint(circle.point, circle.radius, theta + (math.pi/180))
                 if HOUND.Mist.pointInPolygon(pPoint, poly) == true then
@@ -633,8 +627,7 @@ do
                     end
 
                 end
-            end      
-
+            end
         end
         return false
     end
@@ -686,7 +679,7 @@ do
            return {x = s1.x, y = s1.y}
         end
         local u = (cx*dx + cy*dy)/d
-        if isSeg then 
+        if isSeg then
            if u < 0 then
                 u = 0
             elseif u > 1 then
@@ -697,8 +690,8 @@ do
     end
 
     function HOUND.Mist.shape.segmentIntersect(seg1, seg2)
-        local segA = {mist.utils.makeVec2(seg1[1]), HOUND.Mist.utils.makeVec2(seg1[2])}
-        local segB = {mist.utils.makeVec2(seg2[1]), HOUND.Mist.utils.makeVec2(seg2[2])}
+        local segA = {HOUND.Mist.utils.makeVec2(seg1[1]), HOUND.Mist.utils.makeVec2(seg1[2])}
+        local segB = {HOUND.Mist.utils.makeVec2(seg2[1]), HOUND.Mist.utils.makeVec2(seg2[2])}
 
         local dx1, dy1 = segA[2].x - segA[1].x, segA[2].y - segA[1].y
         local dx2, dy2 = segB[2].x - segB[1].x, segB[2].y - segB[1].y

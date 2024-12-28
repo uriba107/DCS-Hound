@@ -141,4 +141,13 @@ do
             "INDIANA","JONES","LARA","CROFT","VENTURA","SCOOBY","SHAGGY"
         }
     }
+
+    --- Hound Human Units
+    -- automatically generate list containing mist style Unit entries for human flights
+    -- @table HOUND.DB.HumanUnits
+    HOUND.DB.HumanUnits = {
+        [coalition.side.NEUTRAL] = {},
+        [coalition.side.RED] = {},
+        [coalition.side.BLUE] = {}
+    }
 end

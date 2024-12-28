@@ -34,34 +34,31 @@ do
         -- unsubscribe disconnected users
         for _,player in pairs(self.comms.enrolled) do
             local playerUnit = Unit.getByName(player.unitName)
-            if playerUnit then
-                local humanOccupied = playerUnit:getPlayerName()
-                if not humanOccupied then
-                    self.comms.enrolled[player] = nil
-                end
+            if not HOUND.Utils.Dcs.isHuman(playerUnit) then
+                    self.comms.enrolled[player.unitName] = nil
             end
         end
         -- now do work
         grpMenuDone = {}
         -- for _,player in pairs(l_mist.DBs.humansByName) do
-        for _,player in pairs(HOUND.Utils.Dcs.getPlayers(self._hSettings:getCoalition())) do
+        for _,player in pairs(HOUND.DB.HumanUnits[self._hSettings:getCoalition()]) do
             local grpId = player.groupId
             local playerUnit = Unit.getByName(player.unitName)
             -- if playerUnit and not grpMenuDone[grpId] and playerUnit:getCoalition() == self._hSettings:getCoalition() then
             if playerUnit and not grpMenuDone[grpId] then
                 grpMenuDone[grpId] = true
 
-                if not self.comms.menu[player] then
-                    self.comms.menu[player] = self:getMenuObj()
+                if not self.comms.menu[player.unitName] then
+                    self.comms.menu[player.unitName] = self:getMenuObj()
                 end
 
-                local grpMenu = self.comms.menu[player]
+                local grpMenu = self.comms.menu[player.unitName]
                 local grpPage = self:getMenuPage(grpMenu,grpId,self.comms.menu.root)
                 if grpMenu.items.check_in ~= nil then
                     grpMenu.items.check_in = missionCommands.removeItemForGroup(grpId,grpMenu.items.check_in)
                 end
 
-                if HOUND.setContains(self.comms.enrolled, player) then
+                if HOUND.setContains(self.comms.enrolled, player.unitName) then
                     grpMenu.items.check_in =
                         missionCommands.addCommandForGroup(grpId,
                                             self.comms.controller:getCallsign() .. " (" ..
@@ -97,10 +94,12 @@ do
         end
 
         if not self.comms.controller or not self.comms.controller:isEnabled() then return end
+        local players = HOUND.DB.HumanUnits[self._hSettings:getCoalition()]
 
         if HOUND.Length(self.comms.menu) > 0 then
-            for player,grpMenu in pairs(self.comms.menu) do
+            for playerName,grpMenu in pairs(self.comms.menu) do
                 -- do cleanup for pages
+                local player = players[playerName]
                 self:removeMenuItems(grpMenu,player.groupId)
             end
         end
@@ -141,11 +140,10 @@ do
                     end
                 end
             end
-
             -- start building menues
             for _, player in pairs(self.comms.enrolled) do
                 local grpId = player.groupId
-                local grpMenu = self.comms.menu[player]
+                local grpMenu = self.comms.menu[player.unitName]
 
                 if not grpMenuDone[grpId] and grpMenu ~= nil then
                     grpMenuDone[grpId] = true

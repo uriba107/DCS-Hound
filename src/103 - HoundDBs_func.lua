@@ -121,7 +121,7 @@ do
         local typeName = DcsObject:getTypeName()
         if HOUND.setContains(HOUND.DB.Platform,mainCategory) then
             if HOUND.setContains(HOUND.DB.Platform[mainCategory],typeName) then
-                return HOUND.DB.Platform[mainCategory][typeName].antenna.size *  HOUND.DB.Platform[mainCategory][typeName].antenna.factor
+                return HOUND.DB.Platform[mainCategory][typeName].antenna.size * HOUND.DB.Platform[mainCategory][typeName].antenna.factor * HOUND.ANTENNA_FACTOR
             end
         end
         return 0
@@ -144,9 +144,10 @@ do
     --- Generate uniqe radar frequencies for contact
     -- @local
     -- @param[type=tab] bands
+    -- @param[type=?number] factor between 0 and 1 where between high and low freqs (for testing)
     -- @return table containig wavelengths in meters for the radar
-    function HOUND.DB.getEmitterFrequencies(bands)
-        local freqFactor = l_math.random()
+    function HOUND.DB.getEmitterFrequencies(bands,factor)
+        local freqFactor = factor or l_math.random()
         return {
             [true] = bands[true][1] + bands[true][2] * freqFactor,
             [false] = bands[false][1] + bands[false][2] * freqFactor
@@ -155,15 +156,96 @@ do
 
     --- Elint Function - Get sensor precision
     -- @param platform Instance of DCS Unit which is the detecting platform
-    -- @param emitter Radar wavelength (frequency) of radar (in meters) or DCS Unit
+    -- @param emitterFreq Radar wavelength (frequency) of radar (in meters) or DCS Unit
     -- @return angular resolution in Radians of platform against specific Radar frequency
-    function HOUND.DB.getSensorPrecision(platform,emitter)
-        local wavelength = emitter
-        if HOUND.Utils.Dcs.isUnit(emitter) then
-            wavelength = HOUND.DB.getEmitterBand(emitter)
+    function HOUND.DB.getSensorPrecision(platform,emitterFreq)
+        local wavelength = emitterFreq
+        if HOUND.Utils.Dcs.isUnit(emitterFreq) then
+            local _,track = emitterFreq:getRadar()
+            wavelength = HOUND.DB.getEmitterFrequencies(HOUND.DB.getEmitterBand(emitterFreq))[HOUND.Utils.Dcs.isUnit(track)]
         end
 
         return HOUND.DB.getDefraction(wavelength,HOUND.DB.getApertureSize(platform)) or l_math.rad(20.0) -- precision
     end
 
+
+
+    --- populate the HOUND.DB.HumanUnits db
+    -- @param[type=?number] coalitoinId if provided, DB will be updated to specificd coalition only
+    function HOUND.DB.updateHumanDb(coalitionId)
+        local coalitions = coalition.side
+        if type(coalitionId == "number") and (coalitionId >= 0 and coalitionId <= 2) then
+            coalitions = { coalitionId }
+        end
+        for _,coa in pairs(coalitions) do
+            local activeCoaPlayers = HOUND.Utils.Dcs.getPlayers(coa)
+            for unitName,player in pairs(activeCoaPlayers) do
+                if not HOUND.DB.HumanUnits[coa][unitName] then
+                    HOUND.DB.HumanUnits[coa][unitName] = HOUND.Mist.utils.deepCopy(player)
+                else
+                    for k,v in pairs(player) do
+                        HOUND.DB.HumanUnits[coa][unitName][k] = player[k]
+                    end
+                end
+            end
+        end
+    end
+
+     --- cleanup the HOUND.DB.HumanUnits db from disconnected units.
+    -- @param[type=?number] coalitoinId if provided, DB will be updated to specificd coalition only
+    function HOUND.DB.cleanHumanDb(coalitionId)
+        local coalitions = coalition.side
+        if type(coalitionId == "number") and (coalitionId >= 0 and coalitionId <= 2) then
+            coalitions = { coalitionId }
+        end
+        for _,coa in pairs(coalitions) do
+            for unitName,player in pairs(HOUND.DB.HumanUnits[coa]) do
+                if HOUND.Utils.absTimeDelta(player.lastSeen) > 300 then
+                    HOUND.DB.HumanUnits[coa][unitName] = nil
+                end
+            end
+        end
+    end
+
+    --- create a partial "humanByName" mist record from unit
+    -- use subset of mist format https://github.com/mrSkortch/MissionScriptingTools/blob/master/Example%20DBs/mist_DBs_humansByName.lua
+    --@param DcsUnit
+    --@return table
+    function HOUND.DB.generateMistDbEntry(DcsUnit)
+        if not HOUND.Utils.Dcs.isUnit(DcsUnit) then return {} end
+        -- {
+        --     ["type"] = "F-15C",
+        --     ["unitId"] = 10,
+        --     ["unitName"] = "F-15C Client #2_unit",
+        --     ["groupId"] = 5,
+        --     ["groupName"] = "F-15C Client #2",
+        --     ["callsign"] = {
+        --         [1] = 2,
+        --         [2] = 1,
+        --         [3] = 1,
+        --         ["name"] = "Springfield11",
+        --     }, -- end of ["callsign"]
+        -- }
+        local grp = DcsUnit:getGroup()
+        local unitCallsign = DcsUnit:getCallsign()
+        local parsedCallsign = {unitCallsign:match("([%a]+)(%d+)%-(%d+)")}
+        if #parsedCallsign ~= 3 then
+            parsedCallsign = {unitCallsign:match("([%a]+)(%d)(%d)")}
+        end
+        local unitData = {
+            type = DcsUnit:getTypeName(),
+            unitId = DcsUnit:getID(),
+            unitName = DcsUnit:getName(),
+            lastSeen = timer:getAbsTime(),
+            groupId = grp:getID(),
+            groupName = grp:getName(),
+            callsign = {
+                [1] = parsedCallsign[1],
+                [2] = tonumber(parsedCallsign[2]),
+                [3] = tonumber(parsedCallsign[3]),
+                name = unitCallsign
+            }
+        }
+        return unitData
+    end
 end

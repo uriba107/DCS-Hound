@@ -599,10 +599,10 @@ do
     -- @local
     function HOUND.Sector:validateEnrolled()
         if HOUND.Length(self.comms.enrolled) == 0 then return end
-        for _, player in pairs(self.comms.enrolled) do
-            local playerUnit = Unit.getByName(player.unitName)
-            if not playerUnit or not playerUnit:getPlayerName() then
-                self.comms.enrolled[player] = nil
+        for playerUnitName, player in pairs(self.comms.enrolled) do
+            local playerUnit = Unit.getByName(playerUnitName)
+            if not HoundUtils.Dcs.isHuman(playerUnit) then
+                self.comms.enrolled[player.unitName] = nil
             end
         end
     end
@@ -623,7 +623,7 @@ do
         --     gSelf.comms.enrolled[otherPlayer] = otherPlayer
         -- end
         for _,PlayerInGrp in pairs(HOUND.Utils.Dcs.getPlayersInGroup(player.groupName)) do
-            gSelf.comms.enrolled[PlayerInGrp] = PlayerInGrp
+            gSelf.comms.enrolled[PlayerInGrp.unitName] = PlayerInGrp
         end
         gSelf:populateRadioMenu()
         if not skipAck then
@@ -639,13 +639,13 @@ do
     function HOUND.Sector.checkOut(args,skipAck,onlyPlayer)
         local gSelf = args["self"]
         local player = args["player"]
-        gSelf.comms.enrolled[player] = nil
+        gSelf.comms.enrolled[player.unitName] = nil
 
         if not onlyPlayer then
             -- for _,otherPlayer in pairs(gSelf:findGrpInPlayerList(player.groupId)) do
             for _,PlayerInGrp in pairs(HOUND.Utils.Dcs.getPlayersInGroup(player.groupName)) do
                 if player.unitName ~= PlayerInGrp.unitName then
-                    gSelf.comms.enrolled[PlayerInGrp] = nil
+                    gSelf.comms.enrolled[PlayerInGrp.unitName] = nil
                 end
             end
         end

@@ -26,6 +26,7 @@ do
     -- @field DATAPOINTS_INTERVAL Time between stored data points
     -- @field CONTACT_TIMEOUT Timout for emitter to be silent before being dropped from contacts
     -- @field MAX_ANGULAR_RES_DEG The maximum (worst) platform angular resolution acceptable
+    -- @field ANTENNA_FACTOR Global factor of antenna size (bigger antenna == better accuracy). Allows mission builder to quickly nerf or boost hound performace (default 1.0).
     -- @field MGRS_PRECISION Number of digits in MGRS conversion
     -- @field EXTENDED_INFO Hound will add more in depth uncertenty info to controller messages (default is true)
     -- @field FORCE_MANAGE_MARKERS Force Hound to use internal counter for markIds (default is true).
@@ -44,9 +45,10 @@ do
         DATAPOINTS_INTERVAL = 30,
         CONTACT_TIMEOUT = 900,
         MAX_ANGULAR_RES_DEG = 20,
+        ANTENNA_FACTOR = 1.0,
         MGRS_PRECISION = 5,
         EXTENDED_INFO = true,
-        FORCE_MANAGE_MARKERS = true,
+        -- FORCE_MANAGE_MARKERS = true,
         USE_LEGACY_MARKERS = true,
         MARKER_MIN_ALPHA = 0.05,
         MARKER_MAX_ALPHA = 0.2,
