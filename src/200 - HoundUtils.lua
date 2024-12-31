@@ -605,18 +605,18 @@ do
     --@param[type=tab] DcsGroup
     --@return table of players in group
     function HOUND.Utils.Dcs.getPlayersInGroup(DcsGroup)
-        local unitList = {}
         if type(DcsGroup) == "string" then
             DcsGroup = Group.getByName(DcsGroup)
         end
         if not HOUND.Utils.Dcs.isGroup(DcsGroup) then return {} end
-        for _,unit in ipairs(DcsGroup:getUnits()) do
-            if HOUND.Utils.Dcs.isHuman(unit) then
-                local unit_data = HOUND.DB.generateMistDbEntry(unit)
-                unitList[unit_data.unitName] = unit_data
-            end
+        local coa = DcsGroup:getCoalition()
+        local gid = DcsGroup:getID()
+        if type(HOUND.DB.HumanUnits.byGid[coa][gid]) ~= "table" then return {} end
+        local humanUnits = {}
+        for unitName,unitData in pairs(HOUND.DB.HumanUnits.byGid[coa][gid]) do
+            humanUnits[unitName] = unitData
         end
-        return unitList
+        return humanUnits
     end
 
     --- check if Unit is tracking anything with it's radar
@@ -1231,7 +1231,7 @@ do
     function HOUND.Utils.TTS.TransmitSTTS(msg,coalitionID,args,transmitterPos)
         args.modulation = args.modulation or HOUND.Utils.TTS.getdefaultModulation(args.freq)
         args.culture = args.culture or "en-US"
-        return STTS.TextToSpeech(msg,args.freq,args.modulation,args.volume,args.name,coalitionID,transmitterPos,args.speed,args.gender,args.culture,args.voice,args.googletts)
+        return STTS.TextToSpeech(msg,args.freq,args.modulation,args.volume,args.name,coalitionID,transmitterPos,args.speed,args.gender,args.culture,args.voice,args.googletts,args.azurecreds)
     end
 
     --- Transmit message using gRPC.tts
@@ -1639,9 +1639,9 @@ do
     -- @param platform DCS Unit of platform
     -- @return Table of all currently transmitting Ground and Ship radars that RWR detected by supplied platform
     function HOUND.Utils.Elint.getRwrContacts(platform)
+        if not HOUND.Utils.Dcs.isUnit(platform) and not platform:hasSensors(Unit.SensorType.RWR) then return {} end
         local radars = {}
         local platformCoalition = platform:getCoalition()
-        if not platform:hasSensors(Unit.SensorType.RWR) then return radars end
         local contacts = platform:getController():getDetectedTargets(Controller.Detection.RWR)
         for _,unit in contacts do
             if unit:getCoalition() ~= platformCoalition and unit:getRadar() then

@@ -41,24 +41,24 @@ do
         -- now do work
         grpMenuDone = {}
         -- for _,player in pairs(l_mist.DBs.humansByName) do
-        for _,player in pairs(HOUND.DB.HumanUnits[self._hSettings:getCoalition()]) do
+        for _,player in pairs(HOUND.DB.HumanUnits.byName[self._hSettings:getCoalition()]) do
             local grpId = player.groupId
             local playerUnit = Unit.getByName(player.unitName)
             -- if playerUnit and not grpMenuDone[grpId] and playerUnit:getCoalition() == self._hSettings:getCoalition() then
             if playerUnit and not grpMenuDone[grpId] then
                 grpMenuDone[grpId] = true
 
-                if not self.comms.menu[player.unitName] then
-                    self.comms.menu[player.unitName] = self:getMenuObj()
+                if not self.comms.menu[player] then
+                    self.comms.menu[player] = self:getMenuObj()
                 end
 
-                local grpMenu = self.comms.menu[player.unitName]
+                local grpMenu = self.comms.menu[player]
                 local grpPage = self:getMenuPage(grpMenu,grpId,self.comms.menu.root)
                 if grpMenu.items.check_in ~= nil then
                     grpMenu.items.check_in = missionCommands.removeItemForGroup(grpId,grpMenu.items.check_in)
                 end
 
-                if HOUND.setContains(self.comms.enrolled, player.unitName) then
+                if HOUND.setContainsValue(self.comms.enrolled, player) then
                     grpMenu.items.check_in =
                         missionCommands.addCommandForGroup(grpId,
                                             self.comms.controller:getCallsign() .. " (" ..
@@ -94,12 +94,12 @@ do
         end
 
         if not self.comms.controller or not self.comms.controller:isEnabled() then return end
-        local players = HOUND.DB.HumanUnits[self._hSettings:getCoalition()]
+        -- local players = HOUND.DB.HumanUnits.byName[self._hSettings:getCoalition()]
 
         if HOUND.Length(self.comms.menu) > 0 then
-            for playerName,grpMenu in pairs(self.comms.menu) do
+            for player,grpMenu in pairs(self.comms.menu) do
                 -- do cleanup for pages
-                local player = players[playerName]
+                -- local player = players[playerName]
                 self:removeMenuItems(grpMenu,player.groupId)
             end
         end
@@ -110,7 +110,7 @@ do
                                                self.name,
                                                self._hSettings:getRadioMenu())
         end
-
+        self:validateEnrolled()
         self:createCheckIn()
         local sitesData = self:getRadioItemsText()
         local typesSpotted = {}
@@ -130,7 +130,6 @@ do
         end
 
         local grpMenuDone = {}
-        self:validateEnrolled()
         if HOUND.Length(self.comms.enrolled) > 0 then
             if HOUND.Length(sitesData) and not HOUND.setContains(sitesData.noData) then
                 -- do all the caching needed
@@ -143,7 +142,7 @@ do
             -- start building menues
             for _, player in pairs(self.comms.enrolled) do
                 local grpId = player.groupId
-                local grpMenu = self.comms.menu[player.unitName]
+                local grpMenu = self.comms.menu[player]
 
                 if not grpMenuDone[grpId] and grpMenu ~= nil then
                     grpMenuDone[grpId] = true

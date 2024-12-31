@@ -171,7 +171,7 @@ do
 
 
     --- populate the HOUND.DB.HumanUnits db
-    -- @param[type=?number] coalitoinId if provided, DB will be updated to specificd coalition only
+    -- @param[type=?number] coalitionId if provided, DB will be updated to specificd coalition only
     function HOUND.DB.updateHumanDb(coalitionId)
         local coalitions = coalition.side
         if type(coalitionId == "number") and (coalitionId >= 0 and coalitionId <= 2) then
@@ -180,28 +180,38 @@ do
         for _,coa in pairs(coalitions) do
             local activeCoaPlayers = HOUND.Utils.Dcs.getPlayers(coa)
             for unitName,player in pairs(activeCoaPlayers) do
-                if not HOUND.DB.HumanUnits[coa][unitName] then
-                    HOUND.DB.HumanUnits[coa][unitName] = HOUND.Mist.utils.deepCopy(player)
+                if not HOUND.DB.HumanUnits.byName[coa][unitName] then
+                    HOUND.DB.HumanUnits.byName[coa][unitName] = HOUND.Mist.utils.deepCopy(player)
                 else
                     for k,v in pairs(player) do
-                        HOUND.DB.HumanUnits[coa][unitName][k] = player[k]
+                        HOUND.DB.HumanUnits.byName[coa][unitName][k] = player[k]
                     end
                 end
+                local gid = player.groupId
+                if type(HOUND.DB.HumanUnits.byGid[coa][gid]) ~= "table" then
+                    HOUND.DB.HumanUnits.byGid[coa][gid] = {}
+                end
+                HOUND.DB.HumanUnits.byGid[coa][gid][unitName] = HOUND.DB.HumanUnits.byName[coa][unitName]
             end
         end
     end
 
      --- cleanup the HOUND.DB.HumanUnits db from disconnected units.
-    -- @param[type=?number] coalitoinId if provided, DB will be updated to specificd coalition only
+    -- @param[type=?number] coalitionId if provided, DB will be updated to specificd coalition only
     function HOUND.DB.cleanHumanDb(coalitionId)
         local coalitions = coalition.side
         if type(coalitionId == "number") and (coalitionId >= 0 and coalitionId <= 2) then
             coalitions = { coalitionId }
         end
         for _,coa in pairs(coalitions) do
-            for unitName,player in pairs(HOUND.DB.HumanUnits[coa]) do
+            for unitName,player in pairs(HOUND.DB.HumanUnits.byName[coa]) do
                 if HOUND.Utils.absTimeDelta(player.lastSeen) > 300 then
-                    HOUND.DB.HumanUnits[coa][unitName] = nil
+                    local gid = player.groupId
+                    HOUND.DB.HumanUnits.byName[coa][unitName] = nil
+                    HOUND.DB.HumanUnits.byGid[coa][gid][unitName] = nil
+                    if length(HOUND.DB.HumanUnits.byGid[coa][gid]) == 0 then
+                        HOUND.DB.HumanUnits.byGid[coa][gid] = nil
+                    end
                 end
             end
         end

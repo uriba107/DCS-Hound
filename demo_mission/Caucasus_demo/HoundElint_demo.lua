@@ -5,7 +5,7 @@ do
     end
     HOUND.USE_LEGACY_MARKS = false
     -- HOUND.TTS_ENGINE = {'STTS','GRPC'}
-    -- HOUND.ENABLE_KALMAN = true
+    HOUND.ENABLE_KALMAN = true
 end
 
 do
@@ -20,6 +20,8 @@ do
     -- Elint_blue:addPlatform("Khvamli_Elint")
     -- Elint_blue:addPlatform("Migariya_Elint")
     -- Elint_blue:addPlatform("Cow")
+    -- Elint_blue:addPlatform("ELINT_CR")
+
 
     tts_args = {
         freq = "251.000,127.500,35.000",
@@ -47,12 +49,12 @@ do
     Elint_blue:enableAtis()
     Elint_blue:enableNotifier()
     -- Elint_blue:disableBDA()
-    -- Elint_blue:setMarkerType(HOUND.MARKER.POLYGON)
+    Elint_blue:setMarkerType(HOUND.MARKER.POLYGON)
     -- Elint_blue:setMarkerType(HOUND.MARKER.DIAMOND)
 
     -- Elint_blue:setMarkerType(HOUND.MARKER.POINT)
 
-    Elint_blue:setMarkerType(HOUND.MARKER.SITE_ONLY)
+    -- Elint_blue:setMarkerType(HOUND.MARKER.SITE_ONLY)
 
 
     Elint_blue:addSector("Fake")
@@ -324,41 +326,9 @@ do
     -- env.info(mist.utils.tableShow(invalidController))
 
 
-    -- env.info(Unit.getByName('P8'):getTypeName())
-    env.info("KW is " .. Unit.getByName('KW'):getTypeName())
-    env.info("KWR is " .. Unit.getByName('KWR'):getTypeName())
 
- 
-    -- for grpName,grp in pairs( HOUND.Utils.Filter.groupsByPrefix("F-1")) do
-    --     env.info(grpName.." | "..grp:getUnit(1):getTypeName())
-    -- end
-    -- for grpName,grp in pairs( HOUND.Utils.Filter.groupsByPrefix("S-3")) do
-    --     env.info(grpName.." | "..grp:getUnit(1):getTypeName())
-    -- end
-    -- mist.debug.dump_G('hound_post_rename_G.lua')
-    -- mist.debug.dumpDBs()
-
-    -- for _,unit in ipairs({StaticObject.getByName('Kokotse_Elint'),StaticObject.getByName('TV_TOWER'),StaticObject.getByName('COMMAND_CENTER')}) do
-    --     local data = unit:getDesc()
-    --     local pos = unit:getPosition().p
-    --     env.info("Hight of ".. unit:getTypeName() .. " is " .. unit:getDesc()["box"]["max"]["y"])
-    -- end
-    -- local balloon = StaticObject.getByName('BALLOON_ANCHOR')
-    -- env.info(mist.utils.tableShow(balloon:getDesc()))
-    
-    -- for cid,v in pairs(_G.env.mission.coalition.blue.country) do
-    --     if cid ~= nil and type(v) == "table" then
-    --         env.info("CID: " .. cid)
-    --         for k,v1 in pairs(v) do
-    --             if k == "name" then
-    --                 env.info("name: " .. v1)
-    --             end
-    --             -- if k == "static" then
-    --             --     for _,obj in pairs(v1) do
-    --             --         env.info(mist.utils.tableShow(obj))
-    --             --     end
-    --             -- end
-    --         end
-    --     end
-    -- end
+    -- env.info("ELINT_C17 data")
+    -- env.info(mist.utils.tableShow(Unit.getByName('ELINT_C17'):getDesc()))
+    -- env.info(mist.utils.tableShow({Unit.getByName('ELINT_C17'):getCallsign()}))
+    -- env.info(mist.utils.tableShow(HOUND.Utils.generateMistDbEntry(Unit.getByName('ELINT_C17'))))
 end

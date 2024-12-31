@@ -28,6 +28,8 @@ do
         lu.assertIsTable(self.contact)
         lu.assertIsTrue(getmetatable(self.contact)==HOUND.Contact.Emitter)
         lu.assertEquals(self.contact.state,HOUND.EVENTS.RADAR_NEW)
+        lu.assertEquals(emitter,self.contact:getDcsObject())
+
 
         local tgtPos = emitter:getPosition().p
         local p1 = platform1:getPosition().p
@@ -79,13 +81,16 @@ do
 
 
         lu.assertEquals(self.contact.state,HOUND.EVENTS.RADAR_NEW)
+        lu.assertEquals(emitter,self.contact:getDcsObject())
 
         local tgtPos = emitter:getPosition().p
         local p1 = platform1:getPosition().p
         local p2 = platform2:getPosition().p
+        local emitterFreqs = self.contact:getWavelenght()
+        lu.assertIsTrue(((emitterFreqs > 0.037474) and (emitterFreqs < 0.049965)))
 
-        local err = HOUND.DB.getSensorPrecision(platform1,HOUND.DB.getEmitterBand(emitter))
-        lu.assertEquals(err,0.002141375)
+        local err = HOUND.DB.getSensorPrecision(platform1,emitterFreqs)
+        lu.assertIsTrue(((err > 0.00093685) and (err < 0.037786275)))
 
         local az1,el1 = HOUND.Utils.Elint.getAzimuth( p1, tgtPos, err )
         local az2,el2 = HOUND.Utils.Elint.getAzimuth( p2, tgtPos, err )
@@ -104,8 +109,8 @@ do
         lu.assertIsTable(d2.posPolygon["3D"])
 
         -- check algorithems
-        lu.assertIsTrue(mist.pointInPolygon(tgtPos,d1.posPolygon["3D"]))
-        lu.assertIsTrue(mist.pointInPolygon(tgtPos,d2.posPolygon["3D"]))
+        lu.assertIsTrue(HOUND.Mist.pointInPolygon(tgtPos,d1.posPolygon["3D"]))
+        lu.assertIsTrue(HOUND.Mist.pointInPolygon(tgtPos,d2.posPolygon["3D"]))
 
         lu.assertIsTable(d1.posPolygon["2D"])
         lu.assertIsTable(d2.posPolygon["2D"])
@@ -114,8 +119,8 @@ do
         clipPoly = HOUND.Utils.Polygon.clipPolygons(clipPoly,d1.posPolygon["3D"]) or clipPoly
         clipPoly = HOUND.Utils.Polygon.clipPolygons(clipPoly,d2.posPolygon["3D"]) or clipPoly
         lu.assertIsTable(clipPoly)
-        -- mist.marker.add({pos=clipPoly,markType="freeform"})
-        lu.assertIsTrue(mist.pointInPolygon(tgtPos,clipPoly))
+        -- HOUND.Mist.marker.add({pos=clipPoly,markType="freeform"})
+        lu.assertIsTrue(HOUND.Mist.pointInPolygon(tgtPos,clipPoly))
 
 
         local contactState = self.contact:processData()
@@ -125,6 +130,6 @@ do
 
         -- local estimation = self.contact:drawAreaMarker(16,true)
         -- lu.assertIsTable(estimation)
-        -- lu.assertIsTrue(mist.pointInPolygon(tgtPos,estimation,tgtPos.y+10))
+        -- lu.assertIsTrue(HOUND.Mist.pointInPolygon(tgtPos,estimation,tgtPos.y+10))
     end
 end

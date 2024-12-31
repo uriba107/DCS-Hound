@@ -1178,8 +1178,7 @@ do
         for _,sector in pairs(sectors) do
             sector:populateRadioMenu()
         end
-        -- HOUND.DB.HumanUnits.cleanup = timer.scheduleFunction(HOUND.DB.cleanHumanDb,self.settings:getCoalition(),timer.getTime() + 15)
-        HOUND.DB.cleanHumanDb(self.settings:getCoalition())
+        -- HOUND.DB.cleanHumanDb(self.settings:getCoalition())
         menuTimer:Stop()
     end
 

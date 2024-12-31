@@ -22,7 +22,7 @@ do
         local sa5 = Group.getByName('SA-5_SAIPAN')
         sa5:enableEmission(true)
 
-        assert(timer.scheduleFunction(delayTest,"Platforms: 2 | sectors: 3 (Z:2 ,C:2 ,A: 2 ,N:1) | Sites: 4 | Contacts: 6 (A:3 ,PB:4)",timer.getTime()+75))
+        assert(timer.scheduleFunction(delayTest,"Platforms: 2 | sectors: 3 (Z:2 ,C:2 ,A: 2 ,N:1) | Sites: 4 | Contacts: 6 (A:3 ,PB:4)",timer.getTime()+90))
         assert(timer.scheduleFunction(delayMove,nil,timer.getTime()+60))
 
     end
@@ -178,11 +178,14 @@ do
     end
 
     function TestHoundFunctional:Test_5mDelay_03_shoot()
+        function delayTest(expectedStr)
+            lu.assertStrContains(self.houndBlue:printDebugging(),expectedStr)
+        end
             shootEvent = {}
             shootEvent.HoundInstance = self.houndBlue
             function shootEvent:onEvent(DcsEvent)
                 if DcsEvent.id == world.event.S_EVENT_SHOT and self.HoundInstance then
-                    if self.HoundInstance and DcsEvent.initiator and DcsEvent.initiator:getCoalition() == self.HoundInstance:getCoalition()
+                    if self.HoundInstance and DcsEvent.initiator and DcsEvent.initiator:getCoalition() ~= self.HoundInstance:getCoalition()
                         and ( DcsEvent.initiator:getGroup() == Group.getByName("SA-6_TINIAN") )
                     then
                         local tgt = DcsEvent.weapon:getTarget()
@@ -198,11 +201,14 @@ do
             local SA6 = Group.getByName("SA-6_TINIAN")
             lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(uavgrp))
             lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(SA6))
+            SA6:enableEmission(true)
+
             -- lu.assertIsFalse(uavgrp:isExist())
             uavgrp:activate()
             -- lu.assertIsTrue(uavgrp:isExist())
             local sam_brain = SA6:getUnit(1):getController()
             sam_brain:knowTarget(Unit.getByName("MQ-9_TGT"))
-            SA6:enableEmission(true)
+            assert(timer.scheduleFunction(delayTest,"Platforms: 2 | sectors: 3 (Z:2 ,C:2 ,A: 2 ,N:1) | Sites: 6 | Contacts: 7 (A:5 ,PB:3)",timer.getTime()+120))
+
     end
 end

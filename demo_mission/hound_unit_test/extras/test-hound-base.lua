@@ -11,59 +11,46 @@ do
     end
 
     function TestHoundFunctionalBase:Test_02_base_00_unitSetup()
+
+        local function setupGroup(grp)
+            grp:enableEmission(false)
+            local control = grp:getController()
+            control:setOnOff(true)
+            control:setOption(0,2) -- ROE, Open_file
+            control:setOption(9,2) -- Alarm_State, RED
+            control:setOption(20,false) -- ENGAGE_AIR_WEAPONS, false
+        end
+
         local tor_golf = Group.getByName("TOR_SAIPAN")
         lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(tor_golf))
         lu.assertEquals(tor_golf:getSize(),1)
         tor_golf:enableEmission(false)
         local control = tor_golf:getController()
-        control:setOnOff(true)
-        control:setOption(0,2) -- ROE, Open_file
-        control:setOption(9,2) -- Alarm_State, RED
-        control:setOption(20,false) -- ENGAGE_AIR_WEAPONS, false
+        setupGroup(tor_golf)
 
         local sa5 = Group.getByName('SA-5_SAIPAN')
         lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(sa5))
         lu.assertEquals(sa5:getSize(),8)
         sa5:enableEmission(false)
-
-        control = sa5:getController()
-        control:setOnOff(true)
-        control:setOption(0,2) -- ROE, Open_file
-        control:setOption(9,2) -- Alarm_State, RED
-        control:setOption(20,false) -- ENGAGE_AIR_WEAPONS, false
+        setupGroup(sa5)
 
         local ewr = Group.getByName('EWR_SAIPAN')
         lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(ewr))
         lu.assertEquals(ewr:getSize(),1)
         ewr:enableEmission(false)
-
-        control = ewr:getController()
-        control:setOnOff(true)
-        control:setOption(0,2) -- ROE, Open_file
-        control:setOption(9,2) -- Alarm_State, RED
-        control:setOption(20,false) -- ENGAGE_AIR_WEAPONS, false
+        setupGroup(ewr)
 
         local ships = Group.getByName('SHIPS_NORTH')
         lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(ships))
         lu.assertEquals(ships:getSize(),2)
         ships:enableEmission(false)
-
-        control = ships:getController()
-        control:setOnOff(true)
-        control:setOption(0,3) -- ROE, Return Fire
-        control:setOption(9,2) -- Alarm_State, RED
-        control:setOption(20,false) -- ENGAGE_AIR_WEAPONS, false
+        setupGroup(ships)
 
         local sa6 = Group.getByName('SA-6_TINIAN')
         lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(sa6))
         lu.assertEquals(sa6:getSize(),5)
         sa6:enableEmission(false)
-
-        control = sa6:getController()
-        control:setOnOff(true)
-        control:setOption(0,2) -- ROE, Open_file
-        control:setOption(9,2) -- Alarm_State, RED
-        control:setOption(20,false) -- ENGAGE_AIR_WEAPONS, false
+        setupGroup(sa6)
 
     end
     function TestHoundFunctional:Test_02_base_01_Init()
@@ -194,8 +181,8 @@ do
         lu.assertIsFalse(sa5:getUnits()[2]:getRadar())
         lu.assertIsTrue(ewr:getUnits()[1]:getRadar())
         lu.assertIsTrue(ships:getUnits()[1]:getRadar())
-        -- lu.assertIsTrue(tor:getUnits()[1]:getRadar())
-        -- lu.assertIsTrue(sa6:getUnits()[1]:getRadar())
+        lu.assertIsTrue(tor:getUnits()[1]:getRadar())
+        lu.assertIsTrue(sa6:getUnits()[1]:getRadar())
     end
 
     function TestHoundFunctional:Test_02_base_04_Multi_Sector()
@@ -261,7 +248,7 @@ do
         self.houndBlue:setZone("Tinian")
         lu.assertIsTable(self.houndBlue:getZone("Tinian"))
 
-        local zoneAutomatic = mist.utils.deepCopy(self.houndBlue:getZone("Tinian"))
+        local zoneAutomatic = HOUND.Mist.utils.deepCopy(self.houndBlue:getZone("Tinian"))
 
         self.houndBlue:removeZone("Tinian")
         lu.assertIsNil(self.houndBlue:getZone("Tinian"))
@@ -273,25 +260,25 @@ do
         lu.assertIsNil(self.houndBlue:getZone("default"))
         lu.assertIsTable(self.houndBlue:getZone("Saipan"))
         lu.assertIsTable(self.houndBlue:getZone("Tinian"))
-        local zoneManual = mist.utils.deepCopy(self.houndBlue:getZone("Tinian"))
+        local zoneManual = HOUND.Mist.utils.deepCopy(self.houndBlue:getZone("Tinian"))
 
         lu.assertItemsEquals(zoneManual,zoneAutomatic)
     end
 
     function TestHoundFunctional:Test_02_base_06_radio_menu()
         lu.assertIsTable(self.houndBlue.settings:getRadioMenu())
-        local originalMenu = mist.utils.deepCopy(self.houndBlue.settings:getRadioMenu())
+        local originalMenu = HOUND.Mist.utils.deepCopy(self.houndBlue.settings:getRadioMenu())
         self.houndBlue:purgeRadioMenu()
         local test_root = missionCommands.addSubMenu("new root")
         self.houndBlue:setRadioMenuParent(test_root)
         lu.assertIsTable(self.houndBlue.settings:getRadioMenu())
-        local shiftedRoot = mist.utils.deepCopy(self.houndBlue.settings:getRadioMenu())
+        local shiftedRoot = HOUND.Mist.utils.deepCopy(self.houndBlue.settings:getRadioMenu())
 
         lu.assertNotEquals(originalMenu,shiftedRoot)
         self.houndBlue:purgeRadioMenu()
 
         self.houndBlue:setRadioMenuParent(nil)
-        local postRootMenu = mist.utils.deepCopy(self.houndBlue.settings:getRadioMenu())
+        local postRootMenu = HOUND.Mist.utils.deepCopy(self.houndBlue.settings:getRadioMenu())
         lu.assertIsTable(self.houndBlue.settings:getRadioMenu())
         lu.assertItemsEquals(originalMenu,postRootMenu)
         self.houndBlue:purgeRadioMenu()

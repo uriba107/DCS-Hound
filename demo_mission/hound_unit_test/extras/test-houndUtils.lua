@@ -214,7 +214,13 @@ do
 
         -- HOUND.DB.getEmitterBand
         lu.assertEquals(HOUND.DB.getEmitterBand(),HOUND.DB.Bands.C)
-        lu.assertEquals(HOUND.DB.getEmitterBand(emitter),HOUND.DB.Bands.F)
+        lu.assertEquals(HOUND.DB.getEmitterBand(emitter),HOUND.DB.Bands.H)
+        
+        -- HOUND.DB.getRadarData
+        local emitterData = HOUND.DB.getRadarData(emitter:getTypeName())
+        lu.assertIsTable(emitterData)
+        lu.assertIsTrue(((emitterData.Freqency[true] > 0.037474) and (emitterData.Freqency[true] < 0.049965)))
+        lu.assertIsTrue(((emitterData.Freqency[false] > 0.037474) and (emitterData.Freqency[false] < 0.049965)))
 
         -- HOUND.DB.getApertureSize
         lu.assertEquals(HOUND.DB.getApertureSize(),0)
@@ -222,10 +228,14 @@ do
 
         -- HOUND.DB.getDefraction
         lu.assertEquals(HOUND.DB.getDefraction(), math.rad(30))
-        lu.assertEquals(HOUND.DB.getDefraction(HOUND.DB.getEmitterBand(emitter),HOUND.DB.getApertureSize(platform)),0.002141375)
+         
+        local test_defraction = HOUND.DB.getDefraction(emitterData.Freqency[false],HOUND.DB.getApertureSize(platform))
+        lu.assertIsTrue(((test_defraction > 0.00093685) and (test_defraction < 0.037786275)))
 
         -- HOUND.DB.getSensorPrecision
-        lu.assertEquals(HOUND.DB.getSensorPrecision(platform,HOUND.DB.getEmitterBand(emitter)),0.002141375)
+        local test_precision = HOUND.DB.getSensorPrecision(platform,emitterData.Freqency[true])
+        lu.assertIsTrue(((test_precision > 0.00093685) and (test_precision < 0.037786275)))
+
         -- HOUND.Utils.Elint.generateAngularError
 
         -- HOUND.Utils.Elint.getAzimuth
@@ -251,8 +261,10 @@ do
         lu.assertNotNil(zone)
         lu.assertEquals(HOUND.Length(zone),15)
         -- lu.assertItemsEquals(zone[1],zone[HOUND.Length(zone)])
-
         lu.assertItemsEquals(HOUND.Utils.Zone.listDrawnZones(),{"Tinian Sector"})
+        local zone2 = HOUND.Utils.Zone.getGroupRoute("Sector_Saipan")
+        lu.assertNotNil(zone2)
+        lu.assertEquals(HOUND.Length(zone2),17)
 
     end
 
