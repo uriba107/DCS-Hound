@@ -24,14 +24,26 @@ Object = {
         UNIT = {}
     }
 }
+coalition = {
+    side = {
+        NEUTRAL = 0,
+        RED = 1,
+        BLUE = 2
+    }
+}
+timer = {
+    getTime0 = math.random,
+    getTime = function() return 0 end
+}
+
 function loadHound(path)
     print(path)
     loadfile(path..'/src/000 - HoundGlobals.lua')()
     loadfile(path..'/src/100 - HoundDBs.lua')()
     loadfile(path..'/src/101 - HoundDBs_UnitDcs.lua')()
     loadfile(path..'/src/102 - HoundDBs_UnitMods.lua')()
-
 end
+
 function table.length(t)
     local count = 0
     if type(t) ~= "table" then
@@ -151,7 +163,13 @@ function freqToWavelength(freq)
     end
 end
 
+
 loadHound('..')
+BANDS = {}
+for band,freq in pairs(HOUND.DB.Bands) do
+    local k = string.format("{%.6f,%.6f}",freq[1],freq[2])
+    BANDS[k] = band
+end
 for _,db in ipairs({'Car','Ship'}) do
     local dirPath = basePath..'/'..db..'s/'..db
     for file in lfs.dir(dirPath) do
@@ -204,19 +222,31 @@ for _,db in ipairs({'Car','Ship'}) do
                     searchBand = trackBand
                 end
 
+
+                if BANDS[searchBand] then
+                    searchBand = BANDS[searchBand]
+                end
+
                 -- table.print(searchBand,"Search ("..table.length(searchBand).."): ")
                 -- table.print(trackBand,"Track("..table.length(trackBand).."): ")
                 if table.length(trackBand) > 0 then
                     local str="{\n" .. "\t['Band'] = {\n\t\t[true] = "
+                    local freq_str = ""
                     for k,v in pairs(trackBand) do
-                        
-                        str = str .. string.format("{%.6f,%.6f},\n",k,v)
+                        freq_str = string.format("{%.6f,%.6f},\n",k,v)
                     end
-                    str = str.."\t\t[false] = "
+                    -- if BANDS[freq_str] then
+                    --     freq_str = "HOUND.DB.Bands." .. BANDS[trackBand]
+                    -- end
+                    str = str .. freq_str .."\t\t[false] = "
+
                     for k,v in pairs(searchBand) do
-                        str = str .. string.format("{%.6f,%.6f},\n",k,v)
+                        freq_str = string.format("{%.6f,%.6f},\n",k,v)
                     end
-                    str = str .. "\t},"
+                    -- if BANDS[freq_str] then
+                    --     freq_str = "HOUND.DB.Bands." .. BANDS[trackBand]
+                    -- end
+                    str = str .. freq_str .. "\t},"
                     local unittype = data['type']
                     -- dataToImport[unittype]=str
 -- print(table.length(dataToImport))
@@ -262,7 +292,15 @@ for _,db in ipairs({'Car','Ship'}) do
                         end
                     end
                     if update then
-                        print(string.format("['%s'] = {\n\t['Band'] = {\n\t\t[true] = {%.6f,%.6f},\n\t\t[false] = {%.6f,%.6f}\n\t},\n}",k,dataToImport[k][true][1],dataToImport[k][true][2],dataToImport[k][false][1],dataToImport[k][false][2]))
+                        local track_freq = string.format("{%.6f,%.6f}",dataToImport[k][true][1],dataToImport[k][true][2])
+                        if BANDS[track_freq] then
+                            track_freq = "HOUND.DB.Bands." .. BANDS[track_freq]
+                        end
+                        local search_freq = string.format("{%.6f,%.6f}",dataToImport[k][false][1],dataToImport[k][false][2])
+                        if BANDS[search_freq] then
+                            search_freq = "HOUND.DB.Bands." .. BANDS[search_freq]
+                        end
+                        print(string.format("['%s'] = {\n\t['Band'] = {\n\t\t[true] = %s,\n\t\t[false] = %s\n\t},\n}",k,track_freq,search_freq))
                     end
                 end
             end
