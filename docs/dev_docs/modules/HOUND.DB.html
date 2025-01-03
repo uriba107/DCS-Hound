@@ -100,6 +100,11 @@
 	<td class="summary">Hound callsigns</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#HOUND.DB.HumanUnits">HOUND.DB.HumanUnits</a></td>
+	<td class="summary">Hound Human Units
+ automatically generate list containing mist style Unit entries for human flights</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#HOUND.DB.Radars">HOUND.DB.Radars</a></td>
 	<td class="summary">Radar database</td>
 	</tr>
@@ -136,12 +141,25 @@
 	<td class="summary">Get emitter Band</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.DB.getEmitterFrequencies">HOUND.DB.getEmitterFrequencies (bands)</a></td>
+	<td class="name" nowrap><a href="#HOUND.DB.getEmitterFrequencies">HOUND.DB.getEmitterFrequencies (bands, factor)</a></td>
 	<td class="summary">Generate uniqe radar frequencies for contact</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.DB.getSensorPrecision">HOUND.DB.getSensorPrecision (platform, emitter)</a></td>
+	<td class="name" nowrap><a href="#HOUND.DB.getSensorPrecision">HOUND.DB.getSensorPrecision (platform, emitterFreq)</a></td>
 	<td class="summary">Elint Function - Get sensor precision</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.DB.updateHumanDb">HOUND.DB.updateHumanDb (coalitionId)</a></td>
+	<td class="summary">populate the HOUND.DB.HumanUnits db</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.DB.cleanHumanDb">HOUND.DB.cleanHumanDb (coalitionId)</a></td>
+	<td class="summary">cleanup the HOUND.DB.HumanUnits db from disconnected units.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.DB.generateMistDbEntry">HOUND.DB.generateMistDbEntry (DcsUnit)</a></td>
+	<td class="summary">create a partial "humanByName" mist record from unit
+ use subset of mist format https://github.com/mrSkortch/MissionScriptingTools/blob/master/Example%20DBs/mist_DBs_humansByName.lua</td>
 	</tr>
 </table>
 
@@ -287,6 +305,27 @@
         </li>
         <li><span class="parameter">GENERIC</span>
          list of generic callsigns for hound, mostly vacuum cleaners and fictional detectives
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.DB.HumanUnits"></a>
+    <strong>HOUND.DB.HumanUnits</strong>
+    </dt>
+    <dd>
+    Hound Human Units
+ automatically generate list containing mist style Unit entries for human flights
+
+
+    <h3>Fields:</h3>
+    <ul>
+        <li><span class="parameter">byName</span>
+
         </li>
     </ul>
 
@@ -526,7 +565,7 @@
 </dd>
     <dt>
     <a name = "HOUND.DB.getEmitterFrequencies"></a>
-    <strong>HOUND.DB.getEmitterFrequencies (bands)</strong>
+    <strong>HOUND.DB.getEmitterFrequencies (bands, factor)</strong>
     </dt>
     <dd>
     Generate uniqe radar frequencies for contact
@@ -535,8 +574,12 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">bands</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+            <span class="types"><span class="type">tab</span></span>
 
+        </li>
+        <li><span class="parameter">factor</span>
+            <span class="types">optional <span class="type">number</span></span>
+         between 0 and 1 where between high and low freqs (for testing)
         </li>
     </ul>
 
@@ -552,7 +595,7 @@
 </dd>
     <dt>
     <a name = "HOUND.DB.getSensorPrecision"></a>
-    <strong>HOUND.DB.getSensorPrecision (platform, emitter)</strong>
+    <strong>HOUND.DB.getSensorPrecision (platform, emitterFreq)</strong>
     </dt>
     <dd>
     Elint Function - Get sensor precision
@@ -563,7 +606,7 @@
         <li><span class="parameter">platform</span>
          Instance of DCS Unit which is the detecting platform
         </li>
-        <li><span class="parameter">emitter</span>
+        <li><span class="parameter">emitterFreq</span>
          Radar wavelength (frequency) of radar (in meters) or DCS Unit
         </li>
     </ul>
@@ -578,6 +621,74 @@
 
 
 </dd>
+    <dt>
+    <a name = "HOUND.DB.updateHumanDb"></a>
+    <strong>HOUND.DB.updateHumanDb (coalitionId)</strong>
+    </dt>
+    <dd>
+    populate the HOUND.DB.HumanUnits db
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">coalitionId</span>
+            <span class="types">optional <span class="type">number</span></span>
+         if provided, DB will be updated to specificd coalition only
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.DB.cleanHumanDb"></a>
+    <strong>HOUND.DB.cleanHumanDb (coalitionId)</strong>
+    </dt>
+    <dd>
+    cleanup the HOUND.DB.HumanUnits db from disconnected units.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">coalitionId</span>
+            <span class="types">optional <span class="type">number</span></span>
+         if provided, DB will be updated to specificd coalition only
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.DB.generateMistDbEntry"></a>
+    <strong>HOUND.DB.generateMistDbEntry (DcsUnit)</strong>
+    </dt>
+    <dd>
+    create a partial "humanByName" mist record from unit
+ use subset of mist format https://github.com/mrSkortch/MissionScriptingTools/blob/master/Example%20DBs/mist_DBs_humansByName.lua
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">DcsUnit</span>
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table
+    </ol>
+
+
+
+
+</dd>
 </dl>
 
 
@@ -585,7 +696,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/lunarmodules/LDoc">LDoc 1.5.0</a></i>
-<i style="float:right;">Last updated 2024-11-10 14:51:46 </i>
+<i style="float:right;">Last updated 2025-01-03 23:24:06 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

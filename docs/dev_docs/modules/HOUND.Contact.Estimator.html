@@ -33,8 +33,8 @@
 
 <h2>Contents</h2>
 <ul>
-<li><a href="#Functions">Functions</a></li>
-<li><a href="#Local_Functions">Local Functions</a></li>
+<li><a href="#Legacy_Kalman_implementation">Legacy Kalman implementation </a></li>
+<li><a href="#Pseudo_linear_Kalman_filter">Pseudo-linear Kalman filter </a></li>
 </ul>
 
 
@@ -73,15 +73,12 @@
 <p></p>
 
 
-<h2><a href="#Functions">Functions</a></h2>
+<h2><a href="#Legacy_Kalman_implementation">Legacy Kalman implementation </a></h2>
 <table class="function_list">
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Contact.Estimator.accuracyScore">HOUND.Contact.Estimator.accuracyScore (err)</a></td>
 	<td class="summary">Fuzzy logic score</td>
 	</tr>
-</table>
-<h2><a href="#Local_Functions">Local Functions</a></h2>
-<table class="function_list">
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Contact.Estimator.Kalman.posFilter">HOUND.Contact.Estimator.Kalman.posFilter ()</a></td>
 	<td class="summary">Kalman Filter implementation for position</td>
@@ -95,12 +92,57 @@
 	<td class="summary">Kalman Filter implementation for position.</td>
 	</tr>
 </table>
+<h2><a href="#Pseudo_linear_Kalman_filter">Pseudo-linear Kalman filter </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Estimator.UPLKF">HOUND.Contact.Estimator.UPLKF</a></td>
+	<td class="summary">UB-PLKF (Unbiased Pseudo-Linear Kalman Filter)
+ Implementation of algorithem described in https://www.mdpi.com/2072-4292/13/15/2915</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Estimator.UPLKF:create">HOUND.Contact.Estimator.UPLKF:create (p0, v0, timestamp, initialPosError, isMobile)</a></td>
+	<td class="summary">Create PLKF instance</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Estimator.UPLKF:getEstimatedPos">HOUND.Contact.Estimator.UPLKF:getEstimatedPos (state)</a></td>
+	<td class="summary">get current estimated position in DCS point from a Kalman state</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Estimator.UPLKF.normalizeAz">HOUND.Contact.Estimator.UPLKF.normalizeAz (azimuth)</a></td>
+	<td class="summary">normalize azimuth to East aligned counterclockwise</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Estimator.UPLKF:updateMarker">HOUND.Contact.Estimator.UPLKF:updateMarker ()</a></td>
+	<td class="summary">update debug marker
+ draw a debug marker from current self.state</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Estimator.UPLKF:getF">HOUND.Contact.Estimator.UPLKF:getF (deltaT)</a></td>
+	<td class="summary">create F matrix</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Estimator.UPLKF:getQ">HOUND.Contact.Estimator.UPLKF:getQ (deltaT, sigma)</a></td>
+	<td class="summary">create the Q matrix</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Estimator.UPLKF:predictStep">HOUND.Contact.Estimator.UPLKF:predictStep (X, P, timestep, Q)</a></td>
+	<td class="summary">Kalman prediction step for provided state</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Estimator.UPLKF:predict">HOUND.Contact.Estimator.UPLKF:predict (timestamp)</a></td>
+	<td class="summary">Perform a prediction for the filter and update state</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Estimator.UPLKF:update">HOUND.Contact.Estimator.UPLKF:update (p0, z, timestamp, z_err)</a></td>
+	<td class="summary">perform update of state with mesurment</td>
+	</tr>
+</table>
 
 <br/>
 <br/>
 
 
-    <h2 class="section-header "><a name="Functions"></a>Functions</h2>
+    <h2 class="section-header "><a name="Legacy_Kalman_implementation"></a>Legacy Kalman implementation </h2>
 
     <dl class="function">
     <dt>
@@ -123,10 +165,6 @@
 
 
 </dd>
-</dl>
-    <h2 class="section-header "><a name="Local_Functions"></a>Local Functions</h2>
-
-    <dl class="function">
     <dt>
     <a name = "HOUND.Contact.Estimator.Kalman.posFilter"></a>
     <strong>HOUND.Contact.Estimator.Kalman.posFilter ()</strong>
@@ -191,13 +229,284 @@
 
 </dd>
 </dl>
+    <h2 class="section-header "><a name="Pseudo_linear_Kalman_filter"></a>Pseudo-linear Kalman filter </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HOUND.Contact.Estimator.UPLKF"></a>
+    <strong>HOUND.Contact.Estimator.UPLKF</strong>
+    </dt>
+    <dd>
+    UB-PLKF (Unbiased Pseudo-Linear Kalman Filter)
+ Implementation of algorithem described in https://www.mdpi.com/2072-4292/13/15/2915
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Estimator.UPLKF:create"></a>
+    <strong>HOUND.Contact.Estimator.UPLKF:create (p0, v0, timestamp, initialPosError, isMobile)</strong>
+    </dt>
+    <dd>
+    Create PLKF instance
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">p0</span>
+         Initial position (DCS point)
+        </li>
+        <li><span class="parameter">v0</span>
+            <span class="types">optional <a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Initial velocity (x,z)
+        </li>
+        <li><span class="parameter">timestamp</span>
+            <span class="types">optional <span class="type">number</span></span>
+         Initial time
+        </li>
+        <li><span class="parameter">initialPosError</span>
+            <span class="types">optional <span class="type">number</span></span>
+         Uncertainty of position measurement
+        </li>
+        <li><span class="parameter">isMobile</span>
+            <span class="types">optional <span class="type">boolean</span></span>
+         Is the platform mobile?
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Estimator.UPLKF:getEstimatedPos"></a>
+    <strong>HOUND.Contact.Estimator.UPLKF:getEstimatedPos (state)</strong>
+    </dt>
+    <dd>
+    get current estimated position in DCS point from a Kalman state
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">state</span>
+            <span class="types">optional <a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         from which position will be extracted. defaults self.state.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        DCS point.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Estimator.UPLKF.normalizeAz"></a>
+    <strong>HOUND.Contact.Estimator.UPLKF.normalizeAz (azimuth)</strong>
+    </dt>
+    <dd>
+    normalize azimuth to East aligned counterclockwise
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">azimuth</span>
+            <span class="types"><span class="type">number</span></span>
+         in radians (0-2Pi)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        angle in radian (-pi to pi) east aligned counterclockwise rotation
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Estimator.UPLKF:updateMarker"></a>
+    <strong>HOUND.Contact.Estimator.UPLKF:updateMarker ()</strong>
+    </dt>
+    <dd>
+    update debug marker
+ draw a debug marker from current self.state
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Estimator.UPLKF:getF"></a>
+    <strong>HOUND.Contact.Estimator.UPLKF:getF (deltaT)</strong>
+    </dt>
+    <dd>
+    create F matrix
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">deltaT</span>
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        F matrix
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Estimator.UPLKF:getQ"></a>
+    <strong>HOUND.Contact.Estimator.UPLKF:getQ (deltaT, sigma)</strong>
+    </dt>
+    <dd>
+    create the Q matrix
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">deltaT</span>
+            <span class="types">optional <span class="type">number</span></span>
+         time from last mesurement. default is 10 seconds
+        </li>
+        <li><span class="parameter">sigma</span>
+            <span class="types">optional <span class="type">number</span></span>
+         error in mesurment. default is 0.1 radians
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Q matrix
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Estimator.UPLKF:predictStep"></a>
+    <strong>HOUND.Contact.Estimator.UPLKF:predictStep (X, P, timestep, Q)</strong>
+    </dt>
+    <dd>
+    Kalman prediction step for provided state
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">X</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         state matrix for prediction
+        </li>
+        <li><span class="parameter">P</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         state covariance matrix
+        </li>
+        <li><span class="parameter">timestep</span>
+            <span class="types"><span class="type">number</span></span>
+         (in seconds)
+        </li>
+        <li><span class="parameter">Q</span>
+            <span class="types">optional <a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         process nose matrix. will be generated with generic settings if not provided
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+        x_hat the predicted state matrix</li>
+        <li>
+        P_hat the predicted state covariance matrix</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Estimator.UPLKF:predict"></a>
+    <strong>HOUND.Contact.Estimator.UPLKF:predict (timestamp)</strong>
+    </dt>
+    <dd>
+    Perform a prediction for the filter and update state
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">timestamp</span>
+            <span class="types">optional <span class="type">number</span></span>
+         DCS AbsTime timestamp
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Estimator.UPLKF:update"></a>
+    <strong>HOUND.Contact.Estimator.UPLKF:update (p0, z, timestamp, z_err)</strong>
+    </dt>
+    <dd>
+    perform update of state with mesurment
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">p0</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Position of platform (DCS point)
+        </li>
+        <li><span class="parameter">z</span>
+            <span class="types"><span class="type">number</span></span>
+         current mesurment
+        </li>
+        <li><span class="parameter">timestamp</span>
+            <span class="types"><span class="type">number</span></span>
+         time of mesurment
+        </li>
+        <li><span class="parameter">z_err</span>
+            <span class="types"><span class="type">number</span></span>
+         maximum error in mesurment (radians)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
 
 
 </div> <!-- id="content" -->
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/lunarmodules/LDoc">LDoc 1.5.0</a></i>
-<i style="float:right;">Last updated 2024-11-10 14:51:46 </i>
+<i style="float:right;">Last updated 2025-01-03 23:24:06 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

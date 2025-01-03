@@ -53,6 +53,7 @@ Table of Contents
     * [Launch Alerts](#launch-alerts)
     * [Reposition The Controller radio menu](#reposition-the-controller-radio-menu)
     * [DCS callsign overrides](#dcs-callsign-overrides)
+  * [NOTE: Be cautios when using a callsign override wildcard with Dynamic slots without a template\. As aircraft might spwan with the wildcard DCS callsign and a random group name](#note-be-cautios-when-using-a-callsign-override-wildcard-with-dynamic-slots-without-a-template-as-aircraft-might-spwan-with-the-wildcard-dcs-callsign-and-a-random-group-name)
     * [NATO callsigns](#nato-callsigns)
     * [NATO Lowdown](#nato-lowdown)
     * [ATIS update interval](#atis-update-interval)
@@ -74,6 +75,7 @@ Table of Contents
   * [Notifier](#notifier)
   * [Text\-To\-Speach configuration](#text-to-speach-configuration)
     * [STTS settings](#stts-settings)
+    * [MOOSE\.MSRS settings](#moosemsrs-settings)
     * [gRPC\.tts settings](#grpctts-settings)
 * [Event handlers](#event-handlers)
   * [Available events](#available-events)
@@ -120,10 +122,11 @@ Hound currently has a 10-degree angular resolution cutoff point to avoid introdu
 ```Note: While currently not implemented, the intention of including both the Viggen and the Su-25T is that they will only be able to participate if they are carrying their ELINT pods.```
 
 ## Required External Scripts
-- [MIST (by mrSkortch)](https://github.com/mrSkortch/MissionScriptingTools/releases/latest)
+Starting from version 0.4.1 Hound no longer require [MIST](https://github.com/mrSkortch/MissionScriptingTools/releases/latest) as a dependency. Thanks to @mrSkortch, all required mist functions were incorporated into HOUND.
 
 Optional scripts required for TTS (only one of them is required, based on your preference):
 - [DCS-SimpleTextToSpeech (by Ciribob)](https://github.com/ciribob/DCS-SimpleTextToSpeech)
+- [MOOSE.MSRS](https://flightcontrol-master.github.io/MOOSE_DOCS_DEVELOP/Documentation/Sound.SRS.html)
 - [DCS-gRPC](https://github.com/DCS-gRPC/rust-server)
 
 
@@ -217,7 +220,9 @@ More examples are available in the [demo missions](./demo_mission/).
 | Tu-95     | 0.46 / 0.05 | A ||
 | Tu-142    | 0.46 / 0.05 | A ||
 | IL-76MD   | 0.60 / 0.06 | A ||
-| H-6J      | 6.54 / 0.70 | C ||
+| H-6J      | 6.54 / 0.70 | C | Fantasmagoria |
+| Su-24M    | 6.54 / 0.70 | C | Fantasmagoria | 
+| Su-24MR   | 5.09 / 0.55 | C | Tangazh |  
 | C-47      | 1.91 / 0.20 | A ||
 | S-3B      | 1.59 / 0.17 | A ||
 | E-2D      | 6.54 / 0.70 | C ||
@@ -226,6 +231,7 @@ More examples are available in the [demo missions](./demo_mission/).
 | A-50      | 5.09 / 0.55 | C ||
 | Viggen    | 5.09 / 0.55 | C | U22 |
 | Su-25T    | 6.54 / 0.70 | C | Fantasmagoria |  
+| Su-25TM   | 6.54 / 0.70 | C | Fantasmagoria |  
 | JF-17     | 7.05 / 0.76 | C | KG-600 SPJ |
 | F-16C     | 15.79 / 1.69| D | Block 50 w/HTS |
 | Mirage F1 |  6.19 / 0.66  | C | Cyril pod |
@@ -263,7 +269,7 @@ More examples are available in the [demo missions](./demo_mission/).
 | Platform  | Accuracy Deg. (C/H Bands) | Min. Band |
 | --------  | --------    | - |
 | SPK-11    | 1.53 / 0.16 | A |
-| MLRS FDDM | 1.53 / 0.16 | A | 
+| SAM Patriot CR | 1.53 / 0.16 | A | 
 
 ### Static Objects
 | Platform  | Accuracy Deg. (C/H Bands) | Min. Band |
@@ -400,7 +406,7 @@ The available marker types are:
 | OCTAGON | an ellipse will be drawn with 8 points (diamond with midpoints) |
 | POLYGON | an ellipse will be drawn as a 16-sided polygon |
 
-`Note: More points cause higher CPU usage. CIRCLE is the default.`
+`NOTE: More points cause higher CPU usage. CIRCLE is the default.`
 
 In addition to the radar markers, there is an additional simpler site marker. The site marker only adds the site designation and current SAM classification. It is used in conjunction with the Map markers to help locate the radar you want in the menu system.
 
@@ -503,6 +509,8 @@ Hound supports 3 types of callsigns in this order
     }
     HoundInstance:setCallsignOverride(callsignOverride)
 ```
+
+`NOTE: Be cautios when using a callsign override wildcard with Dynamic slots without a template. As aircraft might spwan with the wildcard DCS callsign and a random group name`
 ---
 ### NATO callsigns
 [Sectors](#sectors) get automatically assigned [callsigns](#callsigns). The callsignes are picked from a pool of names. However, there is an alternate list, taken from callsigns used by RC-135 squadrons. To use this alternate callsign list by default, you'll need to set the following.
@@ -871,7 +879,14 @@ You can supply explicit order or completly disable one TTS engine or the other. 
             googleTTS = true/false -- use google TTS (requires additional STTS config)
         }
 ```
-
+### MOOSE.MSRS settings
+```lua
+    args = {
+        freq = {3.0,255.0}
+        modulation = {radio.modulation.FM,radio.modulation.AM}
+        
+    }
+```
 ### gRPC.tts settings
 ```lua
         args = {

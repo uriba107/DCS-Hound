@@ -45,10 +45,10 @@
 <li><a href="#Elint_functions">Elint functions </a></li>
 <li><a href="#Vector_functions">Vector functions </a></li>
 <li><a href="#Zone_functions">Zone functions </a></li>
-<li><a href="#Polygon_functions">Polygon functions </a></li>
-<li><a href="#Clustering_algorithems__for_future_use_">Clustering algorithems (for future use) </a></li>
 <li><a href="#Sort_Functions">Sort Functions </a></li>
 <li><a href="#Filter_Functions">Filter Functions </a></li>
+<li><a href="#Polygon_functions">Polygon functions </a></li>
+<li><a href="#Clustering_algorithems__for_future_use_">Clustering algorithems (for future use) </a></li>
 </ul>
 
 
@@ -116,6 +116,10 @@
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Utils.angleDeltaRad">HOUND.Utils.angleDeltaRad (rad1, rad2)</a></td>
 	<td class="summary">return difference in radias between two angles (bearings)</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.normalizeAngle">HOUND.Utils.normalizeAngle (rad)</a></td>
+	<td class="summary">normlize angle in radians</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Utils.AzimuthAverage">HOUND.Utils.AzimuthAverage (azimuths)</a></td>
@@ -198,6 +202,10 @@
 <h2><a href="#Value_mapping_Functions">Value mapping Functions </a></h2>
 <table class="function_list">
 	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Mapping.clamp">HOUND.Utils.Mapping.clamp (input, out_min, out_max)</a></td>
+	<td class="summary">clamn values to range (minmax)</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#HOUND.Utils.Mapping.linear">HOUND.Utils.Mapping.linear (input, in_min, in_max, out_min, out_max[, clamp])</a></td>
 	<td class="summary">map input to range (Arduino implementation)</td>
 	</tr>
@@ -225,6 +233,18 @@
 	<td class="summary">check if object is DCS static object</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Dcs.isHuman">HOUND.Utils.Dcs.isHuman (obj)</a></td>
+	<td class="summary">check if object is a human unit</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Dcs.getPlayers">HOUND.Utils.Dcs.getPlayers (coalitionId)</a></td>
+	<td class="summary">get list of human clinets for hound.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Dcs.getPlayersInGroup">HOUND.Utils.Dcs.getPlayersInGroup (DcsGroup)</a></td>
+	<td class="summary">get human players in group</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#HOUND.Utils.Dcs.isRadarTracking">HOUND.Utils.Dcs.isRadarTracking (DcsUnit)</a></td>
 	<td class="summary">check if Unit is tracking anything with it's radar</td>
 	</tr>
@@ -239,6 +259,18 @@
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Utils.Dcs.getRadarUnitsInGroup">HOUND.Utils.Dcs.getRadarUnitsInGroup (DcsGroup)</a></td>
 	<td class="summary">return all radar units in group</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Dcs.getGroupNames">HOUND.Utils.Dcs.getGroupNames (prefix)</a></td>
+	<td class="summary">get all current Groups, name only</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Dcs.getUnitNames">HOUND.Utils.Dcs.getUnitNames (prefix)</a></td>
+	<td class="summary">get all current Groups, name only</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Dcs.getStaticObjectNames">HOUND.Utils.Dcs.getStaticObjectNames (prefix)</a></td>
+	<td class="summary">get all current static objects, name only</td>
 	</tr>
 </table>
 <h2><a href="#Geo_Function">Geo Function </a></h2>
@@ -258,12 +290,22 @@
 	<td class="summary">Returns Projected line impact point with Terrain</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.Geo.setPointHeight">HOUND.Utils.Geo.setPointHeight (point)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Geo.setPointHeight">HOUND.Utils.Geo.setPointHeight (point, offset)</a></td>
 	<td class="summary">Ensure Inpoint DCS point has Elevation</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.Geo.setHeight">HOUND.Utils.Geo.setHeight (point)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Geo.setHeight">HOUND.Utils.Geo.setHeight (point, offset)</a></td>
 	<td class="summary">Ensure input point or point table all have valid Elevation</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Geo.get2DDistance">HOUND.Utils.Geo.get2DDistance (src, dst)</a></td>
+	<td class="summary">Get 2D distance between two points
+ wrapper for mist.utils.get2DDist</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Geo.get3DDistance">HOUND.Utils.Geo.get3DDistance (src, dst)</a></td>
+	<td class="summary">Get 3D distance between two points
+ wrapper for mist.utils.get3DDist</td>
 	</tr>
 </table>
 <h2><a href="#Marker_Functions">Marker Functions </a></h2>
@@ -455,6 +497,44 @@
 	<td class="summary">get polygon defined by group waypoints</td>
 	</tr>
 </table>
+<h2><a href="#Sort_Functions">Sort Functions </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Sort.ContactsByRange">HOUND.Utils.Sort.ContactsByRange (a, b)</a></td>
+	<td class="summary">Sort contacts by engament range</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Sort.ContactsById">HOUND.Utils.Sort.ContactsById (a, b)</a></td>
+	<td class="summary">Sort contacts by ID</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Sort.ContactsByPrio">HOUND.Utils.Sort.ContactsByPrio (a, b)</a></td>
+	<td class="summary">sort contacts by Priority (primary first)</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Sort.sectorsByPriorityLowFirst">HOUND.Utils.Sort.sectorsByPriorityLowFirst (a, b)</a></td>
+	<td class="summary">sort sectors by priority (low first)</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Sort.sectorsByPriorityLowLast">HOUND.Utils.Sort.sectorsByPriorityLowLast (a, b)</a></td>
+	<td class="summary">sort sectors by priority (Low last)</td>
+	</tr>
+</table>
+<h2><a href="#Filter_Functions">Filter Functions </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Filter.groupsByPrefix">HOUND.Utils.Filter.groupsByPrefix (prefix)</a></td>
+	<td class="summary">get Groups by prefix</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Filter.unitsByPrefix">HOUND.Utils.Filter.unitsByPrefix (prefix)</a></td>
+	<td class="summary">get Units by prefix</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Filter.staticObjectsByPrefix">HOUND.Utils.Filter.staticObjectsByPrefix (prefix)</a></td>
+	<td class="summary">get StatcObjects by prefix</td>
+	</tr>
+</table>
 <h2><a href="#Polygon_functions">Polygon functions </a></h2>
 <table class="function_list">
 	<tr>
@@ -511,47 +591,6 @@
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Utils.Cluster.getDeltaSubsetPercent">HOUND.Utils.Cluster.getDeltaSubsetPercent (Table, referencePos, NthPercentile, returnRelative)</a></td>
 	<td class="summary">Get a list of Nth elements centerd around a position from table of positions.</td>
-	</tr>
-</table>
-<h2><a href="#Sort_Functions">Sort Functions </a></h2>
-<table class="function_list">
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.Sort.ContactsByRange">HOUND.Utils.Sort.ContactsByRange (a, b)</a></td>
-	<td class="summary">Sort contacts by engament range</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.Sort.ContactsById">HOUND.Utils.Sort.ContactsById (a, b)</a></td>
-	<td class="summary">Sort contacts by ID</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.Sort.ContactsByPrio">HOUND.Utils.Sort.ContactsByPrio (a, b)</a></td>
-	<td class="summary">sort contacts by Priority (primary first)</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.Sort.sectorsByPriorityLowFirst">HOUND.Utils.Sort.sectorsByPriorityLowFirst (a, b)</a></td>
-	<td class="summary">sort sectors by priority (low first)</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.Sort.sectorsByPriorityLowLast">HOUND.Utils.Sort.sectorsByPriorityLowLast (a, b)</a></td>
-	<td class="summary">sort sectors by priority (Low last)</td>
-	</tr>
-</table>
-<h2><a href="#Filter_Functions">Filter Functions </a></h2>
-<table class="function_list">
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.Filter.groupsByPrefix">HOUND.Utils.Filter.groupsByPrefix (prefix)</a></td>
-	<td class="summary">get Groups by prefix
- Implementation taken from Skynet-IADS</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.Filter.unitsByPrefix">HOUND.Utils.Filter.unitsByPrefix (prefix)</a></td>
-	<td class="summary">get Units by prefix
- Implementation taken from Skynet-IADS</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.Filter.staticObjectsByPrefix">HOUND.Utils.Filter.staticObjectsByPrefix (prefix)</a></td>
-	<td class="summary">get StatcObjects by prefix
- Implementation taken from Skynet-IADS</td>
 	</tr>
 </table>
 
@@ -740,6 +779,32 @@
     <ol>
 
         angle difference between rad1 and rad2 (between pi and -pi)
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.normalizeAngle"></a>
+    <strong>HOUND.Utils.normalizeAngle (rad)</strong>
+    </dt>
+    <dd>
+    normlize angle in radians
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">rad</span>
+            <span class="types"><span class="type">number</span></span>
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        normlized angle in rad (0-2Pi)
     </ol>
 
 
@@ -1256,6 +1321,35 @@
 
     <dl class="function">
     <dt>
+    <a name = "HOUND.Utils.Mapping.clamp"></a>
+    <strong>HOUND.Utils.Mapping.clamp (input, out_min, out_max)</strong>
+    </dt>
+    <dd>
+    clamn values to range (minmax)
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">input</span>
+            <span class="types"><span class="type">number</span></span>
+         value
+        </li>
+        <li><span class="parameter">out_min</span>
+            <span class="types"><span class="type">number</span></span>
+         Minimum output value
+        </li>
+        <li><span class="parameter">out_max</span>
+            <span class="types"><span class="type">number</span></span>
+         Maximum output value
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
     <a name = "HOUND.Utils.Mapping.linear"></a>
     <strong>HOUND.Utils.Mapping.linear (input, in_min, in_max, out_min, out_max[, clamp])</strong>
     </dt>
@@ -1452,6 +1546,83 @@
 
 </dd>
     <dt>
+    <a name = "HOUND.Utils.Dcs.isHuman"></a>
+    <strong>HOUND.Utils.Dcs.isHuman (obj)</strong>
+    </dt>
+    <dd>
+    check if object is a human unit
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">obj</span>
+         DCS Object canidate
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">Bool</span></span>
+        True if object is a Human unit
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.Dcs.getPlayers"></a>
+    <strong>HOUND.Utils.Dcs.getPlayers (coalitionId)</strong>
+    </dt>
+    <dd>
+    get list of human clinets for hound.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">coalitionId</span>
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        list of units
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.Dcs.getPlayersInGroup"></a>
+    <strong>HOUND.Utils.Dcs.getPlayersInGroup (DcsGroup)</strong>
+    </dt>
+    <dd>
+    get human players in group
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">DcsGroup</span>
+            <span class="types"><span class="type">tab</span></span>
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table of players in group
+    </ol>
+
+
+
+
+</dd>
+    <dt>
     <a name = "HOUND.Utils.Dcs.isRadarTracking"></a>
     <strong>HOUND.Utils.Dcs.isRadarTracking (DcsUnit)</strong>
     </dt>
@@ -1547,6 +1718,83 @@
 
            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
         Table of radar units in group
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.Dcs.getGroupNames"></a>
+    <strong>HOUND.Utils.Dcs.getGroupNames (prefix)</strong>
+    </dt>
+    <dd>
+    get all current Groups, name only
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">prefix</span>
+            <span class="types">optional <a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         return only groups starting with prefix
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table of currently existing DCS group names
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.Dcs.getUnitNames"></a>
+    <strong>HOUND.Utils.Dcs.getUnitNames (prefix)</strong>
+    </dt>
+    <dd>
+    get all current Groups, name only
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">prefix</span>
+            <span class="types">optional <a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         return only groups starting with prefix
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table of currently existing DCS group names
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.Dcs.getStaticObjectNames"></a>
+    <strong>HOUND.Utils.Dcs.getStaticObjectNames (prefix)</strong>
+    </dt>
+    <dd>
+    get all current static objects, name only
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">prefix</span>
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table of currently existing DCS static object names
     </ol>
 
 
@@ -1649,7 +1897,7 @@
 </dd>
     <dt>
     <a name = "HOUND.Utils.Geo.setPointHeight"></a>
-    <strong>HOUND.Utils.Geo.setPointHeight (point)</strong>
+    <strong>HOUND.Utils.Geo.setPointHeight (point, offset)</strong>
     </dt>
     <dd>
     Ensure Inpoint DCS point has Elevation
@@ -1659,6 +1907,10 @@
     <ul>
         <li><span class="parameter">point</span>
          DCS point
+        </li>
+        <li><span class="parameter">offset</span>
+            <span class="types">optional <span class="type">number</span></span>
+         offset in meters from actual height
         </li>
     </ul>
 
@@ -1674,7 +1926,7 @@
 </dd>
     <dt>
     <a name = "HOUND.Utils.Geo.setHeight"></a>
-    <strong>HOUND.Utils.Geo.setHeight (point)</strong>
+    <strong>HOUND.Utils.Geo.setHeight (point, offset)</strong>
     </dt>
     <dd>
     Ensure input point or point table all have valid Elevation
@@ -1685,12 +1937,74 @@
         <li><span class="parameter">point</span>
          DCS point
         </li>
+        <li><span class="parameter">offset</span>
+            <span class="types">optional <span class="type">number</span></span>
+         offset in meters from actual height
+        </li>
     </ul>
 
     <h3>Returns:</h3>
     <ol>
 
         same as input, but with elevation. will return original value if is not DCS point
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.Geo.get2DDistance"></a>
+    <strong>HOUND.Utils.Geo.get2DDistance (src, dst)</strong>
+    </dt>
+    <dd>
+    Get 2D distance between two points
+ wrapper for mist.utils.get2DDist
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">src</span>
+         dcs point
+        </li>
+        <li><span class="parameter">dst</span>
+         dcs point
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        distance in meters
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.Geo.get3DDistance"></a>
+    <strong>HOUND.Utils.Geo.get3DDistance (src, dst)</strong>
+    </dt>
+    <dd>
+    Get 3D distance between two points
+ wrapper for mist.utils.get3DDist
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">src</span>
+         dcs point
+        </li>
+        <li><span class="parameter">dst</span>
+         dcs point
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        distance in meters
     </ol>
 
 
@@ -2513,6 +2827,9 @@
         <li>
            <span class="types"><span class="type">number</span></span>
         Elevation angle from source to destination in radians (-pi to pi)</li>
+        <li>
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+        the vector betweeb the points</li>
     </ol>
 
 
@@ -2782,6 +3099,254 @@
     <ol>
 
         table of points if group exists or nil
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Sort_Functions"></a>Sort Functions </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HOUND.Utils.Sort.ContactsByRange"></a>
+    <strong>HOUND.Utils.Sort.ContactsByRange (a, b)</strong>
+    </dt>
+    <dd>
+    Sort contacts by engament range
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+         <a href="../modules/HOUND.Contact.Emitter.html#">HOUND.Contact.Emitter</a> instance
+        </li>
+        <li><span class="parameter">b</span>
+         <a href="../modules/HOUND.Contact.Emitter.html#">HOUND.Contact.Emitter</a> Instance
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">bool</span></span>
+
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="global">table</span>.<span class="function-name">sort</span>(unSorted,HOUND.Utils.Sort.ContactsByRange)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.Sort.ContactsById"></a>
+    <strong>HOUND.Utils.Sort.ContactsById (a, b)</strong>
+    </dt>
+    <dd>
+    Sort contacts by ID
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+         <a href="../modules/HOUND.Contact.Emitter.html#">HOUND.Contact.Emitter</a> instance
+        </li>
+        <li><span class="parameter">b</span>
+         <a href="../modules/HOUND.Contact.Emitter.html#">HOUND.Contact.Emitter</a> Instance
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">bool</span></span>
+
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="global">table</span>.<span class="function-name">sort</span>(unSorted,HOUND.Utils.Sort.ContactsById)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.Sort.ContactsByPrio"></a>
+    <strong>HOUND.Utils.Sort.ContactsByPrio (a, b)</strong>
+    </dt>
+    <dd>
+    sort contacts by Priority (primary first)
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+         <a href="../modules/HOUND.Contact.Emitter.html#">HOUND.Contact.Emitter</a> instance
+        </li>
+        <li><span class="parameter">b</span>
+         <a href="../modules/HOUND.Contact.Emitter.html#">HOUND.Contact.Emitter</a> Instance
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">bool</span></span>
+
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="global">table</span>.<span class="function-name">sort</span>(unSorted,HOUND.Utils.Sort.ContactsByPrio)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.Sort.sectorsByPriorityLowFirst"></a>
+    <strong>HOUND.Utils.Sort.sectorsByPriorityLowFirst (a, b)</strong>
+    </dt>
+    <dd>
+    sort sectors by priority (low first)
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+         <a href="../modules/HOUND.Sector.html#">HOUND.Sector</a> instance
+        </li>
+        <li><span class="parameter">b</span>
+         <a href="../modules/HOUND.Sector.html#">HOUND.Sector</a> Instance
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">bool</span></span>
+
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="global">table</span>.<span class="function-name">sort</span>(unSorted,HOUND.Utils.Sort.sectorsByPriorityLowFirst)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.Sort.sectorsByPriorityLowLast"></a>
+    <strong>HOUND.Utils.Sort.sectorsByPriorityLowLast (a, b)</strong>
+    </dt>
+    <dd>
+    sort sectors by priority (Low last)
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+         <a href="../modules/HOUND.Sector.html#">HOUND.Sector</a> instance
+        </li>
+        <li><span class="parameter">b</span>
+         <a href="../modules/HOUND.Sector.html#">HOUND.Sector</a> Instance
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">bool</span></span>
+
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="global">table</span>.<span class="function-name">sort</span>(unSorted,HOUND.Utils.Sort.sectorsByPriorityLowLast)</pre>
+    </ul>
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Filter_Functions"></a>Filter Functions </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HOUND.Utils.Filter.groupsByPrefix"></a>
+    <strong>HOUND.Utils.Filter.groupsByPrefix (prefix)</strong>
+    </dt>
+    <dd>
+    get Groups by prefix
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">prefix</span>
+         string
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table of DCS groups indexed by group name
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.Filter.unitsByPrefix"></a>
+    <strong>HOUND.Utils.Filter.unitsByPrefix (prefix)</strong>
+    </dt>
+    <dd>
+    get Units by prefix
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">prefix</span>
+         string
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table of DCS Units indexed by Unit name
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.Filter.staticObjectsByPrefix"></a>
+    <strong>HOUND.Utils.Filter.staticObjectsByPrefix (prefix)</strong>
+    </dt>
+    <dd>
+    get StatcObjects by prefix
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">prefix</span>
+         string
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table of DCS StaticObjects indexed by object name
     </ol>
 
 
@@ -3141,264 +3706,13 @@
 
 </dd>
 </dl>
-    <h2 class="section-header "><a name="Sort_Functions"></a>Sort Functions </h2>
-
-    <dl class="function">
-    <dt>
-    <a name = "HOUND.Utils.Sort.ContactsByRange"></a>
-    <strong>HOUND.Utils.Sort.ContactsByRange (a, b)</strong>
-    </dt>
-    <dd>
-    Sort contacts by engament range
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">a</span>
-         <a href="../modules/HOUND.Contact.Emitter.html#">HOUND.Contact.Emitter</a> instance
-        </li>
-        <li><span class="parameter">b</span>
-         <a href="../modules/HOUND.Contact.Emitter.html#">HOUND.Contact.Emitter</a> Instance
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-           <span class="types"><span class="type">bool</span></span>
-
-    </ol>
-
-
-
-    <h3>Usage:</h3>
-    <ul>
-        <pre class="example"><span class="global">table</span>.<span class="function-name">sort</span>(unSorted,HOUND.Utils.Sort.ContactsByRange)</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "HOUND.Utils.Sort.ContactsById"></a>
-    <strong>HOUND.Utils.Sort.ContactsById (a, b)</strong>
-    </dt>
-    <dd>
-    Sort contacts by ID
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">a</span>
-         <a href="../modules/HOUND.Contact.Emitter.html#">HOUND.Contact.Emitter</a> instance
-        </li>
-        <li><span class="parameter">b</span>
-         <a href="../modules/HOUND.Contact.Emitter.html#">HOUND.Contact.Emitter</a> Instance
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-           <span class="types"><span class="type">bool</span></span>
-
-    </ol>
-
-
-
-    <h3>Usage:</h3>
-    <ul>
-        <pre class="example"><span class="global">table</span>.<span class="function-name">sort</span>(unSorted,HOUND.Utils.Sort.ContactsById)</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "HOUND.Utils.Sort.ContactsByPrio"></a>
-    <strong>HOUND.Utils.Sort.ContactsByPrio (a, b)</strong>
-    </dt>
-    <dd>
-    sort contacts by Priority (primary first)
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">a</span>
-         <a href="../modules/HOUND.Contact.Emitter.html#">HOUND.Contact.Emitter</a> instance
-        </li>
-        <li><span class="parameter">b</span>
-         <a href="../modules/HOUND.Contact.Emitter.html#">HOUND.Contact.Emitter</a> Instance
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-           <span class="types"><span class="type">bool</span></span>
-
-    </ol>
-
-
-
-    <h3>Usage:</h3>
-    <ul>
-        <pre class="example"><span class="global">table</span>.<span class="function-name">sort</span>(unSorted,HOUND.Utils.Sort.ContactsByPrio)</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "HOUND.Utils.Sort.sectorsByPriorityLowFirst"></a>
-    <strong>HOUND.Utils.Sort.sectorsByPriorityLowFirst (a, b)</strong>
-    </dt>
-    <dd>
-    sort sectors by priority (low first)
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">a</span>
-         <a href="../modules/HOUND.Sector.html#">HOUND.Sector</a> instance
-        </li>
-        <li><span class="parameter">b</span>
-         <a href="../modules/HOUND.Sector.html#">HOUND.Sector</a> Instance
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-           <span class="types"><span class="type">bool</span></span>
-
-    </ol>
-
-
-
-    <h3>Usage:</h3>
-    <ul>
-        <pre class="example"><span class="global">table</span>.<span class="function-name">sort</span>(unSorted,HOUND.Utils.Sort.sectorsByPriorityLowFirst)</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "HOUND.Utils.Sort.sectorsByPriorityLowLast"></a>
-    <strong>HOUND.Utils.Sort.sectorsByPriorityLowLast (a, b)</strong>
-    </dt>
-    <dd>
-    sort sectors by priority (Low last)
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">a</span>
-         <a href="../modules/HOUND.Sector.html#">HOUND.Sector</a> instance
-        </li>
-        <li><span class="parameter">b</span>
-         <a href="../modules/HOUND.Sector.html#">HOUND.Sector</a> Instance
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-           <span class="types"><span class="type">bool</span></span>
-
-    </ol>
-
-
-
-    <h3>Usage:</h3>
-    <ul>
-        <pre class="example"><span class="global">table</span>.<span class="function-name">sort</span>(unSorted,HOUND.Utils.Sort.sectorsByPriorityLowLast)</pre>
-    </ul>
-
-</dd>
-</dl>
-    <h2 class="section-header "><a name="Filter_Functions"></a>Filter Functions </h2>
-
-    <dl class="function">
-    <dt>
-    <a name = "HOUND.Utils.Filter.groupsByPrefix"></a>
-    <strong>HOUND.Utils.Filter.groupsByPrefix (prefix)</strong>
-    </dt>
-    <dd>
-    get Groups by prefix
- Implementation taken from Skynet-IADS
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">prefix</span>
-         string
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        table of DCS groups indexed by group name
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Utils.Filter.unitsByPrefix"></a>
-    <strong>HOUND.Utils.Filter.unitsByPrefix (prefix)</strong>
-    </dt>
-    <dd>
-    get Units by prefix
- Implementation taken from Skynet-IADS
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">prefix</span>
-         string
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        table of DCS Units indexed by Unit name
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Utils.Filter.staticObjectsByPrefix"></a>
-    <strong>HOUND.Utils.Filter.staticObjectsByPrefix (prefix)</strong>
-    </dt>
-    <dd>
-    get StatcObjects by prefix
- Implementation taken from Skynet-IADS
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">prefix</span>
-         string
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        table of DCS StaticObjects indexed by object name
-    </ol>
-
-
-
-
-</dd>
-</dl>
 
 
 </div> <!-- id="content" -->
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/lunarmodules/LDoc">LDoc 1.5.0</a></i>
-<i style="float:right;">Last updated 2024-11-10 14:51:46 </i>
+<i style="float:right;">Last updated 2025-01-03 23:24:06 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>
