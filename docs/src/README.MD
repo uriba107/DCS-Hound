@@ -45,10 +45,11 @@ Hound currently has a 10-degree angular resolution cutoff point to avoid introdu
 ```Note: While currently not implemented, the intention of including both the Viggen and the Su-25T is that they will only be able to participate if they are carrying their ELINT pods.```
 
 ## Required External Scripts
-- [MIST (by mrSkortch)](https://github.com/mrSkortch/MissionScriptingTools/releases/latest)
+Starting from version 0.4.1 Hound no longer require [MIST](https://github.com/mrSkortch/MissionScriptingTools/releases/latest) as a dependency. Thanks to @mrSkortch, all required mist functions were incorporated into HOUND.
 
 Optional scripts required for TTS (only one of them is required, based on your preference):
 - [DCS-SimpleTextToSpeech (by Ciribob)](https://github.com/ciribob/DCS-SimpleTextToSpeech)
+- [MOOSE.MSRS](https://flightcontrol-master.github.io/MOOSE_DOCS_DEVELOP/Documentation/Sound.SRS.html)
 - [DCS-gRPC](https://github.com/DCS-gRPC/rust-server)
 
 
@@ -328,7 +329,7 @@ The available marker types are:
 | OCTAGON | an ellipse will be drawn with 8 points (diamond with midpoints) |
 | POLYGON | an ellipse will be drawn as a 16-sided polygon |
 
-`Note: More points cause higher CPU usage. CIRCLE is the default.`
+`NOTE: More points cause higher CPU usage. CIRCLE is the default.`
 
 In addition to the radar markers, there is an additional simpler site marker. The site marker only adds the site designation and current SAM classification. It is used in conjunction with the Map markers to help locate the radar you want in the menu system.
 
@@ -431,6 +432,8 @@ Hound supports 3 types of callsigns in this order
     }
     HoundInstance:setCallsignOverride(callsignOverride)
 ```
+
+`NOTE: Be cautios when using a callsign override wildcard with Dynamic slots without a template. As aircraft might spwan with the wildcard DCS callsign and a random group name`
 ---
 ### NATO callsigns
 [Sectors](#sectors) get automatically assigned [callsigns](#callsigns). The callsignes are picked from a pool of names. However, there is an alternate list, taken from callsigns used by RC-135 squadrons. To use this alternate callsign list by default, you'll need to set the following.
@@ -799,7 +802,14 @@ You can supply explicit order or completly disable one TTS engine or the other. 
             googleTTS = true/false -- use google TTS (requires additional STTS config)
         }
 ```
-
+### MOOSE.MSRS settings
+```lua
+    args = {
+        freq = {3.0,255.0}
+        modulation = {radio.modulation.FM,radio.modulation.AM}
+        
+    }
+```
 ### gRPC.tts settings
 ```lua
         args = {

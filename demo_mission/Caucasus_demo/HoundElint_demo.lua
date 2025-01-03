@@ -65,7 +65,7 @@ do
 
     local callsignOverride = {
         Uzi = "Tulip",
-        Chevy = "*"
+        Pontiac = "*"
     }
 
     Elint_blue:setCallsignOverride(callsignOverride)
