@@ -257,6 +257,7 @@ do
         self:sortEmitters()
         if self.primaryEmitter ~= self.emitters[1] then
             self.primaryEmitter = self.emitters[1]
+            -- self.primaryEmitter:calculateExtrasPosData(self.primaryEmitter:getPos())
             self.isEWR = self.primaryEmitter.isEWR
             self.state = HOUND.EVENTS.SITE_UPDATED
             return true
@@ -314,7 +315,7 @@ do
             if ( not primary:hasPos() and HoundUtils.Dcs.isPoint(refPos)) then
                 local uncertenty = primary:getMaxWeaponsRange() * 0.75
                 primary.pos.p = l_mist.utils.deepCopy(refPos)
-                primary.pos.p = primary:calculateExtrasPosData(primary.pos)
+                primary.pos = primary:calculateExtrasPosData(primary.pos)
                 primary.uncertenty_data = {}
                 primary.uncertenty_data.major = uncertenty
                 primary.uncertenty_data.minor = uncertenty

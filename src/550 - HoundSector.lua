@@ -1043,7 +1043,7 @@ function HOUND.Sector:notifySiteLaunching(site)
         local useDMM = false
         local preferMGRS = false
 
-
+        if requester == nil then return end
         if contact.isEWR then msgObj.priority = 2 end
 
         if requester ~= nil then
@@ -1053,6 +1053,8 @@ function HOUND.Sector:notifySiteLaunching(site)
         end
 
         if gSelf.comms.controller:isEnabled() then
+            HOUND.Logger.debug(args["contact"].. ":\n" .. HOUND.Mist.utils.tableShow(contact))
+
             msgObj.contactId = contact:getId()
             msgObj.tts = contact:generateTtsReport(useDMM,preferMGRS)
             if requester ~= nil then
@@ -1061,6 +1063,7 @@ function HOUND.Sector:notifySiteLaunching(site)
             if gSelf.comms.controller:getSettings("enableText") == true then
                 msgObj.txt = contact:generateTextReport(useDMM)
             end
+            HOUND.Logger.debug("msg: \n"..HOUND.Mist.utils.tableShow(msgObj))
             gSelf.comms.controller:addMessageObj(msgObj)
         end
     end

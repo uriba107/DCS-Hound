@@ -54,17 +54,22 @@ do
         lu.assertIsNil(self.houndBlue)
         self.houndBlue = HoundElint:create()
         lu.assertIsNil(self.houndBlue)
+        lu.assertEquals(HOUND.Length(HOUND.INSTANCES),0)
     end
 
     function TestHoundFunctional:Test_01_init_02_BlueInit()
         -- Test blue init
         lu.assertIsNil(self.houndBlue)
+        lu.assertEquals(HOUND.Length(HOUND.INSTANCES),0)
         self.houndBlue = HoundElint:create(coalition.side.BLUE)
         lu.assertIsTable(self.houndBlue)
         lu.assertEquals(self.houndBlue:getId(),1)
         -- Test coalition logic
         lu.assertEquals(self.houndBlue:getCoalition(),coalition.side.BLUE)
         lu.assertIsFalse(self.houndBlue:setCoalition(coalition.side.RED))
+        lu.assertEquals(HOUND.Length(HOUND.INSTANCES),1)
+        lu.assertIsTable(HOUND.INSTANCES[1])
+        lu.assertEquals(self.houndBlue,HOUND.INSTANCES[1])
     end
 
     function TestHoundFunctional:Test_01_init_03_RedInit()
@@ -73,6 +78,9 @@ do
         self.houndRed = HoundElint:create(coalition.side.RED)
         lu.assertIsTable(self.houndRed)
         lu.assertEquals(self.houndRed:getId(),2)
+        lu.assertEquals(HOUND.Length(HOUND.INSTANCES),2)
+        lu.assertIsTable(HOUND.INSTANCES[2])
+        lu.assertEquals(self.houndRed,HOUND.INSTANCES[2])
     end
 
     function TestHoundFunctional:Test_01_init_04_ConfigSingelton()
@@ -118,14 +126,21 @@ do
     function TestHoundFunctional:Test_01_init_06_destroy()
         lu.assertIsTable(self.houndBlue)
         lu.assertIsTable(self.houndRed)
+        lu.assertEquals(HOUND.Length(HOUND.INSTANCES),2)
 
         self.houndBlue = self.houndBlue:destroy()
         lu.assertIsNil(self.houndBlue)
+        lu.assertEquals(HOUND.Length(HOUND.INSTANCES),1)
+        lu.assertIsNil(HOUND.INSTANCES[1])
+
 
         lu.assertIsNil(self.houndRed:destroy())
         lu.assertIsTable(self.houndRed)
         lu.assertIsFalse(self.houndRed:isRunning())
         self.houndRed = nil
         lu.assertIsNil(self.houndRed)
+        lu.assertIsNil(HOUND.INSTANCES[2])
+
+        lu.assertEquals(HOUND.Length(HOUND.INSTANCES),0)
     end
 end

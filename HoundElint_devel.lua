@@ -1,7 +1,7 @@
 env.info("Loading Hound Scripts dynamicly")
 
     if HoundWorkDir == nil then
-        HoundWorkDir = "E:\\Dropbox\\uri\\Dropbox\\DCS\\Mission Building\\HoundElint\\"
+        HoundWorkDir = "E:\\Dropbox\\DCS\\Mission Building\\HoundElint\\"
         -- HoundWorkDir = "E:\\Dropbox\\uri\\Dropbox\\DCS\\Mission Building\\DCS-Hound\\"
     end
 
@@ -20,7 +20,8 @@ env.info("Loading Hound Scripts dynamicly")
     assert(loadfile(HoundWorkDir..'src\\103 - HoundDBs_func.lua'))()
     assert(loadfile(HoundWorkDir..'src\\110 - HoundConfig.lua'))()
     assert(loadfile(HoundWorkDir..'src\\200 - HoundUtils.lua'))()
-    assert(loadfile(HoundWorkDir..'src\\201 - HoundUtils_Adv.lua'))()
+    assert(loadfile(HoundWorkDir..'src\\201 - HoundUtils_TTS.lua'))()
+    assert(loadfile(HoundWorkDir..'src\\202 - HoundUtils_Adv.lua'))()
     assert(loadfile(HoundWorkDir..'src\\210 - HoundEventHandler.lua'))()
     assert(loadfile(HoundWorkDir..'src\\300 - HoundContactBase.lua'))()
     assert(loadfile(HoundWorkDir..'src\\301 - HoundContactEstimator.lua'))()

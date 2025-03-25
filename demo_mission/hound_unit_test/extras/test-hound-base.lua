@@ -59,6 +59,8 @@ do
         self.houndBlue = HoundElint:create(coalition.side.BLUE)
         lu.assertIsTable(self.houndBlue)
         lu.assertIsNumber(self.houndBlue:getId())
+        lu.assertEquals(HOUND.Length(HOUND.INSTANCES),1)
+        lu.assertIsTrue(HOUND.setContainsValue(HOUND.INSTANCES,self.houndBlue))
         -- ensure not running and add platforms
         lu.assertIsFalse(self.houndBlue:isRunning())
         lu.assertEquals(self.houndBlue:countPlatforms(),0)
@@ -233,8 +235,7 @@ do
         lu.assertNotEquals(self.houndBlue:getCallsign("Saipan"),testCallsign)
         self.houndBlue:setCallsign("Saipan","OPTIMUS")
         lu.assertEquals(self.houndBlue:getCallsign("Saipan"),testCallsign)
-
-
+        self.houndBlue:setTransmitter("all","StaticTower")
     end
 
     function TestHoundFunctional:Test_02_base_05_Multi_Sector_zone()
@@ -284,6 +285,7 @@ do
         self.houndBlue:purgeRadioMenu()
         lu.assertIsTable(self.houndBlue.settings:getRadioMenu())
         self.houndBlue:populateRadioMenu()
+        missionCommands.removeItem(test_root)
     end
 
     function TestHoundFunctional:Test_02_base_07_prebriefed()

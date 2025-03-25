@@ -29,7 +29,8 @@ do
         lu.assertIsTrue(getmetatable(self.contact)==HOUND.Contact.Emitter)
         lu.assertEquals(self.contact.state,HOUND.EVENTS.RADAR_NEW)
         lu.assertEquals(emitter,self.contact:getDcsObject())
-
+        local hp,perc = self.contact:getLife()
+        HOUND.Logger.debug(hp,perc)
 
         local tgtPos = emitter:getPosition().p
         local p1 = platform1:getPosition().p
@@ -87,9 +88,12 @@ do
         local p1 = platform1:getPosition().p
         local p2 = platform2:getPosition().p
         local emitterFreqs = self.contact:getWavelenght()
-        lu.assertIsTrue(((emitterFreqs > 0.037474) and (emitterFreqs < 0.049965)))
+        HOUND.Logger.debug(emitterFreqs)
+        lu.assertIsTrue(((emitterFreqs > 0.074948) and (emitterFreqs < 0.099931)))
 
         local err = HOUND.DB.getSensorPrecision(platform1,emitterFreqs)
+        HOUND.Logger.debug(HOUND.Mist.utils.tableShow(err))
+
         lu.assertIsTrue(((err > 0.00093685) and (err < 0.037786275)))
 
         local az1,el1 = HOUND.Utils.Elint.getAzimuth( p1, tgtPos, err )

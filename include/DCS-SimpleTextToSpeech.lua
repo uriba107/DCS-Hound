@@ -179,7 +179,7 @@ function STTS.TextToSpeech(message,freqs,modulations, volume,name, coalition,poi
 
         lat = STTS.round(lat,4)
         lon = STTS.round(lon,4)
-        alt = math.floor(alt)
+        alt = math.ceil(alt)
 
         cmdArgs["-L"] = lat
         cmdArgs["-O"] = lon
@@ -188,7 +188,7 @@ function STTS.TextToSpeech(message,freqs,modulations, volume,name, coalition,poi
 
     cmdArgs["-t"] = message
 
-    local cmdArgsList = {'-h','-R'}
+    local cmdArgsList = {"'-h'","'-R'"}
     for k,v in pairs(cmdArgs) do
         if type(v) == "string" then
             v = '"'..v..'"'
@@ -201,9 +201,12 @@ function STTS.TextToSpeech(message,freqs,modulations, volume,name, coalition,poi
         local script = io.open(filename,"w+")
         script:write(pwsh)
         script:close()
+        -- pwsh = string.format('powershell.exe -ExecutionPolicy Unrestricted -WindowStyle Hidden -Command "%s"',filename)
         pwsh = string.format('start /min "" powershell.exe -ExecutionPolicy Unrestricted -WindowStyle Hidden -Command "%s"',filename)
         -- pwsh = string.format('powershell.exe -ExecutionPolicy Unrestricted -WindowStyle Hidden -Command "%s"',filename)
         timer.scheduleFunction(os.remove, filename, timer.getTime() + 1) 
+        -- env.info("[DCS-STTS] TextToSpeech Command :\n" .. pwsh.."\n")
+
     end
     if string.len(pwsh) > 255 then
         env.info("[DCS-STTS] - pwsh string too long")

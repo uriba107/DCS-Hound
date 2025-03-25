@@ -134,6 +134,25 @@ do
     -- @field initiator DCS Unit or HoundContact Subclass that triggered the event
     -- @field time of event
 
+    --- Hound Instances
+    -- @section Instances
+
+    --- Hound Instances
+    -- every instance created will be added to this list with it's HoundId as key.
+    HOUND.INSTANCES = {}
+
+    --- Get instance
+    -- get hound instance by ID
+    -- @param[type=number] InstanceId instance ID to get
+    -- @return Hound Instance object or nil
+    function HOUND.getInstance(InstanceId)
+        if HOUND.setContains(HOUND.INSTANCES,InstanceId) then
+            return HOUND.INSTANCES[InstanceId]
+        end
+        return nil
+    end
+
+
     --- Global functions
     -- @section globals
 

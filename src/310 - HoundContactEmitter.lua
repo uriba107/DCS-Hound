@@ -143,6 +143,8 @@ do
     end
 
     --- get unit health
+    -- @return unit HP points
+    -- @return Unit HP in percent
     function HOUND.Contact.Emitter:getLife()
         if self:isAlive() and (not HoundUtils.Dcs.isUnit(self.DcsObject)) then
             HOUND.Logger.error("something is wrong with the object for " .. self.DcsObjectName)
@@ -150,7 +152,7 @@ do
             self:setDead()
         end
         if self.DcsObject and type(self.DcsObject) == "table" and self.DcsObject:isExist() then
-            return self.DcsObject:getLife()
+            return self.DcsObject:getLife(),(self.DcsObject:getLife()/self.DcsObject:getLife0())
         end
         return 0
     end

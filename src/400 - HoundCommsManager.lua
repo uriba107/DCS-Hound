@@ -173,10 +173,10 @@ do
     function HOUND.Comms.Manager:setTransmitter(transmitterName)
         if not transmitterName then transmitterName = "" end
         local candidate = Unit.getByName(transmitterName)
-        if candidate == nil then
+        if not HoundUtils.Dcs.isUnit(candidate) then
             candidate = StaticObject.getByName(transmitterName)
         end
-        if candidate == nil and self.transmitter then
+        if not HoundUtils.Dcs.isStaticObject(candidate) and self.transmitter then
             self:removeTransmitter()
             return
         end

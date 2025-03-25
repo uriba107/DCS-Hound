@@ -4,7 +4,6 @@
 do
     local l_mist = HOUND.Mist
     local l_math = math
-    local l_grpc = GRPC
     local PI_2 = 2*l_math.pi
 
     HOUND.Utils.Polygon ={}

@@ -219,7 +219,7 @@ do
         if type(emitterName) == "table" and getmetatable(emitterName) == HOUND.Contact.Emitter then
             emitterName = emitterName:getDcsName()
         end
-        if not type(emitterName) == "string" then return false end
+        if type(emitterName) ~= "string" then return false end
         if self.contacts[emitterName] then
             local site = self:getSite(self.contacts[emitterName]:getDcsGroupName(),true)
             if site then
@@ -373,7 +373,7 @@ do
         if type(groupName) == "table" and getmetatable(groupName) == HOUND.Contact.Site then
             groupName = groupName:getDcsName()
         end
-        if not type(groupName) == "string" then return false end
+        if type(groupName) ~= "string" then return false end
         self.sites[groupName] = nil
         return true
     end

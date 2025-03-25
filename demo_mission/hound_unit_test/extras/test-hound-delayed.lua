@@ -181,34 +181,47 @@ do
         function delayTest(expectedStr)
             lu.assertStrContains(self.houndBlue:printDebugging(),expectedStr)
         end
-            shootEvent = {}
-            shootEvent.HoundInstance = self.houndBlue
-            function shootEvent:onEvent(DcsEvent)
-                if DcsEvent.id == world.event.S_EVENT_SHOT and self.HoundInstance then
-                    if self.HoundInstance and DcsEvent.initiator and DcsEvent.initiator:getCoalition() ~= self.HoundInstance:getCoalition()
-                        and ( DcsEvent.initiator:getGroup() == Group.getByName("SA-6_TINIAN") )
-                    then
-                        local tgt = DcsEvent.weapon:getTarget()
-                        local uav = Unit.getByName("MQ-9_TGT")
-                        lu.assertItemsEquals(tgt,uav)
-                        HOUND.Logger.info("SA-6 fired on UAV")
-                    end
+        shootEvent = {}
+        shootEvent.HoundInstance = self.houndBlue
+        function shootEvent:onEvent(DcsEvent)
+            if DcsEvent.id == world.event.S_EVENT_SHOT and self.HoundInstance then
+                if self.HoundInstance and DcsEvent.initiator and DcsEvent.initiator:getCoalition() ~= self.HoundInstance:getCoalition()
+                    and ( DcsEvent.initiator:getGroup() == Group.getByName("SA-6_TINIAN") )
+                then
+                    local tgt = DcsEvent.weapon:getTarget()
+                    local uav = Unit.getByName("MQ-9_TGT")
+                    lu.assertItemsEquals(tgt,uav)
+                    HOUND.Logger.info("SA-6 fired on UAV")
                 end
             end
-            world.addEventHandler(shootEvent)
+        end
+        function shootEvent:onHoundEvent(houndEvent)
+            if houndEvent.houndId ~= self.HoundInstance.settings:getId() then
+                -- HOUND.Logger.trace("Processing Event " .. HOUND.reverseLookup(HOUND.EVENTS,houndEvent.id) .. " for myself? " .. tostring(houndEvent.houndId == self:getId()))
+                return
+            end 
+            if houndEvent.id == HOUND.EVENTS.SITE_LAUNCH then
+                lu.assertEquals(getmetatable(houndEvent.initiator),getmetatable(HOUND.Contact.Site))
+                local grp = houndEvent.initiator.DcsObject
+                lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(grp))
+                lu.assertEquals("SA-6_TINIAN",grp:getName())
+            end           
+        end
+        world.addEventHandler(shootEvent)
+        HOUND.EventHandler.addEventHandler(shootEvent)
+        
+        local uavgrp = Unit.getByName("MQ-9_TGT"):getGroup()
+        local SA6 = Group.getByName("SA-6_TINIAN")
+        lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(uavgrp))
+        lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(SA6))
+        SA6:enableEmission(true)
 
-            local uavgrp = Unit.getByName("MQ-9_TGT"):getGroup()
-            local SA6 = Group.getByName("SA-6_TINIAN")
-            lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(uavgrp))
-            lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(SA6))
-            SA6:enableEmission(true)
-
-            -- lu.assertIsFalse(uavgrp:isExist())
-            uavgrp:activate()
-            -- lu.assertIsTrue(uavgrp:isExist())
-            local sam_brain = SA6:getUnit(1):getController()
-            sam_brain:knowTarget(Unit.getByName("MQ-9_TGT"))
-            assert(timer.scheduleFunction(delayTest,"Platforms: 2 | sectors: 3 (Z:2 ,C:2 ,A: 2 ,N:1) | Sites: 6 | Contacts: 7 (A:5 ,PB:3)",timer.getTime()+120))
+        -- lu.assertIsFalse(uavgrp:isExist())
+        uavgrp:activate()
+        -- lu.assertIsTrue(uavgrp:isExist())
+        local sam_brain = SA6:getUnit(1):getController()
+        sam_brain:knowTarget(Unit.getByName("MQ-9_TGT"))
+        assert(timer.scheduleFunction(delayTest,"Platforms: 2 | sectors: 3 (Z:2 ,C:2 ,A: 2 ,N:1) | Sites: 6 | Contacts: 7 (A:5 ,PB:3)",timer.getTime()+120))
 
     end
 end

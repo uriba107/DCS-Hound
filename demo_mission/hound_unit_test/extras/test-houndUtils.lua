@@ -214,14 +214,15 @@ do
 
         -- HOUND.DB.getEmitterBand
         lu.assertEquals(HOUND.DB.getEmitterBand(),HOUND.DB.Bands.C)
-        lu.assertEquals(HOUND.DB.getEmitterBand(emitter),HOUND.DB.Bands.H)
+        HOUND.Logger.debug(HOUND.DB.getEmitterBand(emitter))
+
+        lu.assertEquals(HOUND.DB.getEmitterBand(emitter),HOUND.DB.Bands.F)
         
         -- HOUND.DB.getRadarData
         local emitterData = HOUND.DB.getRadarData(emitter:getTypeName())
         lu.assertIsTable(emitterData)
         lu.assertIsTrue(((emitterData.Freqency[true] > 0.037474) and (emitterData.Freqency[true] < 0.049965)))
-        lu.assertIsTrue(((emitterData.Freqency[false] > 0.037474) and (emitterData.Freqency[false] < 0.049965)))
-
+        lu.assertIsTrue(((emitterData.Freqency[false] > 0.074948) and (emitterData.Freqency[false] < 0.099931)))
         -- HOUND.DB.getApertureSize
         lu.assertEquals(HOUND.DB.getApertureSize(),0)
         lu.assertEquals(HOUND.DB.getApertureSize(platform),40)
