@@ -40,13 +40,13 @@
 <li><a href="#Geo_Function">Geo Function </a></li>
 <li><a href="#Marker_Functions">Marker Functions </a></li>
 <li><a href="#HOUND_Utils_Marker_instance">HOUND.Utils.Marker.instance</a></li>
-<li><a href="#TTS_Functions">TTS Functions </a></li>
 <li><a href="#Text_Functions">Text Functions </a></li>
 <li><a href="#Elint_functions">Elint functions </a></li>
 <li><a href="#Vector_functions">Vector functions </a></li>
 <li><a href="#Zone_functions">Zone functions </a></li>
 <li><a href="#Sort_Functions">Sort Functions </a></li>
 <li><a href="#Filter_Functions">Filter Functions </a></li>
+<li><a href="#TTS_Functions">TTS Functions </a></li>
 <li><a href="#Polygon_functions">Polygon functions </a></li>
 <li><a href="#Clustering_algorithems__for_future_use_">Clustering algorithems (for future use) </a></li>
 </ul>
@@ -370,60 +370,6 @@
 	<td class="summary">update markpoint</td>
 	</tr>
 </table>
-<h2><a href="#TTS_Functions">TTS Functions </a></h2>
-<table class="function_list">
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.TTS.isAvailable">HOUND.Utils.TTS.isAvailable ()</a></td>
-	<td class="summary">Check if TTS agent is available (private)</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.TTS.getdefaultModulation">HOUND.Utils.TTS.getdefaultModulation (freq)</a></td>
-	<td class="summary">Return default Modulation based on frequency</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.TTS.Transmit">HOUND.Utils.TTS.Transmit (msg, coalitionID, args[, transmitterPos])</a></td>
-	<td class="summary">Transmit message using STTS (private)</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.TTS.TransmitSTTS">HOUND.Utils.TTS.TransmitSTTS (msg, coalitionID, args[, transmitterPos])</a></td>
-	<td class="summary">Transmit message using STTS</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.TTS.TransmitGRPC">HOUND.Utils.TTS.TransmitGRPC (msg, coalitionID, args[, transmitterPos])</a></td>
-	<td class="summary">Transmit message using gRPC.tts</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.TTS.getTtsTime">HOUND.Utils.TTS.getTtsTime ([timestamp])</a></td>
-	<td class="summary">returns current DCS time in military time string for TTS</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.TTS.getVerbalConfidenceLevel">HOUND.Utils.TTS.getVerbalConfidenceLevel (confidenceRadius)</a></td>
-	<td class="summary">return verbal accuracy description
- in 500 meters interval</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.TTS.getVerbalContactAge">HOUND.Utils.TTS.getVerbalContactAge (timestamp[, isSimple[, NATO]])</a></td>
-	<td class="summary">Get Verbal description of contact age
- has multiple "modes of operation"</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.TTS.getVerbalLL">HOUND.Utils.TTS.getVerbalLL (lat, lon[, minDec])</a></td>
-	<td class="summary">convert LL to TTS string</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.TTS.toPhonetic">HOUND.Utils.TTS.toPhonetic (str)</a></td>
-	<td class="summary">Convert string to phonetic text</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.TTS.getReadTime">HOUND.Utils.TTS.getReadTime (length[, speed[, googleTTS]])</a></td>
-	<td class="summary">get estimated message read time
- returns estimated time in seconds STTS will need to read a message</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.TTS.simplfyDistance">HOUND.Utils.TTS.simplfyDistance (distanceM)</a></td>
-	<td class="summary">simplify distance</td>
-	</tr>
-</table>
 <h2><a href="#Text_Functions">Text Functions </a></h2>
 <table class="function_list">
 	<tr>
@@ -535,6 +481,60 @@
 	<td class="summary">get StatcObjects by prefix</td>
 	</tr>
 </table>
+<h2><a href="#TTS_Functions">TTS Functions </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.TTS.isAvailable">HOUND.Utils.TTS.isAvailable ()</a></td>
+	<td class="summary">Check if TTS agent is available (private)</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.TTS.getdefaultModulation">HOUND.Utils.TTS.getdefaultModulation (freq)</a></td>
+	<td class="summary">Return default Modulation based on frequency</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.TTS.Transmit">HOUND.Utils.TTS.Transmit (msg, coalitionID, args[, transmitterPos])</a></td>
+	<td class="summary">Transmit message using STTS (private)</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.TTS.TransmitSTTS">HOUND.Utils.TTS.TransmitSTTS (msg, coalitionID, args[, transmitterPos])</a></td>
+	<td class="summary">Transmit message using STTS</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.TTS.TransmitGRPC">HOUND.Utils.TTS.TransmitGRPC (msg, coalitionID, args[, transmitterPos])</a></td>
+	<td class="summary">Transmit message using gRPC.tts</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.TTS.getTtsTime">HOUND.Utils.TTS.getTtsTime ([timestamp])</a></td>
+	<td class="summary">returns current DCS time in military time string for TTS</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.TTS.getVerbalConfidenceLevel">HOUND.Utils.TTS.getVerbalConfidenceLevel (confidenceRadius)</a></td>
+	<td class="summary">return verbal accuracy description
+ in 500 meters interval</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.TTS.getVerbalContactAge">HOUND.Utils.TTS.getVerbalContactAge (timestamp[, isSimple[, NATO]])</a></td>
+	<td class="summary">Get Verbal description of contact age
+ has multiple "modes of operation"</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.TTS.getVerbalLL">HOUND.Utils.TTS.getVerbalLL (lat, lon[, minDec])</a></td>
+	<td class="summary">convert LL to TTS string</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.TTS.toPhonetic">HOUND.Utils.TTS.toPhonetic (str)</a></td>
+	<td class="summary">Convert string to phonetic text</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.TTS.getReadTime">HOUND.Utils.TTS.getReadTime (length[, speed[, googleTTS]])</a></td>
+	<td class="summary">get estimated message read time
+ returns estimated time in seconds STTS will need to read a message</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.TTS.simplfyDistance">HOUND.Utils.TTS.simplfyDistance (distanceM)</a></td>
+	<td class="summary">simplify distance</td>
+	</tr>
+</table>
 <h2><a href="#Polygon_functions">Polygon functions </a></h2>
 <table class="function_list">
 	<tr>
@@ -616,9 +616,6 @@
         </li>
         <li><span class="parameter">Geo</span>
          Geographic functions
-        </li>
-        <li><span class="parameter">TTS</span>
-         TTS Functions
         </li>
         <li><span class="parameter">Text</span>
          Text functions
@@ -2344,369 +2341,6 @@
 
 </dd>
 </dl>
-    <h2 class="section-header "><a name="TTS_Functions"></a>TTS Functions </h2>
-
-    <dl class="function">
-    <dt>
-    <a name = "HOUND.Utils.TTS.isAvailable"></a>
-    <strong>HOUND.Utils.TTS.isAvailable ()</strong>
-    </dt>
-    <dd>
-    Check if TTS agent is available (private)
-
-
-
-    <h3>Returns:</h3>
-    <ol>
-
-           <span class="types"><span class="type">Bool</span></span>
-        True if TTS is available
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Utils.TTS.getdefaultModulation"></a>
-    <strong>HOUND.Utils.TTS.getdefaultModulation (freq)</strong>
-    </dt>
-    <dd>
-    Return default Modulation based on frequency
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">freq</span>
-         The frequency in Mhz, Hz or table of frequencies
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        Modulation string "AM" or "FM"
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Utils.TTS.Transmit"></a>
-    <strong>HOUND.Utils.TTS.Transmit (msg, coalitionID, args[, transmitterPos])</strong>
-    </dt>
-    <dd>
-    Transmit message using STTS (private)
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">msg</span>
-         The message to transmit
-        </li>
-        <li><span class="parameter">coalitionID</span>
-         Coalition to recive transmission
-        </li>
-        <li><span class="parameter">args</span>
-         STTS settings in hash table (minimum required is {freq=})
-        </li>
-        <li><span class="parameter">transmitterPos</span>
-         DCS Position point for transmitter
-         (<em>optional</em>)
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        STTS.TextToSpeech return value recived from STTS, currently estimated speechTime
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Utils.TTS.TransmitSTTS"></a>
-    <strong>HOUND.Utils.TTS.TransmitSTTS (msg, coalitionID, args[, transmitterPos])</strong>
-    </dt>
-    <dd>
-    Transmit message using STTS
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">msg</span>
-         The message to transmit
-        </li>
-        <li><span class="parameter">coalitionID</span>
-         Coalition to recive transmission
-        </li>
-        <li><span class="parameter">args</span>
-         STTS settings in hash table (minimum required is {freq=})
-        </li>
-        <li><span class="parameter">transmitterPos</span>
-         DCS Position point for transmitter
-         (<em>optional</em>)
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        currently estimated speechTime
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Utils.TTS.TransmitGRPC"></a>
-    <strong>HOUND.Utils.TTS.TransmitGRPC (msg, coalitionID, args[, transmitterPos])</strong>
-    </dt>
-    <dd>
-    Transmit message using gRPC.tts
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">msg</span>
-         The message to transmit
-        </li>
-        <li><span class="parameter">coalitionID</span>
-         Coalition to recive transmission
-        </li>
-        <li><span class="parameter">args</span>
-         STTS settings in hash table (minimum required is {freq=})
-        </li>
-        <li><span class="parameter">transmitterPos</span>
-         DCS Position point for transmitter
-         (<em>optional</em>)
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        currently estimated speechTime
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Utils.TTS.getTtsTime"></a>
-    <strong>HOUND.Utils.TTS.getTtsTime ([timestamp])</strong>
-    </dt>
-    <dd>
-    returns current DCS time in military time string for TTS
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">timestamp</span>
-         DCS time in seconds (timer.getAbsTime()) - if not arg provided will return for current game time
-         (<em>optional</em>)
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        timeString e.g. "14 30 local", "08 hundred local"
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Utils.TTS.getVerbalConfidenceLevel"></a>
-    <strong>HOUND.Utils.TTS.getVerbalConfidenceLevel (confidenceRadius)</strong>
-    </dt>
-    <dd>
-    return verbal accuracy description
- in 500 meters interval
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">confidenceRadius</span>
-         meters
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        (string) Description of accuracy e.g "Very High","High","Low"...
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Utils.TTS.getVerbalContactAge"></a>
-    <strong>HOUND.Utils.TTS.getVerbalContactAge (timestamp[, isSimple[, NATO]])</strong>
-    </dt>
-    <dd>
-    Get Verbal description of contact age
- has multiple "modes of operation"
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">timestamp</span>
-         dcs time in seconds of last time a target was seen
-        </li>
-        <li><span class="parameter">isSimple</span>
-         (bool) switch between output modes. true: "Active", "recent"... False: "3 seconds","5 minutes"
-         (<em>optional</em>)
-        </li>
-        <li><span class="parameter">NATO</span>
-         (bool) requires isSimple=true, will return only "Active" or "Awake" as per NATO Lowdown
-         (<em>optional</em>)
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        string of time passed based on selected flags.
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Utils.TTS.getVerbalLL"></a>
-    <strong>HOUND.Utils.TTS.getVerbalLL (lat, lon[, minDec])</strong>
-    </dt>
-    <dd>
-    convert LL to TTS string
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">lat</span>
-         Latitude in decimal degrees ("32.343","-14.44333")
-        </li>
-        <li><span class="parameter">lon</span>
-         Longitude in decimal degrees ("42.343","-144.432")
-        </li>
-        <li><span class="parameter">minDec</span>
-         (bool) if true, function will return LL in DM.M format
-         (<em>optional</em>)
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        LL string.
- eg. "North, 33 degrees, 15 minutes, 12 seconds, East, 42 degrees, 10 minutes, 45 seconds "
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Utils.TTS.toPhonetic"></a>
-    <strong>HOUND.Utils.TTS.toPhonetic (str)</strong>
-    </dt>
-    <dd>
-    Convert string to phonetic text
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">str</span>
-         String to convert
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        string broken up to phonetics
-    </ol>
-
-
-
-    <h3>Usage:</h3>
-    <ul>
-        <pre class="example">HOUND.Utils.TTS.<span class="function-name">toPhonetic</span>(<span class="string">"B29"</span>) will <span class="keyword">return</span> <span class="string">"Bravo Two Niner"</span></pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "HOUND.Utils.TTS.getReadTime"></a>
-    <strong>HOUND.Utils.TTS.getReadTime (length[, speed[, googleTTS]])</strong>
-    </dt>
-    <dd>
-    get estimated message read time
- returns estimated time in seconds STTS will need to read a message
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">length</span>
-         length of string to estimate (also except the string itself)
-        </li>
-        <li><span class="parameter">speed</span>
-         speed setting for reading them message
-         (<em>optional</em>)
-        </li>
-        <li><span class="parameter">googleTTS</span>
-         Bool, if true calculation will be done for GoogleTTS engine
-         (<em>optional</em>)
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        estimated message read time in seconds
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Utils.TTS.simplfyDistance"></a>
-    <strong>HOUND.Utils.TTS.simplfyDistance (distanceM)</strong>
-    </dt>
-    <dd>
-    simplify distance
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">distanceM</span>
-         Distance in meters to simplify
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-         Simplified distance
- below 1km function will return number in meters
- eg. 140m => 150m, 520m => 500m, 4539m => 4.5km
-    </ol>
-
-
-
-
-</dd>
-</dl>
     <h2 class="section-header "><a name="Text_Functions"></a>Text Functions </h2>
 
     <dl class="function">
@@ -3354,6 +2988,369 @@
 
 </dd>
 </dl>
+    <h2 class="section-header "><a name="TTS_Functions"></a>TTS Functions </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HOUND.Utils.TTS.isAvailable"></a>
+    <strong>HOUND.Utils.TTS.isAvailable ()</strong>
+    </dt>
+    <dd>
+    Check if TTS agent is available (private)
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">Bool</span></span>
+        True if TTS is available
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.TTS.getdefaultModulation"></a>
+    <strong>HOUND.Utils.TTS.getdefaultModulation (freq)</strong>
+    </dt>
+    <dd>
+    Return default Modulation based on frequency
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">freq</span>
+         The frequency in Mhz, Hz or table of frequencies
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Modulation string "AM" or "FM"
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.TTS.Transmit"></a>
+    <strong>HOUND.Utils.TTS.Transmit (msg, coalitionID, args[, transmitterPos])</strong>
+    </dt>
+    <dd>
+    Transmit message using STTS (private)
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">msg</span>
+         The message to transmit
+        </li>
+        <li><span class="parameter">coalitionID</span>
+         Coalition to recive transmission
+        </li>
+        <li><span class="parameter">args</span>
+         STTS settings in hash table (minimum required is {freq=})
+        </li>
+        <li><span class="parameter">transmitterPos</span>
+         DCS Position point for transmitter
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        STTS.TextToSpeech return value recived from STTS, currently estimated speechTime
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.TTS.TransmitSTTS"></a>
+    <strong>HOUND.Utils.TTS.TransmitSTTS (msg, coalitionID, args[, transmitterPos])</strong>
+    </dt>
+    <dd>
+    Transmit message using STTS
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">msg</span>
+         The message to transmit
+        </li>
+        <li><span class="parameter">coalitionID</span>
+         Coalition to recive transmission
+        </li>
+        <li><span class="parameter">args</span>
+         STTS settings in hash table (minimum required is {freq=})
+        </li>
+        <li><span class="parameter">transmitterPos</span>
+         DCS Position point for transmitter
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        currently estimated speechTime
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.TTS.TransmitGRPC"></a>
+    <strong>HOUND.Utils.TTS.TransmitGRPC (msg, coalitionID, args[, transmitterPos])</strong>
+    </dt>
+    <dd>
+    Transmit message using gRPC.tts
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">msg</span>
+         The message to transmit
+        </li>
+        <li><span class="parameter">coalitionID</span>
+         Coalition to recive transmission
+        </li>
+        <li><span class="parameter">args</span>
+         STTS settings in hash table (minimum required is {freq=})
+        </li>
+        <li><span class="parameter">transmitterPos</span>
+         DCS Position point for transmitter
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        currently estimated speechTime
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.TTS.getTtsTime"></a>
+    <strong>HOUND.Utils.TTS.getTtsTime ([timestamp])</strong>
+    </dt>
+    <dd>
+    returns current DCS time in military time string for TTS
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">timestamp</span>
+         DCS time in seconds (timer.getAbsTime()) - if not arg provided will return for current game time
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        timeString e.g. "14 30 local", "08 hundred local"
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.TTS.getVerbalConfidenceLevel"></a>
+    <strong>HOUND.Utils.TTS.getVerbalConfidenceLevel (confidenceRadius)</strong>
+    </dt>
+    <dd>
+    return verbal accuracy description
+ in 500 meters interval
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">confidenceRadius</span>
+         meters
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        (string) Description of accuracy e.g "Very High","High","Low"...
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.TTS.getVerbalContactAge"></a>
+    <strong>HOUND.Utils.TTS.getVerbalContactAge (timestamp[, isSimple[, NATO]])</strong>
+    </dt>
+    <dd>
+    Get Verbal description of contact age
+ has multiple "modes of operation"
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">timestamp</span>
+         dcs time in seconds of last time a target was seen
+        </li>
+        <li><span class="parameter">isSimple</span>
+         (bool) switch between output modes. true: "Active", "recent"... False: "3 seconds","5 minutes"
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">NATO</span>
+         (bool) requires isSimple=true, will return only "Active" or "Awake" as per NATO Lowdown
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        string of time passed based on selected flags.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.TTS.getVerbalLL"></a>
+    <strong>HOUND.Utils.TTS.getVerbalLL (lat, lon[, minDec])</strong>
+    </dt>
+    <dd>
+    convert LL to TTS string
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">lat</span>
+         Latitude in decimal degrees ("32.343","-14.44333")
+        </li>
+        <li><span class="parameter">lon</span>
+         Longitude in decimal degrees ("42.343","-144.432")
+        </li>
+        <li><span class="parameter">minDec</span>
+         (bool) if true, function will return LL in DM.M format
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        LL string.
+ eg. "North, 33 degrees, 15 minutes, 12 seconds, East, 42 degrees, 10 minutes, 45 seconds "
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.TTS.toPhonetic"></a>
+    <strong>HOUND.Utils.TTS.toPhonetic (str)</strong>
+    </dt>
+    <dd>
+    Convert string to phonetic text
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">str</span>
+         String to convert
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        string broken up to phonetics
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">HOUND.Utils.TTS.<span class="function-name">toPhonetic</span>(<span class="string">"B29"</span>) will <span class="keyword">return</span> <span class="string">"Bravo Two Niner"</span></pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.TTS.getReadTime"></a>
+    <strong>HOUND.Utils.TTS.getReadTime (length[, speed[, googleTTS]])</strong>
+    </dt>
+    <dd>
+    get estimated message read time
+ returns estimated time in seconds STTS will need to read a message
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">length</span>
+         length of string to estimate (also except the string itself)
+        </li>
+        <li><span class="parameter">speed</span>
+         speed setting for reading them message
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">googleTTS</span>
+         Bool, if true calculation will be done for GoogleTTS engine
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        estimated message read time in seconds
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.TTS.simplfyDistance"></a>
+    <strong>HOUND.Utils.TTS.simplfyDistance (distanceM)</strong>
+    </dt>
+    <dd>
+    simplify distance
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">distanceM</span>
+         Distance in meters to simplify
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+         Simplified distance
+ below 1km function will return number in meters
+ eg. 140m => 150m, 520m => 500m, 4539m => 4.5km
+    </ol>
+
+
+
+
+</dd>
+</dl>
     <h2 class="section-header "><a name="Polygon_functions"></a>Polygon functions </h2>
 
     <dl class="function">
@@ -3712,7 +3709,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/lunarmodules/LDoc">LDoc 1.5.0</a></i>
-<i style="float:right;">Last updated 2025-01-03 23:24:06 </i>
+<i style="float:right;">Last updated 2025-03-30 22:14:24 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

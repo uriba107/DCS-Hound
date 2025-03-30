@@ -12,7 +12,7 @@ end
 
 do
     HOUND = {
-        VERSION = "0.4.1-TRUNK-20250103",
+        VERSION = "0.4.1-TRUNK-20250330",
         DEBUG = false,
         ELLIPSE_PERCENTILE = 0.6,
         DATAPOINTS_NUM = 30,
@@ -67,6 +67,15 @@ do
         SITE_ASLEEP = 21,
         SITE_LAUNCH = 22,
     }
+
+    HOUND.INSTANCES = {}
+
+    function HOUND.getInstance(InstanceId)
+        if HOUND.setContains(HOUND.INSTANCES,InstanceId) then
+            return HOUND.INSTANCES[InstanceId]
+        end
+        return nil
+    end
 
     function HOUND.setMgrsPresicion(value)
         if type(value) == "number" then
@@ -2012,7 +2021,7 @@ do
             ['Assigned'] = {"SA-15"},
             ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
             ['Band'] = {
-                [true] = {0.037474,0.037474},
+                [true] = HOUND.DB.Bands.H,
                 [false] = HOUND.DB.Bands.F
             },
             ['Primary'] = true
@@ -3748,7 +3757,6 @@ do
         Dcs     = {},
         Geo     = {},
         Marker  = {},
-        TTS     = {},
         Text    = {},
         Elint   = {},
         Vector  = {},
@@ -4541,280 +4549,6 @@ do
         return instance
     end
 
-    function HOUND.Utils.TTS.isAvailable()
-        for _,engine in ipairs(HOUND.TTS_ENGINE) do
-            if engine == "GRPC" and (l_grpc ~= nil and type(l_grpc.tts) == "function") then return true end
-            if engine == "STTS" and STTS ~= nil then return true end
-        end
-        return false
-    end
-
-    function HOUND.Utils.TTS.getdefaultModulation(freq)
-        if not freq then return "AM" end
-        if tonumber(freq) ~= nil then
-            freq = tonumber(freq)
-            if freq < 90 or (freq > 1000000 and freq < (90 * 1000000)) then
-                return "FM"
-            else
-                return "AM"
-            end
-        end
-        if type(freq) == "string" then
-            freq = string.split(freq,",")
-        end
-        if type(freq) == "table" then
-            local retval = {}
-            for _,frequency in ipairs(freq) do
-                table.insert(retval,HOUND.Utils.TTS.getdefaultModulation(tonumber(frequency)))
-            end
-            return table.concat(retval,",")
-        end
-        return "AM"
-    end
-
-    function HOUND.Utils.TTS.Transmit(msg,coalitionID,args,transmitterPos)
-        if not HOUND.Utils.TTS.isAvailable() then return end
-        if msg == nil then return end
-        if coalitionID == nil then return end
-
-        if args.freq == nil then return end
-        args.volume = args.volume or "1.0"
-        args.name = args.name or "Hound"
-        args.gender = args.gender or "female"
-
-        for _,engine in ipairs(HOUND.TTS_ENGINE) do
-            if engine == "GRPC" and (l_grpc ~= nil and type(l_grpc.tts) == "function") then
-                return HOUND.Utils.TTS.TransmitGRPC(msg,coalitionID,args,transmitterPos)
-            end
-
-            if engine == "STTS" and STTS ~= nil then
-                return HOUND.Utils.TTS.TransmitSTTS(msg,coalitionID,args,transmitterPos)
-            end
-        end
-    end
-
-    function HOUND.Utils.TTS.TransmitSTTS(msg,coalitionID,args,transmitterPos)
-        args.modulation = args.modulation or HOUND.Utils.TTS.getdefaultModulation(args.freq)
-        args.culture = args.culture or "en-US"
-        return STTS.TextToSpeech(msg,args.freq,args.modulation,args.volume,args.name,coalitionID,transmitterPos,args.speed,args.gender,args.culture,args.voice,args.googletts,args.azurecreds)
-    end
-
-    function HOUND.Utils.TTS.TransmitGRPC(msg,coalitionID,args,transmitterPos)
-        local VOLUME = {"default","x-slow", "slow", "medium", "fast", "x-fast"}
-        local ssml_msg = msg
-
-        local grpc_ttsArgs = {
-            srsClientName = args.name,
-            coalition = HOUND.Utils.getCoalitionString(coalitionID):lower(),
-        }
-        if type(transmitterPos) == "table" then
-            grpc_ttsArgs.position = {}
-            grpc_ttsArgs.position.lat, grpc_ttsArgs.position.lon, grpc_ttsArgs.position.alt = coord.LOtoLL( transmitterPos )
-        end
-        if type(args.provider) == "table" then
-            grpc_ttsArgs.provider = args.provider
-        end
-
-        local readSpeed = 1.0
-        if args.speed ~= 0 then
-            if args.speed > 10 then
-                readSpeed = HOUND.Utils.Mapping.linear(args.speed,50,250,0.5,2.5,true)
-            else
-                if args.speed > 0 then
-                    readSpeed = HOUND.Utils.Mapping.linear(args.speed,0,10,1.0,2.5,true)
-                else
-                    readSpeed = HOUND.Utils.Mapping.linear(args.speed,-10,0,0.5,1.0,true)
-                end
-            end
-        end
-
-        local ssml_prosody = ""
-        if readSpeed ~= 1.0  then
-            ssml_prosody = ssml_prosody .. " rate='"..readSpeed.."'"
-        end
-
-        if args.volume ~= 1.0 then
-            local volume = ""
-
-            if HOUND.setContainsValue(VOLUME,args.volume) then
-                volume = args.volume
-            end
-
-            if type(args.volume)=="number" then
-                if args.volume ~= 0 then
-                    volume = (args.volume*100)-100 .. "%"
-                    if args.volume > 1 then
-                        volume = "+" .. volume
-                    end
-                else
-                    volume = "slient"
-                end
-            end
-
-            if string.len(volume) > 0 then
-                ssml_prosody = ssml_prosody .. " volume='"..volume.."'"
-            end
-        end
-        if string.len(ssml_prosody) > 0 then
-            ssml_msg = table.concat({"<prosody",ssml_prosody,">",ssml_msg,"</prosody>"},"")
-        end
-
-        local ssml_voice = ""
-        if args.voice then
-            ssml_voice = ssml_voice.." name='"..args.voice.."'"
-        else
-            if args.gender then
-                ssml_voice = ssml_voice.." gender='"..args.gender.."'"
-            end
-            if args.culture then
-                ssml_voice = ssml_voice.." language='"..args.culture.."'"
-            end
-        end
-
-        if string.len(ssml_voice) > 0 then
-            ssml_msg = table.concat({"<voice",ssml_voice,">",ssml_msg,"</voice>"},"")
-        end
-
-        local freqs = string.split(args.freq,",")
-
-        for _,freq in ipairs(freqs) do
-            freq = math.ceil(freq * 1000000)
-            l_grpc.tts(ssml_msg, freq, grpc_ttsArgs)
-        end
-        return HOUND.Utils.TTS.getReadTime(msg) / readSpeed -- read speed > 1.0 is fast
-    end
-
-    function HOUND.Utils.TTS.getTtsTime(timestamp)
-        if timestamp == nil then timestamp = timer.getAbsTime() end
-        local DHMS = l_mist.time.getDHMS(timestamp)
-        local hours = DHMS.h
-        local minutes = DHMS.m
-        if hours == 0 then
-            hours = HOUND.DB.PHONETICS["0"]
-        else
-            hours = string.format("%02d",hours)
-        end
-
-        if minutes == 0 then
-            minutes = "hundred"
-        else
-            minutes = string.format("%02d",minutes)
-        end
-
-        return hours .. " " .. minutes .. " Local"
-    end
-
-    function HOUND.Utils.TTS.getVerbalConfidenceLevel(confidenceRadius)
-        if confidenceRadius == 0.1 then return "Precise" end
-
-        local score={
-            "Very High", -- 500
-            "High", -- 1000
-            "Medium", -- 1500
-            "Low", -- 2000
-            "Low", -- 2500
-            "Very Low", -- 3000
-            "Very Low", -- 3500
-            "Very Low", -- 4000
-            "Very Low", -- 4500
-            "Unactionable", -- 5000
-        }
-        return score[l_math.min(#score,l_math.max(1,l_math.floor(confidenceRadius/500)+1))]
-    end
-
-    function HOUND.Utils.TTS.getVerbalContactAge(timestamp,isSimple,NATO)
-        local ageSeconds = HOUND.Utils.absTimeDelta(timestamp,timer.getAbsTime())
-
-        if isSimple then
-            if NATO then
-                if ageSeconds < 16 then return "Active" end
-                if ageSeconds < HOUND.CONTACT_TIMEOUT then return "Down" end
-                return "Asleep"
-            end
-            if ageSeconds < 16 then return "Active" end
-            if ageSeconds <= 90 then return "very recent" end
-            if ageSeconds <= 180 then return "recent" end
-            if ageSeconds <= 300 then return "relevant" end
-            return "stale"
-        end
-        local DHMS = l_mist.time.getDHMS(ageSeconds)
-        if ageSeconds < 60 then return tostring(l_math.floor(DHMS.s)) .. " seconds" end
-        if ageSeconds < 7200 then return tostring(l_math.floor(DHMS.h)*60+l_math.floor(DHMS.m)) .. " minutes" end
-        return tostring(l_math.floor(DHMS.h)) .. " hours, " .. tostring(l_math.floor(DHMS.m)) .. " minutes"
-    end
-
-    function HOUND.Utils.TTS.DecToDMS(cood,minDec,padDeg)
-        local DMS = HOUND.Utils.DecToDMS(cood)
-        local strTab = {
-            l_math.abs(DMS.d) .. " degrees",
-            string.format("%02d",DMS.m) .. " minutes",
-            string.format("%02d",DMS.s) .. " seconds"
-        }
-        if padDeg == true then
-            strTab[1] = string.format("%03d",l_math.abs(DMS.d)) .. " degrees"
-        end
-        if minDec == true then
-            strTab[2] = string.format("%02d",DMS.m)
-            strTab[3] = HOUND.Utils.TTS.toPhonetic( "." .. string.format("%03d",DMS.sDec)) .. " minutes"
-        end
-        return table.concat(strTab,", ")
-    end
-
-    function HOUND.Utils.TTS.getVerbalLL(lat,lon,minDec)
-        minDec = minDec or false
-        local hemi = HOUND.Utils.getHemispheres(lat,lon,true)
-        return hemi.NS .. ", " .. HOUND.Utils.TTS.DecToDMS(lat,minDec)  ..  ", " .. hemi.EW .. ", " .. HOUND.Utils.TTS.DecToDMS(lon,minDec,true)
-    end
-
-    function HOUND.Utils.TTS.toPhonetic(str)
-        local retval = ""
-        str = string.upper(tostring(str))
-        for i=1, string.len(str) do
-            local char = HOUND.DB.PHONETICS[string.sub(str, i, i)] or ""
-            retval = retval .. char .. " "
-        end
-        return retval:match( "^%s*(.-)%s*$" ) -- return and strip trailing whitespaces
-    end
-
-    function HOUND.Utils.TTS.getReadTime(length,speed,googleTTS)
-        if length == nil then return nil end
-        local maxRateRatio = 3 -- can be chaned to 5 if windows TTSrate is up to 5x not 4x
-
-        speed = speed or 1.0
-        googleTTS = googleTTS or false
-
-        local speedFactor = 1.0
-        if googleTTS then
-            speedFactor = speed
-        else
-            if speed ~= 0 then
-                speedFactor = l_math.abs(speed) * (maxRateRatio - 1) / 10 + 1
-            end
-            if speed < 0 then
-                speedFactor = 1/speedFactor
-            end
-        end
-
-        local wpm = l_math.ceil(100 * speedFactor)
-        local cps = l_math.floor((wpm * 5)/60)
-
-        if type(length) == "string" then
-            length = string.len(length)
-        end
-
-        return l_math.ceil(length/cps)
-    end
-
-    function HOUND.Utils.TTS.simplfyDistance(distanceM)
-        local distanceUnit = "meters"
-        local distance = HOUND.Utils.roundToNearest(distanceM,50) or 0
-        if distance >= 1000 then
-            distance = string.format("%.1f",tostring(HOUND.Utils.roundToNearest(distanceM,100)/1000))
-            distanceUnit = "kilometers"
-        end
-        return distance .. " " .. distanceUnit
-    end
-
     function HOUND.Utils.Text.getLL(lat,lon,minDec)
         local hemi = HOUND.Utils.getHemispheres(lat,lon)
         lat = HOUND.Utils.DecToDMS(lat)
@@ -5126,6 +4860,295 @@ do
     local l_mist = HOUND.Mist
     local l_math = math
     local l_grpc = GRPC
+    local PI_2 = 2*l_math.pi
+
+    HOUND.Utils.TTS = {}
+
+    function HOUND.Utils.TTS.isAvailable()
+        for _,engine in ipairs(HOUND.TTS_ENGINE) do
+            if engine == "GRPC" and (l_grpc ~= nil and type(l_grpc.tts) == "function") then return true end
+            if engine == "STTS" and STTS ~= nil then return true end
+        end
+        return false
+    end
+
+    function HOUND.Utils.TTS.getdefaultModulation(freq)
+        if not freq then return "AM" end
+        if tonumber(freq) ~= nil then
+            freq = tonumber(freq)
+            if freq < 90 or (freq > 1000000 and freq < (90 * 1000000)) then
+                return "FM"
+            else
+                return "AM"
+            end
+        end
+        if type(freq) == "string" then
+            freq = string.split(freq,",")
+        end
+        if type(freq) == "table" then
+            local retval = {}
+            for _,frequency in ipairs(freq) do
+                table.insert(retval,HOUND.Utils.TTS.getdefaultModulation(tonumber(frequency)))
+            end
+            return table.concat(retval,",")
+        end
+        return "AM"
+    end
+
+    function HOUND.Utils.TTS.Transmit(msg,coalitionID,args,transmitterPos)
+        if not HOUND.Utils.TTS.isAvailable() then return end
+        if msg == nil then return end
+        if coalitionID == nil then return end
+
+        if args.freq == nil then return end
+        args.volume = args.volume or "1.0"
+        args.name = args.name or "Hound"
+        args.gender = args.gender or "female"
+        if type(args.engine) ~= "string" or not HOUND.setContainsValue(HOUND.TTS_ENGINE,args.engine) then
+            for _,engine in ipairs(HOUND.TTS_ENGINE) do
+                if engine == "GRPC" and (l_grpc ~= nil and type(l_grpc.tts) == "function") then
+                    args.engine = engine
+                    break
+                end
+                if engine == "STTS" and STTS ~= nil then
+                    args.engine = engine
+                    break
+                end
+            end
+        end
+        if args.engine == "STTS" then
+            return HOUND.Utils.TTS.TransmitSTTS(msg,coalitionID,args,transmitterPos)
+        end
+        if args.engine == "GRPC" then
+            return HOUND.Utils.TTS.TransmitGRPC(msg,coalitionID,args,transmitterPos)
+        end
+    end
+
+    function HOUND.Utils.TTS.TransmitSTTS(msg,coalitionID,args,transmitterPos)
+        args.modulation = args.modulation or HOUND.Utils.TTS.getdefaultModulation(args.freq)
+        args.culture = args.culture or "en-US"
+        return STTS.TextToSpeech(msg,args.freq,args.modulation,args.volume,args.name,coalitionID,transmitterPos,args.speed,args.gender,args.culture,args.voice,args.googletts,args.azurecreds)
+    end
+
+    function HOUND.Utils.TTS.TransmitGRPC(msg,coalitionID,args,transmitterPos)
+        local VOLUME = {"default","x-slow", "slow", "medium", "fast", "x-fast"}
+        local ssml_msg = msg
+
+        local grpc_ttsArgs = {
+            srsClientName = args.name,
+            coalition = HOUND.Utils.getCoalitionString(coalitionID):lower(),
+        }
+        if type(transmitterPos) == "table" then
+            grpc_ttsArgs.position = {}
+            grpc_ttsArgs.position.lat, grpc_ttsArgs.position.lon, grpc_ttsArgs.position.alt = coord.LOtoLL( transmitterPos )
+        end
+        if type(args.provider) == "table" then
+            grpc_ttsArgs.provider = args.provider
+        end
+
+        local readSpeed = 1.0
+        if args.speed ~= 0 then
+            if args.speed > 10 then
+                readSpeed = HOUND.Utils.Mapping.linear(args.speed,50,250,0.5,2.5,true)
+            else
+                if args.speed > 0 then
+                    readSpeed = HOUND.Utils.Mapping.linear(args.speed,0,10,1.0,2.5,true)
+                else
+                    readSpeed = HOUND.Utils.Mapping.linear(args.speed,-10,0,0.5,1.0,true)
+                end
+            end
+        end
+
+        local ssml_prosody = ""
+        if readSpeed ~= 1.0  then
+            ssml_prosody = ssml_prosody .. " rate='"..readSpeed.."'"
+        end
+
+        if args.volume ~= 1.0 then
+            local volume = ""
+
+            if HOUND.setContainsValue(VOLUME,args.volume) then
+                volume = args.volume
+            end
+
+            if type(args.volume)=="number" then
+                if args.volume ~= 0 then
+                    volume = (args.volume*100)-100 .. "%"
+                    if args.volume > 1 then
+                        volume = "+" .. volume
+                    end
+                else
+                    volume = "slient"
+                end
+            end
+
+            if string.len(volume) > 0 then
+                ssml_prosody = ssml_prosody .. " volume='"..volume.."'"
+            end
+        end
+        if string.len(ssml_prosody) > 0 then
+            ssml_msg = table.concat({"<prosody",ssml_prosody,">",ssml_msg,"</prosody>"},"")
+        end
+
+        local ssml_voice = ""
+        if args.voice then
+            ssml_voice = ssml_voice.." name='"..args.voice.."'"
+        else
+            if args.gender then
+                ssml_voice = ssml_voice.." gender='"..args.gender.."'"
+            end
+            if args.culture then
+                ssml_voice = ssml_voice.." language='"..args.culture.."'"
+            end
+        end
+
+        if string.len(ssml_voice) > 0 then
+            ssml_msg = table.concat({"<voice",ssml_voice,">",ssml_msg,"</voice>"},"")
+        end
+
+        local freqs = string.split(args.freq,",")
+
+        for _,freq in ipairs(freqs) do
+            freq = math.ceil(freq * 1000000)
+            l_grpc.tts(ssml_msg, freq, grpc_ttsArgs)
+        end
+        return HOUND.Utils.TTS.getReadTime(msg) / readSpeed -- read speed > 1.0 is fast
+    end
+
+    function HOUND.Utils.TTS.getTtsTime(timestamp)
+        if timestamp == nil then timestamp = timer.getAbsTime() end
+        local DHMS = l_mist.time.getDHMS(timestamp)
+        local hours = DHMS.h
+        local minutes = DHMS.m
+        if hours == 0 then
+            hours = HOUND.DB.PHONETICS["0"]
+        else
+            hours = string.format("%02d",hours)
+        end
+
+        if minutes == 0 then
+            minutes = "hundred"
+        else
+            minutes = string.format("%02d",minutes)
+        end
+
+        return hours .. " " .. minutes .. " Local"
+    end
+
+    function HOUND.Utils.TTS.getVerbalConfidenceLevel(confidenceRadius)
+        if confidenceRadius == 0.1 then return "Precise" end
+
+        local score={
+            "Very High", -- 500
+            "High", -- 1000
+            "Medium", -- 1500
+            "Low", -- 2000
+            "Low", -- 2500
+            "Very Low", -- 3000
+            "Very Low", -- 3500
+            "Very Low", -- 4000
+            "Very Low", -- 4500
+            "Unactionable", -- 5000
+        }
+        return score[l_math.min(#score,l_math.max(1,l_math.floor(confidenceRadius/500)+1))]
+    end
+
+    function HOUND.Utils.TTS.getVerbalContactAge(timestamp,isSimple,NATO)
+        local ageSeconds = HOUND.Utils.absTimeDelta(timestamp,timer.getAbsTime())
+
+        if isSimple then
+            if NATO then
+                if ageSeconds < 16 then return "Active" end
+                if ageSeconds < HOUND.CONTACT_TIMEOUT then return "Down" end
+                return "Asleep"
+            end
+            if ageSeconds < 16 then return "Active" end
+            if ageSeconds <= 90 then return "very recent" end
+            if ageSeconds <= 180 then return "recent" end
+            if ageSeconds <= 300 then return "relevant" end
+            return "stale"
+        end
+        local DHMS = l_mist.time.getDHMS(ageSeconds)
+        if ageSeconds < 60 then return tostring(l_math.floor(DHMS.s)) .. " seconds" end
+        if ageSeconds < 7200 then return tostring(l_math.floor(DHMS.h)*60+l_math.floor(DHMS.m)) .. " minutes" end
+        return tostring(l_math.floor(DHMS.h)) .. " hours, " .. tostring(l_math.floor(DHMS.m)) .. " minutes"
+    end
+
+    function HOUND.Utils.TTS.DecToDMS(cood,minDec,padDeg)
+        local DMS = HOUND.Utils.DecToDMS(cood)
+        local strTab = {
+            l_math.abs(DMS.d) .. " degrees",
+            string.format("%02d",DMS.m) .. " minutes",
+            string.format("%02d",DMS.s) .. " seconds"
+        }
+        if padDeg == true then
+            strTab[1] = string.format("%03d",l_math.abs(DMS.d)) .. " degrees"
+        end
+        if minDec == true then
+            strTab[2] = string.format("%02d",DMS.m)
+            strTab[3] = HOUND.Utils.TTS.toPhonetic( "." .. string.format("%03d",DMS.sDec)) .. " minutes"
+        end
+        return table.concat(strTab,", ")
+    end
+
+    function HOUND.Utils.TTS.getVerbalLL(lat,lon,minDec)
+        minDec = minDec or false
+        local hemi = HOUND.Utils.getHemispheres(lat,lon,true)
+        return hemi.NS .. ", " .. HOUND.Utils.TTS.DecToDMS(lat,minDec)  ..  ", " .. hemi.EW .. ", " .. HOUND.Utils.TTS.DecToDMS(lon,minDec,true)
+    end
+
+    function HOUND.Utils.TTS.toPhonetic(str)
+        local retval = ""
+        str = string.upper(tostring(str))
+        for i=1, string.len(str) do
+            local char = HOUND.DB.PHONETICS[string.sub(str, i, i)] or ""
+            retval = retval .. char .. " "
+        end
+        return retval:match( "^%s*(.-)%s*$" ) -- return and strip trailing whitespaces
+    end
+
+    function HOUND.Utils.TTS.getReadTime(length,speed,googleTTS)
+        if length == nil then return nil end
+        local maxRateRatio = 3 -- can be chaned to 5 if windows TTSrate is up to 5x not 4x
+
+        speed = speed or 1.0
+        googleTTS = googleTTS or false
+
+        local speedFactor = 1.0
+        if googleTTS then
+            speedFactor = speed
+        else
+            if speed ~= 0 then
+                speedFactor = l_math.abs(speed) * (maxRateRatio - 1) / 10 + 1
+            end
+            if speed < 0 then
+                speedFactor = 1/speedFactor
+            end
+        end
+
+        local wpm = l_math.ceil(100 * speedFactor)
+        local cps = l_math.floor((wpm * 5)/60)
+
+        if type(length) == "string" then
+            length = string.len(length)
+        end
+
+        return l_math.ceil(length/cps)
+    end
+
+    function HOUND.Utils.TTS.simplfyDistance(distanceM)
+        local distanceUnit = "meters"
+        local distance = HOUND.Utils.roundToNearest(distanceM,50) or 0
+        if distance >= 1000 then
+            distance = string.format("%.1f",tostring(HOUND.Utils.roundToNearest(distanceM,100)/1000))
+            distanceUnit = "kilometers"
+        end
+        return distance .. " " .. distanceUnit
+    end
+end    --- HOUND.Utils
+do
+    local l_mist = HOUND.Mist
+    local l_math = math
     local PI_2 = 2*l_math.pi
 
     HOUND.Utils.Polygon ={}
@@ -6305,7 +6328,7 @@ do
             self:setDead()
         end
         if self.DcsObject and type(self.DcsObject) == "table" and self.DcsObject:isExist() then
-            return self.DcsObject:getLife()
+            return self.DcsObject:getLife(),(self.DcsObject:getLife()/self.DcsObject:getLife0())
         end
         return 0
     end
@@ -7260,7 +7283,7 @@ do
             if ( not primary:hasPos() and HoundUtils.Dcs.isPoint(refPos)) then
                 local uncertenty = primary:getMaxWeaponsRange() * 0.75
                 primary.pos.p = l_mist.utils.deepCopy(refPos)
-                primary.pos.p = primary:calculateExtrasPosData(primary.pos)
+                primary.pos = primary:calculateExtrasPosData(primary.pos)
                 primary.uncertenty_data = {}
                 primary.uncertenty_data.major = uncertenty
                 primary.uncertenty_data.minor = uncertenty
@@ -7757,10 +7780,10 @@ do
     function HOUND.Comms.Manager:setTransmitter(transmitterName)
         if not transmitterName then transmitterName = "" end
         local candidate = Unit.getByName(transmitterName)
-        if candidate == nil then
+        if not HoundUtils.Dcs.isUnit(candidate) then
             candidate = StaticObject.getByName(transmitterName)
         end
-        if candidate == nil and self.transmitter then
+        if not HoundUtils.Dcs.isStaticObject(candidate) and self.transmitter then
             self:removeTransmitter()
             return
         end
@@ -8262,7 +8285,7 @@ do
         if type(emitterName) == "table" and getmetatable(emitterName) == HOUND.Contact.Emitter then
             emitterName = emitterName:getDcsName()
         end
-        if not type(emitterName) == "string" then return false end
+        if type(emitterName) ~= "string" then return false end
         if self.contacts[emitterName] then
             local site = self:getSite(self.contacts[emitterName]:getDcsGroupName(),true)
             if site then
@@ -8369,7 +8392,7 @@ do
         if type(groupName) == "table" and getmetatable(groupName) == HOUND.Contact.Site then
             groupName = groupName:getDcsName()
         end
-        if not type(groupName) == "string" then return false end
+        if type(groupName) ~= "string" then return false end
         self.sites[groupName] = nil
         return true
     end
@@ -9368,6 +9391,7 @@ function HOUND.Sector:notifySiteLaunching(site)
         local useDMM = false
         local preferMGRS = false
 
+        if requester == nil then return end
         if contact.isEWR then msgObj.priority = 2 end
 
         if requester ~= nil then
@@ -9377,6 +9401,8 @@ function HOUND.Sector:notifySiteLaunching(site)
         end
 
         if gSelf.comms.controller:isEnabled() then
+            HOUND.Logger.debug(args["contact"].. ":\n" .. HOUND.Mist.utils.tableShow(contact))
+
             msgObj.contactId = contact:getId()
             msgObj.tts = contact:generateTtsReport(useDMM,preferMGRS)
             if requester ~= nil then
@@ -9385,6 +9411,7 @@ function HOUND.Sector:notifySiteLaunching(site)
             if gSelf.comms.controller:getSettings("enableText") == true then
                 msgObj.txt = contact:generateTextReport(useDMM)
             end
+            HOUND.Logger.debug("msg: \n"..HOUND.Mist.utils.tableShow(msgObj))
             gSelf.comms.controller:addMessageObj(msgObj)
         end
     end
@@ -9689,6 +9716,8 @@ do
             default = HOUND.Sector.create(elint.HoundId,"default",nil,100)
         }
         elint:defaultEventHandler()
+
+        HOUND.INSTANCES[elint.HoundId] = elint
         return elint
     end
 
@@ -9700,6 +9729,7 @@ do
             self.sectors[name] = sector:destroy()
         end
         self:purgeRadioMenu()
+        HOUND.INSTANCES[self.HoundId] = nil
         self.contacts = nil
         self.settings = nil
         return nil
@@ -10828,4 +10858,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.4.1-TRUNK-20250103 - Compiled on 2025-01-03 21:24
+-- Hound version 0.4.1-TRUNK-20250330 - Compiled on 2025-03-30 19:17
