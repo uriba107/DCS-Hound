@@ -137,9 +137,8 @@ For more information on the de-sanitization process, look [here](#desanitize-dcs
 ### Adding Scripts in Mission Editor
 ```Note: The order of scripts - it's important.```  
 On a "ONCE" type action with a "time more 1" condition, add the scripts in the following order:
-1. `MIST`
-2. `DCS-SimpleTextToSpeech` (if TTS via STTS is desired - gRPC is implemented globally. If the mission includes the MOOSE Framework, it includes STTS internally)
-3. `HoundElint.lua`
+1. `DCS-SimpleTextToSpeech` (if TTS via STTS is desired - gRPC is implemented globally. If the mission includes the MOOSE Framework, it includes STTS internally)
+2. `HoundElint.lua`
 
 ### Some Screenshots as Hints
 ![Add Scripts](/images/hound_setup.jpg)
