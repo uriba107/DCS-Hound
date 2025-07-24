@@ -324,8 +324,8 @@ do
             current_mean = l_mist.getAvgPoint(origPoints)
         end
         if not HOUND.Utils.Dcs.isPoint(current_mean) then return end
-        threashold = threashold or 1
-        maxIttr = maxIttr or 100
+        threashold = threashold or 10
+        maxIttr = maxIttr or 50
         local last_mean
         local ittr = 0
         local converged = false
@@ -387,5 +387,107 @@ do
         end
 
         return returnTable
+    end
+
+    --- Calculate weighted least squares estimate from a list of positions with scores
+    -- @param PosList List of positions with scores
+    -- @return Weighted average position estimate {x,y,z}
+    function HOUND.Utils.Cluster.WeightedCentroid(PosList)
+        local sumWeights = 0
+        local estimate = {z=0,x=0}
+        for _,pos in ipairs(PosList) do
+            if HOUND.Utils.Dcs.isPoint(pos) and pos.score > 0 then
+                local w = pos.score
+                sumWeights = sumWeights + w
+                estimate.z = estimate.z + (w * (pos.z - estimate.z)) / sumWeights
+                estimate.x = estimate.x + (w * (pos.x - estimate.x)) / sumWeights
+            end
+        end
+        estimate.y = land.getHeight({x=estimate.x, y=estimate.z}) or 0
+        return estimate
+    end
+
+    --- Weighted Least Squares with GDOP-based uncertainty ellipse
+    -- Calculates position estimate using weighted least squares with geometric dilution of precision
+    -- @param measurements Table of measurements containing azimuth angles and platform positions
+    -- @param initial_guess Initial position estimate {x,z}
+    -- @param[opt=10] max_iter Maximum number of iterations for convergence
+    -- @param[opt=0.001] tol Convergence tolerance in meters
+    -- @return solution Position estimate {x,y,z}, uncertenty_data Uncertainty ellipse parameters
+    function HOUND.Utils.Cluster.WLS_GDOP(measurements, initial_guess, max_iter, tol)
+        local l_math = math
+        local x, z = initial_guess.x, initial_guess.z
+        max_iter = max_iter or 10
+        tol = tol or 1
+
+        local function computeJacobian(x, z, xi, zi)
+            local dx = x - xi
+            local dz = z - zi
+            local r2 = dx*dx + dz*dz
+            return {-dz/r2, dx/r2}
+        end
+
+        local H, y, W
+        local Cov
+
+        for iter = 1, max_iter do
+            H, y, W = {}, {}, {}
+
+            for i, m in ipairs(measurements) do
+
+                local jac = computeJacobian(x, z, m.platformPos.x, m.platformPos.z)
+                local pred_theta = l_math.atan2(z - m.platformPos.z, x - m.platformPos.x)
+                local residual = (m.az - pred_theta + l_math.pi) % (2*l_math.pi) - l_math.pi
+
+                H[#H+1] = jac
+                y[#y+1] = {residual}
+                local sigma2 = (m.platformPrecision or 1)^2 * (m.gdop or 1)
+                W[#W+1] = {1/sigma2}
+            end
+
+            local Hmat = HOUND.Matrix(H)
+            local ymat = HOUND.Matrix(y)
+            local Wmat = HOUND.Matrix:new(#W, #W)
+            for i=1,#W do Wmat[i][i] = W[i][1] end
+
+            local Ht = HOUND.Matrix.transpose(Hmat)
+            local HtW = HOUND.Matrix.mul(Ht, Wmat)
+            local HtWH = HOUND.Matrix.mul(HtW, Hmat)
+            local HtWy = HOUND.Matrix.mul(HtW, ymat)
+            local HtWH_inv = HOUND.Matrix.invert(HtWH)
+            if not HtWH_inv then break end
+            Cov = HtWH_inv -- always keep the last HtWH_inv in the Cov matrix
+
+            local delta = HOUND.Matrix.mul(HtWH_inv, HtWy)
+            local dx, dz = delta[1][1], delta[2][1]
+
+            x = x + dx
+            z = z + dz
+            if l_math.abs(dx) < tol and l_math.abs(dz) < tol then break end
+        end
+
+        -- Compute uncertainty ellipse from the final H, W, and HtWH_inv
+        local a = Cov[1][1]
+        local b = Cov[1][2]
+        local c = Cov[2][2]
+        local trace = a + c
+        local det = a * c - b * b
+        local eig1 = trace/2 + l_math.sqrt((trace*trace)/4 - det)
+        local eig2 = trace/2 - l_math.sqrt((trace*trace)/4 - det)
+
+        local major = l_math.sqrt(l_math.max(eig1, eig2))
+        local minor = l_math.sqrt(l_math.min(eig1, eig2))
+        local theta = 0.5 * l_math.atan2(2*b, a - c)
+
+        local uncertenty_data = {}
+        uncertenty_data.major = HOUND.Mist.utils.round(major)
+        uncertenty_data.minor = HOUND.Mist.utils.round(minor)
+        uncertenty_data.theta = (theta + math.pi*2) % math.pi -- [0, pi]
+        uncertenty_data.az = HOUND.Mist.utils.round(l_math.deg(uncertenty_data.theta))
+        uncertenty_data.r  = (major + minor) / 2
+
+        local solution = {x = x, z = z, y = land.getHeight({x=x, y=z}) or 0}
+
+        return solution, uncertenty_data
     end
 end

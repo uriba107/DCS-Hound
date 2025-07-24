@@ -6,7 +6,7 @@
 
 do
     if STTS ~= nil and STTS.DIRECTORY == "C:\\Users\\Ciaran\\Dropbox\\Dev\\DCS\\DCS-SRS\\install-build" then
-        STTS.DIRECTORY = "C:\\Program Files\\DCS-SimpleRadio-Standalone"
+        STTS.DIRECTORY = "C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
     end
 
     -- randomize the randomness.
@@ -37,8 +37,13 @@ do
     -- @field MARKER_TEXT_POINTER Char/string used as pointer on text markers
     -- @field TTS_ENGINE Hound will use the table to determin TTS engine priority
     -- @field MENU_PAGE_LENGTH Number of Items Hound will put in a menu before starting a new menu page
+    -- @field ENABLE_BETTER_SCORE If true, will use better scoring algorithm for contacts (default is true)
+    -- @field REF_DIST Reference distance for contact scoring. Used to calculate the weight of datap
+    -- @field ENABLE_WLS If true, will use WLS algorithm for contact scoring (currently not implemented, default is false)
+    -- @field ENABLE_KALMAN If true, will use Kalman filter for contact scoring (currently not implemented, default is false)
+    -- @field AUTO_ADD_PLATFORM_BY_PAYLOAD If true, will automatically add platforms that have ELINT payloads (currently, due to DCS limits, only works for units spawning with the required pods)
     HOUND = {
-        VERSION = "0.4.1-TRUNK",
+        VERSION = "0.4.2-TRUNK",
         DEBUG = true,
         ELLIPSE_PERCENTILE = 0.6,
         DATAPOINTS_NUM = 30,
@@ -56,7 +61,11 @@ do
         MARKER_TEXT_POINTER = "⇙ ", -- "¤ « "
         TTS_ENGINE = {'STTS','GRPC'},
         MENU_PAGE_LENGTH = 9,
+        ENABLE_BETTER_SCORE = true,
+        REF_DIST = 75000, -- Do not change, used for datapoint weighting
+        ENABLE_WLS = false,
         ENABLE_KALMAN = false,
+        AUTO_ADD_PLATFORM_BY_PAYLOAD = true, -- if true, will automatically add platforms that have ELINT payloads (currently, due to DCS limits, only works for units spawning with the required pods)
     }
 
     --- Map Markers ENUM

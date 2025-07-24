@@ -317,12 +317,25 @@ do
         local Northing = m1 * Easting + b1
 
         local pos = {}
+        -- if HOUND.ENABLE_WLS then
+        --     pos.platformPos = {
+        --         p1 = p1,
+        --         p2 = p2
+        --     }
+        -- end
+
         pos.x = Easting
         pos.z = Northing
         pos.y = land.getHeight({x=pos.x,y=pos.z})
 
-        pos.score = earlyPoint.signalStrength * latePoint.signalStrength
-
+        -- calculate weight
+        local d1 = HoundUtils.Geo.get2DDistance(p1,pos)
+        local d2 = HoundUtils.Geo.get2DDistance(p2,pos)
+        local var1 = l_math.pow(((d1 / HOUND.REF_DIST) * earlyPoint.platformPrecision),2)
+        local var2 = l_math.pow(((d2 / HOUND.REF_DIST) * latePoint.platformPrecision),2)
+        local score = 1 / l_math.max((var1+var2),1e-10)
+        local angleScore = l_math.sin(HoundUtils.angleDeltaRad(earlyPoint.az,latePoint.az))
+        pos.score = score * angleScore
         return pos
     end
 
@@ -398,6 +411,7 @@ do
     -- @param point1 @{HOUND.Contact.Datapoint} Instance no.1
     -- @param point2 @{HOUND.Contact.Datapoint} Instance no.2
     function HOUND.Contact.Emitter:processIntersection(targetTable,point1,point2)
+        if point1.platformPos.x == point2.platformPos.x and point1.platformPos.z == point2.platformPos.z then return end
         local err = (point1.platformPrecision + point2.platformPrecision)/2
         if HoundUtils.angleDeltaRad(point1.az,point2.az) < err then return end
         local intersection = self.triangulatePoints(point1,point2)
@@ -445,23 +459,28 @@ do
         local platforms = {}
         local staticPlatformsOnly = true
         local staticClipPolygon2D = nil
+        local AllDataPoints = {}
+
 
         for _,platformDatapoints in pairs(self._dataPoints) do
             if HOUND.Length(platformDatapoints) > 0 then
                 for _,datapoint in pairs(platformDatapoints) do
+                    -- if HOUND.ENABLE_WLS then
+                    --     table.insert(AllDataPoints,datapoint)
+                    -- end
                     if datapoint:isStatic() then
                         table.insert(staticDataPoints,datapoint)
-                        if type(datapoint:get2dPoly()) == "table" then
-                            staticClipPolygon2D = HoundUtils.Polygon.clipPolygons(staticClipPolygon2D,datapoint:get2dPoly()) or datapoint:get2dPoly()
-                        end
+                        -- if type(datapoint:get2dPoly()) == "table" then
+                        --     staticClipPolygon2D = HoundUtils.Polygon.clipPolygons(staticClipPolygon2D,datapoint:get2dPoly()) or datapoint:get2dPoly()
+                        -- end
                     else
                         staticPlatformsOnly = false
                         table.insert(mobileDataPoints,datapoint)
                     end
-                    if HoundUtils.Dcs.isPoint(datapoint:getPos()) then
-                        local point = l_mist.utils.deepCopy(datapoint:getPos())
-                        table.insert(estimatePositions,point)
-                    end
+                    -- if HoundUtils.Dcs.isPoint(datapoint:getPos()) then
+                    --     local point = l_mist.utils.deepCopy(datapoint:getPos())
+                    --     table.insert(estimatePositions,point)
+                    -- end
                     platforms[datapoint.platformName] = 1
                 end
             end
@@ -503,21 +522,33 @@ do
         end
 
         if HOUND.Length(estimatePositions) > 2 or (HOUND.Length(estimatePositions) > 0 and staticPlatformsOnly) then
-            table.sort(estimatePositions, function(a,b) return a.score < b.score end)
+            -- table.sort(estimatePositions, function(a,b) return a.score < b.score end)
 
-            self.pos.p = HoundUtils.Cluster.weightedMean(estimatePositions,self.pos.p)
+            -- WLS feature flag
+            -- if HOUND.ENABLE_WLS then
+            --     local initial_guess = self.pos.p or estimatePositions[1]
+            --     local solution, uncertenty_data = HOUND.Utils.Cluster.WLS_GDOP(AllDataPoints, initial_guess)
+            --     self.pos.p = solution
+            --     self.uncertenty_data = uncertenty_data
+            -- else
+                if HOUND.ENABLE_BETTER_SCORE then
+                    self.pos.p = HoundUtils.Cluster.WeightedCentroid(estimatePositions)
+                else
+                    -- Fallback to current mean/weightedMean logic
+                    self.pos.p = HoundUtils.Cluster.weightedMean(estimatePositions,self.pos.p)
 
-            if HOUND.Length(estimatePositions) > 10 then
-                -- local posSubset = HoundUtils.Cluster.getDeltaSubsetPercent(estimatePositions,self.pos.p,HOUND.ELLIPSE_PERCENTILE)
-                self.pos.p = HoundUtils.Cluster.weightedMean(
-                    HoundUtils.Cluster.getDeltaSubsetPercent(estimatePositions,self.pos.p,HOUND.ELLIPSE_PERCENTILE),
-                    self.pos.p)
-            end
+                    if HOUND.Length(estimatePositions) > 10 then
+                        self.pos.p = HoundUtils.Cluster.weightedMean(
+                            HoundUtils.Cluster.getDeltaSubsetPercent(estimatePositions,self.pos.p,HOUND.ELLIPSE_PERCENTILE),
+                            self.pos.p)
+                    end
+                end
 
-            self.uncertenty_data = self.calculateEllipse(estimatePositions,self.pos.p)
-            if type(staticClipPolygon2D) == "table" and ( staticPlatformsOnly) then
-                self.uncertenty_data = self.calculateEllipse(staticClipPolygon2D,self.pos.p,true)
-            end
+                self.uncertenty_data = self.calculateEllipse(estimatePositions,self.pos.p)
+                if type(staticClipPolygon2D) == "table" and ( staticPlatformsOnly) then
+                    self.uncertenty_data = self.calculateEllipse(staticClipPolygon2D,self.pos.p,true)
+                end
+            -- end
 
             self.uncertenty_data.az = l_mist.utils.round(l_math.deg((self.uncertenty_data.theta+l_mist.getNorthCorrection(self.pos.p)+PI_2)%PI_2))
 

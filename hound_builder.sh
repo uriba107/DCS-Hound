@@ -14,10 +14,11 @@ if [ $isMacOs -eq 0 ]; then
     SED_ARGS="-i .orig -e"
     LUAROCKS="luarocks --lua-dir=$(brew --prefix)/opt/lua@5.1 --lua-version=5.1"
 fi
-
+SED=$(which sed)
 LDOC=$(which ldoc) 
 LUACHECK=$(which luacheck)
 LUASRCDIET=$(which luasrcdiet)
+LUA=$(which lua5.1)
 MD_TOC="${HOME}/gh-md-toc"
 
 # initial function setup
@@ -59,7 +60,7 @@ function check_dependecies {
       MD_TOC_VERSION=1.4.0
       MD_TOC_URL="https://github.com/ekalinin/github-markdown-toc.go/releases/download/v${MD_TOC_VERSION}/gh-md-toc_${MD_TOC_VERSION}_linux_amd64.tar.gz"
       if [ $isMacOs -eq 0 ]; then
-      MD_TOC_URL=$(echo ${MD_TOC_URL} | $SED 's/linux/darwin//')
+      MD_TOC_URL=$(echo ${MD_TOC_URL} | sed 's/linux/darwin/')
       fi
       curl -L ${MD_TOC_URL} -o ${MD_TOC}.tar.gz
       tar -xzvf ${MD_TOC}.tar.gz -C ${HOME} gh-md-toc
@@ -74,7 +75,7 @@ function check_dependecies {
       echo ""
       echo "using rocks"
       for rock in ${ROCKS[@]}; do
-        echo "${LUAROCKS} install ${rock}"
+        echo "${LUAROCKS} install ${rock} luaunit"
       done 
       exit 1
     fi
@@ -85,6 +86,12 @@ function lint_src {
     for FILE in src/*.lua; do
         luacheck -g --no-self --no-max-line-length "${FILE}"
     done
+    if [ -f tools/validate_db.lua ]; then
+        highlight "check DB entries"
+        cd tools
+        lua5.1 validate_db.lua
+        cd ..
+    fi
 }
 function build_docs {
     # build Docs

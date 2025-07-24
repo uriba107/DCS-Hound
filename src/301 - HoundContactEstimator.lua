@@ -3,7 +3,7 @@
 do
     local l_math = math
     -- local l_mist = HOUND.Mist
-    local TwoPI = 2*l_math.pi
+    local TwoPI = 2 * l_math.pi
     local HalfPi = l_math.pi / 2
     local HoundUtils = HOUND.Utils
     local matrix = HOUND.Matrix
@@ -20,8 +20,8 @@ do
     function HOUND.Contact.Estimator.accuracyScore(err)
         local score = 0
         if type(err) == "number" then
-            score = HoundUtils.Mapping.linear(err,0,100000,1,0,true)
-            score = HoundUtils.Cluster.gaussianKernel(score,0.2)
+            score = HoundUtils.Mapping.linear(err, 0, 100000, 1, 0, true)
+            score = HoundUtils.Cluster.gaussianKernel(score, 0.2)
         end
         if type(score) == "number" then
             return score
@@ -43,7 +43,7 @@ do
 
         Kalman.estimated = {}
 
-        Kalman.update = function(self,datapoint)
+        Kalman.update = function(self, datapoint)
             if type(self.estimated.p) ~= "table" and HoundUtils.Dcs.isPoint(datapoint) then
                 self.estimated.p = {
                     x = datapoint.x,
@@ -58,14 +58,14 @@ do
             self.P.x = self.P.x + math.sqrt(datapoint.err.score.x)
             self.P.z = self.P.z + math.sqrt(datapoint.err.score.z)
 
-            local Kx = self.P.x / (self.P.x+(datapoint.err.score.x))
-            local Kz = self.P.z / (self.P.z+(datapoint.err.score.z))
+            local Kx = self.P.x / (self.P.x + (datapoint.err.score.x))
+            local Kz = self.P.z / (self.P.z + (datapoint.err.score.z))
 
-            self.estimated.p.x = self.estimated.p.x + (Kx * (datapoint.x-self.estimated.p.x))
-            self.estimated.p.z = self.estimated.p.z + (Kz * (datapoint.z-self.estimated.p.z))
+            self.estimated.p.x = self.estimated.p.x + (Kx * (datapoint.x - self.estimated.p.x))
+            self.estimated.p.z = self.estimated.p.z + (Kz * (datapoint.z - self.estimated.p.z))
 
-            self.P.x = (1-Kx) * self.P.x
-            self.P.z = (1-Kz) * self.P.z
+            self.P.x = (1 - Kx) * self.P.x
+            self.P.z = (1 - Kz) * self.P.z
 
             self.estimated.p = HoundUtils.Geo.setHeight(self.estimated.p)
             return self.estimated.p
@@ -89,7 +89,7 @@ do
 
         Kalman.estimated = nil
 
-        Kalman.update = function (self,newAz,predictedAz,processNoise)
+        Kalman.update = function(self, newAz, predictedAz, processNoise)
             if not self.estimated then
                 self.estimated = newAz
             end
@@ -103,13 +103,13 @@ do
             end
 
             self.P = self.P + l_math.sqrt(noiseP) -- add "process noise" in the form of standard diviation
-            local K = self.P / (self.P+self.noise)
-            local deltaAz = newAz-predAz
+            local K = self.P / (self.P + self.noise)
+            local deltaAz = newAz - predAz
             self.estimated = ((self.estimated + K * (deltaAz)) + TwoPI) % TwoPI
-            self.P = (1-K) * self.P
+            self.P = (1 - K) * self.P
         end
 
-        Kalman.get = function (self)
+        Kalman.get = function(self)
             return self.estimated
         end
 
@@ -142,11 +142,12 @@ do
             }
         end
 
-        Kalman.update = function(self,datapoint)
-            if not self.estimated.pos and datapoint:getPos() then
-                self.estimated.Az = (1/self.P.Az) * datapoint.az
-                self.estimated.El = (1/self.P.El) * datapoint.el
-                self.estimated.pos = HoundUtils.Geo.getProjectedIP(datapoint.platformPos,self.estimated.Az,self.estimated.El)
+        Kalman.update = function(self, datapoint)
+            if not self.estimated.pos then
+                self.estimated.Az = (1 / self.P.Az) * datapoint.az
+                self.estimated.El = (1 / self.P.El) * datapoint.el
+                self.estimated.pos = HoundUtils.Geo.getProjectedIP(datapoint.platformPos, self.estimated.Az,
+                    self.estimated.El)
                 return self.estimated
             end
             local prediction = self:predict(datapoint)
@@ -158,22 +159,23 @@ do
                 El = datapoint.platformPrecision
             }
 
-            self.K.Az = self.P.Az / (self.P.Az+errEstimate.Az)
-            self.K.El = self.P.El / (self.P.El+errEstimate.El)
+            self.K.Az = self.P.Az / (self.P.Az + errEstimate.Az)
+            self.K.El = self.P.El / (self.P.El + errEstimate.El)
 
-            self.estimated.Az = self.estimated.Az + (self.K.Az * (datapoint.az-prediction.Az))
-            self.estimated.El = self.estimated.El + (self.K.El * (datapoint.el-prediction.El))
-            self.estimated.pos = HoundUtils.Geo.getProjectedIP(datapoint.platformPos,self.estimated.Az,self.estimated.El)
+            self.estimated.Az = self.estimated.Az + (self.K.Az * (datapoint.az - prediction.Az))
+            self.estimated.El = self.estimated.El + (self.K.El * (datapoint.el - prediction.El))
+            self.estimated.pos = HoundUtils.Geo.getProjectedIP(datapoint.platformPos, self.estimated.Az,
+                self.estimated.El)
 
-            self.P.Az = (1-self.K.Az)
-            self.P.El = (1-self.K.El)
+            self.P.Az = (1 - self.K.Az)
+            self.P.El = (1 - self.K.El)
 
             return self.estimated
         end
 
-        Kalman.predict = function(self,datapoint)
+        Kalman.predict = function(self, datapoint)
             local prediction = {}
-            prediction.Az,prediction.El = HoundUtils.Elint.getAzimuth( datapoint.platformPos , self.estimated.pos, 0 )
+            prediction.Az, prediction.El = HoundUtils.Elint.getAzimuth(datapoint.platformPos, self.estimated.pos, 0)
             -- prediction.pos = HoundUtils.Geo.getProjectedIP(datapoint.platformPos,prediction.Az,prediction.El)
             return prediction
         end
@@ -188,8 +190,6 @@ do
     --- Pseudo-linear Kalman filter
     -- @section UB-PLKF
 
-    -- TODO: fix divergence
-
     --- UB-PLKF (Unbiased Pseudo-Linear Kalman Filter)
     -- Implementation of algorithem described in https://www.mdpi.com/2072-4292/13/15/2915
     HOUND.Contact.Estimator.UPLKF = {}
@@ -202,44 +202,38 @@ do
     -- @param[type=?number] timestamp Initial time
     -- @param[type=?number] initialPosError Uncertainty of position measurement
     -- @param[type=?boolean] isMobile Is the platform mobile?
-    function HOUND.Contact.Estimator.UPLKF:create(p0,v0,timestamp,initialPosError,isMobile)
+    function HOUND.Contact.Estimator.UPLKF:create(p0, v0, timestamp, initialPosError, isMobile)
         if not HoundUtils.Dcs.isPoint(p0) then return nil end
         local instance = {}
-        setmetatable( instance,HOUND.Contact.Estimator.UPLKF )
+        setmetatable(instance, HOUND.Contact.Estimator.UPLKF)
         instance.t0 = timestamp or timer.getAbsTime()
         instance.mobile = isMobile or false
         instance._maxNoise = 0
-        v0 = v0 or {z=0,x=0}
+        v0 = v0 or { z = 0, x = 0 }
 
         -- intialize the State Matrix
         -- DCS is wierd. X is north, Z is east, Y is up. so values are flipped so it will conform to normal X,Y used in the whitepaper
         instance.state = matrix({
-            {p0.x},
-            {p0.z},
-            {v0.x},
-            {v0.z}
+            { p0.x },
+            { p0.z },
+            { v0.x },
+            { v0.z }
         })
         -- initialize State Covariance Matrix
         local position_accuracy = initialPosError or 10000
-        position_accuracy = l_math.min(position_accuracy,10000)
-        local velocity_accuracy = 1
+        position_accuracy = l_math.min(position_accuracy, 10000)
+        -- Set velocity uncertainty to 30 m/s (slightly higher than max velocity of 27.78 m/s)
+        local velocity_accuracy = instance.mobile and 30 or 1
         instance.P = matrix({
-            {l_math.pow(position_accuracy,2),0,0,0},
-            {0,l_math.pow(position_accuracy,2),0,0},
-            {0,0,l_math.pow(velocity_accuracy,2),0},
-            {0,0,0,l_math.pow(velocity_accuracy,2)}
+            { l_math.pow(position_accuracy, 2), 0,                                0,                                0 },
+            { 0,                                l_math.pow(position_accuracy, 2), 0,                                0 },
+            { 0,                                0,                                l_math.pow(velocity_accuracy, 2), 0 },
+            { 0,                                0,                                0,                                l_math.pow(velocity_accuracy, 2) }
         })
-
-        -- if not instance.mobile then
-        --     instance.P[3][3] = 0
-        --     instance.P[4][4] = 0
-        --     instance.Q[3][3] = 0
-        --     instance.Q[4][4] = 0
-        -- end
 
         if HOUND.DEBUG then
             instance.marker = HoundUtils.Marker.create()
-            trigger.action.outText("new KF: x:" .. instance.state[2][1] .. "| y: " .. instance.state[1][1],20)
+            trigger.action.outText("new KF: x:" .. instance.state[2][1] .. "| y: " .. instance.state[1][1], 20)
         end
         return instance
     end
@@ -250,7 +244,7 @@ do
     -- @return DCS point.
     function HOUND.Contact.Estimator.UPLKF:getEstimatedPos(state)
         local X_k = state or self.state
-        local pos = {x = X_k[1][1], z = X_k[2][1]}
+        local pos = { x = X_k[1][1], z = X_k[2][1] }
         if HoundUtils.Dcs.isPoint(pos) then
             pos = HoundUtils.Geo.setPointHeight(pos)
             return pos
@@ -262,11 +256,18 @@ do
     -- @number azimuth in radians (0-2Pi)
     -- @return angle in radian (-pi to pi) east aligned counterclockwise rotation
     function HOUND.Contact.Estimator.UPLKF.normalizeAz(azimuth)
-        -- return (((HalfPi - azimuth) + l_math.pi) % TwoPI) - l_math.pi
-        -- try normlize to +- pi without changing direction or 0
-        return (((azimuth) + l_math.pi) % TwoPI) - l_math.pi
-        -- try normlize to +- pi counterclockwise
-        -- return (((TwoPI - azimuth) + l_math.pi) % TwoPI) - l_math.pi
+        -- Convert from DCS azimuth (clockwise from North) to bearing (clockwise from East)
+        local bearing = (HalfPi - azimuth + TwoPI) % TwoPI
+        -- Normalize to [-pi, pi]
+        return (((bearing) + l_math.pi) % TwoPI) - l_math.pi
+    end
+
+    --- Convert bearing to DCS azimuth
+    -- @local
+    -- @number bearing in radians (clockwise from East)
+    -- @return azimuth in radians (clockwise from North)
+    function HOUND.Contact.Estimator.UPLKF.bearingToAzimuth(bearing)
+        return (HalfPi - bearing + TwoPI) % TwoPI
     end
 
     --- update debug marker
@@ -275,8 +276,13 @@ do
     function HOUND.Contact.Estimator.UPLKF:updateMarker()
         HOUND.Logger.trace("updating marker")
         local pos = self:getEstimatedPos()
-        self.marker:update({useLegacyMarker = false
-        ,pos=pos,text="UB-PLKF",coalition=-1})
+        self.marker:update({
+            useLegacyMarker = false
+            ,
+            pos = pos,
+            text = "UB-PLKF",
+            coalition = -1
+        })
     end
 
     --- create F matrix
@@ -284,7 +290,7 @@ do
     -- @param deltaT
     -- @return F matrix
     function HOUND.Contact.Estimator.UPLKF:getF(deltaT)
-        local Ft = matrix(4,"I")
+        local Ft = matrix(4, "I")
         Ft[1][3] = deltaT
         Ft[2][4] = deltaT
         return Ft
@@ -295,21 +301,19 @@ do
     -- @param[type=?number] deltaT time from last mesurement. default is 10 seconds
     -- @param[type=?number] sigma error in mesurment. default is 0.1 radians
     -- @return Q matrix
-    function HOUND.Contact.Estimator.UPLKF:getQ(deltaT,sigma)
+    function HOUND.Contact.Estimator.UPLKF:getQ(deltaT, sigma)
         -- initialize Process Noise Covariance Matrix
         local dT = deltaT or 10
         local sigma_a = sigma or self._maxNoise
-        sigma_a = sigma_a/2
+        sigma_a = sigma_a / 2
 
-        -- return matrix({
-        --     {0.25*l_math.pow(dT,4)*sigma_a,0,0.5*l_math.pow(dT,3)*sigma_a,0},
-        --     {0,0.25*l_math.pow(dT,4)*sigma_a,0,0.5*l_math.pow(dT,3)*sigma_a},
-        --     {0.5*l_math.pow(dT,3)*sigma_a,0,l_math.pow(dT,2)*sigma_a,0},
-        --     {0,0.5*l_math.pow(dT,3)*sigma_a,0,l_math.pow(dT,2)*sigma_a},
-        -- })
-
-        return matrix(4,4,0)  -- no noise
-
+        return matrix({
+            { 0.25 * l_math.pow(dT, 4) * sigma_a, 0,                                  0.5 * l_math.pow(dT, 3) * sigma_a, 0 },
+            { 0,                                  0.25 * l_math.pow(dT, 4) * sigma_a, 0,                                 0.5 * l_math.pow(dT, 3) * sigma_a },
+            { 0.5 * l_math.pow(dT, 3) * sigma_a,  0,                                  l_math.pow(dT, 2) * sigma_a,       0 },
+            { 0,                                  0.5 * l_math.pow(dT, 3) * sigma_a,  0,                                 l_math.pow(dT, 2) * sigma_a },
+        })
+        -- TODO: calculate noise based on positional error
     end
 
     --- Kalman prediction step for provided state
@@ -320,7 +324,7 @@ do
     -- @param[type=?table] Q process nose matrix. will be generated with generic settings if not provided
     -- @return x_hat the predicted state matrix
     -- @return P_hat the predicted state covariance matrix
-    function HOUND.Contact.Estimator.UPLKF:predictStep(X,P,timestep,Q)
+    function HOUND.Contact.Estimator.UPLKF:predictStep(X, P, timestep, Q)
         local F = self:getF(timestep)
         local Q = Q or self:getQ(timestep)
         -- predict state
@@ -328,9 +332,10 @@ do
         -- Predicted state covariance matrix
         local P_hat = F * P * F:transpose() + Q
 
-        -- x_hat[3][1] = HoundUtils.Mapping.clamp(x_hat[3][1],-25.0,25.0)
-        -- x_hat[4][1] = HoundUtils.Mapping.clamp(x_hat[4][1],-25.0,25.0)
-        return x_hat,P_hat
+        -- Clamp velocities to 30 m/s
+        x_hat[3][1] = HoundUtils.Mapping.clamp(x_hat[3][1], -30.0, 30.0)
+        x_hat[4][1] = HoundUtils.Mapping.clamp(x_hat[4][1], -30.0, 30.0)
+        return x_hat, P_hat
     end
 
     --- Perform a prediction for the filter and update state
@@ -342,7 +347,7 @@ do
         self.t0 = timestamp
 
         -- predict state
-        self.state,self.P = self:predictStep(self.state,self.P,deltaT)
+        self.state, self.P = self:predictStep(self.state, self.P, deltaT)
     end
 
     --- perform update of state with mesurment
@@ -351,39 +356,37 @@ do
     -- @param[type=number] z current mesurment
     -- @param[type=number] timestamp time of mesurment
     -- @param[type=number] z_err maximum error in mesurment (radians)
-    function HOUND.Contact.Estimator.UPLKF:update(p0,z,timestamp,z_err)
-        -- HOUND.Logger.debug("pre:\n state " .. mist.utils.tableShow(self.state) .."\n P: " .. mist.utils.tableShow(self.P))
-
+    function HOUND.Contact.Estimator.UPLKF:update(p0, z, timestamp, z_err)
         timestamp = timestamp or timer.getAbsTime()
         local deltaT = timestamp - self.t0
         self.t0 = timestamp
         local err = z_err or l_math.rad(HOUND.MAX_ANGULAR_RES_DEG)
-        local Ri = err/2
-        self._maxNoise = l_math.max(self._maxNoise,err)
+        local Ri = err
+        self._maxNoise = l_math.max(self._maxNoise, err)
 
-        -- predict state and covariance matrix
-        -- local F = self:getFt(deltaT)
         local Q = self:getQ(deltaT)
-        -- clamp velocities
-
-
-
-        local x_hat,P_k = self:predictStep(self.state,self.P,deltaT,Q)
+        local x_hat, P_k = self:predictStep(self.state, self.P, deltaT, Q)
 
         local estimatedPos = self:getEstimatedPos(x_hat)
-        local d_k = HoundUtils.Geo.get2DDistance(p0,estimatedPos)
+        local d_k = HoundUtils.Geo.get2DDistance(p0, estimatedPos)
 
-        -- -- full PLKF whitepaper
-        local z_hat = self.normalizeAz(HoundUtils.Elint.getAzimuth(p0,estimatedPos))
-        local cos_beta_k,sin_beta_k = l_math.cos(z_hat),l_math.sin(z_hat)
-        local m_k = cos_beta_k*estimatedPos.x + sin_beta_k*estimatedPos.z - d_k
+        -- Convert DCS azimuth to bearing for calculations
+        local z_bearing = self.normalizeAz(z)
+        local z_hat_bearing = self.normalizeAz(HoundUtils.Elint.getAzimuth(p0, estimatedPos))
+
+        -- Calculate using bearing angles
+        local cos_beta_k, sin_beta_k = l_math.cos(z_hat_bearing), l_math.sin(z_hat_bearing)
+        local m_k = cos_beta_k * estimatedPos.x + sin_beta_k * estimatedPos.z - d_k
+
+        -- H matrix in DCS coordinates (X=North, Z=East)
         local H_k = matrix({
-            {sin_beta_k/m_k,-cos_beta_k/m_k,0,0}
+            { sin_beta_k / m_k, -cos_beta_k / m_k, 0, 0 }
         })
-        local z_k = matrix({{self.normalizeAz(z)}})/m_k
+
+        local z_k = matrix({ { z_bearing } }) / m_k
 
         -- generate new s_K based on item 47
-        local R_k = matrix({{l_math.sqrt(Ri)}})
+        local R_k = matrix({ { Ri } })
         local S_k = H_k * P_k * H_k:transpose() + R_k
 
         -- Kalman Gain
@@ -391,19 +394,20 @@ do
 
         local y_k = z_k - H_k * x_hat
 
-        HOUND.Logger.debug("z: ".. self.normalizeAz(z) .. "\n z_hat: ".. z_hat )
+        HOUND.Logger.debug("z_bearing: " .. z_bearing .. "\n z_hat_bearing: " .. z_hat_bearing)
         -- update globals
         self.state = x_hat + (K_k * y_k)
-        self.P = (matrix(4,"I") - K_k * H_k) * P_k
+        self.P = (matrix(4, "I") - K_k * H_k) * P_k
 
-        -- self.state[3][1] = HoundUtils.Mapping.clamp(self.state[3][1],-25.0,25.0)
-        -- self.state[4][1] = HoundUtils.Mapping.clamp(self.state[4][1],-25.0,25.0)
+        -- Clamp final velocities to 30 m/s
+        self.state[3][1] = HoundUtils.Mapping.clamp(self.state[3][1], -30.0, 30.0)
+        self.state[4][1] = HoundUtils.Mapping.clamp(self.state[4][1], -30.0, 30.0)
 
         if HOUND.DEBUG then
             self:updateMarker()
         end
     end
 
-    setmetatable(HOUND.Contact.Estimator.UPLKF,{ __call = function( ... ) return HOUND.Contact.Estimator.UPLKF.create( ... ) end } )
-
+    setmetatable(HOUND.Contact.Estimator.UPLKF,
+        { __call = function(...) return HOUND.Contact.Estimator.UPLKF.create(...) end })
 end

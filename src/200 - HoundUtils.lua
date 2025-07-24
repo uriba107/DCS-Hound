@@ -1160,15 +1160,15 @@ do
     -- @param lon Longitude in decimal degrees ("42.343","-144.432")
     -- @param[opt] minDec (bool) if true, function will return LL in DM.M format
     -- @return LL string.
-    -- eg. "N33°15'12" E42°10'45"" or  "N33°15.200' E42°10.750'"
+    -- eg. "N33°15'12" E042°10'45"" or "N33°15.200' E042°10.750'"
     function HOUND.Utils.Text.getLL(lat,lon,minDec)
         local hemi = HOUND.Utils.getHemispheres(lat,lon)
         lat = HOUND.Utils.DecToDMS(lat)
         lon = HOUND.Utils.DecToDMS(lon)
         if minDec == true then
-            return hemi.NS .. l_math.abs(lat.d) .. "°" .. string.format("%.3f",lat.mDec) .. "'" ..  " " ..  hemi.EW  .. l_math.abs(lon.d) .. "°" .. string.format("%.3f",lon.mDec) .. "'"
+            return hemi.NS .. string.format("%02d",l_math.abs(lat.d)) .. "°" .. string.format("%.3f",lat.mDec) .. "'" ..  " " ..  hemi.EW  .. string.format("%03d",l_math.abs(lon.d)) .. "°" .. string.format("%.3f",lon.mDec) .. "'"
         end
-        return hemi.NS .. l_math.abs(lat.d) .. "°" .. string.format("%02d",lat.m) .. "'".. string.format("%02d",l_math.floor(lat.s)).."\"" ..  " " ..  hemi.EW  .. l_math.abs(lon.d) .. "°" .. string.format("%02d",lon.m) .. "'".. string.format("%02d",l_math.floor(lon.s)) .."\""
+        return hemi.NS .. string.format("%02d",l_math.abs(lat.d)) .. "°" .. string.format("%02d",lat.m) .. "'".. string.format("%02d",l_math.floor(lat.s)).."\"" ..  " " ..  hemi.EW  .. string.format("%03d",l_math.abs(lon.d)) .. "°" .. string.format("%02d",lon.m) .. "'".. string.format("%02d",l_math.floor(lon.s)) .."\""
     end
 
     --- Text Function - returns current DCS time in military time format string

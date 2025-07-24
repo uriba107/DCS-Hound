@@ -1,7 +1,7 @@
 
 do
     if STTS ~= nil and STTS.DIRECTORY == "C:\\Users\\Ciaran\\Dropbox\\Dev\\DCS\\DCS-SRS\\install-build" then
-        STTS.DIRECTORY = "C:\\Program Files\\DCS-SimpleRadio-Standalone"
+        STTS.DIRECTORY = "C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
     end
 
     math.random(math.ceil(timer.getTime0()+timer.getTime()))
@@ -12,7 +12,7 @@ end
 
 do
     HOUND = {
-        VERSION = "0.4.1",
+        VERSION = "0.4.2",
         DEBUG = false,
         ELLIPSE_PERCENTILE = 0.6,
         DATAPOINTS_NUM = 30,
@@ -29,7 +29,11 @@ do
         MARKER_TEXT_POINTER = "⇙ ", -- "¤ « "
         TTS_ENGINE = {'STTS','GRPC'},
         MENU_PAGE_LENGTH = 9,
+        ENABLE_BETTER_SCORE = true,
+        REF_DIST = 75000, -- Do not change, used for datapoint weighting
+        ENABLE_WLS = false,
         ENABLE_KALMAN = false,
+        AUTO_ADD_PLATFORM_BY_PAYLOAD = true, -- if true, will automatically add platforms that have ELINT payloads (currently, due to DCS limits, only works for units spawning with the required pods)
     }
 
     HOUND.MARKER = {
@@ -1838,68 +1842,68 @@ do
     HOUND.DB.Radars = {
         ['1L13 EWR'] = {
             ['Name'] = "Box Spring",
-            ['Assigned'] = {"EWR"},
-            ['Role'] = {HOUND.DB.RadarType.EWR},
+            ['Assigned'] = { "EWR" },
+            ['Role'] = { HOUND.DB.RadarType.EWR },
             ['Band'] = {
-                [true] = {1.362693,0.302821},
-                [false] = {1.362693,0.302821},
+                [true] = { 1.362693, 0.302821 },
+                [false] = { 1.362693, 0.302821 },
             },
             ['Primary'] = false
         },
         ['55G6 EWR'] = {
             ['Name'] = "Tall Rack",
-            ['Assigned'] = {"EWR"},
-            ['Role'] = {HOUND.DB.RadarType.EWR},
+            ['Assigned'] = { "EWR" },
+            ['Role'] = { HOUND.DB.RadarType.EWR },
             ['Band'] = {
-                [true] = {0.999308,8.993774},
-                [false] = {0.999308,8.993774}
+                [true] = { 0.999308, 8.993774 },
+                [false] = { 0.999308, 8.993774 }
             },
             ['Primary'] = false
         },
         ['FPS-117'] = {
             ['Name'] = "Seek Igloo",
-            ['Assigned'] = {"EWR"},
-            ['Role'] = {HOUND.DB.RadarType.EWR},
+            ['Assigned'] = { "EWR" },
+            ['Role'] = { HOUND.DB.RadarType.EWR },
             ['Band'] = {
-                [true] = {0.214137,0.032605},
-                [false] = {0.214137,0.032605},
+                [true] = { 0.214137, 0.032605 },
+                [false] = { 0.214137, 0.032605 },
             },
             ['Primary'] = false
         },
         ['FPS-117 Dome'] = {
             ['Name'] = "Seek Igloo",
-            ['Assigned'] = {"EWR"},
-            ['Role'] = {HOUND.DB.RadarType.EWR},
+            ['Assigned'] = { "EWR" },
+            ['Role'] = { HOUND.DB.RadarType.EWR },
             ['Band'] = {
-                [true] = {0.214137,0.032605},
-                [false] = {0.214137,0.032605},
+                [true] = { 0.214137, 0.032605 },
+                [false] = { 0.214137, 0.032605 },
             },
             ['Primary'] = false
         },
         ['p-19 s-125 sr'] = {
             ['Name'] = "Flat Face",
-            ['Assigned'] = {"SA-2","SA-3"},
-            ['Role'] = {HOUND.DB.RadarType.SEARCH},
+            ['Assigned'] = { "SA-2", "SA-3" },
+            ['Role'] = { HOUND.DB.RadarType.SEARCH },
             ['Band'] = {
-                [true] = {0.342620,0.018576},
-                [false] = {0.342620,0.018576}
+                [true] = { 0.342620, 0.018576 },
+                [false] = { 0.342620, 0.018576 }
             },
             ['Primary'] = false
         },
         ['SNR_75V'] = {
             ['Name'] = "Fan-song",
-            ['Assigned'] = {"SA-2"},
-            ['Role'] = {HOUND.DB.RadarType.TRACK},
+            ['Assigned'] = { "SA-2" },
+            ['Role'] = { HOUND.DB.RadarType.TRACK },
             ['Band'] = {
-                [true] = {0.058898,0.002159},
-                [false] = {0.058898,0.000940}
+                [true] = { 0.058898, 0.002159 },
+                [false] = { 0.058898, 0.000940 }
             },
             ['Primary'] = true
         },
         ['RD_75'] = {
             ['Name'] = "Amazonka",
-            ['Assigned'] = {"SA-2"},
-            ['Role'] = {HOUND.DB.RadarType.RANGEFINDER},
+            ['Assigned'] = { "SA-2" },
+            ['Role'] = { HOUND.DB.RadarType.RANGEFINDER },
             ['Band'] = {
                 [true] = HOUND.DB.Bands.G,
                 [false] = HOUND.DB.Bands.G
@@ -1908,18 +1912,18 @@ do
         },
         ['snr s-125 tr'] = {
             ['Name'] = "Low Blow",
-            ['Assigned'] = {"SA-3"},
-            ['Role'] = {HOUND.DB.RadarType.TRACK},
+            ['Assigned'] = { "SA-3" },
+            ['Role'] = { HOUND.DB.RadarType.TRACK },
             ['Band'] = {
-                [true] = {0.031893,0.001417},
-                [false] = {0.031893,0.001417}
+                [true] = { 0.031893, 0.001417 },
+                [false] = { 0.031893, 0.001417 }
             },
             ['Primary'] = true
         },
         ['Kub 1S91 str'] = {
             ['Name'] = "Straight Flush",
-            ['Assigned'] = {"SA-6"},
-            ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
+            ['Assigned'] = { "SA-6" },
+            ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
             ['Band'] = {
                 [true] = HOUND.DB.Bands.I,
                 [false] = HOUND.DB.Bands.C
@@ -1928,108 +1932,108 @@ do
         },
         ['Osa 9A33 ln'] = {
             ['Name'] = "Osa",
-            ['Assigned'] = {"SA-8"},
-            ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
+            ['Assigned'] = { "SA-8" },
+            ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
             ['Band'] = {
-                [true] = {0.020256,0.000856},
+                [true] = { 0.020256, 0.000856 },
                 [false] = HOUND.DB.Bands.C
             },
             ['Primary'] = true
         },
         ['S-300PS 40B6MD sr'] = {
             ['Name'] = "Clam Shell",
-            ['Assigned'] = {"SA-10"},
-            ['Role'] = {HOUND.DB.RadarType.SEARCH},
+            ['Assigned'] = { "SA-10" },
+            ['Role'] = { HOUND.DB.RadarType.SEARCH },
             ['Band'] = {
-                [true] = {0.090846,0.012531},
-                [false] = {0.090846,0.012531}
+                [true] = { 0.090846, 0.012531 },
+                [false] = { 0.090846, 0.012531 }
             },
             ['Primary'] = false
         },
         ['S-300PS 64H6E sr'] = {
             ['Name'] = "Big Bird",
-            ['Assigned'] = {"SA-10"},
-            ['Role'] = {HOUND.DB.RadarType.SEARCH},
+            ['Assigned'] = { "SA-10" },
+            ['Role'] = { HOUND.DB.RadarType.SEARCH },
             ['Band'] = {
-                [true] = {0.090846,0.012531},
-                [false] = {0.090846,0.012531}
+                [true] = { 0.090846, 0.012531 },
+                [false] = { 0.090846, 0.012531 }
             },
             ['Primary'] = false
         },
         ['RLS_19J6'] = {
             ['Name'] = "Tin Shield",
-            ['Assigned'] = {"SA-5"},
-            ['Role'] = {HOUND.DB.RadarType.SEARCH},
+            ['Assigned'] = { "SA-5" },
+            ['Role'] = { HOUND.DB.RadarType.SEARCH },
             ['Band'] = {
-                [true] = {0.093685,0.011505},
-                [false] = {0.093685,0.011505}
+                [true] = { 0.093685, 0.011505 },
+                [false] = { 0.093685, 0.011505 }
             },
             ['Primary'] = false
         },
         ['S-300PS 40B6MD sr_19J6'] = {
             ['Name'] = "Tin Shield",
-            ['Assigned'] = {"SA-10"},
-            ['Role'] = {HOUND.DB.RadarType.SEARCH},
+            ['Assigned'] = { "SA-10" },
+            ['Role'] = { HOUND.DB.RadarType.SEARCH },
             ['Band'] = {
-                [true] = {0.093685,0.011505},
-                [false] = {0.093685,0.011505}
+                [true] = { 0.093685, 0.011505 },
+                [false] = { 0.093685, 0.011505 }
             },
             ['Primary'] = false
         },
         ['S-300PS 40B6M tr'] = {
             ['Name'] = "Tomb Stone",
-            ['Assigned'] = {"SA-10"},
-            ['Role'] = {HOUND.DB.RadarType.TRACK},
+            ['Assigned'] = { "SA-10" },
+            ['Role'] = { HOUND.DB.RadarType.TRACK },
             ['Band'] = {
-                [true] = {0.014990,0.022484},
-                [false] = {0.014990,0.022484}
+                [true] = { 0.014990, 0.022484 },
+                [false] = { 0.014990, 0.022484 }
             },
             ['Primary'] = true
         },
         ['S-300PS 5H63C 30H6_tr'] = {
             ['Name'] = "Flap Lid",
-            ['Assigned'] = {"SA-10"},
-            ['Role'] = {HOUND.DB.RadarType.TRACK},
+            ['Assigned'] = { "SA-10" },
+            ['Role'] = { HOUND.DB.RadarType.TRACK },
             ['Band'] = {
-                [true] = {0.014990,0.022484},
-                [false] = {0.014990,0.022484}
+                [true] = { 0.014990, 0.022484 },
+                [false] = { 0.014990, 0.022484 }
             },
             ['Primary'] = true
         },
         ['SA-11 Buk SR 9S18M1'] = {
             ['Name'] = "Snow Drift",
-            ['Assigned'] = {"SA-11"},
-            ['Role'] = {HOUND.DB.RadarType.SEARCH},
+            ['Assigned'] = { "SA-11" },
+            ['Role'] = { HOUND.DB.RadarType.SEARCH },
             ['Band'] = {
-                [true] = {0.033310,0.016655},
+                [true] = { 0.033310, 0.016655 },
                 [false] = HOUND.DB.Bands.F
             },
             ['Primary'] = true
         },
         ['SA-11 Buk LN 9A310M1'] = {
             ['Name'] = "Fire Dome",
-            ['Assigned'] = {"SA-11"},
-            ['Role'] = {HOUND.DB.RadarType.TRACK},
+            ['Assigned'] = { "SA-11" },
+            ['Role'] = { HOUND.DB.RadarType.TRACK },
             ['Band'] = {
-                [true] = {0.033310,0.016655},
-                [false] = {0.029979,0.019986}
+                [true] = { 0.033310, 0.016655 },
+                [false] = { 0.029979, 0.019986 }
             },
             ['Primary'] = false
         },
         ['Tor 9A331'] = {
             ['Name'] = "Tor",
-            ['Assigned'] = {"SA-15"},
-            ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
+            ['Assigned'] = { "SA-15" },
+            ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
             ['Band'] = {
-                [true] = HOUND.DB.Bands.H,
+                [true] = {0.037474,0.037474}, -- G+H
                 [false] = HOUND.DB.Bands.F
             },
             ['Primary'] = true
         },
         ['Strela-1 9P31'] = {
             ['Name'] = "SA-9",
-            ['Assigned'] = {"Strela"},
-            ['Role'] = {HOUND.DB.RadarType.RANGEFINDER},
+            ['Assigned'] = { "Strela" },
+            ['Role'] = { HOUND.DB.RadarType.RANGEFINDER },
             ['Band'] = {
                 [true] = HOUND.DB.Bands.K,
                 [false] = HOUND.DB.Bands.K
@@ -2038,8 +2042,8 @@ do
         },
         ['Strela-10M3'] = {
             ['Name'] = "SA-13",
-            ['Assigned'] = {"Strela"},
-            ['Role'] = {HOUND.DB.RadarType.RANGEFINDER},
+            ['Assigned'] = { "Strela" },
+            ['Role'] = { HOUND.DB.RadarType.RANGEFINDER },
             ['Band'] = {
                 [true] = HOUND.DB.Bands.J,
                 [false] = HOUND.DB.Bands.J
@@ -2048,18 +2052,18 @@ do
         },
         ['Patriot str'] = {
             ['Name'] = "Patriot",
-            ['Assigned'] = {"Patriot"},
-            ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
+            ['Assigned'] = { "Patriot" },
+            ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
             ['Band'] = {
-                [true] = {0.055008,0.011910},
-                [false] = {0.055008,0.011910}
+                [true] = { 0.055008, 0.011910 },
+                [false] = { 0.055008, 0.011910 }
             },
             ['Primary'] = true
         },
         ['Hawk sr'] = {
             ['Name'] = "Hawk SR",
-            ['Assigned'] = {"Hawk"},
-            ['Role'] = {HOUND.DB.RadarType.SEARCH},
+            ['Assigned'] = { "Hawk" },
+            ['Role'] = { HOUND.DB.RadarType.SEARCH },
             ['Band'] = {
                 [true] = HOUND.DB.Bands.C,
                 [false] = HOUND.DB.Bands.C
@@ -2068,18 +2072,18 @@ do
         },
         ['Hawk tr'] = {
             ['Name'] = "Hawk TR",
-            ['Assigned'] = {"Hawk"},
-            ['Role'] = {HOUND.DB.RadarType.TRACK},
+            ['Assigned'] = { "Hawk" },
+            ['Role'] = { HOUND.DB.RadarType.TRACK },
             ['Band'] = {
-                [true] = {0.024983,0.012491},
-                [false] = {0.024983,0.012491}
+                [true] = { 0.024983, 0.012491 },
+                [false] = { 0.024983, 0.012491 }
             },
             ['Primary'] = true
         },
         ['Hawk cwar'] = {
             ['Name'] = "Hawk CWAR",
-            ['Assigned'] = {"Hawk"},
-            ['Role'] = {HOUND.DB.RadarType.TRACK},
+            ['Assigned'] = { "Hawk" },
+            ['Role'] = { HOUND.DB.RadarType.TRACK },
             ['Band'] = {
                 [true] = HOUND.DB.Bands.J,
                 [false] = HOUND.DB.Bands.J
@@ -2088,28 +2092,28 @@ do
         },
         ['RPC_5N62V'] = {
             ['Name'] = "Square Pair",
-            ['Assigned'] = {"SA-5"},
-            ['Role'] = {HOUND.DB.RadarType.TRACK},
+            ['Assigned'] = { "SA-5" },
+            ['Role'] = { HOUND.DB.RadarType.TRACK },
             ['Band'] = {
-                [true] = {0.076870,0.116545},
-                [false] = {0.076870,0.116545}
+                [true] = {0.044087,0.002755},
+                [false] = {0.044087,0.002755}
             },
             ['Primary'] = true
         },
         ['Roland ADS'] = {
             ['Name'] = "Roland TR",
-            ['Assigned'] = {"Roland"},
-            ['Role'] = {HOUND.DB.RadarType.TRACK},
+            ['Assigned'] = { "Roland" },
+            ['Role'] = { HOUND.DB.RadarType.TRACK },
             ['Band'] = {
-                [true] = {0.024983,0.012491},
+                [true] = { 0.024983, 0.012491 },
                 [false] = HOUND.DB.Bands.D
             },
             ['Primary'] = true
         },
         ['Roland Radar'] = {
             ['Name'] = "Roland SR",
-            ['Assigned'] = {"Roland"},
-            ['Role'] = {HOUND.DB.RadarType.SEARCH},
+            ['Assigned'] = { "Roland" },
+            ['Role'] = { HOUND.DB.RadarType.SEARCH },
             ['Band'] = {
                 [true] = HOUND.DB.Bands.D,
                 [false] = HOUND.DB.Bands.D
@@ -2118,8 +2122,8 @@ do
         },
         ['Gepard'] = {
             ['Name'] = "Gepard",
-            ['Assigned'] = {"Gepard"},
-            ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
+            ['Assigned'] = { "Gepard" },
+            ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
             ['Band'] = {
                 [true] = HOUND.DB.Bands.J,
                 [false] = HOUND.DB.Bands.E
@@ -2128,8 +2132,8 @@ do
         },
         ['rapier_fsa_blindfire_radar'] = {
             ['Name'] = "Rapier",
-            ['Assigned'] = {"Rapier"},
-            ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
+            ['Assigned'] = { "Rapier" },
+            ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
             ['Band'] = {
                 [true] = HOUND.DB.Bands.F,
                 [false] = HOUND.DB.Bands.F
@@ -2138,48 +2142,58 @@ do
         },
         ['rapier_fsa_launcher'] = {
             ['Name'] = "Rapier",
-            ['Assigned'] = {"Rapier"},
-            ['Role'] = {HOUND.DB.RadarType.TRACK},
+            ['Assigned'] = { "Rapier" },
+            ['Role'] = { HOUND.DB.RadarType.TRACK },
             ['Band'] = {
-                [true] = {0.074948,0.224844},
-                [false] = {0.074948,0.224844}
+                [true] = { 0.074948, 0.224844 },
+                [false] = { 0.074948, 0.224844 }
             },
             ['Primary'] = false
         },
         ['NASAMS_Radar_MPQ64F1'] = {
             ['Name'] = "Sentinel",
-            ['Assigned'] = {"NASAMS"},
-            ['Role'] = {HOUND.DB.RadarType.SEARCH},
+            ['Assigned'] = { "NASAMS" },
+            ['Role'] = { HOUND.DB.RadarType.SEARCH },
             ['Band'] = {
-                [true] = {0.024983,0.012491},
-                [false] = {0.024983,0.012491}
+                [true] = { 0.024983, 0.012491 },
+                [false] = { 0.024983, 0.012491 }
             },
             ['Primary'] = true
         },
         ['HQ-7_STR_SP'] = {
             ['Name'] = "HQ-7",
-            ['Assigned'] = {"HQ-7"},
-            ['Role'] = {HOUND.DB.RadarType.SEARCH},
+            ['Assigned'] = { "HQ-7" },
+            ['Role'] = { HOUND.DB.RadarType.SEARCH },
             ['Band'] = {
-                [true] = {0.029979,0.019986},
-                [false] = {0.029979,0.019986}
+                [true] = {0.516884,0.082701},
+                [false] = HOUND.DB.Bands.E
             },
             ['Primary'] = false
         },
         ['HQ-7_LN_SP'] = {
             ['Name'] = "HQ-7",
-            ['Assigned'] = {"HQ-7"},
-            ['Role'] = {HOUND.DB.RadarType.TRACK},
+            ['Assigned'] = { "HQ-7" },
+            ['Role'] = { HOUND.DB.RadarType.TRACK },
             ['Band'] = {
                 [true] = HOUND.DB.Bands.J,
-                [false] = HOUND.DB.Bands.J
+                [false] = HOUND.DB.Bands.E
+            },
+            ['Primary'] = true
+        },
+        ['HQ-7_LN_P'] = {
+            ['Name'] = "HQ-7",
+            ['Assigned'] = { "HQ-7" },
+            ['Role'] = { HOUND.DB.RadarType.TRACK },
+            ['Band'] = {
+                [true] = HOUND.DB.Bands.E,
+                [false] = HOUND.DB.Bands.E
             },
             ['Primary'] = true
         },
         ['2S6 Tunguska'] = {
             ['Name'] = "Tunguska",
-            ['Assigned'] = {"Tunguska"},
-            ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
+            ['Assigned'] = { "Tunguska" },
+            ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
             ['Band'] = {
                 [true] = HOUND.DB.Bands.J,
                 [false] = HOUND.DB.Bands.E
@@ -2188,48 +2202,48 @@ do
         },
         ['ZSU-23-4 Shilka'] = {
             ['Name'] = "Shilka",
-            ['Assigned'] = {"AAA"},
-            ['Role'] = {HOUND.DB.RadarType.TRACK},
+            ['Assigned'] = { "AAA" },
+            ['Role'] = { HOUND.DB.RadarType.TRACK },
             ['Band'] = {
-                [true] = {0.019217,0.001316},
-                [false] = {0.019217,0.001316}
+                [true] = { 0.019217, 0.001316 },
+                [false] = { 0.019217, 0.001316 }
             },
             ['Primary'] = true
         },
         ['HEMTT_C-RAM_Phalanx'] = {
             ['Name'] = "Phalanx C-RAM",
-            ['Assigned'] = {"AAA"},
-            ['Role'] = {HOUND.DB.RadarType.TRACK},
+            ['Assigned'] = { "AAA" },
+            ['Role'] = { HOUND.DB.RadarType.TRACK },
             ['Band'] = {
-                [true] = {0.016655,0.008328},
-                [false] = {0.016655,0.008328}
+                [true] = { 0.016655, 0.008328 },
+                [false] = { 0.016655, 0.008328 }
             },
             ['Primary'] = true
         },
         ['Dog Ear radar'] = {
             ['Name'] = "Dog Ear",
-            ['Assigned'] = {"AAA"},
-            ['Role'] = {HOUND.DB.RadarType.SEARCH},
+            ['Assigned'] = { "AAA" },
+            ['Role'] = { HOUND.DB.RadarType.SEARCH },
             ['Band'] = {
-                [true] = {0.049965,0.049965},
-                [false] = {0.049965,0.049965}
+                [true] = { 0.049965, 0.049965 },
+                [false] = { 0.049965, 0.049965 }
             },
             ['Primary'] = true
         },
         ['SON_9'] = {
             ['Name'] = "Fire Can",
-            ['Assigned'] = {"AAA"},
-            ['Role'] = {HOUND.DB.RadarType.TRACK},
+            ['Assigned'] = { "AAA" },
+            ['Role'] = { HOUND.DB.RadarType.TRACK },
             ['Band'] = {
-                [true] = {0.103377,0.007658},
-                [false] = {0.103377,0.007658}
+                [true] = { 0.103377, 0.007658 },
+                [false] = { 0.103377, 0.007658 }
             },
             ['Primary'] = true
         },
         ['Silkworm_SR'] = {
             ['Name'] = "Silkworm",
-            ['Assigned'] = {"Silkworm"},
-            ['Role'] = {HOUND.DB.RadarType.ANTISHIP},
+            ['Assigned'] = { "Silkworm" },
+            ['Role'] = { HOUND.DB.RadarType.ANTISHIP },
             ['Band'] = {
                 [true] = HOUND.DB.Bands.K,
                 [false] = HOUND.DB.Bands.K
@@ -2238,28 +2252,28 @@ do
         },
         ['FuSe-65'] = {
             ['Name'] = "Würzburg",
-            ['Assigned'] = {"AAA"},
-            ['Role'] = {HOUND.DB.RadarType.TRACK},
+            ['Assigned'] = { "AAA" },
+            ['Role'] = { HOUND.DB.RadarType.TRACK },
             ['Band'] = {
-                [true] = {0.535344,0.000000},
-                [false] = {0.535344,0.000000}
+                [true] = { 0.535344, 0.000000 },
+                [false] = { 0.535344, 0.000000 }
             },
             ['Primary'] = false
         },
         ['FuMG-401'] = {
             ['Name'] = "EWR",
-            ['Assigned'] = {"EWR"},
-            ['Role'] = {HOUND.DB.RadarType.EWR},
+            ['Assigned'] = { "EWR" },
+            ['Role'] = { HOUND.DB.RadarType.EWR },
             ['Band'] = {
-                [true] = {2.306096,0.192175},
-                [false] = {2.306096,0.192175}
+                [true] = { 2.306096, 0.192175 },
+                [false] = { 2.306096, 0.192175 }
             },
             ['Primary'] = false
         },
         ['Flakscheinwerfer_37'] = {
             ['Name'] = "AAA Searchlight",
-            ['Assigned'] = {"AAA"},
-            ['Role'] = {HOUND.DB.RadarType.NONE},
+            ['Assigned'] = { "AAA" },
+            ['Role'] = { HOUND.DB.RadarType.NONE },
             ['Band'] = {
                 [true] = HOUND.DB.Bands.L,
                 [false] = HOUND.DB.Bands.L
@@ -2268,39 +2282,39 @@ do
         },
         ['Type_052B'] = {
             ['Name'] = "Luyang-1 (DD)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
+            ['Assigned'] = { "Naval" },
+            ['Role'] = { HOUND.DB.RadarType.NAVAL },
             ['Band'] = {
-                [true] = {0.024983,0.012491},
-                [false] = {0.024983,0.012491}
+                [true] = {0.033310,0.016655},
+                [false] = HOUND.DB.Bands.F
             },
             ['Primary'] = true
         },
         ['Type_052C'] = {
             ['Name'] = "Luyang-2 (DD)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
+            ['Assigned'] = { "Naval" },
+            ['Role'] = { HOUND.DB.RadarType.NAVAL },
             ['Band'] = {
-                [true] = {0.516884,0.082701},
-                [false] = {0.024983,0.012491}
+                [true] = { 0.516884, 0.082701 },
+                [false] = { 0.024983, 0.012491 }
             },
             ['Primary'] = true
         },
         ['Type_054A'] = {
             ['Name'] = "Jiangkai (FF)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
+            ['Assigned'] = { "Naval" },
+            ['Role'] = { HOUND.DB.RadarType.NAVAL },
             ['Band'] = {
-                [true] = {0.024983,0.012491},
-                [false] = {0.024983,0.012491}
+                [true] = {0.033310,0.016655},
+                [false] = HOUND.DB.Bands.F
             },
             ['Primary'] = true
         },
 
         ['Type_093'] = {
             ['Name'] = "Shang Submarine",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
+            ['Assigned'] = { "Naval" },
+            ['Role'] = { HOUND.DB.RadarType.NAVAL },
             ['Band'] = {
                 [true] = HOUND.DB.Bands.E,
                 [false] = HOUND.DB.Bands.E
@@ -2309,118 +2323,118 @@ do
         },
         ['USS_Arleigh_Burke_IIa'] = {
             ['Name'] = "Arleigh Burke (DD)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
+            ['Assigned'] = { "Naval" },
+            ['Role'] = { HOUND.DB.RadarType.NAVAL },
             ['Band'] = {
-                [true] = {0.024983,0.012491},
-                [false] = {0.318251,0.034446}
+                [true] = { 0.024983, 0.012491 },
+                [false] = { 0.318251, 0.034446 }
             },
             ['Primary'] = true
         },
         ['CV_1143_5'] = {
             ['Name'] = "Kuznetsov (CV)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
+            ['Assigned'] = { "Naval" },
+            ['Role'] = { HOUND.DB.RadarType.NAVAL },
             ['Band'] = {
-                [true] = {0.024983,0.012491},
-                [false] = {0.024983,0.012491}
+                [true] = { 0.024983, 0.012491 },
+                [false] = { 0.024983, 0.012491 }
             },
             ['Primary'] = true
         },
         ['KUZNECOW'] = {
             ['Name'] = "Kuznetsov (CV)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
+            ['Assigned'] = { "Naval" },
+            ['Role'] = { HOUND.DB.RadarType.NAVAL },
             ['Band'] = {
-                [true] = {0.024983,0.012491},
-                [false] = {0.024983,0.012491}
+                [true] = { 0.024983, 0.012491 },
+                [false] = { 0.024983, 0.012491 }
             },
             ['Primary'] = true
         },
         ['Forrestal'] = {
             ['Name'] = "Forrestal (CV)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
+            ['Assigned'] = { "Naval" },
+            ['Role'] = { HOUND.DB.RadarType.NAVAL },
             ['Band'] = {
-                [true] = {0.516884,0.082701},
-                [false] = {0.516884,0.082701}
+                [true] = { 0.516884, 0.082701 },
+                [false] = { 0.516884, 0.082701 }
             },
             ['Primary'] = true
         },
         ['VINSON'] = {
             ['Name'] = "Nimitz (CV)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
+            ['Assigned'] = { "Naval" },
+            ['Role'] = { HOUND.DB.RadarType.NAVAL },
             ['Band'] = {
-                [true] = {0.318251,0.034446},
-                [false] = {0.318251,0.034446}
+                [true] = { 0.318251, 0.034446 },
+                [false] = { 0.318251, 0.034446 }
             },
             ['Primary'] = true
         },
         ['CVN_71'] = {
             ['Name'] = "Nimitz (CV)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
+            ['Assigned'] = { "Naval" },
+            ['Role'] = { HOUND.DB.RadarType.NAVAL },
             ['Band'] = {
-                [true] = {0.516884,0.082701},
-                [false] = {0.318251,0.034446}
+                [true] = { 0.516884, 0.082701 },
+                [false] = { 0.318251, 0.034446 }
             },
             ['Primary'] = true
         },
         ['CVN_72'] = {
             ['Name'] = "Nimitz (CV)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
+            ['Assigned'] = { "Naval" },
+            ['Role'] = { HOUND.DB.RadarType.NAVAL },
             ['Band'] = {
-                [true] = {0.516884,0.082701},
-                [false] = {0.318251,0.034446}
+                [true] = { 0.516884, 0.082701 },
+                [false] = { 0.318251, 0.034446 }
             },
             ['Primary'] = true
         },
         ['CVN_73'] = {
             ['Name'] = "Nimitz (CV)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
+            ['Assigned'] = { "Naval" },
+            ['Role'] = { HOUND.DB.RadarType.NAVAL },
             ['Band'] = {
-                [true] = {0.516884,0.082701},
-                [false] = {0.318251,0.034446}
+                [true] = { 0.516884, 0.082701 },
+                [false] = { 0.318251, 0.034446 }
             },
             ['Primary'] = true
         },
         ['Stennis'] = {
             ['Name'] = "Nimitz (CV)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
+            ['Assigned'] = { "Naval" },
+            ['Role'] = { HOUND.DB.RadarType.NAVAL },
             ['Band'] = {
-                [true] = {0.516884,0.082701},
-                [false] = {0.318251,0.034446}
+                [true] = { 0.516884, 0.082701 },
+                [false] = { 0.318251, 0.034446 }
             },
             ['Primary'] = true
         },
         ['CVN_75'] = {
             ['Name'] = "Nimitz (CV)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
+            ['Assigned'] = { "Naval" },
+            ['Role'] = { HOUND.DB.RadarType.NAVAL },
             ['Band'] = {
-                [true] = {0.516884,0.082701},
-                [false] = {0.318251,0.034446}
+                [true] = { 0.516884, 0.082701 },
+                [false] = { 0.318251, 0.034446 }
             },
             ['Primary'] = true
         },
         ['La_Combattante_II'] = {
             ['Name'] = "La Combattante (FC)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
+            ['Assigned'] = { "Naval" },
+            ['Role'] = { HOUND.DB.RadarType.NAVAL },
             ['Band'] = {
-                [true] = HOUND.DB.Bands.J,
-                [false] = HOUND.DB.Bands.E
+                [true] = {0.024983,0.012491},
+                [false] = {0.049965,0.007687}
             },
             ['Primary'] = true
         },
         ['ALBATROS'] = {
             ['Name'] = "Grisha (FC)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
+            ['Assigned'] = { "Naval" },
+            ['Role'] = { HOUND.DB.RadarType.NAVAL },
             ['Band'] = {
                 [true] = HOUND.DB.Bands.H,
                 [false] = HOUND.DB.Bands.H
@@ -2429,58 +2443,58 @@ do
         },
         ['MOLNIYA'] = {
             ['Name'] = "Molniya (FC)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
+            ['Assigned'] = { "Naval" },
+            ['Role'] = { HOUND.DB.RadarType.NAVAL },
             ['Band'] = {
-                [true] = {0.024983,0.012491},
-                [false] = {0.024983,0.012491}
+                [true] = { 0.024983, 0.012491 },
+                [false] = { 0.024983, 0.012491 }
             },
             ['Primary'] = true
         },
         ['MOSCOW'] = {
             ['Name'] = "Moskva (CG)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
+            ['Assigned'] = { "Naval" },
+            ['Role'] = { HOUND.DB.RadarType.NAVAL },
             ['Band'] = {
-                [true] = {0.024983,0.012491},
-                [false] = {0.024983,0.012491}
+                [true] = { 0.024983, 0.012491 },
+                [false] = { 0.024983, 0.012491 }
             },
             ['Primary'] = true
         },
         ['NEUSTRASH'] = {
             ['Name'] = "Neustrashimy (DD)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
+            ['Assigned'] = { "Naval" },
+            ['Role'] = { HOUND.DB.RadarType.NAVAL },
             ['Band'] = {
-                [true] = {0.024983,0.012491},
-                [false] = {0.024983,0.012491}
+                [true] = { 0.024983, 0.012491 },
+                [false] = { 0.024983, 0.012491 }
             },
             ['Primary'] = true
         },
         ['PERRY'] = {
             ['Name'] = "Oliver H. Perry (FF)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
+            ['Assigned'] = { "Naval" },
+            ['Role'] = { HOUND.DB.RadarType.NAVAL },
             ['Band'] = {
-                [true] = {0.028552,0.000696},
-                [false] = {0.028552,0.000696}
+                [true] = { 0.028552, 0.000696 },
+                [false] = { 0.028552, 0.000696 }
             },
             ['Primary'] = true
         },
         ['PIOTR'] = {
             ['Name'] = "Kirov (CG)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
+            ['Assigned'] = { "Naval" },
+            ['Role'] = { HOUND.DB.RadarType.NAVAL },
             ['Band'] = {
-                [true] = {0.024983,0.012491},
-                [false] = {0.024983,0.012491}
+                [true] = { 0.024983, 0.012491 },
+                [false] = { 0.024983, 0.012491 }
             },
             ['Primary'] = true
         },
         ['REZKY'] = {
             ['Name'] = "Krivak (FF)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
+            ['Assigned'] = { "Naval" },
+            ['Role'] = { HOUND.DB.RadarType.NAVAL },
             ['Band'] = {
                 [true] = HOUND.DB.Bands.H,
                 [false] = HOUND.DB.Bands.H
@@ -2489,98 +2503,118 @@ do
         },
         ['LHA_Tarawa'] = {
             ['Name'] = "Tarawa (LHA)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
+            ['Assigned'] = { "Naval" },
+            ['Role'] = { HOUND.DB.RadarType.NAVAL },
             ['Band'] = {
-                [true] = {0.516884,0.082701},
-                [false] = {0.516884,0.082701}
+                [true] = { 0.516884, 0.082701 },
+                [false] = { 0.516884, 0.082701 }
             },
             ['Primary'] = true
         },
         ['TICONDEROG'] = {
             ['Name'] = "Ticonderoga (CG)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
+            ['Assigned'] = { "Naval" },
+            ['Role'] = { HOUND.DB.RadarType.NAVAL },
             ['Band'] = {
-                [true] = {0.024983,0.012491},
-                [false] = {0.318251,0.034446}
+                [true] = { 0.024983, 0.012491 },
+                [false] = { 0.318251, 0.034446 }
             },
             ['Primary'] = true
         },
         ['hms_invincible'] = {
             ['Name'] = "Invincible (CV)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
+            ['Assigned'] = { "Naval" },
+            ['Role'] = { HOUND.DB.RadarType.NAVAL },
             ['Band'] = {
-                [true] = {0.516884,0.082701},
-                [false] = {0.516884,0.082701}
+                [true] = { 0.516884, 0.082701 },
+                [false] = { 0.516884, 0.082701 }
             },
             ['Primary'] = true
         },
         ['leander-gun-achilles'] = {
             ['Name'] = "Leander (FF)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
+            ['Assigned'] = { "Naval" },
+            ['Role'] = { HOUND.DB.RadarType.NAVAL },
             ['Band'] = {
-                [true] = {0.516884,0.082701},
-                [false] = {0.516884,0.082701}
+                [true] = { 0.516884, 0.082701 },
+                [false] = { 0.516884, 0.082701 }
             },
             ['Primary'] = true
         },
         ['leander-gun-andromeda'] = {
             ['Name'] = "Leander (FF)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
+            ['Assigned'] = { "Naval" },
+            ['Role'] = { HOUND.DB.RadarType.NAVAL },
             ['Band'] = {
-                [true] = {0.516884,0.082701},
-                [false] = {0.516884,0.082701}
+                [true] = { 0.516884, 0.082701 },
+                [false] = { 0.516884, 0.082701 }
             },
             ['Primary'] = true
         },
         ['leander-gun-ariadne'] = {
             ['Name'] = "Leander (FF)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
+            ['Assigned'] = { "Naval" },
+            ['Role'] = { HOUND.DB.RadarType.NAVAL },
             ['Band'] = {
-                [true] = {0.516884,0.082701},
-                [false] = {0.516884,0.082701}
+                [true] = { 0.516884, 0.082701 },
+                [false] = { 0.516884, 0.082701 }
             },
             ['Primary'] = true
         },
         ['leander-gun-condell'] = {
             ['Name'] = "Condell (FF)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
+            ['Assigned'] = { "Naval" },
+            ['Role'] = { HOUND.DB.RadarType.NAVAL },
             ['Band'] = {
-                [true] = {0.516884,0.082701},
-                [false] = {0.516884,0.082701}
+                [true] = { 0.516884, 0.082701 },
+                [false] = { 0.516884, 0.082701 }
             },
             ['Primary'] = true
         },
         ['leander-gun-lynch'] = {
             ['Name'] = "Condell (FF)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
+            ['Assigned'] = { "Naval" },
+            ['Role'] = { HOUND.DB.RadarType.NAVAL },
             ['Band'] = {
-                [true] = {0.516884,0.082701},
-                [false] = {0.516884,0.082701}
+                [true] = { 0.516884, 0.082701 },
+                [false] = { 0.516884, 0.082701 }
             },
             ['Primary'] = true
         },
         ['ara_vdm'] = {
             ['Name'] = "Veinticinco de Mayo (CV)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
+            ['Assigned'] = { "Naval" },
+            ['Role'] = { HOUND.DB.RadarType.NAVAL },
             ['Band'] = {
-                [true] = {0.516884,0.082701},
+                [true] = { 0.516884, 0.082701 },
+                [false] = { 0.136269, 0.013627 }
+            },
+            ['Primary'] = true
+        },
+        ['santafe'] = {
+        ['Name'] = "Balao Class (SS)",
+            ['Assigned'] = { "Naval" },
+            ['Role'] = { HOUND.DB.RadarType.NAVAL },
+            ['Band'] = {
+                [true] = {0.136269,0.013627},
                 [false] = {0.136269,0.013627}
+        },
+        ['Primary'] = true
+        },
+        ['Essex'] = {
+            ['Name'] = "Essex (CV)",
+            ['Assigned'] = { "Naval" },
+            ['Role'] = { HOUND.DB.RadarType.NAVAL },
+            ['Band'] = {
+                    [true] = {0.516884,0.082701},
+                    [false] = {0.136269,0.013627}
             },
             ['Primary'] = true
         },
         ['BDK-775'] = {
             ['Name'] = "Ropucha (LS)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
+            ['Assigned'] = { "Naval" },
+            ['Role'] = { HOUND.DB.RadarType.NAVAL },
             ['Band'] = {
                 [true] = HOUND.DB.Bands.E,
                 [false] = HOUND.DB.Bands.E
@@ -2589,8 +2623,8 @@ do
         },
         ['Type_071'] = {
             ['Name'] = "Yuzhao transport",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
+            ['Assigned'] = { "Naval" },
+            ['Role'] = { HOUND.DB.RadarType.NAVAL },
             ['Band'] = {
                 [true] = HOUND.DB.Bands.E,
                 [false] = HOUND.DB.Bands.E
@@ -2599,8 +2633,8 @@ do
         },
         ['atconveyor'] = {
             ['Name'] = "SS Atlantic Conveyor",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
+            ['Assigned'] = { "Naval" },
+            ['Role'] = { HOUND.DB.RadarType.NAVAL },
             ['Band'] = {
                 [true] = HOUND.DB.Bands.D,
                 [false] = HOUND.DB.Bands.D
@@ -2609,249 +2643,249 @@ do
         },
     }
 
-    HOUND.DB.Platform =  {
+    HOUND.DB.Platform = {
         [Object.Category.STATIC] = {
-            ['Comms tower M'] = {antenna = {size = 107, factor = 1},ins_error=0},
-            ['.Command Center'] = {antenna = {size = 62, factor = 1},ins_error=0},
-            ['Cow'] = {antenna = {size = 1000, factor = 10},ins_error=0},
-            ['TV tower']  = {antenna = {size = 235, factor = 1},ins_error=0},
+            ['Comms tower M']   = { antenna = { size = 107, factor = 1 }, ins_error = 0 },
+            ['.Command Center'] = { antenna = { size = 62, factor = 1 }, ins_error = 0 },
+            ['Cow']             = { antenna = { size = 1000, factor = 10 }, ins_error = 0 },
+            ['TV tower']        = { antenna = { size = 235, factor = 1 }, ins_error = 0 },
         },
         [Object.Category.UNIT] = {
-            ['Patriot AMG'] = {antenna = {size = 15, factor = 1},ins_error=0},
-            ['SPK-11'] = {antenna = {size = 15, factor = 1},ins_error=0},
-            ['CH-47D'] = {antenna = {size = 12, factor = 1},ins_error=0},
-            ['CH-53E'] = {antenna = {size = 10, factor = 1},ins_error=0},
-            ['MIL-26'] = {antenna = {size = 20, factor = 1},ins_error=50},
-            ['SH-60B'] = {antenna = {size = 8, factor = 1},ins_error=0},
-            ['UH-60A'] = {antenna = {size = 8, factor = 1},ins_error=0},
-            ['Mi-8MT'] = {antenna = {size = 8, factor = 1},ins_error=0},
-            ['UH-1H'] = {antenna = {size = 4, factor = 1},ins_error=50},
-            ['KA-27'] = {antenna = {size = 4, factor = 1},ins_error=50},
-            ['C-130'] = {antenna = {size = 35, factor = 1},ins_error=0},
-            ['C-17A'] = {antenna = {size = 40, factor = 1},ins_error=0}, -- stand-in for RC-135, tuned antenna size to match
-            ['S-3B'] = {antenna = {size = 18, factor = 0.8},ins_error=0},
-            ['E-3A'] = {antenna = {size = 9, factor = 0.5},ins_error=0},
-            ['E-2C'] = {antenna = {size = 7, factor = 0.5},ins_error=0},
-            ['Tu-95MS'] = {antenna = {size = 50, factor = 1},ins_error=50},
-            ['Tu-142'] = {antenna = {size = 50, factor = 1},ins_error=0},
-            ['IL-76MD'] = {antenna = {size = 48, factor = 0.8},ins_error=50},
-            ['H-6J'] = {antenna = {size = 3.5, factor = 1}, require = {CLSID='{Fantasmagoria}'},ins_error=100},
-            ['Su-24M'] = {antenna = {size = 3.5, factor = 1}, require = {CLSID='{Fantasmagoria}'},ins_error=50},
-            ['Su-24MR'] = {antenna = {size = 4.5, factor = 1}, require = {CLSID='{Tangazh}'},ins_error=50},
-            ['Su-25TM'] = {antenna = {size = 3.5, factor = 1}, require = {CLSID='{Fantasmagoria}'},ins_error=50},
-            ['An-30M'] = {antenna = {size = 25, factor = 1},ins_error=50},
-            ['A-50'] = {antenna = {size = 9, factor = 0.5},ins_error=0},
-            ['An-26B'] = {antenna = {size = 26, factor = 1},ins_error=100},
-            ['C-47'] = {antenna = {size = 12, factor = 1},ins_error=100},
-            ['Su-25T'] = {antenna = {size = 3.5, factor = 1}, require = {CLSID='{Fantasmagoria}'},ins_error=50},
-            ['AJS37'] = {antenna = {size = 4.5, factor = 1}, require = {CLSID='{U22A}'},ins_error=50},
-            ['F-16C_50'] = {antenna = {size = 1.45, factor = 1},require = {CLSID='{AN_ASQ_213}'},ins_error=0},
-            ['JF-17'] = {antenna = {size = 3.25, factor = 1}, require = {CLSID='{DIS_SPJ_POD}'},ins_error=0},
-            ['Mirage-F1EE'] = {antenna = {size = 3.7, factor = 1}, require = {CLSID='{TMV_018_Syrel_POD}'},ins_error=50}, -- does not reflect features in actual released product
-            ['Mirage-F1M-CE'] = {antenna = {size = 3.7, factor = 1}, require = {CLSID='{TMV_018_Syrel_POD}'},ins_error=0}, -- does not reflect features in actual released product
-            ['Mirage-F1M-EE'] = {antenna = {size = 3.7, factor = 1}, require = {CLSID='{TMV_018_Syrel_POD}'},ins_error=0}, -- does not reflect features in actual released product
-            ['Mirage-F1CR'] = {antenna = {size = 4, factor = 1}, require = {CLSID='{ASTAC_POD}'},ins_error=0}, -- AI only (FAF)
-            ['Mirage-F1EQ'] = {antenna = {size = 3.7, factor = 1}, require = {CLSID='{TMV_018_Syrel_POD}'},ins_error=50}, -- AI only (Iraq)
-            ['Mirage-F1EDA'] = {antenna = {size = 3.7, factor = 1}, require = {CLSID='{TMV_018_Syrel_POD}'},ins_error=50}, -- AI only (Qatar)
+            ['Patriot AMG'] = { antenna = { size = 15, factor = 1 }, ins_error = 0 },
+            ['SPK-11'] = { antenna = { size = 15, factor = 1 }, ins_error = 0 },
+            ['CH-47D'] = { antenna = { size = 12, factor = 1 }, ins_error = 0 },
+            ['CH-53E'] = { antenna = { size = 10, factor = 1 }, ins_error = 0 },
+            ['MIL-26'] = { antenna = { size = 20, factor = 1 }, ins_error = 50 },
+            ['SH-60B'] = { antenna = { size = 8, factor = 1 }, ins_error = 0 },
+            ['UH-60A'] = { antenna = { size = 8, factor = 1 }, ins_error = 0 },
+            ['Mi-8MT'] = { antenna = { size = 8, factor = 1 }, ins_error = 0 },
+            ['UH-1H'] = { antenna = { size = 4, factor = 1 }, ins_error = 50 },
+            ['KA-27'] = { antenna = { size = 4, factor = 1 }, ins_error = 50 },
+            ['C-130'] = { antenna = { size = 35, factor = 1 }, ins_error = 0 },
+            ['C-17A'] = { antenna = { size = 40, factor = 1 }, ins_error = 0 }, -- stand-in for RC-135, tuned antenna size to match
+            ['S-3B'] = { antenna = { size = 18, factor = 0.8 }, ins_error = 0 },
+            ['E-3A'] = { antenna = { size = 9, factor = 0.5 }, ins_error = 0 },
+            ['E-2C'] = { antenna = { size = 7, factor = 0.5 }, ins_error = 0 },
+            ['Tu-95MS'] = { antenna = { size = 50, factor = 1 }, ins_error = 50 },
+            ['Tu-142'] = { antenna = { size = 50, factor = 1 }, ins_error = 0 },
+            ['IL-76MD'] = { antenna = { size = 48, factor = 0.8 }, ins_error = 50 },
+            ['H-6J'] = { antenna = { size = 3.5, factor = 1 }, require = { Payload = {'PHANTASM'} }, ins_error = 100 },
+            ['Su-24M'] = { antenna = { size = 3.5, factor = 1 }, require = { Payload = {'PHANTASM'} }, ins_error = 50 },
+            ['Su-24MR'] = { antenna = { size = 4.5, factor = 1 }, require = { Payload = {'TANGAZH'} }, ins_error = 50 },
+            ['Su-25TM'] = { antenna = { size = 3.5, factor = 1 }, require = { Payload = {'PHANTASM'} }, ins_error = 50 },
+            ['An-30M'] = { antenna = { size = 25, factor = 1 }, ins_error = 50 },
+            ['A-50'] = { antenna = { size = 9, factor = 0.5 }, ins_error = 0 },
+            ['An-26B'] = { antenna = { size = 26, factor = 1 }, ins_error = 100 },
+            ['C-47'] = { antenna = { size = 12, factor = 1 }, ins_error = 100 },
+            ['Su-25T'] = { antenna = { size = 3.5, factor = 1 }, require = { Payload = {'PHANTASM'} }, ins_error = 50 },
+            ['AJS37'] = { antenna = { size = 4.5, factor = 1 }, require = { Payload = {'U22/A Jammer Pod','U22 Jammer'} }, ins_error = 50 },
+            ['F-16C_50'] = { antenna = { size = 1.45, factor = 1 }, require = { Payload = {'f-16c_hts_pod'} }, ins_error = 0 },
+            ['JF-17'] = { antenna = { size = 3.25, factor = 1 }, require = { Payload = {'KG-600'} }, ins_error = 0 },
+            ['Mirage-F1EE'] = { antenna = { size = 3.7, factor = 1 }, require = { Payload = {'TMV_018_Syrel_POD'} }, ins_error = 50 },  -- does not reflect features in actual released product
+            ['Mirage-F1M-CE'] = { antenna = { size = 3.7, factor = 1 }, require = { Payload = {'TMV_018_Syrel_POD'} }, ins_error = 0 }, -- does not reflect features in actual released product
+            ['Mirage-F1M-EE'] = { antenna = { size = 3.7, factor = 1 }, require = { Payload = {'TMV_018_Syrel_POD'} }, ins_error = 0 }, -- does not reflect features in actual released product
+            ['Mirage-F1CR'] = { antenna = { size = 4, factor = 1 }, require = { Payload = {'ASTAC_POD'} }, ins_error = 0 },             -- AI only (FAF)
+            ['Mirage-F1EQ'] = { antenna = { size = 3.7, factor = 1 }, require = { Payload = {'TMV_018_Syrel_POD'} }, ins_error = 50 },  -- AI only (Iraq)
+            ['Mirage-F1EDA'] = { antenna = { size = 3.7, factor = 1 }, require = { Payload = {'TMV_018_Syrel_POD'} }, ins_error = 50 }, -- AI only (Qatar)
         }
     }
-end--- Hound databases (Units modded)
+end
 do
-    HOUND.DB.Platform[Object.Category.UNIT]['UH-60L'] = {antenna = {size = 8, factor = 1},ins_error=0} -- community UH-69L
-    HOUND.DB.Platform[Object.Category.UNIT]['Hercules'] = {antenna = {size = 35, factor = 1},ins_error=0} -- Anubis' C-130J
-    HOUND.DB.Platform[Object.Category.UNIT]['EC130'] = {antenna = {size = 35, factor = 1},ins_error=0}  -- Secret Squirrel EC-130
-    HOUND.DB.Platform[Object.Category.UNIT]['RC135RJ'] = {antenna = {size = 40, factor = 1},ins_error=0} -- Secret Squirrel RC-135
-    HOUND.DB.Platform[Object.Category.UNIT]['P3C_Orion'] = {antenna = {size = 25, factor = 1},ins_error=0} -- MAM P-3C_Orion
-    HOUND.DB.Platform[Object.Category.UNIT]['CLP_P8'] = {antenna = {size = 35, factor = 1},ins_error=0} -- CLP P-8A posidon
-    HOUND.DB.Platform[Object.Category.UNIT]['CLP_TU214R'] = {antenna = {size = 40, factor = 1},ins_error=0} -- CLP TU-214R
-    HOUND.DB.Platform[Object.Category.UNIT]['EA_6B'] = {antenna = {size = 9, factor = 1},ins_error=0} --VSN EA-6B
-    HOUND.DB.Platform[Object.Category.UNIT]['EA-18G'] = {antenna = {size = 14, factor = 1},ins_error=0} --CJS EF-18G
-    HOUND.DB.Platform[Object.Category.UNIT]['Shavit'] = {antenna = {size = 30, factor = 1},ins_error=0} --IDF_Mods Shavit
+    HOUND.DB.Platform[Object.Category.UNIT]['UH-60L'] = { antenna = { size = 8, factor = 1 }, ins_error = 0 }      -- community UH-69L
+    HOUND.DB.Platform[Object.Category.UNIT]['Hercules'] = { antenna = { size = 35, factor = 1 }, ins_error = 0 }   -- Anubis' C-130J
+    HOUND.DB.Platform[Object.Category.UNIT]['EC130'] = { antenna = { size = 35, factor = 1 }, ins_error = 0 }      -- Secret Squirrel EC-130
+    HOUND.DB.Platform[Object.Category.UNIT]['RC135RJ'] = { antenna = { size = 40, factor = 1 }, ins_error = 0 }    -- Secret Squirrel RC-135
+    HOUND.DB.Platform[Object.Category.UNIT]['P3C_Orion'] = { antenna = { size = 25, factor = 1 }, ins_error = 0 }  -- MAM P-3C_Orion
+    HOUND.DB.Platform[Object.Category.UNIT]['CLP_P8'] = { antenna = { size = 35, factor = 1 }, ins_error = 0 }     -- CLP P-8A posidon
+    HOUND.DB.Platform[Object.Category.UNIT]['CLP_TU214R'] = { antenna = { size = 40, factor = 1 }, ins_error = 0 } -- CLP TU-214R
+    HOUND.DB.Platform[Object.Category.UNIT]['EA_6B'] = { antenna = { size = 9, factor = 1 }, ins_error = 0 }       --VSN EA-6B
+    HOUND.DB.Platform[Object.Category.UNIT]['EA-18G'] = { antenna = { size = 14, factor = 1 }, ins_error = 0 }     --CJS EF-18G
+    HOUND.DB.Platform[Object.Category.UNIT]['Shavit'] = { antenna = { size = 30, factor = 1 }, ins_error = 0 }     --IDF_Mods Shavit
 
     HOUND.DB.Radars['S-300PS 64H6E TRAILER sr'] = {
-            ['Name'] = "Big Bird",
-            ['Assigned'] = {"SA-10"},
-            ['Role'] = {HOUND.DB.RadarType.SEARCH},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.C,
-                [false] = HOUND.DB.Bands.C
-            },
-            ['Primary'] = false
-        }
+        ['Name'] = "Big Bird",
+        ['Assigned'] = { "SA-10" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH },
+        ['Band'] = {
+            [true] = HOUND.DB.Bands.C,
+            [false] = HOUND.DB.Bands.C
+        },
+        ['Primary'] = false
+    }
     HOUND.DB.Radars['S-300PS SA-10B 40B6MD MAST sr'] = {
-            ['Name'] = "Clam Shell",
-            ['Assigned'] = {"SA-10"},
-            ['Role'] = {HOUND.DB.RadarType.SEARCH},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.I,
-                [false] = HOUND.DB.Bands.I
-            },
-            ['Primary'] = false
-        }
+        ['Name'] = "Clam Shell",
+        ['Assigned'] = { "SA-10" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH },
+        ['Band'] = {
+            [true] = HOUND.DB.Bands.I,
+            [false] = HOUND.DB.Bands.I
+        },
+        ['Primary'] = false
+    }
     HOUND.DB.Radars['S-300PS 40B6M MAST tr'] = {
-            ['Name'] = "Flap Lid",
-            ['Assigned'] = {"SA-10"},
-            ['Role'] = {HOUND.DB.RadarType.TRACK},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.J,
-                [false] = HOUND.DB.Bands.J
-            },
-            ['Primary'] = true
-        }
+        ['Name'] = "Flap Lid",
+        ['Assigned'] = { "SA-10" },
+        ['Role'] = { HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = HOUND.DB.Bands.J,
+            [false] = HOUND.DB.Bands.J
+        },
+        ['Primary'] = true
+    }
     HOUND.DB.Radars['S-300PS 30H6 TRAILER tr'] = {
-            ['Name'] = "Flap Lid",
-            ['Assigned'] = {"SA-10"},
-            ['Role'] = {HOUND.DB.RadarType.TRACK},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.J,
-                [false] = HOUND.DB.Bands.J
-            },
-            ['Primary'] = true
-        }
+        ['Name'] = "Flap Lid",
+        ['Assigned'] = { "SA-10" },
+        ['Role'] = { HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = HOUND.DB.Bands.J,
+            [false] = HOUND.DB.Bands.J
+        },
+        ['Primary'] = true
+    }
     HOUND.DB.Radars['S-300PS 30N6 TRAILER tr'] = {
-            ['Name'] = "Flap Lid",
-            ['Assigned'] = {"SA-10"},
-            ['Role'] = {HOUND.DB.RadarType.TRACK},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.J,
-                [false] = HOUND.DB.Bands.J
-            },
-            ['Primary'] = true
-        }
+        ['Name'] = "Flap Lid",
+        ['Assigned'] = { "SA-10" },
+        ['Role'] = { HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = HOUND.DB.Bands.J,
+            [false] = HOUND.DB.Bands.J
+        },
+        ['Primary'] = true
+    }
     HOUND.DB.Radars['S-300PMU1 40B6MD sr'] = {
-            ['Name'] = "Clam Shell",
-            ['Assigned'] = {"SA-10"},
-            ['Role'] = {HOUND.DB.RadarType.SEARCH},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.I,
-                [false] = HOUND.DB.Bands.I
-            },
-            ['Primary'] = false
-        }
+        ['Name'] = "Clam Shell",
+        ['Assigned'] = { "SA-10" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH },
+        ['Band'] = {
+            [true] = HOUND.DB.Bands.I,
+            [false] = HOUND.DB.Bands.I
+        },
+        ['Primary'] = false
+    }
     HOUND.DB.Radars['S-300PMU1 64N6E sr'] = {
-            ['Name'] = "Big Bird",
-            ['Assigned'] = {"SA-10"},
-            ['Role'] = {HOUND.DB.RadarType.SEARCH},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.C,
-                [false] = HOUND.DB.Bands.C
-            },
-            ['Primary'] = false
-        }
+        ['Name'] = "Big Bird",
+        ['Assigned'] = { "SA-10" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH },
+        ['Band'] = {
+            [true] = HOUND.DB.Bands.C,
+            [false] = HOUND.DB.Bands.C
+        },
+        ['Primary'] = false
+    }
     HOUND.DB.Radars['S-300PMU1 30N6E tr'] = {
-            ['Name'] = "Flap Lid",
-            ['Assigned'] = {"SA-10"},
-            ['Role'] = {HOUND.DB.RadarType.TRACK},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.J,
-                [false] = HOUND.DB.Bands.J
-            },
-            ['Primary'] = true
-        }
+        ['Name'] = "Flap Lid",
+        ['Assigned'] = { "SA-10" },
+        ['Role'] = { HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = HOUND.DB.Bands.J,
+            [false] = HOUND.DB.Bands.J
+        },
+        ['Primary'] = true
+    }
     HOUND.DB.Radars['S-300PMU1 40B6M tr'] = {
-            ['Name'] = "Grave Stone",
-            ['Assigned'] = {"SA-10"},
-            ['Role'] = {HOUND.DB.RadarType.TRACK},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.J,
-                [false] = HOUND.DB.Bands.J
-            },
-            ['Primary'] = true
-        }
+        ['Name'] = "Grave Stone",
+        ['Assigned'] = { "SA-10" },
+        ['Role'] = { HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = HOUND.DB.Bands.J,
+            [false] = HOUND.DB.Bands.J
+        },
+        ['Primary'] = true
+    }
     HOUND.DB.Radars['S-300V 9S15 sr'] = {
-            ['Name'] = 'Bill Board',
-            ['Assigned'] = {"SA-10"},
-            ['Role'] = {HOUND.DB.RadarType.SEARCH},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.E,
-                [false] = HOUND.DB.Bands.E
-            },
-            ['Primary'] = false
-        }
+        ['Name'] = 'Bill Board',
+        ['Assigned'] = { "SA-10" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH },
+        ['Band'] = {
+            [true] = HOUND.DB.Bands.E,
+            [false] = HOUND.DB.Bands.E
+        },
+        ['Primary'] = false
+    }
     HOUND.DB.Radars['S-300V 9S19 sr'] = {
-            ['Name'] = 'High Screen',
-            ['Assigned'] = {"SA-10"},
-            ['Role'] = {HOUND.DB.RadarType.SEARCH},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.C,
-                [false] = HOUND.DB.Bands.C
-            },
-            ['Primary'] = false
-        }
+        ['Name'] = 'High Screen',
+        ['Assigned'] = { "SA-10" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH },
+        ['Band'] = {
+            [true] = HOUND.DB.Bands.C,
+            [false] = HOUND.DB.Bands.C
+        },
+        ['Primary'] = false
+    }
     HOUND.DB.Radars['S-300V 9S32 tr'] = {
-            ['Name'] = 'Grill Pan',
-            ['Assigned'] = {"SA-12"},
-            ['Role'] = {HOUND.DB.RadarType.TRACK},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.J,
-                [false] = HOUND.DB.Bands.J
-            },
-            ['Primary'] = true
-        }
+        ['Name'] = 'Grill Pan',
+        ['Assigned'] = { "SA-12" },
+        ['Role'] = { HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = HOUND.DB.Bands.J,
+            [false] = HOUND.DB.Bands.J
+        },
+        ['Primary'] = true
+    }
     HOUND.DB.Radars['S-300PMU2 92H6E tr'] = {
-            ['Name'] = 'Grave Stone',
-            ['Assigned'] = {"SA-10"},
-            ['Role'] = {HOUND.DB.RadarType.TRACK},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.I,
-                [false] = HOUND.DB.Bands.I
-            },
-            ['Primary'] = true
-        }
+        ['Name'] = 'Grave Stone',
+        ['Assigned'] = { "SA-10" },
+        ['Role'] = { HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = HOUND.DB.Bands.I,
+            [false] = HOUND.DB.Bands.I
+        },
+        ['Primary'] = true
+    }
     HOUND.DB.Radars['S-300PMU2 64H6E2 sr'] = {
-            ['Name'] = "Big Bird",
-            ['Assigned'] = {"SA-10"},
-            ['Role'] = {HOUND.DB.RadarType.SEARCH},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.C,
-                [false] = HOUND.DB.Bands.C
-            },
-            ['Primary'] = false
-        }
+        ['Name'] = "Big Bird",
+        ['Assigned'] = { "SA-10" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH },
+        ['Band'] = {
+            [true] = HOUND.DB.Bands.C,
+            [false] = HOUND.DB.Bands.C
+        },
+        ['Primary'] = false
+    }
     HOUND.DB.Radars['S-300VM 9S15M2 sr'] = {
-            ['Name'] = 'Bill Board M',
-            ['Assigned'] = {"SA-10"},
-            ['Role'] = {HOUND.DB.RadarType.SEARCH},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.E,
-                [false] = HOUND.DB.Bands.E
-            },
-            ['Primary'] = false
-        }
+        ['Name'] = 'Bill Board M',
+        ['Assigned'] = { "SA-10" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH },
+        ['Band'] = {
+            [true] = HOUND.DB.Bands.E,
+            [false] = HOUND.DB.Bands.E
+        },
+        ['Primary'] = false
+    }
     HOUND.DB.Radars['S-300VM 9S19M2 sr'] = {
-            ['Name'] = 'High Screen M',
-            ['Assigned'] = {"SA-10"},
-            ['Role'] = {HOUND.DB.RadarType.SEARCH},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.C,
-                [false] = HOUND.DB.Bands.C
-            },
-            ['Primary'] = false
-        }
+        ['Name'] = 'High Screen M',
+        ['Assigned'] = { "SA-10" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH },
+        ['Band'] = {
+            [true] = HOUND.DB.Bands.C,
+            [false] = HOUND.DB.Bands.C
+        },
+        ['Primary'] = false
+    }
     HOUND.DB.Radars['S-300VM 9S32ME tr'] = {
-            ['Name'] = 'Grill Pan M',
-            ['Assigned'] = {"SA-12"},
-            ['Role'] = {HOUND.DB.RadarType.TRACK},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.K,
-                [false] = HOUND.DB.Bands.K
-            },
-            ['Primary'] = true
-        }
+        ['Name'] = 'Grill Pan M',
+        ['Assigned'] = { "SA-12" },
+        ['Role'] = { HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = HOUND.DB.Bands.K,
+            [false] = HOUND.DB.Bands.K
+        },
+        ['Primary'] = true
+    }
     HOUND.DB.Radars['SA-17 Buk M1-2 LN 9A310M1-2'] = {
-            ['Name'] = "Fire Dome M",
-            ['Assigned'] = {"SA-11"},
-            ['Role'] = {HOUND.DB.RadarType.TRACK},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.H,
-                [false] = HOUND.DB.Bands.H
-            },
-            ['Primary'] = false
-        }
+        ['Name'] = "Fire Dome M",
+        ['Assigned'] = { "SA-11" },
+        ['Role'] = { HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = HOUND.DB.Bands.H,
+            [false] = HOUND.DB.Bands.H
+        },
+        ['Primary'] = false
+    }
     HOUND.DB.Radars['34Ya6E Gazetchik E decoy'] = {
         ['Name'] = "Flap Lid",
-        ['Assigned'] = {"SA-10"},
-        ['Role'] = {HOUND.DB.RadarType.TRACK},
+        ['Assigned'] = { "SA-10" },
+        ['Role'] = { HOUND.DB.RadarType.TRACK },
         ['Band'] = {
             [true] = HOUND.DB.Bands.J,
             [false] = HOUND.DB.Bands.J
@@ -2860,8 +2894,8 @@ do
     }
     HOUND.DB.Radars['SAMPT_MRI_ARABEL'] = {
         ['Name'] = "SAMP/T",
-        ['Assigned'] = {"SAMP/T"},
-        ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
+        ['Assigned'] = { "SAMP/T" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
         ['Band'] = {
             [true] = HOUND.DB.Bands.I,
             [false] = HOUND.DB.Bands.I
@@ -2870,8 +2904,8 @@ do
     }
     HOUND.DB.Radars['SAMPT_MRI_GF300'] = {
         ['Name'] = "SAMP/T",
-        ['Assigned'] = {"SAMP/T"},
-        ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
+        ['Assigned'] = { "SAMP/T" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
         ['Band'] = {
             [true] = HOUND.DB.Bands.K,
             [false] = HOUND.DB.Bands.K
@@ -2879,369 +2913,801 @@ do
         ['Primary'] = true
     }
     HOUND.DB.Radars['Fire Can radar'] = {
-            ['Name'] = "Fire Can",
-            ['Assigned'] = {"AAA"},
-            ['Role'] = {HOUND.DB.RadarType.TRACK},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.E,
-                [false] = HOUND.DB.Bands.E
-            },
-            ['Primary'] = true
-        }
+        ['Name'] = "Fire Can",
+        ['Assigned'] = { "AAA" },
+        ['Role'] = { HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = HOUND.DB.Bands.E,
+            [false] = HOUND.DB.Bands.E
+        },
+        ['Primary'] = true
+    }
     HOUND.DB.Radars['EWR 55G6U NEBO-U'] = {
-            ['Name'] = "Tall Rack",
-            ['Assigned'] = {"EWR"},
-            ['Role'] = {HOUND.DB.RadarType.EWR},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.A,
-                [false] = HOUND.DB.Bands.A
-            },
-            ['Primary'] = false
-        }
+        ['Name'] = "Tall Rack",
+        ['Assigned'] = { "EWR" },
+        ['Role'] = { HOUND.DB.RadarType.EWR },
+        ['Band'] = {
+            [true] = HOUND.DB.Bands.A,
+            [false] = HOUND.DB.Bands.A
+        },
+        ['Primary'] = false
+    }
     HOUND.DB.Radars['EWR P-37 BAR LOCK'] = {
-            ['Name'] = "Bar lock",
-            ['Assigned'] = {"EWR","SA-5"},
-            ['Role'] = {HOUND.DB.RadarType.EWR,HOUND.DB.RadarType.SEARCH},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.E,
-                [false] = HOUND.DB.Bands.E
-            },
-            ['Primary'] = false
-        }
+        ['Name'] = "Bar lock",
+        ['Assigned'] = { "EWR", "SA-5" },
+        ['Role'] = { HOUND.DB.RadarType.EWR, HOUND.DB.RadarType.SEARCH },
+        ['Band'] = {
+            [true] = HOUND.DB.Bands.E,
+            [false] = HOUND.DB.Bands.E
+        },
+        ['Primary'] = false
+    }
     HOUND.DB.Radars['EWR 1L119 Nebo-SVU'] = {
-            ['Name'] = "Box Spring",
-            ['Assigned'] = {"EWR"},
-            ['Role'] = {HOUND.DB.RadarType.EWR},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.A,
-                [false] = HOUND.DB.Bands.A
-            },
-            ['Primary'] = false
-        }
+        ['Name'] = "Box Spring",
+        ['Assigned'] = { "EWR" },
+        ['Role'] = { HOUND.DB.RadarType.EWR },
+        ['Band'] = {
+            [true] = HOUND.DB.Bands.A,
+            [false] = HOUND.DB.Bands.A
+        },
+        ['Primary'] = false
+    }
     HOUND.DB.Radars['EWR Generic radar tower'] = {
-            ['Name'] = "Civilian Radar",
-            ['Assigned'] = {"EWR"},
-            ['Role'] = {HOUND.DB.RadarType.EWR},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.C,
-                [false] = HOUND.DB.Bands.C
-            },
-            ['Primary'] = false
-        }
+        ['Name'] = "Civilian Radar",
+        ['Assigned'] = { "EWR" },
+        ['Role'] = { HOUND.DB.RadarType.EWR },
+        ['Band'] = {
+            [true] = HOUND.DB.Bands.C,
+            [false] = HOUND.DB.Bands.C
+        },
+        ['Primary'] = false
+    }
     HOUND.DB.Radars['PantsirS1'] = {
-            ['Name'] = "Pantsir",
-            ['Assigned'] = {"SA-22"},
-            ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.F,
-                [false] = HOUND.DB.Bands.F
-            },
-            ['Primary'] = true
-        }
+        ['Name'] = "Pantsir",
+        ['Assigned'] = { "SA-22" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
     HOUND.DB.Radars['PantsirS2'] = {
-            ['Name'] = "Pantsir",
-            ['Assigned'] = {"SA-22"},
-            ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.F,
-                [false] = HOUND.DB.Bands.F
-            },
-            ['Primary'] = true
-        }
+        ['Name'] = "Pantsir",
+        ['Assigned'] = { "SA-22" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
     HOUND.DB.Radars['Admiral_Kasatonov'] = {
-            ['Name'] = "Gorshkov (FF)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.F,
-                [false] = HOUND.DB.Bands.F
-            },
-            ['Primary'] = true
-        }
+        ['Name'] = "Gorshkov (FF)",
+        ['Assigned'] = { "Naval" },
+        ['Role'] = { HOUND.DB.RadarType.NAVAL },
+        ['Band'] = {
+            [true] = HOUND.DB.Bands.F,
+            [false] = HOUND.DB.Bands.F
+        },
+        ['Primary'] = true
+    }
     HOUND.DB.Radars['Karakurt_AShM'] = {
-            ['Name'] = "Karakurt (FS)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.F,
-                [false] = HOUND.DB.Bands.F
-            },
-            ['Primary'] = true
-        }
+        ['Name'] = "Karakurt (FS)",
+        ['Assigned'] = { "Naval" },
+        ['Role'] = { HOUND.DB.RadarType.NAVAL },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
     HOUND.DB.Radars['Karakurt_LACM'] = {
-            ['Name'] = "Karakurt (FS)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.F,
-                [false] = HOUND.DB.Bands.F
-            },
-            ['Primary'] = true
-        }
+        ['Name'] = "Karakurt (FS)",
+        ['Assigned'] = { "Naval" },
+        ['Role'] = { HOUND.DB.RadarType.NAVAL },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
     HOUND.DB.Radars['MonolitB'] = {
-            ['Name'] = "Monolit B",
-            ['Assigned'] = {"Bastion"},
-            ['Role'] = {HOUND.DB.RadarType.ANTISHIP},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.I,
-                [false] = HOUND.DB.Bands.I
-            },
-            ['Primary'] = true
-        }
-        HOUND.DB.Radars['Arleigh_Burke_Flight_III_AShM'] = {
-            ['Name'] = "Arleigh Burke (DD)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.E,
-                [false] = HOUND.DB.Bands.E
-            },
-            ['Primary'] = true
-        }
+        ['Name'] = "Monolit B",
+        ['Assigned'] = { "Bastion" },
+        ['Role'] = { HOUND.DB.RadarType.ANTISHIP },
+        ['Band'] = {
+            [true] = HOUND.DB.Bands.I,
+            [false] = HOUND.DB.Bands.I
+        },
+        ['Primary'] = true
+    }
+    HOUND.DB.Radars['TorM2'] = {
+        ['Name'] = "Tor",
+        ['Assigned'] = { "SA-15" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
+    HOUND.DB.Radars['TorM2K'] = {
+        ['Name'] = "Tor",
+        ['Assigned'] = { "SA-15" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
+    HOUND.DB.Radars['TorM2M'] = {
+        ['Name'] = "Tor",
+        ['Assigned'] = { "SA-15" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
+
+    HOUND.DB.Radars['CH_BukM3_9A317M'] = {
+        ['Name'] = "Fire Dome",
+        ['Assigned'] = { "SA-11" },
+        ['Role'] = { HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = { 0.136269, 0.013627 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = false
+
+    }
+    HOUND.DB.Radars['CH_BukM3_9A317MA'] = {
+        ['Name'] = "Fire Dome",
+        ['Assigned'] = { "SA-11" },
+        ['Role'] = { HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = { 0.136269, 0.013627 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = false
+    }
+    HOUND.DB.Radars['CH_BukM3_9S18M13'] = {
+        ['Name'] = "Snow Drift",
+        ['Assigned'] = { "SA-11", "SA-17", "SA-27" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.516884, 0.082701 }
+        },
+        ['Primary'] = true
+    }
+    HOUND.DB.Radars['CH_BukM3_9S36M'] = {
+        ['Name'] = "Buk M3",
+        ['Assigned'] = { "SA-27" },
+        ['Role'] = { HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = false
+    }
+    HOUND.DB.Radars['CH_S350_50N6'] = {
+        ['Name'] = "S-350 STR",
+        ['Assigned'] = { "SA-25" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+
+    }
+    HOUND.DB.Radars['CH_S350_96L6'] = {
+        ['Name'] = "Cheese Board",
+        ['Assigned'] = { "SA-10", "SA-23", "SA-25" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.516884, 0.082701 }
+        },
+        ['Primary'] = false
+    }
+    HOUND.DB.Radars['CH_Gremyashchiy_AShM'] = {
+        ['Name'] = "Gremyashchiy Corvette",
+        ['Assigned'] = { "Naval" },
+        ['Role'] = { HOUND.DB.RadarType.NAVAL },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
+    HOUND.DB.Radars['CH_Gremyashchiy_LACM'] = {
+        ['Name'] = "Gremyashchiy Corvette",
+        ['Assigned'] = { "Naval" },
+        ['Role'] = { HOUND.DB.RadarType.NAVAL },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
+    HOUND.DB.Radars['CH_Grigorovich_AShM'] = {
+        ['Name'] = "Krivak 5 (FF)",
+        ['Assigned'] = { "Naval" },
+        ['Role'] = { HOUND.DB.RadarType.NAVAL },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
+    HOUND.DB.Radars['CH_Grigorovich_LACM'] = {
+        ['Name'] = "Krivak 5 (FF)",
+        ['Assigned'] = { "Naval" },
+        ['Role'] = { HOUND.DB.RadarType.NAVAL },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
+    HOUND.DB.Radars['CH_Project22160'] = {
+        ['Name'] = "Project 22160 (DD)",
+        ['Assigned'] = { "Naval" },
+        ['Role'] = { HOUND.DB.RadarType.NAVAL },
+        ['Band'] = {
+            [true] = { 0.136269, 0.013627 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+
+    }
+    HOUND.DB.Radars['CH_Steregushchiy'] = {
+        ['Name'] = "Steregushchiy (FC)",
+        ['Assigned'] = { "Naval" },
+        ['Role'] = { HOUND.DB.RadarType.NAVAL },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+
+    }
+    HOUND.DB.Radars['Admiral_Gorshkov'] = {
+        ['Name'] = "Admiral Gorshkov (FF)",
+        ['Assigned'] = { "Naval" },
+        ['Role'] = { HOUND.DB.RadarType.NAVAL },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
+
+    HOUND.DB.Radars['CH_Arleigh_Burke_IIA'] = {
+        ['Name'] = "Arleigh Burke (DD)",
+        ['Assigned'] = { "Naval" },
+        ['Role'] = { HOUND.DB.RadarType.NAVAL },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
+    HOUND.DB.Radars['CH_Arleigh_Burke_III'] = {
+        ['Name'] = "Arleigh Burke (DD)",
+        ['Assigned'] = { "Naval" },
+        ['Role'] = { HOUND.DB.RadarType.NAVAL },
+
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
+    HOUND.DB.Radars['CH_Constellation'] = {
+        ['Name'] = "[CH] Constellation Frigate",
+        ['Assigned'] = { "Naval" },
+        ['Role'] = { HOUND.DB.RadarType.NAVAL },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
+    HOUND.DB.Radars['CH_Ticonderoga'] = {
+        ['Name'] = "Ticonderoga (CG)",
+        ['Assigned'] = { "Naval" },
+        ['Role'] = { HOUND.DB.RadarType.NAVAL },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
+    HOUND.DB.Radars['CH_Ticonderoga_CMP'] = {
+        ['Name'] = "Ticonderoga (CG)",
+        ['Assigned'] = { "Naval" },
+        ['Role'] = { HOUND.DB.RadarType.NAVAL },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
+    HOUND.DB.Radars['Arleigh_Burke_Flight_III_AShM'] = {
+        ['Name'] = "Arleigh Burke (DD)",
+        ['Assigned'] = { "Naval" },
+        ['Role'] = { HOUND.DB.RadarType.NAVAL },
+        ['Band'] = {
+            [true] = HOUND.DB.Bands.E,
+            [false] = HOUND.DB.Bands.E
+        },
+        ['Primary'] = true
+    }
     HOUND.DB.Radars['Arleigh_Burke_Flight_III_LACM'] = {
-            ['Name'] = "Arleigh Burke (DD)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.E,
-                [false] = HOUND.DB.Bands.E
-            },
-            ['Primary'] = true
-        }
+        ['Name'] = "Arleigh Burke (DD)",
+        ['Assigned'] = { "Naval" },
+        ['Role'] = { HOUND.DB.RadarType.NAVAL },
+        ['Band'] = {
+            [true] = HOUND.DB.Bands.E,
+            [false] = HOUND.DB.Bands.E
+        },
+        ['Primary'] = true
+    }
     HOUND.DB.Radars['Arleigh_Burke_Flight_III_SAM'] = {
-            ['Name'] = "Arleigh Burke (DD)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.E,
-                [false] = HOUND.DB.Bands.E
-            },
-            ['Primary'] = true
-        }
+        ['Name'] = "Arleigh Burke (DD)",
+        ['Assigned'] = { "Naval" },
+        ['Role'] = { HOUND.DB.RadarType.NAVAL },
+        ['Band'] = {
+            [true] = HOUND.DB.Bands.E,
+            [false] = HOUND.DB.Bands.E
+        },
+        ['Primary'] = true
+    }
     HOUND.DB.Radars['Ticonderoga_CMP_AShM'] = {
-            ['Name'] = "Ticonderoga (CG)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.E,
-                [false] = HOUND.DB.Bands.E
-            },
-            ['Primary'] = true
-        }
+        ['Name'] = "Ticonderoga (CG)",
+        ['Assigned'] = { "Naval" },
+        ['Role'] = { HOUND.DB.RadarType.NAVAL },
+        ['Band'] = {
+            [true] = HOUND.DB.Bands.E,
+            [false] = HOUND.DB.Bands.E
+        },
+        ['Primary'] = true
+    }
     HOUND.DB.Radars['Ticonderoga_CMP_LACM'] = {
-            ['Name'] = "Ticonderoga (CG)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.E,
-                [false] = HOUND.DB.Bands.E
-            },
-            ['Primary'] = true
-        }
+        ['Name'] = "Ticonderoga (CG)",
+        ['Assigned'] = { "Naval" },
+        ['Role'] = { HOUND.DB.RadarType.NAVAL },
+        ['Band'] = {
+            [true] = HOUND.DB.Bands.E,
+            [false] = HOUND.DB.Bands.E
+        },
+        ['Primary'] = true
+    }
     HOUND.DB.Radars['Ticonderoga_CMP_SAM'] = {
-            ['Name'] = "Ticonderoga (CG)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.E,
-                [false] = HOUND.DB.Bands.E
-            },
-            ['Primary'] = true
-        }
+        ['Name'] = "Ticonderoga (CG)",
+        ['Assigned'] = { "Naval" },
+        ['Role'] = { HOUND.DB.RadarType.NAVAL },
+        ['Band'] = {
+            [true] = HOUND.DB.Bands.E,
+            [false] = HOUND.DB.Bands.E
+        },
+        ['Primary'] = true
+    }
     HOUND.DB.Radars['MIM104_ANMPQ65'] = {
-            ['Name'] = "Patriot",
-            ['Assigned'] = {"Patriot"},
-            ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.K,
-                [false] = HOUND.DB.Bands.K
-            },
-            ['Primary'] = true
-        }
+        ['Name'] = "Patriot",
+        ['Assigned'] = { "Patriot" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
     HOUND.DB.Radars['MIM104_ANMPQ65A'] = {
-            ['Name'] = "Patriot",
-            ['Assigned'] = {"Patriot"},
-            ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.K,
-                [false] = HOUND.DB.Bands.K
-            },
-            ['Primary'] = true
-        }
+        ['Name'] = "Patriot",
+        ['Assigned'] = { "Patriot" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
     HOUND.DB.Radars['MIM104_LTAMDS'] = {
-            ['Name'] = "Patriot",
-            ['Assigned'] = {"Patriot"},
-            ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.K,
-                [false] = HOUND.DB.Bands.K
-            },
-            ['Primary'] = true
-        }
+        ['Name'] = "Patriot LTAMDS",
+        ['Assigned'] = { "Patriot" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
+    HOUND.DB.Radars['MIM104_ANMPQ65A_HEMTT'] = {
+        ['Name'] = "Patriot",
+        ['Assigned'] = { "Patriot" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
+    HOUND.DB.Radars['MIM104_ANMPQ65_HEMTT'] = {
+        ['Name'] = "Patriot",
+        ['Assigned'] = { "Patriot" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
+
+    HOUND.DB.Radars['MIM104_LTAMDS_HEMTT'] = {
+        ['Name'] = "Patriot LTAMDS",
+        ['Assigned'] = { "Patriot" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
+
     HOUND.DB.Radars['CH_NASAMS3_SR'] = {
-            ['Name'] = "Sentinel",
-            ['Assigned'] = {"NASAMS"},
-            ['Role'] = {HOUND.DB.RadarType.SEARCH},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.I,
-                [false] = HOUND.DB.Bands.I
-            },
-            ['Primary'] = true
-        }
+        ['Name'] = "Sentinel",
+        ['Assigned'] = { "NASAMS" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
     HOUND.DB.Radars['CH_Centurion_C_RAM'] = {
-            ['Name'] = "Centurion C-RAM",
-            ['Assigned'] = {"AAA"},
-            ['Role'] = {HOUND.DB.RadarType.TRACK},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.J,
-                [false] = HOUND.DB.Bands.J
-            },
-            ['Primary'] = true
-        }
+        ['Name'] = "Centurion C-RAM",
+        ['Assigned'] = { "AAA" },
+        ['Role'] = { HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = { 0.136269, 0.013627 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
+
+    HOUND.DB.Radars['CH_THAAD_ANTPY2'] = {
+        ['Name'] = "THAAD STR",
+        ['Assigned'] = { "THAAD" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
+
     HOUND.DB.Radars['Type45'] = {
-            ['Name'] = "Type 45 (DD)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.E,
-                [false] = HOUND.DB.Bands.E
-            },
-            ['Primary'] = true
-        }
+        ['Name'] = "Type 45 (DD)",
+        ['Assigned'] = { "Naval" },
+        ['Role'] = { HOUND.DB.RadarType.NAVAL },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
     HOUND.DB.Radars['CH_Type26'] = {
-            ['Name'] = "Type 26 (FF)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.F,
-                [false] = HOUND.DB.Bands.E
-            },
-            ['Primary'] = true
-        }
+        ['Name'] = "Type 26 (FF)",
+        ['Assigned'] = { "Naval" },
+        ['Role'] = { HOUND.DB.RadarType.NAVAL },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
+    HOUND.DB.Radars['CH_SkySabreGiraffe'] = {
+        ['Name'] = "Giraffe",
+        ['Assigned'] = { "Sky Sabre" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
     HOUND.DB.Radars['HSwMS_Visby'] = {
-            ['Name'] = "Visby (FS)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.F,
-                [false] = HOUND.DB.Bands.F
-            },
-            ['Primary'] = true
-        }
-    HOUND.DB.Radars['LvKv9040'] ={
-            ['Name'] = "LvKv9040",
-            ['Assigned'] = {"AAA"},
-            ['Role'] = {HOUND.DB.RadarType.RANGEFINDER},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.J,
-                [false] = HOUND.DB.Bands.J
-            },
-            ['Primary'] = true
-        }
+        ['Name'] = "Visby (FS)",
+        ['Assigned'] = { "Naval" },
+        ['Role'] = { HOUND.DB.RadarType.NAVAL },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
+    HOUND.DB.Radars['LvKv9040'] = {
+        ['Name'] = "LvKv9040",
+        ['Assigned'] = { "AAA" },
+        ['Role'] = { HOUND.DB.RadarType.RANGEFINDER },
+        ['Band'] = {
+            [true] = { 0.136269, 0.013627 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
     HOUND.DB.Radars['LvS-103_PM103'] = {
-            ['Name'] = "Patriot",
-            ['Assigned'] = {"Patriot"},
-            ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.K,
-                [false] = HOUND.DB.Bands.K
-            },
-            ['Primary'] = true
-        }
+        ['Name'] = "Patriot",
+        ['Assigned'] = { "Patriot" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
     HOUND.DB.Radars['LvS-103_PM103_HX'] = {
-            ['Name'] = "Patriot",
-            ['Assigned'] = {"Patriot"},
-            ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.K,
-                [false] = HOUND.DB.Bands.K
-            },
-            ['Primary'] = true
-        }
+        ['Name'] = "Patriot",
+        ['Assigned'] = { "Patriot" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
     HOUND.DB.Radars['RBS-90'] = {
-            ['Name'] = "RBS-90",
-            ['Assigned'] = {"SHORAD"},
-            ['Role'] = {HOUND.DB.RadarType.RANGEFINDER},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.J,
-                [false] = HOUND.DB.Bands.J
-            },
-            ['Primary'] = false
-        }
+        ['Name'] = "RBS-90",
+        ['Assigned'] = { "SHORAD" },
+        ['Role'] = { HOUND.DB.RadarType.RANGEFINDER },
+        ['Band'] = {
+            [true] = HOUND.DB.Bands.J,
+            [false] = HOUND.DB.Bands.J
+        },
+        ['Primary'] = false
+    }
     HOUND.DB.Radars['BV410_RBS90'] = {
-            ['Name'] = "RBS-90",
-            ['Assigned'] = {"SHORAD"},
-            ['Role'] = {HOUND.DB.RadarType.RANGEFINDER},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.J,
-                [false] = HOUND.DB.Bands.J
-            },
-            ['Primary'] = false
-        }
+        ['Name'] = "RBS-90",
+        ['Assigned'] = { "SHORAD" },
+        ['Role'] = { HOUND.DB.RadarType.RANGEFINDER },
+        ['Band'] = {
+            [true] = HOUND.DB.Bands.J,
+            [false] = HOUND.DB.Bands.J
+        },
+        ['Primary'] = false
+    }
     HOUND.DB.Radars['UndE23'] = {
-            ['Name'] = "UndE23",
-            ['Assigned'] = {"SHORAD"},
-            ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.G,
-                [false] = HOUND.DB.Bands.G
-            },
-            ['Primary'] = true
-        }
+        ['Name'] = "UndE23",
+        ['Assigned'] = { "SHORAD" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = HOUND.DB.Bands.G,
+            [false] = HOUND.DB.Bands.G
+        },
+        ['Primary'] = true
+    }
+
+    HOUND.DB.Radars['Strb90'] = {
+        ['Name'] = "Strb 90 FAC",
+        ['Assigned'] = { "Naval" },
+        ['Role'] = { HOUND.DB.RadarType.NAVAL },
+        ['Band'] = {
+            [true] = HOUND.DB.Bands.E,
+            [false] = HOUND.DB.Bands.E
+        },
+        ['Primary'] = true
+    }
+    HOUND.DB.Radars['CH_Type022'] = {
+        ['Name'] = "Type 022 FAC",
+        ['Assigned'] = { "Naval" },
+        ['Role'] = { HOUND.DB.RadarType.NAVAL },
+        ['Band'] = {
+            [true] = { 0.136269, 0.013627 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
+    HOUND.DB.Radars['CH_Type054B'] = {
+        ['Name'] = "Type 054B Frigate",
+        ['Assigned'] = { "Naval" },
+        ['Role'] = { HOUND.DB.RadarType.NAVAL },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
+    HOUND.DB.Radars['CH_Type056A'] = {
+        ['Name'] = "Type 056A Corvette",
+        ['Assigned'] = { "Naval" },
+        ['Role'] = { HOUND.DB.RadarType.NAVAL },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
     HOUND.DB.Radars['Type055'] = {
-            ['Name'] = "Type 055 (CG)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.E,
-                [false] = HOUND.DB.Bands.E
-            },
-            ['Primary'] = true
-        }
+        ['Name'] = "Type 055 (CG)",
+        ['Assigned'] = { "Naval" },
+        ['Role'] = { HOUND.DB.RadarType.NAVAL },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
     HOUND.DB.Radars['Type052D'] = {
-            ['Name'] = "Type 052D (DD)",
-            ['Assigned'] = {"Naval"},
-            ['Role'] = {HOUND.DB.RadarType.NAVAL},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.E,
-                [false] = HOUND.DB.Bands.E
-            },
-            ['Primary'] = true
-        }
+        ['Name'] = "Type 052D (DD)",
+        ['Assigned'] = { "Naval" },
+        ['Role'] = { HOUND.DB.RadarType.NAVAL },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
     HOUND.DB.Radars['PGL_625'] = {
-            ['Name'] = "PGL-625",
-            ['Assigned'] = {"SHORAD"},
-            ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.F,
-                [false] = HOUND.DB.Bands.F
-            },
-            ['Primary'] = true
-        }
+        ['Name'] = "PGL-625",
+        ['Assigned'] = { "SHORAD" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = { 0.136269, 0.013627 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
     HOUND.DB.Radars['HQ17A'] = {
-            ['Name'] = "HQ-17",
-            ['Assigned'] = {"HQ-17"},
-            ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.F,
-                [false] = HOUND.DB.Bands.E
-            },
-            ['Primary'] = true
-        }
+        ['Name'] = "HQ-17",
+        ['Assigned'] = { "HQ-17" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
+    HOUND.DB.Radars['CH_HQ22_SR'] = {
+        ['Name'] = "HQ-22 SR",
+        ['Assigned'] = { "HQ-22" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.516884, 0.082701 }
+        },
+        ['Primary'] = false
+    }
+    HOUND.DB.Radars['CH_HQ22_STR'] = {
+        ['Name'] = "HQ-22 STR",
+        ['Assigned'] = { "HQ-22" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
     HOUND.DB.Radars['CH_PGZ09'] = {
-            ['Name'] = "PGZ-09",
-            ['Assigned'] = {"AAA"},
-            ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
-            ['Band'] = {
-                [true] = HOUND.DB.Bands.J,
-                [false] = HOUND.DB.Bands.E
-            },
-            ['Primary'] = true
-        }
+        ['Name'] = "PGZ-09",
+        ['Assigned'] = { "AAA" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = { 0.136269, 0.013627 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
+    HOUND.DB.Radars['CH_PGZ95'] = {
+        ['Name'] = "PGZ-95",
+        ['Assigned'] = { "AAA" },
+        ['Role'] = { HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = { 0.136269, 0.013627 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
+    HOUND.DB.Radars['CH_LD3000'] = {
+        ['Name'] = "LD-3000 C-RAM",
+        ['Assigned'] = { "AAA" },
+        ['Role'] = { HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = { 0.136269, 0.013627 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
+    HOUND.DB.Radars['CH_LD3000_stationary'] = {
+        ['Name'] = "LD-3000 C-RAM",
+        ['Assigned'] = { "AAA" },
+        ['Role'] = { HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = { 0.136269, 0.013627 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
+    HOUND.DB.Radars['CH_MIM104_ANMPQ53_KAT1'] = {
+        ['Name'] = "Patriot",
+        ['Assigned'] = { "Patriot" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
+    HOUND.DB.Radars['CH_F124'] = {
+        ['Name'] = "F124 Frigate",
+        ['Assigned'] = { "Naval" },
+        ['Role'] = { HOUND.DB.RadarType.NAVAL },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
+    HOUND.DB.Radars['CH_BoxerSkyranger'] = {
+        ['Name'] = "Boxer",
+        ['Assigned'] = { "AAA" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = { 0.136269, 0.013627 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
+    HOUND.DB.Radars['CH_FlaRakRad'] = {
+        ['Name'] = "FlaRakRad",
+        ['Assigned'] = { "SHORAD" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = { 0.024983, 0.012491 },
+            [false] = HOUND.DB.Bands.D
+        },
+        ['Primary'] = true
+    }
+    HOUND.DB.Radars['CH_SkynexHX'] = {
+        ['Name'] = "Skynex",
+        ['Assigned'] = { "AAA" },
+        ['Role'] = { HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = { 0.136269, 0.013627 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
+    HOUND.DB.Radars['CH_Skyshield_FCU'] = {
+        ['Name'] = "Skyshield",
+        ['Assigned'] = { "AAA" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
+    HOUND.DB.Radars['CH_TRML4D'] = {
+        ['Name'] = "IRIS-T",
+        ['Assigned'] = { "SHORAD" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = { 0.516884, 0.082701 },
+            [false] = { 0.136269, 0.013627 }
+        },
+        ['Primary'] = true
+    }
     HOUND.DB.Radars['ELM2048_MMR'] = {
         ['Name'] = "Elta MMR",
-        ['Assigned'] = {"Sling"},
-        ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
+        ['Assigned'] = { "Sling" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
         ['Band'] = {
             [true] = HOUND.DB.Bands.F,
             [false] = HOUND.DB.Bands.E
@@ -3250,8 +3716,8 @@ do
     }
     HOUND.DB.Radars['ELM2084_MMR_AD_SC'] = {
         ['Name'] = "Elta MMR",
-        ['Assigned'] = {"Sling"},
-        ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
+        ['Assigned'] = { "Sling" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
         ['Band'] = {
             [true] = HOUND.DB.Bands.F,
             [false] = HOUND.DB.Bands.E
@@ -3260,8 +3726,8 @@ do
     }
     HOUND.DB.Radars['ELM2084_MMR_AD_RT'] = {
         ['Name'] = "Elta MMR",
-        ['Assigned'] = {"Sling"},
-        ['Role'] = {HOUND.DB.RadarType.SEARCH},
+        ['Assigned'] = { "Sling" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH },
         ['Band'] = {
             [true] = HOUND.DB.Bands.F,
             [false] = HOUND.DB.Bands.E
@@ -3270,8 +3736,8 @@ do
     }
     HOUND.DB.Radars['ELM2084_MMR_WLR'] = {
         ['Name'] = "Elta MMR",
-        ['Assigned'] = {"Sling"},
-        ['Role'] = {HOUND.DB.RadarType.SEARCH,HOUND.DB.RadarType.TRACK},
+        ['Assigned'] = { "Sling" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
         ['Band'] = {
             [true] = HOUND.DB.Bands.F,
             [false] = HOUND.DB.Bands.E
@@ -3280,15 +3746,15 @@ do
     }
     HOUND.DB.Radars['EWR P-14 Tall King'] = {
         ['Name'] = "Tall King",
-        ['Assigned'] = {"EWR"},
-        ['Role'] = {HOUND.DB.RadarType.EWR},
+        ['Assigned'] = { "EWR" },
+        ['Role'] = { HOUND.DB.RadarType.EWR },
         ['Band'] = {
             [true] = HOUND.DB.Bands.A,
             [false] = HOUND.DB.Bands.A
         },
         ['Primary'] = false
     }
-end--- Hound databases (functions)
+end
 do
     local l_mist = HOUND.Mist
     local l_math = math
@@ -3301,21 +3767,28 @@ do
         return data
     end
 
-    function HOUND.DB.isValidPlatform(candidate)
+    function HOUND.DB.isValidPlatform(candidate,PayloadAdded)
         if (not HOUND.Utils.Dcs.isUnit(candidate) and not HOUND.Utils.Dcs.isStaticObject(candidate)) or not candidate:isExist()
              then return false
         end
 
         local isValid = false
         local mainCategory = Object.getCategory(candidate)
-        local type = candidate:getTypeName()
+        local UnitType = candidate:getTypeName()
         if HOUND.setContains(HOUND.DB.Platform,mainCategory) then
-            if HOUND.setContains(HOUND.DB.Platform[mainCategory],type) then
-                if HOUND.DB.Platform[mainCategory][type]['require'] then
-                    local platformData = HOUND.DB.Platform[mainCategory][type]
-                    if HOUND.setContains(platformData['require'],'CLSID') then
-                        local required = platformData['require']['CLSID']
-                        isValid = HOUND.Utils.hasPayload(candidate,required)
+            if HOUND.setContains(HOUND.DB.Platform[mainCategory],UnitType) then
+                if HOUND.DB.Platform[mainCategory][UnitType]['require'] then
+                    local platformData = HOUND.DB.Platform[mainCategory][UnitType]
+                    if HOUND.setContains(platformData['require'],'Payload') then
+                        HOUND.Logger.debug(tostring(PayloadAdded).. " | " .. type(PayloadAdded))
+                        local required = platformData['require']['Payload']
+                        if type(PayloadAdded) == 'string' then
+                            HOUND.Logger.debug("HOUND.DB.isValidPlatform: checking payload " .. PayloadAdded .. " for platform " .. UnitType)
+                            isValid = HOUND.setContainsValue(required,PayloadAdded)
+                            HOUND.Logger.debug("HOUND.DB.isValidPlatform: isValid = " .. tostring(isValid))
+                        else
+                            isValid = HOUND.Utils.hasPayload(candidate,required)
+                        end
                     end
                     if HOUND.setContains(platformData['require'],'TASK') then
                         local required = platformData['require']['TASK']
@@ -4554,9 +5027,9 @@ do
         lat = HOUND.Utils.DecToDMS(lat)
         lon = HOUND.Utils.DecToDMS(lon)
         if minDec == true then
-            return hemi.NS .. l_math.abs(lat.d) .. "°" .. string.format("%.3f",lat.mDec) .. "'" ..  " " ..  hemi.EW  .. l_math.abs(lon.d) .. "°" .. string.format("%.3f",lon.mDec) .. "'"
+            return hemi.NS .. string.format("%02d",l_math.abs(lat.d)) .. "°" .. string.format("%.3f",lat.mDec) .. "'" ..  " " ..  hemi.EW  .. string.format("%03d",l_math.abs(lon.d)) .. "°" .. string.format("%.3f",lon.mDec) .. "'"
         end
-        return hemi.NS .. l_math.abs(lat.d) .. "°" .. string.format("%02d",lat.m) .. "'".. string.format("%02d",l_math.floor(lat.s)).."\"" ..  " " ..  hemi.EW  .. l_math.abs(lon.d) .. "°" .. string.format("%02d",lon.m) .. "'".. string.format("%02d",l_math.floor(lon.s)) .."\""
+        return hemi.NS .. string.format("%02d",l_math.abs(lat.d)) .. "°" .. string.format("%02d",lat.m) .. "'".. string.format("%02d",l_math.floor(lat.s)).."\"" ..  " " ..  hemi.EW  .. string.format("%03d",l_math.abs(lon.d)) .. "°" .. string.format("%02d",lon.m) .. "'".. string.format("%02d",l_math.floor(lon.s)) .."\""
     end
 
     function HOUND.Utils.Text.getTime(timestamp)
@@ -5405,8 +5878,8 @@ do
             current_mean = l_mist.getAvgPoint(origPoints)
         end
         if not HOUND.Utils.Dcs.isPoint(current_mean) then return end
-        threashold = threashold or 1
-        maxIttr = maxIttr or 100
+        threashold = threashold or 10
+        maxIttr = maxIttr or 50
         local last_mean
         local ittr = 0
         local converged = false
@@ -5460,6 +5933,97 @@ do
         end
 
         return returnTable
+    end
+
+    function HOUND.Utils.Cluster.WeightedCentroid(PosList)
+        local sumWeights = 0
+        local estimate = {z=0,x=0}
+        for _,pos in ipairs(PosList) do
+            if HOUND.Utils.Dcs.isPoint(pos) and pos.score > 0 then
+                local w = pos.score
+                sumWeights = sumWeights + w
+                estimate.z = estimate.z + (w * (pos.z - estimate.z)) / sumWeights
+                estimate.x = estimate.x + (w * (pos.x - estimate.x)) / sumWeights
+            end
+        end
+        estimate.y = land.getHeight({x=estimate.x, y=estimate.z}) or 0
+        return estimate
+    end
+
+    function HOUND.Utils.Cluster.WLS_GDOP(measurements, initial_guess, max_iter, tol)
+        local l_math = math
+        local x, z = initial_guess.x, initial_guess.z
+        max_iter = max_iter or 10
+        tol = tol or 1
+
+        local function computeJacobian(x, z, xi, zi)
+            local dx = x - xi
+            local dz = z - zi
+            local r2 = dx*dx + dz*dz
+            return {-dz/r2, dx/r2}
+        end
+
+        local H, y, W
+        local Cov
+
+        for iter = 1, max_iter do
+            H, y, W = {}, {}, {}
+
+            for i, m in ipairs(measurements) do
+
+                local jac = computeJacobian(x, z, m.platformPos.x, m.platformPos.z)
+                local pred_theta = l_math.atan2(z - m.platformPos.z, x - m.platformPos.x)
+                local residual = (m.az - pred_theta + l_math.pi) % (2*l_math.pi) - l_math.pi
+
+                H[#H+1] = jac
+                y[#y+1] = {residual}
+                local sigma2 = (m.platformPrecision or 1)^2 * (m.gdop or 1)
+                W[#W+1] = {1/sigma2}
+            end
+
+            local Hmat = HOUND.Matrix(H)
+            local ymat = HOUND.Matrix(y)
+            local Wmat = HOUND.Matrix:new(#W, #W)
+            for i=1,#W do Wmat[i][i] = W[i][1] end
+
+            local Ht = HOUND.Matrix.transpose(Hmat)
+            local HtW = HOUND.Matrix.mul(Ht, Wmat)
+            local HtWH = HOUND.Matrix.mul(HtW, Hmat)
+            local HtWy = HOUND.Matrix.mul(HtW, ymat)
+            local HtWH_inv = HOUND.Matrix.invert(HtWH)
+            if not HtWH_inv then break end
+            Cov = HtWH_inv -- always keep the last HtWH_inv in the Cov matrix
+
+            local delta = HOUND.Matrix.mul(HtWH_inv, HtWy)
+            local dx, dz = delta[1][1], delta[2][1]
+
+            x = x + dx
+            z = z + dz
+            if l_math.abs(dx) < tol and l_math.abs(dz) < tol then break end
+        end
+
+        local a = Cov[1][1]
+        local b = Cov[1][2]
+        local c = Cov[2][2]
+        local trace = a + c
+        local det = a * c - b * b
+        local eig1 = trace/2 + l_math.sqrt((trace*trace)/4 - det)
+        local eig2 = trace/2 - l_math.sqrt((trace*trace)/4 - det)
+
+        local major = l_math.sqrt(l_math.max(eig1, eig2))
+        local minor = l_math.sqrt(l_math.min(eig1, eig2))
+        local theta = 0.5 * l_math.atan2(2*b, a - c)
+
+        local uncertenty_data = {}
+        uncertenty_data.major = HOUND.Mist.utils.round(major)
+        uncertenty_data.minor = HOUND.Mist.utils.round(minor)
+        uncertenty_data.theta = (theta + math.pi*2) % math.pi -- [0, pi]
+        uncertenty_data.az = HOUND.Mist.utils.round(l_math.deg(uncertenty_data.theta))
+        uncertenty_data.r  = (major + minor) / 2
+
+        local solution = {x = x, z = z, y = land.getHeight({x=x, y=z}) or 0}
+
+        return solution, uncertenty_data
     end
 end    --- HOUND.EventHandler
 do
@@ -5753,7 +6317,7 @@ do
 end--- HOUND.Contact.Estimator
 do
     local l_math = math
-    local TwoPI = 2*l_math.pi
+    local TwoPI = 2 * l_math.pi
     local HalfPi = l_math.pi / 2
     local HoundUtils = HOUND.Utils
     local matrix = HOUND.Matrix
@@ -5766,8 +6330,8 @@ do
     function HOUND.Contact.Estimator.accuracyScore(err)
         local score = 0
         if type(err) == "number" then
-            score = HoundUtils.Mapping.linear(err,0,100000,1,0,true)
-            score = HoundUtils.Cluster.gaussianKernel(score,0.2)
+            score = HoundUtils.Mapping.linear(err, 0, 100000, 1, 0, true)
+            score = HoundUtils.Cluster.gaussianKernel(score, 0.2)
         end
         if type(score) == "number" then
             return score
@@ -5786,7 +6350,7 @@ do
 
         Kalman.estimated = {}
 
-        Kalman.update = function(self,datapoint)
+        Kalman.update = function(self, datapoint)
             if type(self.estimated.p) ~= "table" and HoundUtils.Dcs.isPoint(datapoint) then
                 self.estimated.p = {
                     x = datapoint.x,
@@ -5801,14 +6365,14 @@ do
             self.P.x = self.P.x + math.sqrt(datapoint.err.score.x)
             self.P.z = self.P.z + math.sqrt(datapoint.err.score.z)
 
-            local Kx = self.P.x / (self.P.x+(datapoint.err.score.x))
-            local Kz = self.P.z / (self.P.z+(datapoint.err.score.z))
+            local Kx = self.P.x / (self.P.x + (datapoint.err.score.x))
+            local Kz = self.P.z / (self.P.z + (datapoint.err.score.z))
 
-            self.estimated.p.x = self.estimated.p.x + (Kx * (datapoint.x-self.estimated.p.x))
-            self.estimated.p.z = self.estimated.p.z + (Kz * (datapoint.z-self.estimated.p.z))
+            self.estimated.p.x = self.estimated.p.x + (Kx * (datapoint.x - self.estimated.p.x))
+            self.estimated.p.z = self.estimated.p.z + (Kz * (datapoint.z - self.estimated.p.z))
 
-            self.P.x = (1-Kx) * self.P.x
-            self.P.z = (1-Kz) * self.P.z
+            self.P.x = (1 - Kx) * self.P.x
+            self.P.z = (1 - Kz) * self.P.z
 
             self.estimated.p = HoundUtils.Geo.setHeight(self.estimated.p)
             return self.estimated.p
@@ -5828,7 +6392,7 @@ do
 
         Kalman.estimated = nil
 
-        Kalman.update = function (self,newAz,predictedAz,processNoise)
+        Kalman.update = function(self, newAz, predictedAz, processNoise)
             if not self.estimated then
                 self.estimated = newAz
             end
@@ -5842,13 +6406,13 @@ do
             end
 
             self.P = self.P + l_math.sqrt(noiseP) -- add "process noise" in the form of standard diviation
-            local K = self.P / (self.P+self.noise)
-            local deltaAz = newAz-predAz
+            local K = self.P / (self.P + self.noise)
+            local deltaAz = newAz - predAz
             self.estimated = ((self.estimated + K * (deltaAz)) + TwoPI) % TwoPI
-            self.P = (1-K) * self.P
+            self.P = (1 - K) * self.P
         end
 
-        Kalman.get = function (self)
+        Kalman.get = function(self)
             return self.estimated
         end
 
@@ -5878,11 +6442,12 @@ do
             }
         end
 
-        Kalman.update = function(self,datapoint)
-            if not self.estimated.pos and datapoint:getPos() then
-                self.estimated.Az = (1/self.P.Az) * datapoint.az
-                self.estimated.El = (1/self.P.El) * datapoint.el
-                self.estimated.pos = HoundUtils.Geo.getProjectedIP(datapoint.platformPos,self.estimated.Az,self.estimated.El)
+        Kalman.update = function(self, datapoint)
+            if not self.estimated.pos then
+                self.estimated.Az = (1 / self.P.Az) * datapoint.az
+                self.estimated.El = (1 / self.P.El) * datapoint.el
+                self.estimated.pos = HoundUtils.Geo.getProjectedIP(datapoint.platformPos, self.estimated.Az,
+                    self.estimated.El)
                 return self.estimated
             end
             local prediction = self:predict(datapoint)
@@ -5892,22 +6457,23 @@ do
                 El = datapoint.platformPrecision
             }
 
-            self.K.Az = self.P.Az / (self.P.Az+errEstimate.Az)
-            self.K.El = self.P.El / (self.P.El+errEstimate.El)
+            self.K.Az = self.P.Az / (self.P.Az + errEstimate.Az)
+            self.K.El = self.P.El / (self.P.El + errEstimate.El)
 
-            self.estimated.Az = self.estimated.Az + (self.K.Az * (datapoint.az-prediction.Az))
-            self.estimated.El = self.estimated.El + (self.K.El * (datapoint.el-prediction.El))
-            self.estimated.pos = HoundUtils.Geo.getProjectedIP(datapoint.platformPos,self.estimated.Az,self.estimated.El)
+            self.estimated.Az = self.estimated.Az + (self.K.Az * (datapoint.az - prediction.Az))
+            self.estimated.El = self.estimated.El + (self.K.El * (datapoint.el - prediction.El))
+            self.estimated.pos = HoundUtils.Geo.getProjectedIP(datapoint.platformPos, self.estimated.Az,
+                self.estimated.El)
 
-            self.P.Az = (1-self.K.Az)
-            self.P.El = (1-self.K.El)
+            self.P.Az = (1 - self.K.Az)
+            self.P.El = (1 - self.K.El)
 
             return self.estimated
         end
 
-        Kalman.predict = function(self,datapoint)
+        Kalman.predict = function(self, datapoint)
             local prediction = {}
-            prediction.Az,prediction.El = HoundUtils.Elint.getAzimuth( datapoint.platformPos , self.estimated.pos, 0 )
+            prediction.Az, prediction.El = HoundUtils.Elint.getAzimuth(datapoint.platformPos, self.estimated.pos, 0)
             return prediction
         end
 
@@ -5921,41 +6487,41 @@ do
     HOUND.Contact.Estimator.UPLKF = {}
     HOUND.Contact.Estimator.UPLKF.__index = HOUND.Contact.Estimator.UPLKF
 
-    function HOUND.Contact.Estimator.UPLKF:create(p0,v0,timestamp,initialPosError,isMobile)
+    function HOUND.Contact.Estimator.UPLKF:create(p0, v0, timestamp, initialPosError, isMobile)
         if not HoundUtils.Dcs.isPoint(p0) then return nil end
         local instance = {}
-        setmetatable( instance,HOUND.Contact.Estimator.UPLKF )
+        setmetatable(instance, HOUND.Contact.Estimator.UPLKF)
         instance.t0 = timestamp or timer.getAbsTime()
         instance.mobile = isMobile or false
         instance._maxNoise = 0
-        v0 = v0 or {z=0,x=0}
+        v0 = v0 or { z = 0, x = 0 }
 
         instance.state = matrix({
-            {p0.x},
-            {p0.z},
-            {v0.x},
-            {v0.z}
+            { p0.x },
+            { p0.z },
+            { v0.x },
+            { v0.z }
         })
         local position_accuracy = initialPosError or 10000
-        position_accuracy = l_math.min(position_accuracy,10000)
-        local velocity_accuracy = 1
+        position_accuracy = l_math.min(position_accuracy, 10000)
+        local velocity_accuracy = instance.mobile and 30 or 1
         instance.P = matrix({
-            {l_math.pow(position_accuracy,2),0,0,0},
-            {0,l_math.pow(position_accuracy,2),0,0},
-            {0,0,l_math.pow(velocity_accuracy,2),0},
-            {0,0,0,l_math.pow(velocity_accuracy,2)}
+            { l_math.pow(position_accuracy, 2), 0,                                0,                                0 },
+            { 0,                                l_math.pow(position_accuracy, 2), 0,                                0 },
+            { 0,                                0,                                l_math.pow(velocity_accuracy, 2), 0 },
+            { 0,                                0,                                0,                                l_math.pow(velocity_accuracy, 2) }
         })
 
         if HOUND.DEBUG then
             instance.marker = HoundUtils.Marker.create()
-            trigger.action.outText("new KF: x:" .. instance.state[2][1] .. "| y: " .. instance.state[1][1],20)
+            trigger.action.outText("new KF: x:" .. instance.state[2][1] .. "| y: " .. instance.state[1][1], 20)
         end
         return instance
     end
 
     function HOUND.Contact.Estimator.UPLKF:getEstimatedPos(state)
         local X_k = state or self.state
-        local pos = {x = X_k[1][1], z = X_k[2][1]}
+        local pos = { x = X_k[1][1], z = X_k[2][1] }
         if HoundUtils.Dcs.isPoint(pos) then
             pos = HoundUtils.Geo.setPointHeight(pos)
             return pos
@@ -5963,38 +6529,54 @@ do
     end
 
     function HOUND.Contact.Estimator.UPLKF.normalizeAz(azimuth)
-        return (((azimuth) + l_math.pi) % TwoPI) - l_math.pi
+        local bearing = (HalfPi - azimuth + TwoPI) % TwoPI
+        return (((bearing) + l_math.pi) % TwoPI) - l_math.pi
+    end
+
+    function HOUND.Contact.Estimator.UPLKF.bearingToAzimuth(bearing)
+        return (HalfPi - bearing + TwoPI) % TwoPI
     end
 
     function HOUND.Contact.Estimator.UPLKF:updateMarker()
         local pos = self:getEstimatedPos()
-        self.marker:update({useLegacyMarker = false
-        ,pos=pos,text="UB-PLKF",coalition=-1})
+        self.marker:update({
+            useLegacyMarker = false
+            ,
+            pos = pos,
+            text = "UB-PLKF",
+            coalition = -1
+        })
     end
 
     function HOUND.Contact.Estimator.UPLKF:getF(deltaT)
-        local Ft = matrix(4,"I")
+        local Ft = matrix(4, "I")
         Ft[1][3] = deltaT
         Ft[2][4] = deltaT
         return Ft
     end
 
-    function HOUND.Contact.Estimator.UPLKF:getQ(deltaT,sigma)
+    function HOUND.Contact.Estimator.UPLKF:getQ(deltaT, sigma)
         local dT = deltaT or 10
         local sigma_a = sigma or self._maxNoise
-        sigma_a = sigma_a/2
+        sigma_a = sigma_a / 2
 
-        return matrix(4,4,0)  -- no noise
-
+        return matrix({
+            { 0.25 * l_math.pow(dT, 4) * sigma_a, 0,                                  0.5 * l_math.pow(dT, 3) * sigma_a, 0 },
+            { 0,                                  0.25 * l_math.pow(dT, 4) * sigma_a, 0,                                 0.5 * l_math.pow(dT, 3) * sigma_a },
+            { 0.5 * l_math.pow(dT, 3) * sigma_a,  0,                                  l_math.pow(dT, 2) * sigma_a,       0 },
+            { 0,                                  0.5 * l_math.pow(dT, 3) * sigma_a,  0,                                 l_math.pow(dT, 2) * sigma_a },
+        })
     end
 
-    function HOUND.Contact.Estimator.UPLKF:predictStep(X,P,timestep,Q)
+    function HOUND.Contact.Estimator.UPLKF:predictStep(X, P, timestep, Q)
         local F = self:getF(timestep)
         local Q = Q or self:getQ(timestep)
         local x_hat = F * X + Q
         local P_hat = F * P * F:transpose() + Q
 
-        return x_hat,P_hat
+        x_hat[3][1] = HoundUtils.Mapping.clamp(x_hat[3][1], -30.0, 30.0)
+        x_hat[4][1] = HoundUtils.Mapping.clamp(x_hat[4][1], -30.0, 30.0)
+        return x_hat, P_hat
     end
 
     function HOUND.Contact.Estimator.UPLKF:predict(timestamp)
@@ -6002,56 +6584,59 @@ do
         local deltaT = timestamp - self.t0
         self.t0 = timestamp
 
-        self.state,self.P = self:predictStep(self.state,self.P,deltaT)
+        self.state, self.P = self:predictStep(self.state, self.P, deltaT)
     end
 
-    function HOUND.Contact.Estimator.UPLKF:update(p0,z,timestamp,z_err)
-
+    function HOUND.Contact.Estimator.UPLKF:update(p0, z, timestamp, z_err)
         timestamp = timestamp or timer.getAbsTime()
         local deltaT = timestamp - self.t0
         self.t0 = timestamp
         local err = z_err or l_math.rad(HOUND.MAX_ANGULAR_RES_DEG)
-        local Ri = err/2
-        self._maxNoise = l_math.max(self._maxNoise,err)
+        local Ri = err
+        self._maxNoise = l_math.max(self._maxNoise, err)
 
         local Q = self:getQ(deltaT)
-
-        local x_hat,P_k = self:predictStep(self.state,self.P,deltaT,Q)
+        local x_hat, P_k = self:predictStep(self.state, self.P, deltaT, Q)
 
         local estimatedPos = self:getEstimatedPos(x_hat)
-        local d_k = HoundUtils.Geo.get2DDistance(p0,estimatedPos)
+        local d_k = HoundUtils.Geo.get2DDistance(p0, estimatedPos)
 
-        local z_hat = self.normalizeAz(HoundUtils.Elint.getAzimuth(p0,estimatedPos))
-        local cos_beta_k,sin_beta_k = l_math.cos(z_hat),l_math.sin(z_hat)
-        local m_k = cos_beta_k*estimatedPos.x + sin_beta_k*estimatedPos.z - d_k
+        local z_bearing = self.normalizeAz(z)
+        local z_hat_bearing = self.normalizeAz(HoundUtils.Elint.getAzimuth(p0, estimatedPos))
+
+        local cos_beta_k, sin_beta_k = l_math.cos(z_hat_bearing), l_math.sin(z_hat_bearing)
+        local m_k = cos_beta_k * estimatedPos.x + sin_beta_k * estimatedPos.z - d_k
+
         local H_k = matrix({
-            {sin_beta_k/m_k,-cos_beta_k/m_k,0,0}
+            { sin_beta_k / m_k, -cos_beta_k / m_k, 0, 0 }
         })
-        local z_k = matrix({{self.normalizeAz(z)}})/m_k
 
-        local R_k = matrix({{l_math.sqrt(Ri)}})
+        local z_k = matrix({ { z_bearing } }) / m_k
+
+        local R_k = matrix({ { Ri } })
         local S_k = H_k * P_k * H_k:transpose() + R_k
 
         local K_k = P_k * H_k:transpose() * S_k:invert()
 
         local y_k = z_k - H_k * x_hat
 
-        HOUND.Logger.debug("z: ".. self.normalizeAz(z) .. "\n z_hat: ".. z_hat )
+        HOUND.Logger.debug("z_bearing: " .. z_bearing .. "\n z_hat_bearing: " .. z_hat_bearing)
         self.state = x_hat + (K_k * y_k)
-        self.P = (matrix(4,"I") - K_k * H_k) * P_k
+        self.P = (matrix(4, "I") - K_k * H_k) * P_k
+
+        self.state[3][1] = HoundUtils.Mapping.clamp(self.state[3][1], -30.0, 30.0)
+        self.state[4][1] = HoundUtils.Mapping.clamp(self.state[4][1], -30.0, 30.0)
 
         if HOUND.DEBUG then
             self:updateMarker()
         end
     end
 
-    setmetatable(HOUND.Contact.Estimator.UPLKF,{ __call = function( ... ) return HOUND.Contact.Estimator.UPLKF.create( ... ) end } )
-
+    setmetatable(HOUND.Contact.Estimator.UPLKF,
+        { __call = function(...) return HOUND.Contact.Estimator.UPLKF.create(...) end })
 end
 do
     local l_math = math
-    local l_mist = HOUND.Mist
-    local PI_2 = 2*l_math.pi
     local HoundUtils = HOUND.Utils
 
     HOUND.Contact.Datapoint = {}
@@ -6070,17 +6655,11 @@ do
         elintDatapoint.platformName = platform0:getName()
         elintDatapoint.platformStatic = isPlatformStatic or false
         elintDatapoint.platformPrecision = angularResolution or l_math.rad(HOUND.MAX_ANGULAR_RES_DEG)
-        elintDatapoint.estimatedPos = elintDatapoint:estimatePos()
-        elintDatapoint.posPolygon = {}
-        elintDatapoint.posPolygon["2D"],elintDatapoint.posPolygon["3D"],elintDatapoint.posPolygon["EllipseParams"] = elintDatapoint:calcPolygons()
         elintDatapoint.kalman = nil
         elintDatapoint.processed = false
         if elintDatapoint.platformStatic then
             elintDatapoint.kalman = HOUND.Contact.Estimator.Kalman.AzFilter(elintDatapoint.platformPrecision)
             elintDatapoint:update(elintDatapoint.az)
-        end
-        if HOUND.DEBUG then
-            elintDatapoint.id = elintDatapoint.getId()
         end
         return elintDatapoint
     end
@@ -6089,126 +6668,26 @@ do
         return self.platformStatic
     end
 
-    function HOUND.Contact.Datapoint.getPos(self)
-        return self.estimatedPos
-    end
-
     function HOUND.Contact.Datapoint.getAge(self)
         return HoundUtils.absTimeDelta(self.t)
     end
 
-    function HOUND.Contact.Datapoint.get2dPoly(self)
-        return self.posPolygon['2D']
-    end
-
-    function HOUND.Contact.Datapoint.get3dPoly(self)
-        return self.posPolygon['3D']
-    end
-
-    function HOUND.Contact.Datapoint.getEllipseParams(self)
-        return self.posPolygon['EllipseParams']
-    end
-
-    function HOUND.Contact.Datapoint.getErrors(self)
-        if type(self.err) ~= "table" then
-            self:calcError()
+    function HOUND.Contact.Datapoint.getPos(self)
+        if self.kalman then
+            return self.kalman:getValue().pos or nil
         end
-        return self.err
-    end
-
-    function HOUND.Contact.Datapoint.estimatePos(self)
-        if self.el == nil or self.platformStatic or l_math.abs(self.el) <= self.platformPrecision then return end
-        local pos = HoundUtils.Geo.getProjectedIP(self.platformPos,self.az,self.el)
-        if HoundUtils.Dcs.isPoint(pos) then
-            pos.score = self.signalStrength*self.signalStrength
+        if not self.az and not self.el then return end
+        self.pos = HoundUtils.Geo.getProjectedIP(self.platformPos, self.az, self.el)
+        if not HountUtils.Dcs.isPoint(self.pos) then
+            self.pos = HoundUtils.Geo.getProjectedIP(self.platformPos, self.az, (self.el - (self.platformPrecision/2)))
         end
-        return pos
-    end
-
-    function HOUND.Contact.Datapoint.calcPolygons(self)
-        if self.platformPrecision == 0 then return nil,nil end
-        local maxSlant = l_math.min(250000,HoundUtils.Geo.EarthLOS(self.platformPos.y)*1.1)
-        local poly2D = {}
-        table.insert(poly2D,self.platformPos)
-        for _,theta in ipairs({((self.az - self.platformPrecision + PI_2) % PI_2),((self.az + self.platformPrecision + PI_2) % PI_2) }) do
-            local point = {}
-            point.x = maxSlant*l_math.cos(theta) + self.platformPos.x
-            point.z = maxSlant*l_math.sin(theta) + self.platformPos.z
-            table.insert(poly2D,point)
-        end
-        HoundUtils.Geo.setHeight(poly2D)
-
-        if self.el == nil then return poly2D end
-        local poly3D = {}
-        local ellipse = {
-            theta = self.az
-        }
-
-        local numSteps = 16
-        local angleStep = PI_2/numSteps
-        for i = 1,numSteps do
-            local pointAngle = PI_2 - (i*angleStep)
-            local azStep = self.az + (self.platformPrecision * l_math.sin(pointAngle))
-            local elStep = self.el + (self.platformPrecision * l_math.cos(pointAngle))
-            local point = HoundUtils.Geo.getProjectedIP(self.platformPos, azStep,elStep) or {x=maxSlant*l_math.cos(azStep) + self.platformPos.x,z=maxSlant*l_math.sin(azStep) + self.platformPos.z}
-            if not point.y then
-                point = HoundUtils.Geo.setHeight(point)
-            end
-
-            if HoundUtils.Dcs.isPoint(point) and HoundUtils.Dcs.isPoint(self:getPos()) then
-                table.insert(poly3D,point)
-                if i == numSteps/4 then
-                    ellipse.minor = point
-                elseif i == numSteps/2 then
-                    ellipse.major = point
-                    ellipse.majorCG = HoundUtils.Geo.get2DDistance(self:getPos(),point)
-                elseif i == 3*(numSteps/4) then
-                    if HoundUtils.Dcs.isPoint(ellipse.minor) then
-                        ellipse.minor = HoundUtils.Geo.get2DDistance(ellipse.minor,point)
-                    end
-                elseif i == numSteps then
-                    if HoundUtils.Dcs.isPoint(ellipse.major) then
-                        ellipse.major = HoundUtils.Geo.get2DDistance(ellipse.major,point)
-                        ellipse.majorCG = ellipse.majorCG / (ellipse.majorCG + HoundUtils.Geo.get2DDistance(self:getPos(),point))
-                    end
-                end
-            end
-        end
-        if type(ellipse.minor) ~= "number" or type(ellipse.major) ~= "number" then
-            ellipse = {}
-        end
-        return poly2D,poly3D,ellipse
-    end
-
-    function HOUND.Contact.Datapoint.calcError(self)
-        if type(self.posPolygon["EllipseParams"]) == "table" and self.posPolygon["EllipseParams"].theta then
-        local ellipse = self.posPolygon['EllipseParams']
-        if ellipse.theta then
-            local sinTheta = l_math.sin(ellipse.theta)
-            local cosTheta = l_math.cos(ellipse.theta)
-            self.err = {
-                x = l_math.max(l_math.abs(ellipse.minor/2*cosTheta), l_math.abs(-ellipse.major/2*sinTheta)),
-                z = l_math.max(l_math.abs(ellipse.minor/2*sinTheta), l_math.abs(ellipse.major/2*cosTheta))
-            }
-            self.err.score = {
-                x = HOUND.Contact.Estimator.accuracyScore(self.err.x),
-                z = HOUND.Contact.Estimator.accuracyScore(self.err.z)
-            }
-        end
-
-        end
+        return self.pos
     end
     function HOUND.Contact.Datapoint.update(self,newAz,predictedAz,processNoise)
         if not self.platformPrecision and not self.platformStatic then return end
         self.kalman:update(newAz,nil,processNoise)
         self.az = self.kalman:get()
-        self.posPolygon["2D"],self.posPolygon["3D"] = self:calcPolygons()
         return self.az
-    end
-
-    function HOUND.Contact.Datapoint.getId()
-        HOUND.Contact.Datapoint.DataPointId = HOUND.Contact.Datapoint.DataPointId + 1
-        return HOUND.Contact.Datapoint.DataPointId
     end
 end
 do
@@ -6463,12 +6942,18 @@ do
         local Northing = m1 * Easting + b1
 
         local pos = {}
+
         pos.x = Easting
         pos.z = Northing
         pos.y = land.getHeight({x=pos.x,y=pos.z})
 
-        pos.score = earlyPoint.signalStrength * latePoint.signalStrength
-
+        local d1 = HoundUtils.Geo.get2DDistance(p1,pos)
+        local d2 = HoundUtils.Geo.get2DDistance(p2,pos)
+        local var1 = l_math.pow(((d1 / HOUND.REF_DIST) * earlyPoint.platformPrecision),2)
+        local var2 = l_math.pow(((d2 / HOUND.REF_DIST) * latePoint.platformPrecision),2)
+        local score = 1 / l_math.max((var1+var2),1e-10)
+        local angleScore = l_math.sin(HoundUtils.angleDeltaRad(earlyPoint.az,latePoint.az))
+        pos.score = score * angleScore
         return pos
     end
 
@@ -6530,6 +7015,7 @@ do
     end
 
     function HOUND.Contact.Emitter:processIntersection(targetTable,point1,point2)
+        if point1.platformPos.x == point2.platformPos.x and point1.platformPos.z == point2.platformPos.z then return end
         local err = (point1.platformPrecision + point2.platformPrecision)/2
         if HoundUtils.angleDeltaRad(point1.az,point2.az) < err then return end
         local intersection = self.triangulatePoints(point1,point2)
@@ -6564,22 +7050,16 @@ do
         local platforms = {}
         local staticPlatformsOnly = true
         local staticClipPolygon2D = nil
+        local AllDataPoints = {}
 
         for _,platformDatapoints in pairs(self._dataPoints) do
             if HOUND.Length(platformDatapoints) > 0 then
                 for _,datapoint in pairs(platformDatapoints) do
                     if datapoint:isStatic() then
                         table.insert(staticDataPoints,datapoint)
-                        if type(datapoint:get2dPoly()) == "table" then
-                            staticClipPolygon2D = HoundUtils.Polygon.clipPolygons(staticClipPolygon2D,datapoint:get2dPoly()) or datapoint:get2dPoly()
-                        end
                     else
                         staticPlatformsOnly = false
                         table.insert(mobileDataPoints,datapoint)
-                    end
-                    if HoundUtils.Dcs.isPoint(datapoint:getPos()) then
-                        local point = l_mist.utils.deepCopy(datapoint:getPos())
-                        table.insert(estimatePositions,point)
                     end
                     platforms[datapoint.platformName] = 1
                 end
@@ -6619,20 +7099,23 @@ do
         end
 
         if HOUND.Length(estimatePositions) > 2 or (HOUND.Length(estimatePositions) > 0 and staticPlatformsOnly) then
-            table.sort(estimatePositions, function(a,b) return a.score < b.score end)
 
-            self.pos.p = HoundUtils.Cluster.weightedMean(estimatePositions,self.pos.p)
+                if HOUND.ENABLE_BETTER_SCORE then
+                    self.pos.p = HoundUtils.Cluster.WeightedCentroid(estimatePositions)
+                else
+                    self.pos.p = HoundUtils.Cluster.weightedMean(estimatePositions,self.pos.p)
 
-            if HOUND.Length(estimatePositions) > 10 then
-                self.pos.p = HoundUtils.Cluster.weightedMean(
-                    HoundUtils.Cluster.getDeltaSubsetPercent(estimatePositions,self.pos.p,HOUND.ELLIPSE_PERCENTILE),
-                    self.pos.p)
-            end
+                    if HOUND.Length(estimatePositions) > 10 then
+                        self.pos.p = HoundUtils.Cluster.weightedMean(
+                            HoundUtils.Cluster.getDeltaSubsetPercent(estimatePositions,self.pos.p,HOUND.ELLIPSE_PERCENTILE),
+                            self.pos.p)
+                    end
+                end
 
-            self.uncertenty_data = self.calculateEllipse(estimatePositions,self.pos.p)
-            if type(staticClipPolygon2D) == "table" and ( staticPlatformsOnly) then
-                self.uncertenty_data = self.calculateEllipse(staticClipPolygon2D,self.pos.p,true)
-            end
+                self.uncertenty_data = self.calculateEllipse(estimatePositions,self.pos.p)
+                if type(staticClipPolygon2D) == "table" and ( staticPlatformsOnly) then
+                    self.uncertenty_data = self.calculateEllipse(staticClipPolygon2D,self.pos.p,true)
+                end
 
             self.uncertenty_data.az = l_mist.utils.round(l_math.deg((self.uncertenty_data.theta+l_mist.getNorthCorrection(self.pos.p)+PI_2)%PI_2))
 
@@ -10842,6 +11325,22 @@ do
                 self:AlertOnLaunch(grp)
             end
         end
+
+        if DcsEvent.id == world.event.S_EVENT_WEAPON_ADD
+            and HOUND.AUTO_ADD_PLATFORM_BY_PAYLOAD
+            and HoundUtils.Dcs.isUnit(DcsEvent.initiator)
+            and DcsEvent.initiator:getCoalition() == self.settings:getCoalition()
+        then
+            local unit = DcsEvent.initiator
+            local type = unit:getTypeName()
+            HOUND.Logger.debug("S_EVENT_WEAPON_ADD for " .. unit:getName() .. " (" .. type .. ") with weapon " .. DcsEvent.weapon_name )
+
+            if not HOUND.DB.isValidPlatform(unit,DcsEvent.weapon_name) then return end
+            HOUND.Logger.debug(self:countPlatforms())
+            HOUND.Logger.debug("S_EVENT_WEAPON_ADD for " .. unit:getName() .. " (" .. type .. ") with weapon " .. DcsEvent.weapon_name .. " add platform")
+            self:addPlatform(unit:getName())
+            HOUND.Logger.debug(self:countPlatforms())
+        end
     end
 
     function HoundElint:defaultEventHandler(remove)
@@ -10858,4 +11357,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.4.1 - Compiled on 2025-03-30 19:58
+-- Hound version 0.4.2 - Compiled on 2025-07-24 19:32

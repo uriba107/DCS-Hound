@@ -85,32 +85,12 @@
 	<td class="summary">check if platform is static</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.Contact.Datapoint.getPos">HOUND.Contact.Datapoint.getPos (self)</a></td>
-	<td class="summary">Get estimated position</td>
-	</tr>
-	<tr>
 	<td class="name" nowrap><a href="#HOUND.Contact.Datapoint.getAge">HOUND.Contact.Datapoint.getAge (self)</a></td>
 	<td class="summary">Get datapoint age in seconds</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.Contact.Datapoint.get2dPoly">HOUND.Contact.Datapoint.get2dPoly (self)</a></td>
-	<td class="summary">Get 2D polygon</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Contact.Datapoint.get3dPoly">HOUND.Contact.Datapoint.get3dPoly (self)</a></td>
-	<td class="summary">Get 3D polygon</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Contact.Datapoint.getEllipseParams">HOUND.Contact.Datapoint.getEllipseParams (self)</a></td>
-	<td class="summary">Get 3D polygon ellipse parameters</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Contact.Datapoint.getErrors">HOUND.Contact.Datapoint.getErrors (self)</a></td>
-	<td class="summary">Get computed error table</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Contact.Datapoint.calcError">HOUND.Contact.Datapoint.calcError (self)</a></td>
-	<td class="summary">calculate errors on 3dPoly</td>
+	<td class="name" nowrap><a href="#HOUND.Contact.Datapoint.getPos">HOUND.Contact.Datapoint.getPos (self)</a></td>
+	<td class="summary">Get datapoint projected position</td>
 	</tr>
 </table>
 <h2><a href="#Tables">Tables</a></h2>
@@ -123,20 +103,8 @@
 <h2><a href="#Local_Functions">Local Functions</a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.Contact.Datapoint.estimatePos">HOUND.Contact.Datapoint.estimatePos (self)</a></td>
-	<td class="summary">Estimate contact position from Datapoint information only</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Contact.Datapoint.calcPolygons">HOUND.Contact.Datapoint.calcPolygons (self)</a></td>
-	<td class="summary">generate Az only Triangle and if possible Az/El polygon footprint</td>
-	</tr>
-	<tr>
 	<td class="name" nowrap><a href="#HOUND.Contact.Datapoint.update">HOUND.Contact.Datapoint.update (self, newAz[, predictedAz[, processNoise]])</a></td>
 	<td class="summary">Smooth azimuth using Kalman filter</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Contact.Datapoint.getId">HOUND.Contact.Datapoint.getId ()</a></td>
-	<td class="summary">Assign id for each Datapoint for debugging</td>
 	</tr>
 </table>
 
@@ -222,31 +190,6 @@
 
 </dd>
     <dt>
-    <a name = "HOUND.Contact.Datapoint.getPos"></a>
-    <strong>HOUND.Contact.Datapoint.getPos (self)</strong>
-    </dt>
-    <dd>
-    Get estimated position
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">self</span>
-
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        DCS point
-    </ol>
-
-
-
-
-</dd>
-    <dt>
     <a name = "HOUND.Contact.Datapoint.getAge"></a>
     <strong>HOUND.Contact.Datapoint.getAge (self)</strong>
     </dt>
@@ -272,11 +215,11 @@
 
 </dd>
     <dt>
-    <a name = "HOUND.Contact.Datapoint.get2dPoly"></a>
-    <strong>HOUND.Contact.Datapoint.get2dPoly (self)</strong>
+    <a name = "HOUND.Contact.Datapoint.getPos"></a>
+    <strong>HOUND.Contact.Datapoint.getPos (self)</strong>
     </dt>
     <dd>
-    Get 2D polygon
+    Get datapoint projected position
 
 
     <h3>Parameters:</h3>
@@ -289,103 +232,9 @@
     <h3>Returns:</h3>
     <ol>
 
-        table of DCS points
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+        DCS point
     </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Contact.Datapoint.get3dPoly"></a>
-    <strong>HOUND.Contact.Datapoint.get3dPoly (self)</strong>
-    </dt>
-    <dd>
-    Get 3D polygon
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">self</span>
-
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        table of DCS points
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Contact.Datapoint.getEllipseParams"></a>
-    <strong>HOUND.Contact.Datapoint.getEllipseParams (self)</strong>
-    </dt>
-    <dd>
-    Get 3D polygon ellipse parameters
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">self</span>
-
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        table of ellipse parameters
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Contact.Datapoint.getErrors"></a>
-    <strong>HOUND.Contact.Datapoint.getErrors (self)</strong>
-    </dt>
-    <dd>
-    Get computed error table
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">self</span>
-
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        error table
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Contact.Datapoint.calcError"></a>
-    <strong>HOUND.Contact.Datapoint.calcError (self)</strong>
-    </dt>
-    <dd>
-    calculate errors on 3dPoly
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">self</span>
-
-        </li>
-    </ul>
-
 
 
 
@@ -444,55 +293,6 @@
 
     <dl class="function">
     <dt>
-    <a name = "HOUND.Contact.Datapoint.estimatePos"></a>
-    <strong>HOUND.Contact.Datapoint.estimatePos (self)</strong>
-    </dt>
-    <dd>
-    Estimate contact position from Datapoint information only
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">self</span>
-
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Contact.Datapoint.calcPolygons"></a>
-    <strong>HOUND.Contact.Datapoint.calcPolygons (self)</strong>
-    </dt>
-    <dd>
-    generate Az only Triangle and if possible Az/El polygon footprint
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">self</span>
-
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-        <li>
-        2D Polygon</li>
-        <li>
-        3D Polygon</li>
-        <li>
-        Ellipse parametes for 3D Polygon (theta,major,minor)</li>
-    </ol>
-
-
-
-
-</dd>
-    <dt>
     <a name = "HOUND.Contact.Datapoint.update"></a>
     <strong>HOUND.Contact.Datapoint.update (self, newAz[, predictedAz[, processNoise]])</strong>
     </dt>
@@ -523,25 +323,6 @@
 
 
 </dd>
-    <dt>
-    <a name = "HOUND.Contact.Datapoint.getId"></a>
-    <strong>HOUND.Contact.Datapoint.getId ()</strong>
-    </dt>
-    <dd>
-    Assign id for each Datapoint for debugging
-
-
-
-    <h3>Returns:</h3>
-    <ol>
-
-        DatapointId (number)
-    </ol>
-
-
-
-
-</dd>
 </dl>
 
 
@@ -549,7 +330,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/lunarmodules/LDoc">LDoc 1.5.0</a></i>
-<i style="float:right;">Last updated 2025-03-30 22:58:36 </i>
+<i style="float:right;">Last updated 2025-07-24 22:32:18 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

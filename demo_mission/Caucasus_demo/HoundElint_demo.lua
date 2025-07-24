@@ -1,11 +1,11 @@
 do
     if STTS ~= nil then
-        STTS.DIRECTORY = "C:\\Program Files\\DCS-SimpleRadio-Standalone"
+        STTS.DIRECTORY = "C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
         STTS.GOOGLE_CREDENTIALS = "E:\\Dropbox\\uri\\Dropbox\\DCS\\Mission Building\\googletts.json"
     end
     HOUND.USE_LEGACY_MARKS = false
     -- HOUND.TTS_ENGINE = {'STTS','GRPC'}
-    HOUND.ENABLE_KALMAN = true
+    -- HOUND.ENABLE_KALMAN = true
 end
 
 do
@@ -324,9 +324,20 @@ do
 
     -- local invalidController = Unit.getByName('KC135_tanker'):getController()
     -- env.info(mist.utils.tableShow(invalidController))
+    env.info(HOUND.Mist.utils.tableShow(world.event))
 
-
-
+    local testRearm = {}
+    function testRearm:onEvent(DcsEvent)
+        if DcsEvent.id == world.event.S_EVENT_WEAPON_ADD then
+            local unit = DcsEvent.initiator
+            if not HOUND.Utils.Dcs.isUnit(unit) then return end
+            env.info("Rearm event for " .. unit:getName() .. " with weapon " .. DcsEvent.weapon_name )
+        end
+        if DcsEvent.id == world.event.S_EVENT_WEAPON_REARM then
+            env.info(HOUND.Mist.utils.tableShow(DcsEvent))
+        end
+    end
+    world.addEventHandler(testRearm)
     -- env.info("ELINT_C17 data")
     -- env.info(mist.utils.tableShow(Unit.getByName('ELINT_C17'):getDesc()))
     -- env.info(mist.utils.tableShow({Unit.getByName('ELINT_C17'):getCallsign()}))

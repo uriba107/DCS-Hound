@@ -22,24 +22,33 @@ do
 
     --- check if canidate Object is a valid platform
     -- @param candidate DCS Object (Unit or Static Object)
+    -- @param PayloadAdded[?type=string] name of payload added to unit (optional)
     -- @return[type=bool] True if object is valid platform
-    function HOUND.DB.isValidPlatform(candidate)
+    function HOUND.DB.isValidPlatform(candidate,PayloadAdded)
         if (not HOUND.Utils.Dcs.isUnit(candidate) and not HOUND.Utils.Dcs.isStaticObject(candidate)) or not candidate:isExist()
              then return false
         end
 
         local isValid = false
         local mainCategory = Object.getCategory(candidate)
-        local type = candidate:getTypeName()
+        local UnitType = candidate:getTypeName()
         if HOUND.setContains(HOUND.DB.Platform,mainCategory) then
-            if HOUND.setContains(HOUND.DB.Platform[mainCategory],type) then
-                if HOUND.DB.Platform[mainCategory][type]['require'] then
-                    local platformData = HOUND.DB.Platform[mainCategory][type]
+            if HOUND.setContains(HOUND.DB.Platform[mainCategory],UnitType) then
+                if HOUND.DB.Platform[mainCategory][UnitType]['require'] then
+                    local platformData = HOUND.DB.Platform[mainCategory][UnitType]
                     -- TODO: actually make logic here
-                    if HOUND.setContains(platformData['require'],'CLSID') then
-                        local required = platformData['require']['CLSID']
-                        -- then if payload is valid (currently always retuns true)
-                        isValid = HOUND.Utils.hasPayload(candidate,required)
+                    if HOUND.setContains(platformData['require'],'Payload') then
+                        HOUND.Logger.debug(tostring(PayloadAdded).. " | " .. type(PayloadAdded))
+                        local required = platformData['require']['Payload']
+                        if type(PayloadAdded) == 'string' then
+                            HOUND.Logger.debug("HOUND.DB.isValidPlatform: checking payload " .. PayloadAdded .. " for platform " .. UnitType)
+                            -- check for payload requirements
+                            isValid = HOUND.setContainsValue(required,PayloadAdded)
+                            HOUND.Logger.debug("HOUND.DB.isValidPlatform: isValid = " .. tostring(isValid))
+                        else
+                            -- check for payload requirements (for now will always return false)
+                            isValid = HOUND.Utils.hasPayload(candidate,required)
+                        end
                     end
                     if HOUND.setContains(platformData['require'],'TASK') then
                         local required = platformData['require']['TASK']

@@ -149,6 +149,22 @@ do
                 self:AlertOnLaunch(grp)
             end
         end
+
+        if DcsEvent.id == world.event.S_EVENT_WEAPON_ADD
+            and HOUND.AUTO_ADD_PLATFORM_BY_PAYLOAD
+            and HoundUtils.Dcs.isUnit(DcsEvent.initiator)
+            and DcsEvent.initiator:getCoalition() == self.settings:getCoalition()
+        then
+            local unit = DcsEvent.initiator
+            local type = unit:getTypeName()
+            HOUND.Logger.debug("S_EVENT_WEAPON_ADD for " .. unit:getName() .. " (" .. type .. ") with weapon " .. DcsEvent.weapon_name )
+
+            if not HOUND.DB.isValidPlatform(unit,DcsEvent.weapon_name) then return end
+            HOUND.Logger.debug(self:countPlatforms())
+            HOUND.Logger.debug("S_EVENT_WEAPON_ADD for " .. unit:getName() .. " (" .. type .. ") with weapon " .. DcsEvent.weapon_name .. " add platform")
+            self:addPlatform(unit:getName())
+            HOUND.Logger.debug(self:countPlatforms())
+        end
     end
 
     --- enable/disable Hound instance internal event handling

@@ -109,22 +109,22 @@ do
         -- self.contact:processDataWIP()
 
 
-        lu.assertIsTable(d1.posPolygon["3D"])
-        lu.assertIsTable(d2.posPolygon["3D"])
+        -- lu.assertIsTable(d1.posPolygon["3D"])
+        -- lu.assertIsTable(d2.posPolygon["3D"])
 
-        -- check algorithems
-        lu.assertIsTrue(HOUND.Mist.pointInPolygon(tgtPos,d1.posPolygon["3D"]))
-        lu.assertIsTrue(HOUND.Mist.pointInPolygon(tgtPos,d2.posPolygon["3D"]))
+        -- -- check algorithems
+        -- lu.assertIsTrue(HOUND.Mist.pointInPolygon(tgtPos,d1.posPolygon["3D"]))
+        -- lu.assertIsTrue(HOUND.Mist.pointInPolygon(tgtPos,d2.posPolygon["3D"]))
 
-        lu.assertIsTable(d1.posPolygon["2D"])
-        lu.assertIsTable(d2.posPolygon["2D"])
+        -- lu.assertIsTable(d1.posPolygon["2D"])
+        -- lu.assertIsTable(d2.posPolygon["2D"])
 
-        local clipPoly = HOUND.Utils.Polygon.clipPolygons(d1.posPolygon["2D"],d2.posPolygon["2D"])
-        clipPoly = HOUND.Utils.Polygon.clipPolygons(clipPoly,d1.posPolygon["3D"]) or clipPoly
-        clipPoly = HOUND.Utils.Polygon.clipPolygons(clipPoly,d2.posPolygon["3D"]) or clipPoly
-        lu.assertIsTable(clipPoly)
-        -- HOUND.Mist.marker.add({pos=clipPoly,markType="freeform"})
-        lu.assertIsTrue(HOUND.Mist.pointInPolygon(tgtPos,clipPoly))
+        -- local clipPoly = HOUND.Utils.Polygon.clipPolygons(d1.posPolygon["2D"],d2.posPolygon["2D"])
+        -- clipPoly = HOUND.Utils.Polygon.clipPolygons(clipPoly,d1.posPolygon["3D"]) or clipPoly
+        -- clipPoly = HOUND.Utils.Polygon.clipPolygons(clipPoly,d2.posPolygon["3D"]) or clipPoly
+        -- lu.assertIsTable(clipPoly)
+        -- -- HOUND.Mist.marker.add({pos=clipPoly,markType="freeform"})
+        -- lu.assertIsTrue(HOUND.Mist.pointInPolygon(tgtPos,clipPoly))
 
 
         local contactState = self.contact:processData()

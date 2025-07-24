@@ -2,8 +2,6 @@
     -- @module HOUND.Contact.Datapoint
 do
     local l_math = math
-    local l_mist = HOUND.Mist
-    local PI_2 = 2*l_math.pi
     local HoundUtils = HOUND.Utils
 
     --- @table HOUND.Contact.Datapoint
@@ -46,18 +44,15 @@ do
         elintDatapoint.platformName = platform0:getName()
         elintDatapoint.platformStatic = isPlatformStatic or false
         elintDatapoint.platformPrecision = angularResolution or l_math.rad(HOUND.MAX_ANGULAR_RES_DEG)
-        elintDatapoint.estimatedPos = elintDatapoint:estimatePos()
-        elintDatapoint.posPolygon = {}
-        elintDatapoint.posPolygon["2D"],elintDatapoint.posPolygon["3D"],elintDatapoint.posPolygon["EllipseParams"] = elintDatapoint:calcPolygons()
         elintDatapoint.kalman = nil
         elintDatapoint.processed = false
         if elintDatapoint.platformStatic then
             elintDatapoint.kalman = HOUND.Contact.Estimator.Kalman.AzFilter(elintDatapoint.platformPrecision)
             elintDatapoint:update(elintDatapoint.az)
         end
-        if HOUND.DEBUG then
-            elintDatapoint.id = elintDatapoint.getId()
-        end
+        -- if HOUND.DEBUG then
+        --     elintDatapoint.id = elintDatapoint.getId()
+        -- end
         return elintDatapoint
     end
 
@@ -67,144 +62,24 @@ do
         return self.platformStatic
     end
 
-    --- Get estimated position
-    -- @return DCS point
-    function HOUND.Contact.Datapoint.getPos(self)
-        return self.estimatedPos
-    end
-
     --- Get datapoint age in seconds
     -- @return time in seconds
     function HOUND.Contact.Datapoint.getAge(self)
         return HoundUtils.absTimeDelta(self.t)
     end
 
-    --- Get 2D polygon
-    -- @return table of DCS points
-    function HOUND.Contact.Datapoint.get2dPoly(self)
-        return self.posPolygon['2D']
-    end
-
-    --- Get 3D polygon
-    -- @return table of DCS points
-    function HOUND.Contact.Datapoint.get3dPoly(self)
-        return self.posPolygon['3D']
-    end
-
-    --- Get 3D polygon ellipse parameters
-    -- @return table of ellipse parameters
-    function HOUND.Contact.Datapoint.getEllipseParams(self)
-        return self.posPolygon['EllipseParams']
-    end
-
-    --- Get computed error table
-    -- @return error table
-    function HOUND.Contact.Datapoint.getErrors(self)
-        if type(self.err) ~= "table" then
-            self:calcError()
+    --- Get datapoint projected position
+    -- @return[type=table] DCS point
+    function HOUND.Contact.Datapoint.getPos(self)
+        if self.kalman then
+            return self.kalman:getValue().pos or nil
         end
-        return self.err
-    end
-
-    --- Estimate contact position from Datapoint information only
-    -- @local
-    function HOUND.Contact.Datapoint.estimatePos(self)
-        if self.el == nil or self.platformStatic or l_math.abs(self.el) <= self.platformPrecision then return end
-        local pos = HoundUtils.Geo.getProjectedIP(self.platformPos,self.az,self.el)
-        if HoundUtils.Dcs.isPoint(pos) then
-            pos.score = self.signalStrength*self.signalStrength
+        if not self.az and not self.el then return end
+        self.pos = HoundUtils.Geo.getProjectedIP(self.platformPos, self.az, self.el)
+        if not HountUtils.Dcs.isPoint(self.pos) then
+            self.pos = HoundUtils.Geo.getProjectedIP(self.platformPos, self.az, (self.el - (self.platformPrecision/2)))
         end
-        return pos
-    end
-
-    --- generate Az only Triangle and if possible Az/El polygon footprint
-    -- @local
-    -- Polygons are made for Sutherland–Hodgman pollygon clipping algorithm so they are all counter-clockwise
-    -- @return 2D Polygon
-    -- @return 3D Polygon
-    -- @return Ellipse parametes for 3D Polygon (theta,major,minor)
-    function HOUND.Contact.Datapoint.calcPolygons(self)
-        if self.platformPrecision == 0 then return nil,nil end
-        -- calc 2D az triangle
-        local maxSlant = l_math.min(250000,HoundUtils.Geo.EarthLOS(self.platformPos.y)*1.1)
-        local poly2D = {}
-        table.insert(poly2D,self.platformPos)
-        for _,theta in ipairs({((self.az - self.platformPrecision + PI_2) % PI_2),((self.az + self.platformPrecision + PI_2) % PI_2) }) do
-            local point = {}
-            point.x = maxSlant*l_math.cos(theta) + self.platformPos.x
-            point.z = maxSlant*l_math.sin(theta) + self.platformPos.z
-            -- point.y = land.getHeight({x=point.x,y=point.z})+0.5
-            table.insert(poly2D,point)
-        end
-        HoundUtils.Geo.setHeight(poly2D)
-        -- if self.platformStatic then
-        --     mist.marker.add({pos={poly2D[1],poly2D[3]},markType="line"})
-        -- end
-
-        if self.el == nil then return poly2D end
-        -- calc 3d Az/El polygon
-        local poly3D = {}
-        local ellipse = {
-            theta = self.az
-        }
-
-        local numSteps = 16
-        local angleStep = PI_2/numSteps
-        for i = 1,numSteps do
-            local pointAngle = PI_2 - (i*angleStep)
-            local azStep = self.az + (self.platformPrecision * l_math.sin(pointAngle))
-            local elStep = self.el + (self.platformPrecision * l_math.cos(pointAngle))
-            local point = HoundUtils.Geo.getProjectedIP(self.platformPos, azStep,elStep) or {x=maxSlant*l_math.cos(azStep) + self.platformPos.x,z=maxSlant*l_math.sin(azStep) + self.platformPos.z}
-            if not point.y then
-                point = HoundUtils.Geo.setHeight(point)
-            end
-
-            if HoundUtils.Dcs.isPoint(point) and HoundUtils.Dcs.isPoint(self:getPos()) then
-                table.insert(poly3D,point)
-                if i == numSteps/4 then
-                    ellipse.minor = point
-                elseif i == numSteps/2 then
-                    ellipse.major = point
-                    ellipse.majorCG = HoundUtils.Geo.get2DDistance(self:getPos(),point)
-                elseif i == 3*(numSteps/4) then
-                    if HoundUtils.Dcs.isPoint(ellipse.minor) then
-                        ellipse.minor = HoundUtils.Geo.get2DDistance(ellipse.minor,point)
-                    end
-                elseif i == numSteps then
-                    if HoundUtils.Dcs.isPoint(ellipse.major) then
-                        ellipse.major = HoundUtils.Geo.get2DDistance(ellipse.major,point)
-                        ellipse.majorCG = ellipse.majorCG / (ellipse.majorCG + HoundUtils.Geo.get2DDistance(self:getPos(),point))
-                    end
-                end
-            end
-        end
-        if type(ellipse.minor) ~= "number" or type(ellipse.major) ~= "number" then
-            ellipse = {}
-        end
-        -- mist.marker.add({pos=poly3D,markType="freeform"})
-        -- self.posPolygon["3D"] = poly3D
-        return poly2D,poly3D,ellipse
-    end
-
-    --- calculate errors on 3dPoly
-    function HOUND.Contact.Datapoint.calcError(self)
-        if type(self.posPolygon["EllipseParams"]) == "table" and self.posPolygon["EllipseParams"].theta then
-        local ellipse = self.posPolygon['EllipseParams']
-        if ellipse.theta then
-            local sinTheta = l_math.sin(ellipse.theta)
-            local cosTheta = l_math.cos(ellipse.theta)
-            self.err = {
-                x = l_math.max(l_math.abs(ellipse.minor/2*cosTheta), l_math.abs(-ellipse.major/2*sinTheta)),
-                z = l_math.max(l_math.abs(ellipse.minor/2*sinTheta), l_math.abs(ellipse.major/2*cosTheta))
-            }
-            self.err.score = {
-                x = HOUND.Contact.Estimator.accuracyScore(self.err.x),
-                z = HOUND.Contact.Estimator.accuracyScore(self.err.z)
-            }
-        end
-
-
-        end
+        return self.pos
     end
     --- Smooth azimuth using Kalman filter
     -- @local
@@ -216,15 +91,6 @@ do
         if not self.platformPrecision and not self.platformStatic then return end
         self.kalman:update(newAz,nil,processNoise)
         self.az = self.kalman:get()
-        self.posPolygon["2D"],self.posPolygon["3D"] = self:calcPolygons()
         return self.az
-    end
-
-    --- Assign id for each Datapoint for debugging
-    -- @local
-    -- @return DatapointId (number)
-    function HOUND.Contact.Datapoint.getId()
-        HOUND.Contact.Datapoint.DataPointId = HOUND.Contact.Datapoint.DataPointId + 1
-        return HOUND.Contact.Datapoint.DataPointId
     end
 end
