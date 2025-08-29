@@ -39,10 +39,7 @@ do
         instance.typeName = DcsObject:getTypeName()
         instance.isEWR = false
         instance.typeAssigned = {"Unknown"}
-        instance.band = {
-            [false] = HOUND.DB.Bands.C,
-            [true] = HOUND.DB.Bands.C,
-        }
+
         instance.isPrimary = false
         instance.radarRoles = {HOUND.DB.RadarType.SEARCH}
 
@@ -66,6 +63,12 @@ do
             instance.radarRoles = contactData.Role
             instance.frequency = contactData.Freqency
             -- HOUND.Logger.debug(instance.DcsObjectName .. " | " ..mist.utils.tableShow(instance.frequency))
+        else
+            instance.band = {
+                [false] = HOUND.DB.Bands.C,
+                [true] = HOUND.DB.Bands.C,
+            }
+            instance.frequency = HOUND.DB.getEmitterFrequencies(instance.band)
         end
 
         instance.uncertenty_data = nil

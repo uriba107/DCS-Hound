@@ -833,6 +833,57 @@ do
         },
     }
 
+    -- currentHill Asset Pack
+    HOUND.DB.Radars['CHAP_IRISTSLM_STR'] = {
+        ['Name'] = "IRIS-T",
+        ['Assigned'] = { "SHORAD" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+                [true] = {0.049965,0.024983},
+                [false] = {0.049965,0.024983}
+        },
+        ['Primary'] = true
+    }
+    HOUND.DB.Radars['CHAP_PantsirS1'] = {
+        ['Name'] = "Pantsir",
+        ['Assigned'] = {"SHORAD"},
+        ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+                [true] = {0.016655,0.020819},
+                [false] = {0.074948,0.074948}
+        },
+        ['Primary'] = true
+    }
+    HOUND.DB.Radars['CHAP_TorM2'] = {
+        ['Name'] = "Tor",
+        ['Assigned'] = { "SA-15" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+                [true] = {0.011103,0.005552},
+                [false] = {0.074948,0.074948}
+        },
+        ['Primary'] = true
+    }
+    HOUND.DB.Radars['CHAP_Project22160'] = {
+        ['Name'] = "Project 22160 (DD)",
+        ['Assigned'] = { "Naval" },
+        ['Role'] = { HOUND.DB.RadarType.NAVAL },
+        ['Band'] = {
+                [true] = {0.024983,0.012491},
+                [false] = {0.024983,0.012491}
+        },
+        ['Primary'] = true
+    }
+    HOUND.DB.Radars['CHAP_Project22160_TorM2KM'] = {
+        ['Name'] = "Project 22160 (DD)",
+        ['Assigned'] = { "Naval" },
+        ['Role'] = { HOUND.DB.RadarType.NAVAL },
+        ['Band'] = {
+                [true] = {0.011103,0.005552},
+                [false] = {0.024983,0.012491}
+        },
+        ['Primary'] = true
+    }
     --- Valid platform parameters
     -- @table HOUND.DB.Platform
     -- @field UnitTypeName contains table of properties

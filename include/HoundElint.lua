@@ -12,7 +12,7 @@ end
 
 do
     HOUND = {
-        VERSION = "0.4.2",
+        VERSION = "0.4.3",
         DEBUG = false,
         ELLIPSE_PERCENTILE = 0.6,
         DATAPOINTS_NUM = 30,
@@ -2641,6 +2641,57 @@ do
             },
             ['Primary'] = true
         },
+    }
+
+    HOUND.DB.Radars['CHAP_IRISTSLM_STR'] = {
+        ['Name'] = "IRIS-T",
+        ['Assigned'] = { "SHORAD" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+                [true] = {0.049965,0.024983},
+                [false] = {0.049965,0.024983}
+        },
+        ['Primary'] = true
+    }
+    HOUND.DB.Radars['CHAP_PantsirS1'] = {
+        ['Name'] = "Pantsir",
+        ['Assigned'] = {"SHORAD"},
+        ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+                [true] = {0.016655,0.020819},
+                [false] = {0.074948,0.074948}
+        },
+        ['Primary'] = true
+    }
+    HOUND.DB.Radars['CHAP_TorM2'] = {
+        ['Name'] = "Tor",
+        ['Assigned'] = { "SA-15" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+                [true] = {0.011103,0.005552},
+                [false] = {0.074948,0.074948}
+        },
+        ['Primary'] = true
+    }
+    HOUND.DB.Radars['CHAP_Project22160'] = {
+        ['Name'] = "Project 22160 (DD)",
+        ['Assigned'] = { "Naval" },
+        ['Role'] = { HOUND.DB.RadarType.NAVAL },
+        ['Band'] = {
+                [true] = {0.024983,0.012491},
+                [false] = {0.024983,0.012491}
+        },
+        ['Primary'] = true
+    }
+    HOUND.DB.Radars['CHAP_Project22160_TorM2KM'] = {
+        ['Name'] = "Project 22160 (DD)",
+        ['Assigned'] = { "Naval" },
+        ['Role'] = { HOUND.DB.RadarType.NAVAL },
+        ['Band'] = {
+                [true] = {0.011103,0.005552},
+                [false] = {0.024983,0.012491}
+        },
+        ['Primary'] = true
     }
 
     HOUND.DB.Platform = {
@@ -6717,10 +6768,7 @@ do
         instance.typeName = DcsObject:getTypeName()
         instance.isEWR = false
         instance.typeAssigned = {"Unknown"}
-        instance.band = {
-            [false] = HOUND.DB.Bands.C,
-            [true] = HOUND.DB.Bands.C,
-        }
+
         instance.isPrimary = false
         instance.radarRoles = {HOUND.DB.RadarType.SEARCH}
 
@@ -6743,6 +6791,12 @@ do
             instance.isPrimary = contactData.isPrimary
             instance.radarRoles = contactData.Role
             instance.frequency = contactData.Freqency
+        else
+            instance.band = {
+                [false] = HOUND.DB.Bands.C,
+                [true] = HOUND.DB.Bands.C,
+            }
+            instance.frequency = HOUND.DB.getEmitterFrequencies(instance.band)
         end
 
         instance.uncertenty_data = nil
@@ -11357,4 +11411,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.4.2 - Compiled on 2025-07-24 19:32
+-- Hound version 0.4.3 - Compiled on 2025-08-29 11:28
