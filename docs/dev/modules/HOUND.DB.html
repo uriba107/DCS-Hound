@@ -1,0 +1,705 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Hound Documentation for developers</title>
+    <link rel="stylesheet" href="../ldoc_fixed.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Hound<br> ELINT for DCS</h1>
+
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Tables">Tables</a></li>
+<li><a href="#DB_functions">DB functions </a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><a href="../modules/HOUND.html">HOUND</a></li>
+  <li><a href="../modules/HOUND.Logger.html">HOUND.Logger</a></li>
+  <li><strong>HOUND.DB</strong></li>
+  <li><a href="../modules/HOUND.Config.html">HOUND.Config</a></li>
+  <li><a href="../modules/HOUND.Utils.html">HOUND.Utils</a></li>
+  <li><a href="../modules/HOUND.EventHandler.html">HOUND.EventHandler</a></li>
+  <li><a href="../modules/HOUND.Contact.Base.html">HOUND.Contact.Base</a></li>
+  <li><a href="../modules/HOUND.Contact.Estimator.html">HOUND.Contact.Estimator</a></li>
+  <li><a href="../modules/HOUND.Contact.Datapoint.html">HOUND.Contact.Datapoint</a></li>
+  <li><a href="../modules/HOUND.Contact.Emitter.html">HOUND.Contact.Emitter</a></li>
+  <li><a href="../modules/HOUND.Contact.Site.html">HOUND.Contact.Site</a></li>
+  <li><a href="../modules/HOUND.Comms.Manager.html">HOUND.Comms.Manager</a></li>
+  <li><a href="../modules/HOUND.Comms.InformationSystem.html">HOUND.Comms.InformationSystem</a></li>
+  <li><a href="../modules/HOUND.Comms.Controller.html">HOUND.Comms.Controller</a></li>
+  <li><a href="../modules/HOUND.Comms.Notifier.html">HOUND.Comms.Notifier</a></li>
+  <li><a href="../modules/HOUND.ElintWorker.html">HOUND.ElintWorker</a></li>
+  <li><a href="../modules/HOUND.ContactManager.html">HOUND.ContactManager</a></li>
+  <li><a href="../modules/HOUND.Sector.html">HOUND.Sector</a></li>
+</ul>
+<h2>Scripts</h2>
+<ul class="nowrap">
+  <li><a href="../scripts/HoundElint.html">HoundElint</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>HOUND.DB</code></h1>
+<p>Hound databases</p>
+<p></p>
+
+
+<h2><a href="#Tables">Tables</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.DB.PHONETICS">HOUND.DB.PHONETICS</a></td>
+	<td class="summary">Enums for Phonetic AlphaBet</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.DB.useDMM">HOUND.DB.useDMM</a></td>
+	<td class="summary">Units that use DMM format</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.DB.useMGRS">HOUND.DB.useMGRS</a></td>
+	<td class="summary">Units that prefer MGRS format (not in use)</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.DB.Bands">HOUND.DB.Bands</a></td>
+	<td class="summary">Band vs wavelength</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.DB.RadarType">HOUND.DB.RadarType</a></td>
+	<td class="summary">Radar types ENUM</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.DB.CALLSIGNS">HOUND.DB.CALLSIGNS</a></td>
+	<td class="summary">Hound callsigns</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.DB.HumanUnits">HOUND.DB.HumanUnits</a></td>
+	<td class="summary">Hound Human Units
+ automatically generate list containing mist style Unit entries for human flights</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.DB.Radars">HOUND.DB.Radars</a></td>
+	<td class="summary">Radar database</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.DB.Platform">HOUND.DB.Platform</a></td>
+	<td class="summary">Valid platform parameters</td>
+	</tr>
+</table>
+<h2><a href="#DB_functions">DB functions </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.DB.getRadarData">HOUND.DB.getRadarData (typeName)</a></td>
+	<td class="summary">Get radar object Data</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.DB.isValidPlatform">HOUND.DB.isValidPlatform (candidate, PayloadAdded)</a></td>
+	<td class="summary">check if canidate Object is a valid platform</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.DB.getPlatformData">HOUND.DB.getPlatformData (DcsObject)</a></td>
+	<td class="summary">Get Platform data</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.DB.getDefraction">HOUND.DB.getDefraction (wavelength, antenna_size)</a></td>
+	<td class="summary">Get defraction
+ for band and effective antenna size return angular resolution</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.DB.getApertureSize">HOUND.DB.getApertureSize (DcsObject)</a></td>
+	<td class="summary">get Effective Aperture size for platform</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.DB.getEmitterBand">HOUND.DB.getEmitterBand (DcsUnit)</a></td>
+	<td class="summary">Get emitter Band</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.DB.getEmitterFrequencies">HOUND.DB.getEmitterFrequencies (bands, factor)</a></td>
+	<td class="summary">Generate uniqe radar frequencies for contact</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.DB.getSensorPrecision">HOUND.DB.getSensorPrecision (platform, emitterFreq)</a></td>
+	<td class="summary">Elint Function - Get sensor precision</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.DB.updateHumanDb">HOUND.DB.updateHumanDb (coalitionId)</a></td>
+	<td class="summary">populate the HOUND.DB.HumanUnits db</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.DB.cleanHumanDb">HOUND.DB.cleanHumanDb (coalitionId)</a></td>
+	<td class="summary">cleanup the HOUND.DB.HumanUnits db from disconnected units.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.DB.generateMistDbEntry">HOUND.DB.generateMistDbEntry (DcsUnit)</a></td>
+	<td class="summary">create a partial "humanByName" mist record from unit
+ use subset of mist format https://github.com/mrSkortch/MissionScriptingTools/blob/master/Example%20DBs/mist_DBs_humansByName.lua</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header "><a name="Tables"></a>Tables</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HOUND.DB.PHONETICS"></a>
+    <strong>HOUND.DB.PHONETICS</strong>
+    </dt>
+    <dd>
+    Enums for Phonetic AlphaBet
+
+
+    <h3>Fields:</h3>
+    <ul>
+        <li><span class="parameter">Characters</span>
+         Phonetic representation
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">[<span class="string">'A'</span>] = <span class="string">"Alpha"</span></pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "HOUND.DB.useDMM"></a>
+    <strong>HOUND.DB.useDMM</strong>
+    </dt>
+    <dd>
+    Units that use DMM format
+
+
+    <h3>Fields:</h3>
+    <ul>
+        <li><span class="parameter">UnitType</span>
+         Bool Value
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">[<span class="string">'F-16C_blk50'</span>] = <span class="keyword">true</span></pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "HOUND.DB.useMGRS"></a>
+    <strong>HOUND.DB.useMGRS</strong>
+    </dt>
+    <dd>
+    Units that prefer MGRS format (not in use)
+
+
+    <h3>Fields:</h3>
+    <ul>
+        <li><span class="parameter">UnitType</span>
+         Bool value
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">[<span class="string">'A-10C'</span>] = <span class="keyword">true</span></pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "HOUND.DB.Bands"></a>
+    <strong>HOUND.DB.Bands</strong>
+    </dt>
+    <dd>
+    Band vs wavelength
+
+
+    <h3>Fields:</h3>
+    <ul>
+        <li><span class="parameter">Band</span>
+         wavelength in meters of the highest frequency in the range and the diff from the lowest frequency
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">[<span class="string">'E'</span>] = {<span class="number">0.099931</span>,<span class="number">0.049965</span>}</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "HOUND.DB.RadarType"></a>
+    <strong>HOUND.DB.RadarType</strong>
+    </dt>
+    <dd>
+    Radar types ENUM
+
+
+    <h3>Fields:</h3>
+    <ul>
+        <li><span class="parameter">Radar</span>
+         type in hex
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">[<span class="string">'EWR'</span>] = <span class="number">0x01</span></pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "HOUND.DB.CALLSIGNS"></a>
+    <strong>HOUND.DB.CALLSIGNS</strong>
+    </dt>
+    <dd>
+    Hound callsigns
+
+
+    <h3>Fields:</h3>
+    <ul>
+        <li><span class="parameter">NATO</span>
+         list of RC-135 callsigns (source: https://henney.com/chm/callsign.htm)
+        </li>
+        <li><span class="parameter">GENERIC</span>
+         list of generic callsigns for hound, mostly vacuum cleaners and fictional detectives
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.DB.HumanUnits"></a>
+    <strong>HOUND.DB.HumanUnits</strong>
+    </dt>
+    <dd>
+    Hound Human Units
+ automatically generate list containing mist style Unit entries for human flights
+
+
+    <h3>Fields:</h3>
+    <ul>
+        <li><span class="parameter">byName</span>
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.DB.Radars"></a>
+    <strong>HOUND.DB.Radars</strong>
+    </dt>
+    <dd>
+    Radar database
+
+
+    <h3>Fields:</h3>
+    <ul>
+        <li><span class="parameter">string</span>
+         Name NATO Name
+        </li>
+        <li><span class="parameter">table</span>
+         Band Radio Band the radar operates in true is when tracking target
+        </li>
+        <li><span class="parameter">table</span>
+         Band Radio Band the radar operates in true is when tracking target
+        </li>
+        <li><span class="parameter">table</span>
+         Band Radio Band the radar operates in true is when tracking target
+        </li>
+        <li><span class="parameter">bool</span>
+         Primary set to True if this is a primary radar for site (usually FCR)
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">[<span class="string">'p-19 s-125 sr'</span>] = {
+    [<span class="string">'Name'</span>] = <span class="string">"Flat Face"</span>,
+    [<span class="string">'Assigned'</span>] = {<span class="string">"SA-2"</span>,<span class="string">"SA-3"</span>},
+    [<span class="string">'Role'</span>] = {HOUND.DB.RadarType.SEARCH},
+    [<span class="string">'Band'</span>] = {
+         [<span class="keyword">true</span>] = HOUND.DB.Bands.C,
+         [<span class="keyword">false</span>] = HOUND.DB.Bands.C
+     },
+    [<span class="string">'Primary'</span>] = <span class="keyword">false</span>
+}</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "HOUND.DB.Platform"></a>
+    <strong>HOUND.DB.Platform</strong>
+    </dt>
+    <dd>
+    Valid platform parameters
+
+
+    <h3>Fields:</h3>
+    <ul>
+        <li><span class="parameter">UnitTypeName</span>
+         contains table of properties
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">[<span class="string">'C-130'</span>] = {antenna = {size = <span class="number">35</span>, factor = <span class="number">1</span>}}</pre>
+    </ul>
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="DB_functions"></a>DB functions </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HOUND.DB.getRadarData"></a>
+    <strong>HOUND.DB.getRadarData (typeName)</strong>
+    </dt>
+    <dd>
+    Get radar object Data
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">typeName</span>
+         DCS Tye name
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Radar information table
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.DB.isValidPlatform"></a>
+    <strong>HOUND.DB.isValidPlatform (candidate, PayloadAdded)</strong>
+    </dt>
+    <dd>
+    check if canidate Object is a valid platform
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">candidate</span>
+         DCS Object (Unit or Static Object)
+        </li>
+        <li><span class="parameter">PayloadAdded</span>
+        [?type=string] name of payload added to unit (optional)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">bool</span></span>
+        True if object is valid platform
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.DB.getPlatformData"></a>
+    <strong>HOUND.DB.getPlatformData (DcsObject)</strong>
+    </dt>
+    <dd>
+    Get Platform data
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">DcsObject</span>
+         platform unit
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        platform data
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.DB.getDefraction"></a>
+    <strong>HOUND.DB.getDefraction (wavelength, antenna_size)</strong>
+    </dt>
+    <dd>
+    Get defraction
+ for band and effective antenna size return angular resolution
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">wavelength</span>
+         Radar transmission band (A-L) as defined in HOUND.DB
+        </li>
+        <li><span class="parameter">antenna_size</span>
+         Effective antenna size for platform as defined in HOUND.DB
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        angular resolution in Radians for wavelength and Antenna combo
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.DB.getApertureSize"></a>
+    <strong>HOUND.DB.getApertureSize (DcsObject)</strong>
+    </dt>
+    <dd>
+    get Effective Aperture size for platform
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">DcsObject</span>
+         Unit requested (used as platform)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Effective aperture size in meters
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.DB.getEmitterBand"></a>
+    <strong>HOUND.DB.getEmitterBand (DcsUnit)</strong>
+    </dt>
+    <dd>
+    Get emitter Band
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">DcsUnit</span>
+         Radar unit
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Char radar band
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.DB.getEmitterFrequencies"></a>
+    <strong>HOUND.DB.getEmitterFrequencies (bands, factor)</strong>
+    </dt>
+    <dd>
+    Generate uniqe radar frequencies for contact
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">bands</span>
+            <span class="types"><span class="type">tab</span></span>
+
+        </li>
+        <li><span class="parameter">factor</span>
+            <span class="types">optional <span class="type">number</span></span>
+         between 0 and 1 where between high and low freqs (for testing)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table containig wavelengths in meters for the radar
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.DB.getSensorPrecision"></a>
+    <strong>HOUND.DB.getSensorPrecision (platform, emitterFreq)</strong>
+    </dt>
+    <dd>
+    Elint Function - Get sensor precision
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">platform</span>
+         Instance of DCS Unit which is the detecting platform
+        </li>
+        <li><span class="parameter">emitterFreq</span>
+         Radar wavelength (frequency) of radar (in meters) or DCS Unit
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        angular resolution in Radians of platform against specific Radar frequency
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.DB.updateHumanDb"></a>
+    <strong>HOUND.DB.updateHumanDb (coalitionId)</strong>
+    </dt>
+    <dd>
+    populate the HOUND.DB.HumanUnits db
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">coalitionId</span>
+            <span class="types">optional <span class="type">number</span></span>
+         if provided, DB will be updated to specificd coalition only
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.DB.cleanHumanDb"></a>
+    <strong>HOUND.DB.cleanHumanDb (coalitionId)</strong>
+    </dt>
+    <dd>
+    cleanup the HOUND.DB.HumanUnits db from disconnected units.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">coalitionId</span>
+            <span class="types">optional <span class="type">number</span></span>
+         if provided, DB will be updated to specificd coalition only
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.DB.generateMistDbEntry"></a>
+    <strong>HOUND.DB.generateMistDbEntry (DcsUnit)</strong>
+    </dt>
+    <dd>
+    create a partial "humanByName" mist record from unit
+ use subset of mist format https://github.com/mrSkortch/MissionScriptingTools/blob/master/Example%20DBs/mist_DBs_humansByName.lua
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">DcsUnit</span>
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table
+    </ol>
+
+
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/lunarmodules/LDoc">LDoc 1.5.0</a></i>
+<i style="float:right;">Last updated 2025-10-11 20:05:16 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

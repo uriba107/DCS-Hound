@@ -3,7 +3,7 @@
 <html>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 <head>
-    <title>Hound Documentation</title>
+    <title>Hound Documentation for developers</title>
     <link rel="stylesheet" href="../ldoc_fixed.css" type="text/css" />
 </head>
 <body>
@@ -42,6 +42,23 @@
 <h2>Modules</h2>
 <ul class="nowrap">
   <li><strong>HOUND</strong></li>
+  <li><a href="../modules/HOUND.Logger.html">HOUND.Logger</a></li>
+  <li><a href="../modules/HOUND.DB.html">HOUND.DB</a></li>
+  <li><a href="../modules/HOUND.Config.html">HOUND.Config</a></li>
+  <li><a href="../modules/HOUND.Utils.html">HOUND.Utils</a></li>
+  <li><a href="../modules/HOUND.EventHandler.html">HOUND.EventHandler</a></li>
+  <li><a href="../modules/HOUND.Contact.Base.html">HOUND.Contact.Base</a></li>
+  <li><a href="../modules/HOUND.Contact.Estimator.html">HOUND.Contact.Estimator</a></li>
+  <li><a href="../modules/HOUND.Contact.Datapoint.html">HOUND.Contact.Datapoint</a></li>
+  <li><a href="../modules/HOUND.Contact.Emitter.html">HOUND.Contact.Emitter</a></li>
+  <li><a href="../modules/HOUND.Contact.Site.html">HOUND.Contact.Site</a></li>
+  <li><a href="../modules/HOUND.Comms.Manager.html">HOUND.Comms.Manager</a></li>
+  <li><a href="../modules/HOUND.Comms.InformationSystem.html">HOUND.Comms.InformationSystem</a></li>
+  <li><a href="../modules/HOUND.Comms.Controller.html">HOUND.Comms.Controller</a></li>
+  <li><a href="../modules/HOUND.Comms.Notifier.html">HOUND.Comms.Notifier</a></li>
+  <li><a href="../modules/HOUND.ElintWorker.html">HOUND.ElintWorker</a></li>
+  <li><a href="../modules/HOUND.ContactManager.html">HOUND.ContactManager</a></li>
+  <li><a href="../modules/HOUND.Sector.html">HOUND.Sector</a></li>
 </ul>
 <h2>Scripts</h2>
 <ul class="nowrap">
@@ -113,6 +130,38 @@
 	<tr>
 	<td class="name" nowrap><a href="#removeEventHandler">removeEventHandler (handler)</a></td>
 	<td class="summary">deregister event handler (global)</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#inheritsFrom">inheritsFrom (baseClass)</a></td>
+	<td class="summary">helper code for class inheritance</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Length">Length (T)</a></td>
+	<td class="summary">get Length of a table</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#setContains">setContains (set, key)</a></td>
+	<td class="summary">check if set contains a provided key (case sensitive)</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#setContainsValue">setContainsValue (set, value)</a></td>
+	<td class="summary">check if table contains a provided</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#setIntersection">setIntersection (a, b)</a></td>
+	<td class="summary">return set intersection product</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Gaussian">Gaussian (mean, sigma)</a></td>
+	<td class="summary">return Gaussian random number</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#reverseLookup">reverseLookup (tbl, value)</a></td>
+	<td class="summary">reverse table lookup</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#string.split">string.split (str[, delim])</a></td>
+	<td class="summary">Split String on delimited</td>
 	</tr>
 </table>
 
@@ -493,6 +542,222 @@
     <ul>
          <a href="../modules/HOUND.html#EVENTS">HOUND.EVENTS</a>
     </ul>
+
+
+</dd>
+    <dt>
+    <a name = "inheritsFrom"></a>
+    <strong>inheritsFrom (baseClass)</strong>
+    </dt>
+    <dd>
+    helper code for class inheritance
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">baseClass</span>
+         Base class to inherit from
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Length"></a>
+    <strong>Length (T)</strong>
+    </dt>
+    <dd>
+    get Length of a table
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">T</span>
+         table
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        length of T
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "setContains"></a>
+    <strong>setContains (set, key)</strong>
+    </dt>
+    <dd>
+    check if set contains a provided key (case sensitive)
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">set</span>
+         Hash table to check
+        </li>
+        <li><span class="parameter">key</span>
+         to check
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">bool</span></span>
+        True if key exists in set
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "setContainsValue"></a>
+    <strong>setContainsValue (set, value)</strong>
+    </dt>
+    <dd>
+    check if table contains a provided
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">set</span>
+         Table to check
+        </li>
+        <li><span class="parameter">value</span>
+         Value to check
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">bool</span></span>
+        True if value exists in set
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "setIntersection"></a>
+    <strong>setIntersection (a, b)</strong>
+    </dt>
+    <dd>
+    return set intersection product
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+         Table
+        </li>
+        <li><span class="parameter">b</span>
+         Table
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Table
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Gaussian"></a>
+    <strong>Gaussian (mean, sigma)</strong>
+    </dt>
+    <dd>
+    return Gaussian random number
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">mean</span>
+         Mean value (i.e center of the gausssian curve)
+        </li>
+        <li><span class="parameter">sigma</span>
+         amount of variance in the random value
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        random number in gaussian space
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "reverseLookup"></a>
+    <strong>reverseLookup (tbl, value)</strong>
+    </dt>
+    <dd>
+    reverse table lookup
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">tbl</span>
+         table
+        </li>
+        <li><span class="parameter">value</span>
+         to search
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        the key wher value was found
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "string.split"></a>
+    <strong>string.split (str[, delim])</strong>
+    </dt>
+    <dd>
+    Split String on delimited
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">str</span>
+         Input string
+        </li>
+        <li><span class="parameter">delim</span>
+         Delimited (default is space)
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table of substrings
+    </ol>
+
+
 
 
 </dd>

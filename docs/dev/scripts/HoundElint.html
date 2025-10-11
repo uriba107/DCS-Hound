@@ -3,7 +3,7 @@
 <html>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 <head>
-    <title>Hound Documentation</title>
+    <title>Hound Documentation for developers</title>
     <link rel="stylesheet" href="../ldoc_fixed.css" type="text/css" />
 </head>
 <body>
@@ -53,6 +53,23 @@
 <h2>Modules</h2>
 <ul class="nowrap">
   <li><a href="../modules/HOUND.html">HOUND</a></li>
+  <li><a href="../modules/HOUND.Logger.html">HOUND.Logger</a></li>
+  <li><a href="../modules/HOUND.DB.html">HOUND.DB</a></li>
+  <li><a href="../modules/HOUND.Config.html">HOUND.Config</a></li>
+  <li><a href="../modules/HOUND.Utils.html">HOUND.Utils</a></li>
+  <li><a href="../modules/HOUND.EventHandler.html">HOUND.EventHandler</a></li>
+  <li><a href="../modules/HOUND.Contact.Base.html">HOUND.Contact.Base</a></li>
+  <li><a href="../modules/HOUND.Contact.Estimator.html">HOUND.Contact.Estimator</a></li>
+  <li><a href="../modules/HOUND.Contact.Datapoint.html">HOUND.Contact.Datapoint</a></li>
+  <li><a href="../modules/HOUND.Contact.Emitter.html">HOUND.Contact.Emitter</a></li>
+  <li><a href="../modules/HOUND.Contact.Site.html">HOUND.Contact.Site</a></li>
+  <li><a href="../modules/HOUND.Comms.Manager.html">HOUND.Comms.Manager</a></li>
+  <li><a href="../modules/HOUND.Comms.InformationSystem.html">HOUND.Comms.InformationSystem</a></li>
+  <li><a href="../modules/HOUND.Comms.Controller.html">HOUND.Comms.Controller</a></li>
+  <li><a href="../modules/HOUND.Comms.Notifier.html">HOUND.Comms.Notifier</a></li>
+  <li><a href="../modules/HOUND.ElintWorker.html">HOUND.ElintWorker</a></li>
+  <li><a href="../modules/HOUND.ContactManager.html">HOUND.ContactManager</a></li>
+  <li><a href="../modules/HOUND.Sector.html">HOUND.Sector</a></li>
 </ul>
 
 </div>
@@ -308,6 +325,10 @@
 	<td class="name" nowrap><a href="#removeZone">removeZone (sectorName)</a></td>
 	<td class="summary">remove zone from sector</td>
 	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#updateSectorMembership">updateSectorMembership ()</a></td>
+	<td class="summary">update sector membership for all contacts</td>
+	</tr>
 </table>
 <h2><a href="#Controller_managment">Controller managment </a></h2>
 <table class="function_list">
@@ -407,6 +428,22 @@
 <h2><a href="#Instance_Internal_functions">Instance Internal functions </a></h2>
 <table class="function_list">
 	<tr>
+	<td class="name" nowrap><a href="#runCycle">runCycle (self)</a></td>
+	<td class="summary">Scheduled function that runs the main Instance loop</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#purgeRadioMenu">purgeRadioMenu ()</a></td>
+	<td class="summary">Purge the root radio menu</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#populateRadioMenu">populateRadioMenu ()</a></td>
+	<td class="summary">Trigger building of radio menu in all sectors</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#updateSystemState">updateSystemState (params)</a></td>
+	<td class="summary">Update the system state (on/off)</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#systemOn">systemOn ([notify])</a></td>
 	<td class="summary">Turn Hound system on</td>
 	</tr>
@@ -446,6 +483,18 @@
 	<td class="name" nowrap><a href="#onHoundEvent">onHoundEvent (houndEvent)</a></td>
 	<td class="summary">builtin prototype for onHoundEvent function
  this function does NOTHING out of the box.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#onHoundInternalEvent">onHoundInternalEvent (houndEvent)</a></td>
+	<td class="summary">built in onHoundEvent function</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#onEvent">onEvent (DcsEvent)</a></td>
+	<td class="summary">built in dcs onEvent</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#defaultEventHandler">defaultEventHandler ([remove])</a></td>
+	<td class="summary">enable/disable Hound instance internal event handling</td>
 	</tr>
 </table>
 
@@ -1808,6 +1857,20 @@
 
 
 </dd>
+    <dt>
+    <a name = "updateSectorMembership"></a>
+    <strong>updateSectorMembership ()</strong>
+    </dt>
+    <dd>
+    update sector membership for all contacts
+
+
+
+
+
+
+
+</dd>
 </dl>
     <h2 class="section-header "><a name="Controller_managment"></a>Controller managment </h2>
 
@@ -2348,6 +2411,79 @@
 
     <dl class="function">
     <dt>
+    <a name = "runCycle"></a>
+    <strong>runCycle (self)</strong>
+    </dt>
+    <dd>
+    Scheduled function that runs the main Instance loop
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        time of next run
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "purgeRadioMenu"></a>
+    <strong>purgeRadioMenu ()</strong>
+    </dt>
+    <dd>
+    Purge the root radio menu
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "populateRadioMenu"></a>
+    <strong>populateRadioMenu ()</strong>
+    </dt>
+    <dd>
+    Trigger building of radio menu in all sectors
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "updateSystemState"></a>
+    <strong>updateSystemState (params)</strong>
+    </dt>
+    <dd>
+    Update the system state (on/off)
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">params</span>
+         table {self=&ltHoundInstance&gt,state=&ltBool&gt}
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
     <a name = "systemOn"></a>
     <strong>systemOn ([notify])</strong>
     </dt>
@@ -2512,6 +2648,68 @@
     <ul>
         <li><span class="parameter">houndEvent</span>
          incoming event
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "onHoundInternalEvent"></a>
+    <strong>onHoundInternalEvent (houndEvent)</strong>
+    </dt>
+    <dd>
+    built in onHoundEvent function
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">houndEvent</span>
+         incoming event
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "onEvent"></a>
+    <strong>onEvent (DcsEvent)</strong>
+    </dt>
+    <dd>
+    built in dcs onEvent
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">DcsEvent</span>
+         incoming dcs event
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "defaultEventHandler"></a>
+    <strong>defaultEventHandler ([remove])</strong>
+    </dt>
+    <dd>
+    enable/disable Hound instance internal event handling
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">remove</span>
+            <span class="types"><span class="type">boolean</span></span>
+         if true default event handler will be removed
+         (<em>optional</em>)
         </li>
     </ul>
 

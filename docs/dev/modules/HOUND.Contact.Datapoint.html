@@ -1,0 +1,337 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Hound Documentation for developers</title>
+    <link rel="stylesheet" href="../ldoc_fixed.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Hound<br> ELINT for DCS</h1>
+
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
+<li><a href="#Tables">Tables</a></li>
+<li><a href="#Local_Functions">Local Functions</a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><a href="../modules/HOUND.html">HOUND</a></li>
+  <li><a href="../modules/HOUND.Logger.html">HOUND.Logger</a></li>
+  <li><a href="../modules/HOUND.DB.html">HOUND.DB</a></li>
+  <li><a href="../modules/HOUND.Config.html">HOUND.Config</a></li>
+  <li><a href="../modules/HOUND.Utils.html">HOUND.Utils</a></li>
+  <li><a href="../modules/HOUND.EventHandler.html">HOUND.EventHandler</a></li>
+  <li><a href="../modules/HOUND.Contact.Base.html">HOUND.Contact.Base</a></li>
+  <li><a href="../modules/HOUND.Contact.Estimator.html">HOUND.Contact.Estimator</a></li>
+  <li><strong>HOUND.Contact.Datapoint</strong></li>
+  <li><a href="../modules/HOUND.Contact.Emitter.html">HOUND.Contact.Emitter</a></li>
+  <li><a href="../modules/HOUND.Contact.Site.html">HOUND.Contact.Site</a></li>
+  <li><a href="../modules/HOUND.Comms.Manager.html">HOUND.Comms.Manager</a></li>
+  <li><a href="../modules/HOUND.Comms.InformationSystem.html">HOUND.Comms.InformationSystem</a></li>
+  <li><a href="../modules/HOUND.Comms.Controller.html">HOUND.Comms.Controller</a></li>
+  <li><a href="../modules/HOUND.Comms.Notifier.html">HOUND.Comms.Notifier</a></li>
+  <li><a href="../modules/HOUND.ElintWorker.html">HOUND.ElintWorker</a></li>
+  <li><a href="../modules/HOUND.ContactManager.html">HOUND.ContactManager</a></li>
+  <li><a href="../modules/HOUND.Sector.html">HOUND.Sector</a></li>
+</ul>
+<h2>Scripts</h2>
+<ul class="nowrap">
+  <li><a href="../scripts/HoundElint.html">HoundElint</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>HOUND.Contact.Datapoint</code></h1>
+<p>HOUND.Contact.Datapoint</p>
+<p></p>
+
+
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Datapoint.New">HOUND.Contact.Datapoint.New (platform0, p0, az0, el0, s0, t0[, angularResolution[, isPlatformStatic]])</a></td>
+	<td class="summary">Create new HOUND.Contact.Datapoint instance</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Datapoint.isStatic">HOUND.Contact.Datapoint.isStatic (self)</a></td>
+	<td class="summary">check if platform is static</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Datapoint.getAge">HOUND.Contact.Datapoint.getAge (self)</a></td>
+	<td class="summary">Get datapoint age in seconds</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Datapoint.getPos">HOUND.Contact.Datapoint.getPos (self)</a></td>
+	<td class="summary">Get datapoint projected position</td>
+	</tr>
+</table>
+<h2><a href="#Tables">Tables</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Datapoint">HOUND.Contact.Datapoint</a></td>
+	<td class="summary"></td>
+	</tr>
+</table>
+<h2><a href="#Local_Functions">Local Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Datapoint.update">HOUND.Contact.Datapoint.update (self, newAz[, predictedAz[, processNoise]])</a></td>
+	<td class="summary">Smooth azimuth using Kalman filter</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header "><a name="Functions"></a>Functions</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HOUND.Contact.Datapoint.New"></a>
+    <strong>HOUND.Contact.Datapoint.New (platform0, p0, az0, el0, s0, t0[, angularResolution[, isPlatformStatic]])</strong>
+    </dt>
+    <dd>
+    Create new HOUND.Contact.Datapoint instance
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">platform0</span>
+         DCS Unit of locating platform
+        </li>
+        <li><span class="parameter">p0</span>
+         Position of platform on detection
+        </li>
+        <li><span class="parameter">az0</span>
+         Azimuth (rad) from platform to emitter
+        </li>
+        <li><span class="parameter">el0</span>
+         Elevation (rad) from platform to emitter
+        </li>
+        <li><span class="parameter">s0</span>
+         signal strength as detected by the platform
+        </li>
+        <li><span class="parameter">t0</span>
+         Abs time of datapoint
+        </li>
+        <li><span class="parameter">angularResolution</span>
+         angular resolution of datapoint
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">isPlatformStatic</span>
+         (bool)
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Datapoint instance
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Datapoint.isStatic"></a>
+    <strong>HOUND.Contact.Datapoint.isStatic (self)</strong>
+    </dt>
+    <dd>
+    check if platform is static
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">Bool</span></span>
+        True if platform is static
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Datapoint.getAge"></a>
+    <strong>HOUND.Contact.Datapoint.getAge (self)</strong>
+    </dt>
+    <dd>
+    Get datapoint age in seconds
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        time in seconds
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Datapoint.getPos"></a>
+    <strong>HOUND.Contact.Datapoint.getPos (self)</strong>
+    </dt>
+    <dd>
+    Get datapoint projected position
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+        DCS point
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Tables"></a>Tables</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HOUND.Contact.Datapoint"></a>
+    <strong>HOUND.Contact.Datapoint</strong>
+    </dt>
+    <dd>
+
+
+
+    <h3>Fields:</h3>
+    <ul>
+        <li><span class="parameter">platformPos</span>
+         position of platform at time of sample
+        </li>
+        <li><span class="parameter">az</span>
+         Azimuth from platformPos to emitter
+        </li>
+        <li><span class="parameter">el</span>
+         Elevation from platfromPos to emitter
+        </li>
+        <li><span class="parameter">t</span>
+         Time of sample
+        </li>
+        <li><span class="parameter">platformId</span>
+         uid of platform DCS unit
+        </li>
+        <li><span class="parameter">platformName</span>
+         Name of platform DCS unit
+        </li>
+        <li><span class="parameter">platformStatic</span>
+         True if platform is static object
+        </li>
+        <li><span class="parameter">platformPrecision</span>
+         Angular resolution of platform in radians
+        </li>
+        <li><span class="parameter">estimatedPos</span>
+         estimated position of emitter from AZ/EL (if applicable)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Local_Functions"></a>Local Functions</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HOUND.Contact.Datapoint.update"></a>
+    <strong>HOUND.Contact.Datapoint.update (self, newAz[, predictedAz[, processNoise]])</strong>
+    </dt>
+    <dd>
+    Smooth azimuth using Kalman filter
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+         Datapoint instance
+        </li>
+        <li><span class="parameter">newAz</span>
+         new Az input
+        </li>
+        <li><span class="parameter">predictedAz</span>
+         predicted azimuth
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">processNoise</span>
+         Process noise
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/lunarmodules/LDoc">LDoc 1.5.0</a></i>
+<i style="float:right;">Last updated 2025-10-11 20:05:16 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

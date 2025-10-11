@@ -1,0 +1,167 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Hound Documentation for developers</title>
+    <link rel="stylesheet" href="ldoc_fixed.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Hound<br> ELINT for DCS</h1>
+
+
+
+
+
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><a href="modules/HOUND.html">HOUND</a></li>
+  <li><a href="modules/HOUND.Logger.html">HOUND.Logger</a></li>
+  <li><a href="modules/HOUND.DB.html">HOUND.DB</a></li>
+  <li><a href="modules/HOUND.Config.html">HOUND.Config</a></li>
+  <li><a href="modules/HOUND.Utils.html">HOUND.Utils</a></li>
+  <li><a href="modules/HOUND.EventHandler.html">HOUND.EventHandler</a></li>
+  <li><a href="modules/HOUND.Contact.Base.html">HOUND.Contact.Base</a></li>
+  <li><a href="modules/HOUND.Contact.Estimator.html">HOUND.Contact.Estimator</a></li>
+  <li><a href="modules/HOUND.Contact.Datapoint.html">HOUND.Contact.Datapoint</a></li>
+  <li><a href="modules/HOUND.Contact.Emitter.html">HOUND.Contact.Emitter</a></li>
+  <li><a href="modules/HOUND.Contact.Site.html">HOUND.Contact.Site</a></li>
+  <li><a href="modules/HOUND.Comms.Manager.html">HOUND.Comms.Manager</a></li>
+  <li><a href="modules/HOUND.Comms.InformationSystem.html">HOUND.Comms.InformationSystem</a></li>
+  <li><a href="modules/HOUND.Comms.Controller.html">HOUND.Comms.Controller</a></li>
+  <li><a href="modules/HOUND.Comms.Notifier.html">HOUND.Comms.Notifier</a></li>
+  <li><a href="modules/HOUND.ElintWorker.html">HOUND.ElintWorker</a></li>
+  <li><a href="modules/HOUND.ContactManager.html">HOUND.ContactManager</a></li>
+  <li><a href="modules/HOUND.Sector.html">HOUND.Sector</a></li>
+</ul>
+<h2>Scripts</h2>
+<ul class="nowrap">
+  <li><a href="scripts/HoundElint.html">HoundElint</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+
+  <h2>Hound ELINT for DCS</h2>
+
+<h2>Modules</h2>
+<table class="module_list">
+	<tr>
+		<td class="name"  nowrap><a href="modules/HOUND.html">HOUND</a></td>
+		<td class="summary">Hound
+ Elint system for DCS</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/HOUND.Logger.html">HOUND.Logger</a></td>
+		<td class="summary">HOUND.Logger
+ Hound logging function - Based on VEAF work</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/HOUND.DB.html">HOUND.DB</a></td>
+		<td class="summary">Hound databases</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/HOUND.Config.html">HOUND.Config</a></td>
+		<td class="summary">HOUND.Config
+ Hound config singleton</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/HOUND.Utils.html">HOUND.Utils</a></td>
+		<td class="summary">HOUND.Utils
+ This class holds generic function used by all of Hound Components</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/HOUND.EventHandler.html">HOUND.EventHandler</a></td>
+		<td class="summary">HOUND.EventHandler
+ class to managing Hound Specific event handlers</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/HOUND.Contact.Base.html">HOUND.Contact.Base</a></td>
+		<td class="summary">HOUND.Contact.Base
+ Contact class.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/HOUND.Contact.Estimator.html">HOUND.Contact.Estimator</a></td>
+		<td class="summary">HOUND.Contact.Estimator</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/HOUND.Contact.Datapoint.html">HOUND.Contact.Datapoint</a></td>
+		<td class="summary">HOUND.Contact.Datapoint</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/HOUND.Contact.Emitter.html">HOUND.Contact.Emitter</a></td>
+		<td class="summary">HOUND.Contact.Emitter (Extends HOUND.Contact.Base)
+ Contact class.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/HOUND.Contact.Site.html">HOUND.Contact.Site</a></td>
+		<td class="summary">HOUND.Contact.Site
+ Site class containing related functions</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/HOUND.Comms.Manager.html">HOUND.Comms.Manager</a></td>
+		<td class="summary">Hound Comms Manager (Base class)</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/HOUND.Comms.InformationSystem.html">HOUND.Comms.InformationSystem</a></td>
+		<td class="summary">Hound Information System (extends HOUND.Comms.Manager)</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/HOUND.Comms.Controller.html">HOUND.Comms.Controller</a></td>
+		<td class="summary">Hound Controller  (extends HOUND.Comms.Manager)</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/HOUND.Comms.Notifier.html">HOUND.Comms.Notifier</a></td>
+		<td class="summary">Hound Notifier (extends HOUND.Comms.Manager)</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/HOUND.ElintWorker.html">HOUND.ElintWorker</a></td>
+		<td class="summary">HOUND.ElintWorker</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/HOUND.ContactManager.html">HOUND.ContactManager</a></td>
+		<td class="summary">HOUND.ContactManager
+ Wrapper for HOUND.ElintWorker</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/HOUND.Sector.html">HOUND.Sector</a></td>
+		<td class="summary">HOUND.Sector</td>
+	</tr>
+</table>
+<h2>Scripts</h2>
+<table class="module_list">
+	<tr>
+		<td class="name"  nowrap><a href="scripts/HoundElint.html">HoundElint</a></td>
+		<td class="summary">Hound Main interface
+ Elint system for DCS</td>
+	</tr>
+</table>
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/lunarmodules/LDoc">LDoc 1.5.0</a></i>
+<i style="float:right;">Last updated 2025-10-11 20:05:16 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

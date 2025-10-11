@@ -12,14 +12,20 @@ isMacOs=$?
 if [ $isMacOs -eq 0 ]; then
     export PATH="$PATH:$HOME/.luarocks/bin"
     SED_ARGS="-i .orig -e"
-    LUAROCKS="luarocks --lua-dir=$(brew --prefix)/opt/lua@5.1 --lua-version=5.1"
+    LUAROCKS="luarocks --lua-dir=$(brew --prefix)/opt/lua@5.4 --lua-version=5.4"
 fi
 SED=$(which sed)
 LDOC=$(which ldoc) 
 LUACHECK=$(which luacheck)
 LUASRCDIET=$(which luasrcdiet)
 LUA=$(which lua5.1)
-MD_TOC="${HOME}/gh-md-toc"
+if [ -z ${LUA} ] && [ $isMacOs -eq 0 ]; then
+    LUA=$(which lua5.4)
+fi
+MD_TOC=$(which gh-md-toc)
+if [ -z ${MD_TOC} ]; then
+    MD_TOC="${HOME}/gh-md-toc"
+fi
 
 # initial function setup
 LINT_SRC=0
@@ -74,8 +80,9 @@ function check_dependecies {
       echo "sudo apt update; sudo apt install -y ${APT}"
       echo ""
       echo "using rocks"
+      ROCKS="luaunit ${ROCKS}"
       for rock in ${ROCKS[@]}; do
-        echo "${LUAROCKS} install ${rock} luaunit"
+        echo "${LUAROCKS} install ${rock}"
       done 
       exit 1
     fi
@@ -89,24 +96,35 @@ function lint_src {
     if [ -f tools/validate_db.lua ]; then
         highlight "check DB entries"
         cd tools
-        lua5.1 validate_db.lua
+        ${LUA} validate_db.lua
         cd ..
     fi
 }
 function build_docs {
+    # TMP_FILE="tmp.lua"
+    # modules=( $(grep -i "@module" src/*.lua | cut -d'@' -f 2 | cut -d' ' -f 2 | sort -u) )
+    # echo > ${TMP_FILE}
+    # for FILE in src/*; do
+    #     cat "${FILE}" >> ${TMP_FILE}
+    # done
     # build Docs
     highlight "building public docs"
     $LDOC -c config_general.ld -p "Hound<br> ELINT for DCS" --merge --multimodule  --style !fixed .
 
-    highlight "Building Dev Docs$"
-    $LDOC -c config_developer.ld -p "Hound<br> ELINT for DCS" -a -d docs/dev_docs --merge --multimodule  --style !fixed src
+    highlight "Building Dev Docs"
+    $LDOC -c config_developer.ld -p "Hound<br> ELINT for DCS" -a -d docs/dev --merge --multimodule  --style !fixed src
+}
+
+function build_markdown_docs {
+    highlight "Building Markdown API Docs"
+    python3 tools/generate_md_docs.py --src-dir ./src --public-output-dir ./docs --dev-output-dir ./docs/dev -v
 }
 
 function build_toc {
-    local README=${1:-README.MD}
+    local README=${1:-README_OLD.MD}
     highlight "Buding TOC for ${README}"
 
-   TOC_CONTENT=$(/home/uri/gh-md-toc --hide-footer ./docs/src/${README}) \
+   TOC_CONTENT=$(${MD_TOC} --hide-footer ./docs/src/${README}) \
      envsubst < ./docs/src/${README} > ./${README}
 } 
 
@@ -284,6 +302,7 @@ fi
 
 if [ $BUILD_DOCS -eq 1 ]; then
     build_docs
+    build_markdown_docs
     build_toc
 fi
 

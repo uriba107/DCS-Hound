@@ -2,6 +2,7 @@
 ._*
 .DS_Store
 .vscode
+.cursor
 logo
 not_working
 test

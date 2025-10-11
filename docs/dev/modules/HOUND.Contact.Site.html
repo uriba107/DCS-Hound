@@ -1,0 +1,1369 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Hound Documentation for developers</title>
+    <link rel="stylesheet" href="../ldoc_fixed.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Hound<br> ELINT for DCS</h1>
+
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
+<li><a href="#Marker_managment">Marker managment </a></li>
+<li><a href="#Getters_and_Setters">Getters and Setters </a></li>
+<li><a href="#Class_HOUND_Contact_Site">Class HOUND.Contact.Site </a></li>
+<li><a href="#Emitter_managment">Emitter managment </a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><a href="../modules/HOUND.html">HOUND</a></li>
+  <li><a href="../modules/HOUND.Logger.html">HOUND.Logger</a></li>
+  <li><a href="../modules/HOUND.DB.html">HOUND.DB</a></li>
+  <li><a href="../modules/HOUND.Config.html">HOUND.Config</a></li>
+  <li><a href="../modules/HOUND.Utils.html">HOUND.Utils</a></li>
+  <li><a href="../modules/HOUND.EventHandler.html">HOUND.EventHandler</a></li>
+  <li><a href="../modules/HOUND.Contact.Base.html">HOUND.Contact.Base</a></li>
+  <li><a href="../modules/HOUND.Contact.Estimator.html">HOUND.Contact.Estimator</a></li>
+  <li><a href="../modules/HOUND.Contact.Datapoint.html">HOUND.Contact.Datapoint</a></li>
+  <li><a href="../modules/HOUND.Contact.Emitter.html">HOUND.Contact.Emitter</a></li>
+  <li><strong>HOUND.Contact.Site</strong></li>
+  <li><a href="../modules/HOUND.Comms.Manager.html">HOUND.Comms.Manager</a></li>
+  <li><a href="../modules/HOUND.Comms.InformationSystem.html">HOUND.Comms.InformationSystem</a></li>
+  <li><a href="../modules/HOUND.Comms.Controller.html">HOUND.Comms.Controller</a></li>
+  <li><a href="../modules/HOUND.Comms.Notifier.html">HOUND.Comms.Notifier</a></li>
+  <li><a href="../modules/HOUND.ElintWorker.html">HOUND.ElintWorker</a></li>
+  <li><a href="../modules/HOUND.ContactManager.html">HOUND.ContactManager</a></li>
+  <li><a href="../modules/HOUND.Sector.html">HOUND.Sector</a></li>
+</ul>
+<h2>Scripts</h2>
+<ul class="nowrap">
+  <li><a href="../scripts/HoundElint.html">HoundElint</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>HOUND.Contact.Site</code></h1>
+<p>HOUND.Contact.Site
+ Site class containing related functions</p>
+<p></p>
+    <h3>See also:</h3>
+    <ul>
+         <a href="../modules/HOUND.Contact.Base.html#">HOUND.Contact.Base</a>
+    </ul>
+
+
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:getTextData">HOUND.Contact.Site:getTextData (utmZone, MGRSdigits)</a></td>
+	<td class="summary">return Information used in Text messages primary emitter</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:getTtsData">HOUND.Contact.Site:getTtsData (utmZone, MGRSdigits)</a></td>
+	<td class="summary">return Information used in TTS messages info will be that of primary emitter</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:getRadioItemText">HOUND.Contact.Site:getRadioItemText ()</a></td>
+	<td class="summary">generate Text for the Radio menu item</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:getRadioItemsText">HOUND.Contact.Site:getRadioItemsText ()</a></td>
+	<td class="summary">Generate text items for entire site</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:generatePopUpReport">HOUND.Contact.Site:generatePopUpReport (isTTS, sectorName)</a></td>
+	<td class="summary">generate PopUp report</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:generateDeathReport">HOUND.Contact.Site:generateDeathReport (isTTS, sectorName)</a></td>
+	<td class="summary">generate Radar dead report</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:generateAsleepReport">HOUND.Contact.Site:generateAsleepReport (isTTS, sectorName)</a></td>
+	<td class="summary">generate Radar dead report</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:generateLaunchAlert">HOUND.Contact.Site:generateLaunchAlert (isTTS, sectorName)</a></td>
+	<td class="summary">Generate a launch alert message.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:generateIdentReport">HOUND.Contact.Site:generateIdentReport (isTTS, sectorName)</a></td>
+	<td class="summary">generate Ident report</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:generateTtsBrief">HOUND.Contact.Site:generateTtsBrief (NATO)</a></td>
+	<td class="summary">Generate TTS brief for the Site (for ATIS)</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:generateIntelBrief">HOUND.Contact.Site:generateIntelBrief ()</a></td>
+	<td class="summary">Generate Intel brief Message (for export)</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:export">HOUND.Contact.Site:export ()</a></td>
+	<td class="summary">Generate Site export object</td>
+	</tr>
+</table>
+<h2><a href="#Marker_managment">Marker managment </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:drawAreaMarker">HOUND.Contact.Site:drawAreaMarker (numPoints)</a></td>
+	<td class="summary">Draw marker Polygon</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:updateMarker">HOUND.Contact.Site:updateMarker (MarkerType)</a></td>
+	<td class="summary">Update marker positions</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:updateMarkers">HOUND.Contact.Site:updateMarkers (markerType, drawSite)</a></td>
+	<td class="summary">update position markers for site and radars</td>
+	</tr>
+</table>
+<h2><a href="#Getters_and_Setters">Getters and Setters </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:getName">HOUND.Contact.Site:getName ()</a></td>
+	<td class="summary">Get site name</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:setName">HOUND.Contact.Site:setName (requestedName)</a></td>
+	<td class="summary">set Site Name</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:getType">HOUND.Contact.Site:getType ()</a></td>
+	<td class="summary">Get site type name</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:getId">HOUND.Contact.Site:getId ()</a></td>
+	<td class="summary">Get Site GID</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:getDcsGroupName">HOUND.Contact.Site:getDcsGroupName ()</a></td>
+	<td class="summary">Get Site Group Name</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:getDcsName">HOUND.Contact.Site:getDcsName ()</a></td>
+	<td class="summary">Get the DCS unit name</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:getDcsObject">HOUND.Contact.Site:getDcsObject ()</a></td>
+	<td class="summary">Get the underlying DCS Object</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:getLastSeen">HOUND.Contact.Site:getLastSeen ()</a></td>
+	<td class="summary">Get last seen in seconds</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:getTypeAssigned">HOUND.Contact.Site:getTypeAssigned ()</a></td>
+	<td class="summary">get type assinged string</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:isActive">HOUND.Contact.Site:isActive ()</a></td>
+	<td class="summary">Check if site is Active</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:isRecent">HOUND.Contact.Site:isRecent ()</a></td>
+	<td class="summary">check if site is recent</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:isAccurate">HOUND.Contact.Site:isAccurate ()</a></td>
+	<td class="summary">check if site position is accurate</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:isAlive">HOUND.Contact.Site:isAlive ()</a></td>
+	<td class="summary">check if contact DCS Unit is still alive</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:isTimedout">HOUND.Contact.Site:isTimedout ()</a></td>
+	<td class="summary">check if site is timed out</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:getState">HOUND.Contact.Site:getState ()</a></td>
+	<td class="summary">Get current state</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:getPos">HOUND.Contact.Site:getPos ()</a></td>
+	<td class="summary">get current extimted position of primary</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:hasRadarUnits">HOUND.Contact.Site:hasRadarUnits ()</a></td>
+	<td class="summary">Does site have any living radars still (for DBA)</td>
+	</tr>
+</table>
+<h2><a href="#Class_HOUND_Contact_Site">Class HOUND.Contact.Site </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:New">HOUND.Contact.Site:New (HoundContact, HoundCoalition[, SiteId])</a></td>
+	<td class="summary">create new HOUND.Contact.Site instance</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:destroy">HOUND.Contact.Site:destroy ()</a></td>
+	<td class="summary">Destructor function</td>
+	</tr>
+</table>
+<h2><a href="#Emitter_managment">Emitter managment </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:addEmitter">HOUND.Contact.Site:addEmitter (HoundEmitter)</a></td>
+	<td class="summary">Add emitter to site</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:removeEmitter">HOUND.Contact.Site:removeEmitter (HoundEmitter)</a></td>
+	<td class="summary">Add emitter to site</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:gcEmitters">HOUND.Contact.Site:gcEmitters ()</a></td>
+	<td class="summary">Prune Nil emitters</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:updateGroupRadars">HOUND.Contact.Site:updateGroupRadars ()</a></td>
+	<td class="summary">update internal actual radars list</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:getPrimary">HOUND.Contact.Site:getPrimary ()</a></td>
+	<td class="summary">Get site's primary emitter</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:getEmitters">HOUND.Contact.Site:getEmitters ()</a></td>
+	<td class="summary">get Dict with all emitters in site</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:countEmitters">HOUND.Contact.Site:countEmitters ()</a></td>
+	<td class="summary">get emitter count for site</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:sortEmitters">HOUND.Contact.Site:sortEmitters ()</a></td>
+	<td class="summary">re-sort emitters</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:selectPrimaryEmitter">HOUND.Contact.Site:selectPrimaryEmitter ()</a></td>
+	<td class="summary">select primaty emitter for site</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:updateTypeAssigned">HOUND.Contact.Site:updateTypeAssigned ()</a></td>
+	<td class="summary">update site type</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:updatePos">HOUND.Contact.Site:updatePos ()</a></td>
+	<td class="summary">update stored site pos</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:ensurePrimaryHasPos">HOUND.Contact.Site:ensurePrimaryHasPos (refPos)</a></td>
+	<td class="summary">Ensure primay emitter has position</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:updateSector">HOUND.Contact.Site:updateSector ()</a></td>
+	<td class="summary">Update sector data</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:LaunchDetected">HOUND.Contact.Site:LaunchDetected (cooldown)</a></td>
+	<td class="summary">trigger launch event</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:processData">HOUND.Contact.Site:processData ()</a></td>
+	<td class="summary">Process site data (wrapper for consistency)</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Contact.Site:update">HOUND.Contact.Site:update ()</a></td>
+	<td class="summary">Update site data</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header "><a name="Functions"></a>Functions</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HOUND.Contact.Site:getTextData"></a>
+    <strong>HOUND.Contact.Site:getTextData (utmZone, MGRSdigits)</strong>
+    </dt>
+    <dd>
+    return Information used in Text messages primary emitter
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">utmZone</span>
+         (bool) True will add UTM zone to response
+        </li>
+        <li><span class="parameter">MGRSdigits</span>
+         (Number) number of digits in the MGRS part of the response (eg. 2 = 12, 5=12345)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        GridPos (string) MGRS grid position (eg. "CY 564 123", "DN 2 4")
+ Return BE (string) Bullseye position string (eg. "035/15", "187/120")
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:getTtsData"></a>
+    <strong>HOUND.Contact.Site:getTtsData (utmZone, MGRSdigits)</strong>
+    </dt>
+    <dd>
+    return Information used in TTS messages info will be that of primary emitter
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">utmZone</span>
+         (bool) True will add UTM zone to response
+        </li>
+        <li><span class="parameter">MGRSdigits</span>
+         (Number) number of digits in the MGRS part of the response (eg. 2 = 12, 5=12345)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        GridPos (string) MGRS grid position (eg. "Charlie Yankee one two   Three  four")
+ Return BE (string) Bullseye position string (eg. "Zero Three Five 15")
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:getRadioItemText"></a>
+    <strong>HOUND.Contact.Site:getRadioItemText ()</strong>
+    </dt>
+    <dd>
+    generate Text for the Radio menu item
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        string
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:getRadioItemsText"></a>
+    <strong>HOUND.Contact.Site:getRadioItemsText ()</strong>
+    </dt>
+    <dd>
+    Generate text items for entire site
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        #table all radio items for site
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:generatePopUpReport"></a>
+    <strong>HOUND.Contact.Site:generatePopUpReport (isTTS, sectorName)</strong>
+    </dt>
+    <dd>
+    generate PopUp report
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">isTTS</span>
+         Bool. If true message will be for TTS. False will make a text message
+        </li>
+        <li><span class="parameter">sectorName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Name of primary sector if present function will only return sector data
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        string. compiled message
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:generateDeathReport"></a>
+    <strong>HOUND.Contact.Site:generateDeathReport (isTTS, sectorName)</strong>
+    </dt>
+    <dd>
+    generate Radar dead report
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">isTTS</span>
+         Bool. If true message will be for TTS. False will make a text message
+        </li>
+        <li><span class="parameter">sectorName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Name of primary sector if present function will only return sector data
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        string. compiled message
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:generateAsleepReport"></a>
+    <strong>HOUND.Contact.Site:generateAsleepReport (isTTS, sectorName)</strong>
+    </dt>
+    <dd>
+    generate Radar dead report
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">isTTS</span>
+         Bool. If true message will be for TTS. False will make a text message
+        </li>
+        <li><span class="parameter">sectorName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Name of primary sector if present function will only return sector data
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        string. compiled message
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:generateLaunchAlert"></a>
+    <strong>HOUND.Contact.Site:generateLaunchAlert (isTTS, sectorName)</strong>
+    </dt>
+    <dd>
+    Generate a launch alert message.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">isTTS</span>
+         (bool) True if the message is for TTS, false for text message.
+        </li>
+        <li><span class="parameter">sectorName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Name of the primary sector; if present, the message will include the sector name.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        string Compiled launch alert message.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:generateIdentReport"></a>
+    <strong>HOUND.Contact.Site:generateIdentReport (isTTS, sectorName)</strong>
+    </dt>
+    <dd>
+    generate Ident report
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">isTTS</span>
+         Bool. If true message will be for TTS. False will make a text message
+        </li>
+        <li><span class="parameter">sectorName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Name of primary sector if present function will only return sector data
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        string. compiled message
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:generateTtsBrief"></a>
+    <strong>HOUND.Contact.Site:generateTtsBrief (NATO)</strong>
+    </dt>
+    <dd>
+    Generate TTS brief for the Site (for ATIS)
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">NATO</span>
+         (bool) True will generate NATO Brevity brief
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        string containing
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:generateIntelBrief"></a>
+    <strong>HOUND.Contact.Site:generateIntelBrief ()</strong>
+    </dt>
+    <dd>
+    Generate Intel brief Message (for export)
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        string - compiled multi-line message for site
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:export"></a>
+    <strong>HOUND.Contact.Site:export ()</strong>
+    </dt>
+    <dd>
+    Generate Site export object
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        exported object
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Marker_managment"></a>Marker managment </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HOUND.Contact.Site:drawAreaMarker"></a>
+    <strong>HOUND.Contact.Site:drawAreaMarker (numPoints)</strong>
+    </dt>
+    <dd>
+    Draw marker Polygon
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">numPoints</span>
+            <span class="types"><span class="type">integer</span></span>
+         number of points to draw (only 1,4,8 and 16 are valid)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:updateMarker"></a>
+    <strong>HOUND.Contact.Site:updateMarker (MarkerType)</strong>
+    </dt>
+    <dd>
+    Update marker positions
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">MarkerType</span>
+         type of marker to use
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:updateMarkers"></a>
+    <strong>HOUND.Contact.Site:updateMarkers (markerType, drawSite)</strong>
+    </dt>
+    <dd>
+    update position markers for site and radars
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">markerType</span>
+         requested HOUND.MARKER type
+        </li>
+        <li><span class="parameter">drawSite</span>
+            <span class="types">optional <span class="type">boolean</span></span>
+         requested HOUND.MARKER for the site.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Getters_and_Setters"></a>Getters and Setters </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HOUND.Contact.Site:getName"></a>
+    <strong>HOUND.Contact.Site:getName ()</strong>
+    </dt>
+    <dd>
+    Get site name
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        String
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:setName"></a>
+    <strong>HOUND.Contact.Site:setName (requestedName)</strong>
+    </dt>
+    <dd>
+    set Site Name
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">requestedName</span>
+         requested name
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:getType"></a>
+    <strong>HOUND.Contact.Site:getType ()</strong>
+    </dt>
+    <dd>
+    Get site type name
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        String
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:getId"></a>
+    <strong>HOUND.Contact.Site:getId ()</strong>
+    </dt>
+    <dd>
+    Get Site GID
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Number
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:getDcsGroupName"></a>
+    <strong>HOUND.Contact.Site:getDcsGroupName ()</strong>
+    </dt>
+    <dd>
+    Get Site Group Name
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        String
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:getDcsName"></a>
+    <strong>HOUND.Contact.Site:getDcsName ()</strong>
+    </dt>
+    <dd>
+    Get the DCS unit name
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        String
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:getDcsObject"></a>
+    <strong>HOUND.Contact.Site:getDcsObject ()</strong>
+    </dt>
+    <dd>
+    Get the underlying DCS Object
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        DCS Group or DCS staticObject
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:getLastSeen"></a>
+    <strong>HOUND.Contact.Site:getLastSeen ()</strong>
+    </dt>
+    <dd>
+    Get last seen in seconds
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        number in seconds since contact was last seen
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:getTypeAssigned"></a>
+    <strong>HOUND.Contact.Site:getTypeAssigned ()</strong>
+    </dt>
+    <dd>
+    get type assinged string
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        string
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:isActive"></a>
+    <strong>HOUND.Contact.Site:isActive ()</strong>
+    </dt>
+    <dd>
+    Check if site is Active
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">Bool</span></span>
+        True if seen in the last 15 seconds
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:isRecent"></a>
+    <strong>HOUND.Contact.Site:isRecent ()</strong>
+    </dt>
+    <dd>
+    check if site is recent
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">Bool</span></span>
+        True if seen in the last 2 minutes
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:isAccurate"></a>
+    <strong>HOUND.Contact.Site:isAccurate ()</strong>
+    </dt>
+    <dd>
+    check if site position is accurate
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">bool</span></span>
+        - True target is pre briefed
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:isAlive"></a>
+    <strong>HOUND.Contact.Site:isAlive ()</strong>
+    </dt>
+    <dd>
+    check if contact DCS Unit is still alive
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">bool</span></span>
+        True if object is considered Alive
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:isTimedout"></a>
+    <strong>HOUND.Contact.Site:isTimedout ()</strong>
+    </dt>
+    <dd>
+    check if site is timed out
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">Bool</span></span>
+        True if timed out
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:getState"></a>
+    <strong>HOUND.Contact.Site:getState ()</strong>
+    </dt>
+    <dd>
+    Get current state
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        site state in <a href="../modules/HOUND.html#EVENTS">HOUND.EVENTS</a>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:getPos"></a>
+    <strong>HOUND.Contact.Site:getPos ()</strong>
+    </dt>
+    <dd>
+    get current extimted position of primary
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        DCS point - estimated position
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:hasRadarUnits"></a>
+    <strong>HOUND.Contact.Site:hasRadarUnits ()</strong>
+    </dt>
+    <dd>
+    Does site have any living radars still (for DBA)
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">bool</span></span>
+        true if any radars are alive in the group
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header has-description"><a name="Class_HOUND_Contact_Site"></a>Class HOUND.Contact.Site </h2>
+
+          <div class="section-description">
+          HOUND.Contact.Site  (Extends <a href="../modules/HOUND.Contact.Base.html#">HOUND.Contact.Base</a>)
+ Site class containing related functions
+          </div>
+    <dl class="function">
+    <dt>
+    <a name = "HOUND.Contact.Site:New"></a>
+    <strong>HOUND.Contact.Site:New (HoundContact, HoundCoalition[, SiteId])</strong>
+    </dt>
+    <dd>
+    create new HOUND.Contact.Site instance
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">HoundContact</span>
+         emitter HoundContact
+        </li>
+        <li><span class="parameter">HoundCoalition</span>
+         coalition Id of Hound Instace
+        </li>
+        <li><span class="parameter">SiteId</span>
+         specify uid for the Site. if not present Group ID will be used
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        HOUND.Contact.Site instance
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:destroy"></a>
+    <strong>HOUND.Contact.Site:destroy ()</strong>
+    </dt>
+    <dd>
+    Destructor function
+
+
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Emitter_managment"></a>Emitter managment </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HOUND.Contact.Site:addEmitter"></a>
+    <strong>HOUND.Contact.Site:addEmitter (HoundEmitter)</strong>
+    </dt>
+    <dd>
+    Add emitter to site
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">HoundEmitter</span>
+         <a href="../modules/HOUND.Contact.Emitter.html#">HOUND.Contact.Emitter</a> radar to add
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        <a href="../modules/HOUND.html#EVENTS">HOUND.EVENTS</a>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:removeEmitter"></a>
+    <strong>HOUND.Contact.Site:removeEmitter (HoundEmitter)</strong>
+    </dt>
+    <dd>
+    Add emitter to site
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">HoundEmitter</span>
+         <a href="../modules/HOUND.Contact.Emitter.html#">HOUND.Contact.Emitter</a> radar to remove
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        <a href="../modules/HOUND.html#EVENTS">HOUND.EVENTS</a>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:gcEmitters"></a>
+    <strong>HOUND.Contact.Site:gcEmitters ()</strong>
+    </dt>
+    <dd>
+    Prune Nil emitters
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:updateGroupRadars"></a>
+    <strong>HOUND.Contact.Site:updateGroupRadars ()</strong>
+    </dt>
+    <dd>
+    update internal actual radars list
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:getPrimary"></a>
+    <strong>HOUND.Contact.Site:getPrimary ()</strong>
+    </dt>
+    <dd>
+    Get site's primary emitter
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        <a href="../modules/HOUND.Contact.Emitter.html#">HOUND.Contact.Emitter</a>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:getEmitters"></a>
+    <strong>HOUND.Contact.Site:getEmitters ()</strong>
+    </dt>
+    <dd>
+    get Dict with all emitters in site
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        #table <a href="../modules/HOUND.Contact.Emitter.html#">HOUND.Contact.Emitter</a>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:countEmitters"></a>
+    <strong>HOUND.Contact.Site:countEmitters ()</strong>
+    </dt>
+    <dd>
+    get emitter count for site
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">int</span></span>
+        number of emitters currently in the site
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:sortEmitters"></a>
+    <strong>HOUND.Contact.Site:sortEmitters ()</strong>
+    </dt>
+    <dd>
+    re-sort emitters
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:selectPrimaryEmitter"></a>
+    <strong>HOUND.Contact.Site:selectPrimaryEmitter ()</strong>
+    </dt>
+    <dd>
+    select primaty emitter for site
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">Bool</span></span>
+        True if primary changed
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:updateTypeAssigned"></a>
+    <strong>HOUND.Contact.Site:updateTypeAssigned ()</strong>
+    </dt>
+    <dd>
+    update site type
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">Bool</span></span>
+        True if site type changed
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:updatePos"></a>
+    <strong>HOUND.Contact.Site:updatePos ()</strong>
+    </dt>
+    <dd>
+    update stored site pos
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:ensurePrimaryHasPos"></a>
+    <strong>HOUND.Contact.Site:ensurePrimaryHasPos (refPos)</strong>
+    </dt>
+    <dd>
+    Ensure primay emitter has position
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">refPos</span>
+         DCS Point with adhock position if nothing else is available
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:updateSector"></a>
+    <strong>HOUND.Contact.Site:updateSector ()</strong>
+    </dt>
+    <dd>
+    Update sector data
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:LaunchDetected"></a>
+    <strong>HOUND.Contact.Site:LaunchDetected (cooldown)</strong>
+    </dt>
+    <dd>
+    trigger launch event
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">cooldown</span>
+         interval between alerts. avoid spam
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:processData"></a>
+    <strong>HOUND.Contact.Site:processData ()</strong>
+    </dt>
+    <dd>
+    Process site data (wrapper for consistency)
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Contact.Site:update"></a>
+    <strong>HOUND.Contact.Site:update ()</strong>
+    </dt>
+    <dd>
+    Update site data
+
+
+
+
+
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/lunarmodules/LDoc">LDoc 1.5.0</a></i>
+<i style="float:right;">Last updated 2025-10-11 20:05:16 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>
