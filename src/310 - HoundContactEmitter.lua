@@ -65,8 +65,8 @@ do
             -- HOUND.Logger.debug(instance.DcsObjectName .. " | " ..mist.utils.tableShow(instance.frequency))
         else
             instance.band = {
-                [false] = HOUND.DB.Bands.C,
-                [true] = HOUND.DB.Bands.C,
+                [false] = HOUND.DB.Bands.E,
+                [true] = HOUND.DB.Bands.F,
             }
             instance.frequency = HOUND.DB.getEmitterFrequencies(instance.band)
         end

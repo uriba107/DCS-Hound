@@ -15,7 +15,7 @@ do
 
     --- create HoundElint instance.
     -- @param[type=int] platformName Platform name or coalition enum
-    -- @return[type=table] HoundElint Instance
+    -- @return[type=tab] HoundElint Instance
     function HoundElint:create(platformName)
         if not platformName then
             HOUND.Logger.error("Failed to initialize Hound instace. Please provide coalition")
@@ -118,7 +118,7 @@ do
     end
 
     --- list platforms
-    -- @return[type=table] list of platfoms
+    -- @return[type=tab] list of platfoms
     function HoundElint:listPlatforms()
         return self.contacts:listPlatforms()
     end
@@ -195,7 +195,7 @@ do
     end
 
     --- Mark Radar as dead
-    -- @param[type=string|table] radarUnit DCS Unit, DCS Group or Unit/Group name to mark as dead
+    -- @param[type=string|tab] radarUnit DCS Unit, DCS Group or Unit/Group name to mark as dead
     function HoundElint:markDeadContact(radarUnit)
         -- HOUND.Logger.trace("markDeadContact called")
         local units={}
@@ -229,7 +229,7 @@ do
     end
 
     --- Issue a Launch Alert
-    -- @param[type=string|table] fireUnit DCS Unit, DCS Group or Unit/Group name currently Launching
+    -- @param[type=string|tab] fireUnit DCS Unit, DCS Group or Unit/Group name currently Launching
     function HoundElint:AlertOnLaunch(fireUnit)
         HOUND.Logger.trace("AlertOnLaunch: ".. tostring(self:getAlertOnLaunch()).. " | " .. tostring(HoundUtils.Dcs.isGroup(fireUnit)) .. "|" .. tostring(HoundUtils.Dcs.isUnit(fireUnit)))
         if not self:getAlertOnLaunch() or (not HoundUtils.Dcs.isGroup(fireUnit) and not HoundUtils.Dcs.isUnit(fireUnit)) then return end
