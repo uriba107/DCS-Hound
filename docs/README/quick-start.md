@@ -4,7 +4,39 @@ Get Hound ELINT running in your mission in 5 minutes.
 
 ---
 
-## Prerequisites
+## 🎮 Try the Demo Missions First! (Recommended)
+
+**The fastest way to understand Hound is to fly a pre-built mission.**
+
+Hound includes ready-to-fly demo missions with everything configured:
+
+### Available Demos
+
+| Demo              | Map      | Features                                                                  | Best For                        |
+| ----------------- | -------- | ------------------------------------------------------------------------- | ------------------------------- |
+| **Caucasus Demo** | Caucasus | Basic development mission                                                 | Testing new radars/mods         |
+| **Syria**         | Syria    | Dynamic mission, many aircraft options, runs on public demo server        | Learning and playing with Hound |
+| **Syria GCI**     | Syria    | Stress testing, many radars, complex setup, auto-spawns strike formations | Advanced setups and reference   |
+
+### Using Demo Missions
+
+1. **Download Hound** (includes `/demo_mission/` folder)
+2. **Open a `.miz` file** in DCS
+3. **Fly and observe**:
+   - Check F10 map for markers
+   - Tune controller frequency (see mission briefing)
+   - Use F10 radio menu to query radars
+4. **Open in Mission Editor** to see how it's configured
+
+**Location:** `HoundElint/demo_mission/`
+
+📖 **After flying a demo**, come back here to build your own mission.
+
+---
+
+## Building Your Own Mission
+
+### Prerequisites
 
 - DCS World Mission Editor
 - `HoundElint.lua` file
@@ -248,8 +280,51 @@ Watch the basic setup video:
 
 ---
 
+## Demo Mission Details
+
+### Caucasus Demo - Development Mission
+
+**File:** `demo_mission/Caucasus_demo/HoundElint_demo.miz`
+
+**Purpose:** Basic development mission for testing
+
+- Allows testing new radars and mods
+- Ensures everything works as expected
+- Simple setup for validation
+
+### Syria - Dynamic Play Mission
+
+**File:** `demo_mission/Syria_HARM/Hound_Demo_syria.miz`
+
+**Purpose:** Dynamic mission with lots of player options
+
+- Many aircraft to choose from
+- Great for learning and experimenting with Hound
+- **Runs on public demo server most of the time**
+- Perfect for trying out Hound features
+
+### Syria GCI - Stress Test Mission
+
+**File:** `demo_mission/Syria_POC/Hound_Demo_SyADFGCI.miz`
+
+**Purpose:** Stress testing and advanced reference
+
+Based on [Pikey's Syrian Air Defence Network 2012](https://forum.dcs.world/topic/243078-syrian-air-defence-network-2012-full-bonus-content/), modified to include Hound
+
+- **A LOT of radars** (~900 SAM units) for performance testing
+- **Skynet IADS integration** - Shows Hound working alongside Skynet
+- **MOOSE framework integration** - Demonstrates compatibility
+- Very wide and complicated setup
+- **Automatic strike formations spawn for every detected radar**
+- Use as reference for huge setups and multi-system integration
+
+**These missions are your best learning resource!** Fly them to see Hound in action.
+
+---
+
 ## What's Next?
 
+- **Try demos first:** See `/demo_mission/` folder
 - **Learn more:** [How Hound Works](how-it-works.md)
 - **Configure advanced:** [Basic Configuration](basic-configuration.md)
 - **Add sectors:** [Sectors and Zones](sectors.md)
