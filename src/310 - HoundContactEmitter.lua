@@ -242,9 +242,7 @@ do
         if HOUND.ENABLE_KALMAN and self.Kalman then
             -- HOUND.Logger.debug(self:getName() .. " is KalmanUpdate")
             self.Kalman:update(datapoint.platformPos,datapoint.az,datapoint.t,datapoint.platformPrecision)
-            -- return
         end
-        self.last_seen = datapoint.t
         self._platforms = self._platforms or {}
         self._platforms[datapoint.platformName] = datapoint.t
         if HOUND.ENABLE_KALMAN and self.Kalman then
@@ -578,15 +576,11 @@ do
                 end
 
                 -- Use Kalman filter uncertainty if available, otherwise use point cluster
-                if HOUND.ENABLE_KALMAN and self.Kalman then
-                    self.pos.p = self.Kalman:getEstimatedPos()
-                    self.uncertenty_data = self.Kalman:getUncertainty()
-                else
-                    self.uncertenty_data = self.calculateEllipse(estimatePositions,self.pos.p)
-                    if type(staticClipPolygon2D) == "table" and ( staticPlatformsOnly) then
-                        self.uncertenty_data = self.calculateEllipse(staticClipPolygon2D,self.pos.p,true)
-                    end
+                self.uncertenty_data = self.calculateEllipse(estimatePositions,self.pos.p)
+                if type(staticClipPolygon2D) == "table" and ( staticPlatformsOnly) then
+                    self.uncertenty_data = self.calculateEllipse(staticClipPolygon2D,self.pos.p,true)
                 end
+            
             -- end
 
             self.uncertenty_data.az = l_mist.utils.round(l_math.deg((self.uncertenty_data.theta+l_mist.getNorthCorrection(self.pos.p)+PI_2)%PI_2))
