@@ -186,13 +186,13 @@ do
     end
 
     --- get normal distribution angular error.
-    -- will generate gaussian magnitude based on variance and random angle
-    -- @param variance error margin requester (in radians)
+    -- will generate gaussian magnitude based on maxError and random angle
+    -- @param maxError maximum expected error (~2σ bound) in radians
     -- @return table {el,az}, contining error in Azimuth and elevation in radians
 
-    function HOUND.Utils.getNormalAngularError(variance)
+    function HOUND.Utils.getNormalAngularError(maxError)
         -- https://en.m.wikipedia.org/wiki/Box%E2%80%93Muller_transform
-        local stddev = variance /2
+        local stddev = maxError / 2
         local Magnitude = l_math.sqrt(-2 * l_math.log(l_math.random())) * stddev
         local Theta = 2* math.pi * l_math.random()
 
@@ -1184,11 +1184,11 @@ do
     -- @section elint
 
     --- Elint Function - Generate angular error
-    -- @param variance amount of variance in gausian random function
+    -- @param maxError maximum expected error (~2σ bound) in radians
     -- @return table {az,el} error in radians per element
 
-    function HOUND.Utils.Elint.generateAngularError(variance)
-        local vec2 = HOUND.Utils.Vector.getRandomVec2(variance)
+    function HOUND.Utils.Elint.generateAngularError(maxError)
+        local vec2 = HOUND.Utils.Vector.getRandomVec2(maxError)
         local epsilon = {
             az = vec2.x,
             el = vec2.z
@@ -1314,11 +1314,11 @@ do
     --- Get random 2D vector
     -- use Box–Muller transform to randomize errors on 2D vector
     -- https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform}
-    -- @param variance amount of variance in gausian random function
+    -- @param maxError maximum expected error (~2σ bound)
     -- @return DCS standard {x,z,y} vector
-    function HOUND.Utils.Vector.getRandomVec2(variance)
-        if type(variance) ~= 'number' or variance == 0 then return {x=0,y=0,z=0} end
-        local stddev = variance / 2
+    function HOUND.Utils.Vector.getRandomVec2(maxError)
+        if type(maxError) ~= 'number' or maxError == 0 then return {x=0,y=0,z=0} end
+        local stddev = maxError / 2
         local Magnitude = l_math.sqrt(-2 * l_math.log(l_math.random())) * stddev
         local Theta = PI_2 * l_math.random()
         local epsilon = HOUND.Utils.Vector.getUnitVector(Theta)
@@ -1331,11 +1331,11 @@ do
     --- Get random 3d vector
     -- use Box–Muller transform to randomize errors on 3D vector
     -- https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform}
-    -- @param variance amount of variance in gausian random function
+    -- @param maxError maximum expected error (~2σ bound)
     -- @return DCS standard {x,z,y} vector
-    function HOUND.Utils.Vector.getRandomVec3(variance)
-        if type(variance) ~= 'number' or variance == 0 then return {x=0,y=0,z=0} end
-        local stddev = variance /2
+    function HOUND.Utils.Vector.getRandomVec3(maxError)
+        if type(maxError) ~= 'number' or maxError == 0 then return {x=0,y=0,z=0} end
+        local stddev = maxError / 2
         local Magnitude = l_math.sqrt(-2 * l_math.log(l_math.random())) * stddev
         local Theta = PI_2 * l_math.random()
         local Phi = PI_2 * l_math.random()

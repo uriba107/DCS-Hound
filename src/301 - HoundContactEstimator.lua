@@ -80,12 +80,14 @@ do
 
     --- Kalman Filter implementation for Azimuth
     -- @local
-    -- @param noise angular error
+    -- @param maxError maximum expected angular error (~2σ bound) in radians
     -- @return Kalman filter instance
-    function HOUND.Contact.Estimator.Kalman.AzFilter(noise)
+    function HOUND.Contact.Estimator.Kalman.AzFilter(maxError)
         local Kalman = {}
         Kalman.P = 0.5
-        Kalman.noise = noise
+        -- Convert maxError (~2σ) to variance (σ²) for Kalman calculations
+        local sigma = maxError / 2
+        Kalman.noiseVariance = sigma * sigma
 
         Kalman.estimated = nil
 
@@ -94,16 +96,18 @@ do
                 self.estimated = newAz
             end
             local predAz = self.estimated
-            local noiseP = self.noise
+            local noiseVar = self.noiseVariance
             if type(predictedAz) == "number" then
                 predAz = predictedAz
             end
             if type(processNoise) == "number" then
-                noiseP = processNoise
+                -- processNoise is also maxError, convert to variance
+                local sigma_p = processNoise / 2
+                noiseVar = sigma_p * sigma_p
             end
 
-            self.P = self.P + l_math.sqrt(noiseP) -- add "process noise" in the form of standard diviation
-            local K = self.P / (self.P + self.noise)
+            self.P = self.P + noiseVar -- add process noise as variance
+            local K = self.P / (self.P + self.noiseVariance)
             local deltaAz = newAz - predAz
             self.estimated = ((self.estimated + K * (deltaAz)) + TwoPI) % TwoPI
             self.P = (1 - K) * self.P
@@ -208,7 +212,6 @@ do
         setmetatable(instance, HOUND.Contact.Estimator.UPLKF)
         instance.t0 = timestamp or timer.getAbsTime()
         instance.mobile = isMobile or false
-        instance._maxNoise = 0
         v0 = v0 or { z = 0, x = 0 }
 
         -- intialize the State Matrix
@@ -231,7 +234,7 @@ do
             { 0,                                0,                                0,                                l_math.pow(velocity_accuracy, 2) }
         })
 
-        if HOUND.DEBUG then
+        if HOUND.KALMAN_DEBUG and  HOUND.DEBUG then
             instance.marker = HoundUtils.Marker.create()
             trigger.action.outText("new KF: x:" .. instance.state[2][1] .. "| y: " .. instance.state[1][1], 20)
         end
@@ -249,6 +252,49 @@ do
             pos = HoundUtils.Geo.setPointHeight(pos)
             return pos
         end
+    end
+
+    --- Get uncertainty ellipse from covariance matrix P
+    -- Extracts position covariance (upper-left 2x2 of P) and computes ellipse parameters
+    -- @local
+    -- @param[opt] confidence Confidence level multiplier (default 2.45 for ~95% confidence)
+    -- @return table with major, minor, theta, az, r (same format as calculateEllipse)
+    function HOUND.Contact.Estimator.UPLKF:getUncertainty(confidence)
+        -- Default to ~95% confidence (chi-squared with 2 DOF: sqrt(5.991) ≈ 2.45)
+        local k = confidence or 2.45
+
+        -- Extract position covariance (upper-left 2x2 block)
+        local P_xx = self.P[1][1]  -- variance in x (North)
+        local P_zz = self.P[2][2]  -- variance in z (East)
+        local P_xz = self.P[1][2]  -- covariance x-z
+
+        -- Eigenvalue decomposition for 2x2 symmetric matrix
+        -- λ = (trace ± sqrt(trace² - 4*det)) / 2
+        local trace = P_xx + P_zz
+        local det = P_xx * P_zz - P_xz * P_xz
+        local discriminant = l_math.max(0, trace * trace - 4 * det)  -- ensure non-negative
+        local sqrt_disc = l_math.sqrt(discriminant)
+
+        local lambda1 = (trace + sqrt_disc) / 2  -- larger eigenvalue
+        local lambda2 = (trace - sqrt_disc) / 2  -- smaller eigenvalue
+
+        -- Semi-axes are sqrt(eigenvalue) * confidence_multiplier
+        local major = k * l_math.sqrt(l_math.max(0, lambda1))
+        local minor = k * l_math.sqrt(l_math.max(0, lambda2))
+
+        -- Orientation angle: angle of eigenvector for larger eigenvalue
+        -- θ = 0.5 * atan2(2*P_xz, P_xx - P_zz)
+        local theta = 0.5 * l_math.atan2(2 * P_xz, P_xx - P_zz)
+
+        -- Build uncertainty_data in same format as calculateEllipse
+        local uncertenty_data = {}
+        uncertenty_data.major = l_math.floor(major * 2 + 0.5)  -- full axis length, rounded
+        uncertenty_data.minor = l_math.floor(minor * 2 + 0.5)  -- full axis length, rounded
+        uncertenty_data.theta = theta
+        uncertenty_data.az = l_math.floor(l_math.deg(theta) + 0.5)
+        uncertenty_data.r = (uncertenty_data.major + uncertenty_data.minor) / 4
+
+        return uncertenty_data
     end
 
     --- normalize azimuth to East aligned counterclockwise
@@ -299,21 +345,26 @@ do
     --- create the Q matrix
     -- @local
     -- @param[type=?number] deltaT time from last mesurement. default is 10 seconds
-    -- @param[type=?number] sigma error in mesurment. default is 0.1 radians
     -- @return Q matrix
-    function HOUND.Contact.Estimator.UPLKF:getQ(deltaT, sigma)
-        -- initialize Process Noise Covariance Matrix
+    -- Process noise represents target motion uncertainty (acceleration), NOT measurement noise
+    -- For stationary radars: very low (q_a ~ 0.01 m/s²)
+    -- For mobile targets: moderate (q_a ~ 1 m/s² for slowly maneuvering)
+    function HOUND.Contact.Estimator.UPLKF:getQ(deltaT)
         local dT = deltaT or 10
-        local sigma_a = sigma or self._maxNoise
-        sigma_a = sigma_a / 2
+        -- q_a is acceleration standard deviation in m/s²
+        -- Stationary radar: tiny movements only (vibration, wind)
+        -- Mobile: slow maneuvering ground vehicles
+        local q_a = self.mobile and 0.5 or 0.01
+        local q = q_a * q_a  -- variance
 
+        -- Standard discrete-time process noise for constant velocity model
+        -- See paper equation (3)
         return matrix({
-            { 0.25 * l_math.pow(dT, 4) * sigma_a, 0,                                  0.5 * l_math.pow(dT, 3) * sigma_a, 0 },
-            { 0,                                  0.25 * l_math.pow(dT, 4) * sigma_a, 0,                                 0.5 * l_math.pow(dT, 3) * sigma_a },
-            { 0.5 * l_math.pow(dT, 3) * sigma_a,  0,                                  l_math.pow(dT, 2) * sigma_a,       0 },
-            { 0,                                  0.5 * l_math.pow(dT, 3) * sigma_a,  0,                                 l_math.pow(dT, 2) * sigma_a },
+            { (dT^4)/4 * q, 0,             (dT^3)/2 * q, 0 },
+            { 0,            (dT^4)/4 * q,  0,            (dT^3)/2 * q },
+            { (dT^3)/2 * q, 0,             (dT^2) * q,   0 },
+            { 0,            (dT^3)/2 * q,  0,            (dT^2) * q },
         })
-        -- TODO: calculate noise based on positional error
     end
 
     --- Kalman prediction step for provided state
@@ -327,8 +378,8 @@ do
     function HOUND.Contact.Estimator.UPLKF:predictStep(X, P, timestep, Q)
         local F = self:getF(timestep)
         local Q = Q or self:getQ(timestep)
-        -- predict state
-        local x_hat = F * X + Q
+        -- predict state (Q only affects covariance, NOT state)
+        local x_hat = F * X
         -- Predicted state covariance matrix
         local P_hat = F * P * F:transpose() + Q
 
@@ -359,34 +410,58 @@ do
     function HOUND.Contact.Estimator.UPLKF:update(p0, z, timestamp, z_err)
         timestamp = timestamp or timer.getAbsTime()
         local deltaT = timestamp - self.t0
-        self.t0 = timestamp
-        local err = z_err or l_math.rad(HOUND.MAX_ANGULAR_RES_DEG)
-        local Ri = err
-        self._maxNoise = l_math.max(self._maxNoise, err)
 
-        local Q = self:getQ(deltaT)
-        local x_hat, P_k = self:predictStep(self.state, self.P, deltaT, Q)
+        -- Measurement noise: convert maxError (~2σ) to standard deviation
+        local sigma_r = (z_err or l_math.rad(HOUND.MAX_ANGULAR_RES_DEG)) / 2
+
+        local x_hat, P_k
+        -- If deltaT is very small (< 0.5s), skip prediction - measurements are essentially simultaneous
+        -- This handles multiple platforms measured in the same loop iteration
+        if deltaT < 0.5 then
+            x_hat = self.state
+            P_k = self.P
+        else
+            self.t0 = timestamp  -- only update time reference for significant time steps
+            local Q = self:getQ(deltaT)
+            x_hat, P_k = self:predictStep(self.state, self.P, deltaT, Q)
+        end
 
         local estimatedPos = self:getEstimatedPos(x_hat)
-        local d_k = HoundUtils.Geo.get2DDistance(p0, estimatedPos)
 
-        -- Convert DCS azimuth to bearing for calculations
-        local z_bearing = self.normalizeAz(z)
-        local z_hat_bearing = self.normalizeAz(HoundUtils.Elint.getAzimuth(p0, estimatedPos))
+        -- Use DCS azimuth directly - getAzimuth returns atan2(Δz, Δx) which matches paper's β
+        local beta_measured = z  -- measured azimuth (with noise)
 
-        -- Calculate using bearing angles
-        local cos_beta_k, sin_beta_k = l_math.cos(z_hat_bearing), l_math.sin(z_hat_bearing)
-        local m_k = cos_beta_k * estimatedPos.x + sin_beta_k * estimatedPos.z - d_k
+        -- Use MEASURED bearing for H, z, and m (standard PLKF approach)
+        -- UB-PLKF uses predicted bearing, but that can diverge when estimate is far from truth
+        -- Standard PLKF is more robust for initial convergence
+        local cos_beta_k, sin_beta_k = l_math.cos(beta_measured), l_math.sin(beta_measured)
 
-        -- H matrix in DCS coordinates (X=North, Z=East)
+        -- m_k per equation (43): m_k = cos(β̂)*(p̂_x - s_x) + sin(β̂)*(p̂_y - s_y)
+        -- This is the projection of (target - sensor) vector onto the bearing direction
+        -- In DCS: x = North, z = East; s = sensor (p0), p̂ = estimated target
+        local m_k = cos_beta_k * (estimatedPos.x - p0.x) + sin_beta_k * (estimatedPos.z - p0.z)
+
+        -- Safeguard against m_k approaching zero (would cause numerical instability)
+        if l_math.abs(m_k) < 100 then
+            m_k = (m_k >= 0) and 100 or -100
+        end
+
+        -- H̄_k matrix per equation (43): [sin(β), -cos(β), 0, 0] / m_k
+        -- In DCS coordinates (X=North, Z=East)
         local H_k = matrix({
             { sin_beta_k / m_k, -cos_beta_k / m_k, 0, 0 }
         })
 
-        local z_k = matrix({ { z_bearing } }) / m_k
+        -- Pseudo-linear measurement z_k per equation (7-8):
+        -- z_k = sin(β̃) * s_x - cos(β̃) * s_y  (where s is sensor position p0)
+        -- Then z̄_k = z_k / m_k per equation (43)
+        local cos_z, sin_z = l_math.cos(beta_measured), l_math.sin(beta_measured)
+        local z_pseudo = sin_z * p0.x - cos_z * p0.z
+        local z_k = matrix({ { z_pseudo / m_k } })
 
-        -- generate new s_K based on item 47
-        local R_k = matrix({ { Ri } })
+        -- S_k per equation (47): H̄_k * P * H̄_k^T + σ_k²
+        -- R_k = σ² (bearing noise variance)
+        local R_k = matrix({ { sigma_r * sigma_r } })
         local S_k = H_k * P_k * H_k:transpose() + R_k
 
         -- Kalman Gain
@@ -394,7 +469,7 @@ do
 
         local y_k = z_k - H_k * x_hat
 
-        HOUND.Logger.debug("z_bearing: " .. z_bearing .. "\n z_hat_bearing: " .. z_hat_bearing)
+        -- HOUND.Logger.debug("beta_measured: " .. beta_measured .. " m_k: " .. m_k .. " y_k: " .. y_k[1][1])
         -- update globals
         self.state = x_hat + (K_k * y_k)
         self.P = (matrix(4, "I") - K_k * H_k) * P_k
@@ -403,7 +478,7 @@ do
         self.state[3][1] = HoundUtils.Mapping.clamp(self.state[3][1], -30.0, 30.0)
         self.state[4][1] = HoundUtils.Mapping.clamp(self.state[4][1], -30.0, 30.0)
 
-        if HOUND.DEBUG then
+        if HOUND.KALMAN_DEBUG and HOUND.DEBUG then
             self:updateMarker()
         end
     end

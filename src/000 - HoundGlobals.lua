@@ -43,7 +43,7 @@ do
     -- @field ENABLE_KALMAN If true, will use Kalman filter for contact scoring (currently not implemented, default is false)
     -- @field AUTO_ADD_PLATFORM_BY_PAYLOAD If true, will automatically add platforms that have ELINT payloads (currently, due to DCS limits, only works for units spawning with the required pods)
     HOUND = {
-        VERSION = "0.4.5-TRUNK",
+        VERSION = "0.4.6-TRUNK",
         DEBUG = true,
         ELLIPSE_PERCENTILE = 0.6,
         DATAPOINTS_NUM = 30,
@@ -64,7 +64,8 @@ do
         ENABLE_BETTER_SCORE = true,
         REF_DIST = 75000, -- Do not change, used for datapoint weighting
         ENABLE_WLS = false,
-        ENABLE_KALMAN = false,
+        ENABLE_KALMAN = true,
+        KALMAN_DEBUG = false,
         AUTO_ADD_PLATFORM_BY_PAYLOAD = true, -- if true, will automatically add platforms that have ELINT payloads (currently, due to DCS limits, only works for units spawning with the required pods)
     }
 
@@ -299,10 +300,12 @@ do
     --- return Gaussian random number
     -- @local
     -- @param mean Mean value (i.e center of the gausssian curve)
-    -- @param sigma amount of variance in the random value
+    -- @param sigma standard deviation (σ) of the distribution
     -- @return random number in gaussian space
     function HOUND.Gaussian(mean, sigma)
-        return math.sqrt(-2 * sigma * math.log(math.random())) *
+        -- Box-Muller transform: sqrt(-2*ln(U)) * cos(2π*V) gives standard normal
+        -- Multiply by sigma and add mean for desired distribution
+        return math.sqrt(-2 * math.log(math.random())) * sigma *
                    math.cos(2 * math.pi * math.random()) + mean
     end
 

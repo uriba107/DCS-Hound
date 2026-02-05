@@ -225,7 +225,7 @@ do
     function HOUND.Contact.Emitter:KalmanPredict(timestamp)
         timestamp = timestamp or timer.getAbsTime()
         if HOUND.ENABLE_KALMAN and self.Kalman then
-            HOUND.Logger.debug(self:getName() .. " is KalmanPredict")
+            -- HOUND.Logger.debug(self:getName() .. " is KalmanPredict")
             self.Kalman:predict(timestamp)
         end
 
@@ -234,17 +234,23 @@ do
     -- @param datapoint @{HOUND.Contact.Datapoint}
     function HOUND.Contact.Emitter:AddPoint(datapoint)
         if HOUND.ENABLE_KALMAN and not self.Kalman and HoundUtils.Dcs.isPoint(self.pos.p) then
-            if self.uncertenty_data.r < 5000 then
+            if self.uncertenty_data.r < 10000 then
                 self.Kalman = HOUND.Contact.Estimator.UPLKF(self.pos.p,{x=0,z=0},self.last_seen,self.uncertenty_data.r)
             end
         end
         self.last_seen = datapoint.t
         if HOUND.ENABLE_KALMAN and self.Kalman then
-            HOUND.Logger.debug(self:getName() .. " is KalmanUpdate")
+            -- HOUND.Logger.debug(self:getName() .. " is KalmanUpdate")
             self.Kalman:update(datapoint.platformPos,datapoint.az,datapoint.t,datapoint.platformPrecision)
             -- return
         end
-
+        self.last_seen = datapoint.t
+        self._platforms = self._platforms or {}
+        self._platforms[datapoint.platformName] = datapoint.t
+        if HOUND.ENABLE_KALMAN and self.Kalman then
+            return
+        end
+        --- this is only needed if not in "kalman mode"
         if HOUND.Length(self._dataPoints[datapoint.platformId]) == 0 then
             self._dataPoints[datapoint.platformId] = {}
         end
@@ -446,20 +452,45 @@ do
             return self.state
         end
 
-        -- if self.kalman then
-        --     self.pos.p = self.kalman:getEstimatedPos()
-        --     self:calculateExtrasPosData(self.pos)
-        --     self.state = HOUND.EVENTS.RADAR_UPDATED
-        --     self:queueEvent(self.state)
-        --     return self.state
-        -- end
+        -- Kalman fast-path: skip expensive intersection calculations
+        if HOUND.ENABLE_KALMAN and self.Kalman then
+            local newContact = (self.state == HOUND.EVENTS.RADAR_NEW)
 
+            self.pos.p = self.Kalman:getEstimatedPos()
+            self.uncertenty_data = self.Kalman:getUncertainty()
+            self.uncertenty_data.az = l_mist.utils.round(l_math.deg((self.uncertenty_data.theta+l_mist.getNorthCorrection(self.pos.p)+PI_2)%PI_2))
+
+            self:calculateExtrasPosData(self.pos)
+
+            if self.state == HOUND.EVENTS.RADAR_ASLEEP then
+                self.state = HOUND.EVENTS.SITE_ALIVE
+            else
+                self.state = HOUND.EVENTS.RADAR_UPDATED
+            end
+
+            if self._platforms then
+                local detected_by = {}
+                local currentTime = timer.getAbsTime()
+                for name, lastSeen in pairs(self._platforms) do
+                    if (currentTime - lastSeen) <= HOUND.CONTACT_TIMEOUT then
+                        table.insert(detected_by, name)
+                    end
+                end
+                self.detected_by = detected_by
+            end
+
+            if newContact and HoundUtils.Dcs.isPoint(self.pos.p) ~= nil and self.isEWR == false then
+                self.state = HOUND.EVENTS.RADAR_DETECTED
+            end
+
+            self:queueEvent(self.state)
+            return self.state
+        end
 
         local newContact = (self.state == HOUND.EVENTS.RADAR_NEW)
         local mobileDataPoints = {}
         local staticDataPoints = {}
         local estimatePositions = {}
-        local platforms = {}
         local staticPlatformsOnly = true
         local staticClipPolygon2D = nil
         local AllDataPoints = {}
@@ -484,7 +515,6 @@ do
                     --     local point = l_mist.utils.deepCopy(datapoint:getPos())
                     --     table.insert(estimatePositions,point)
                     -- end
-                    platforms[datapoint.platformName] = 1
                 end
             end
         end
@@ -547,9 +577,15 @@ do
                     end
                 end
 
-                self.uncertenty_data = self.calculateEllipse(estimatePositions,self.pos.p)
-                if type(staticClipPolygon2D) == "table" and ( staticPlatformsOnly) then
-                    self.uncertenty_data = self.calculateEllipse(staticClipPolygon2D,self.pos.p,true)
+                -- Use Kalman filter uncertainty if available, otherwise use point cluster
+                if HOUND.ENABLE_KALMAN and self.Kalman then
+                    self.pos.p = self.Kalman:getEstimatedPos()
+                    self.uncertenty_data = self.Kalman:getUncertainty()
+                else
+                    self.uncertenty_data = self.calculateEllipse(estimatePositions,self.pos.p)
+                    if type(staticClipPolygon2D) == "table" and ( staticPlatformsOnly) then
+                        self.uncertenty_data = self.calculateEllipse(staticClipPolygon2D,self.pos.p,true)
+                    end
                 end
             -- end
 
@@ -563,14 +599,16 @@ do
                 self.state = HOUND.EVENTS.RADAR_UPDATED
             end
 
-            local detected_by = {}
-
-            for key,_ in pairs(platforms) do
-                table.insert(detected_by,key)
+            if self._platforms then
+                local detected_by = {}
+                local currentTime = timer.getAbsTime()
+                for name, lastSeen in pairs(self._platforms) do
+                    if (currentTime - lastSeen) <= HOUND.CONTACT_TIMEOUT then
+                        table.insert(detected_by, name)
+                    end
+                end
+                self.detected_by = detected_by
             end
-            local deallocate = self.detected_by
-            self.detected_by = detected_by
-            deallocate = nil
         end
 
         if newContact and HoundUtils.Dcs.isPoint(self.pos.p) ~= nil and self.isEWR == false then

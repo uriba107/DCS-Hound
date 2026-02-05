@@ -154,6 +154,16 @@ do
             },
             ['Primary'] = false
         },
+        ['P14_SR'] = {
+            ['Name'] = "Tall king",
+            ['Assigned'] = { "SA-5" },
+            ['Role'] = { HOUND.DB.RadarType.SEARCH },
+            ['Band'] = {
+                    [true] = {1.620500,0.253203},
+                    [false] = {1.620500,0.253203}
+            },
+            ['Primary'] = false
+        },
         ['S-300PS 40B6MD sr_19J6'] = {
             ['Name'] = "Tin Shield",
             ['Assigned'] = { "SA-10" },
@@ -513,7 +523,7 @@ do
             ['Assigned'] = { "Naval" },
             ['Role'] = { HOUND.DB.RadarType.NAVAL },
             ['Band'] = {
-                [true] = { 0.024983, 0.012491 },
+                [true] = HOUND.DB.Bands.I,
                 [false] = HOUND.DB.Bands.I
             },
             ['Primary'] = true
@@ -623,8 +633,8 @@ do
             ['Assigned'] = { "Naval" },
             ['Role'] = { HOUND.DB.RadarType.NAVAL },
             ['Band'] = {
-                [true] = { 20256247.162162, 855897.767415 },
-                [false] = { 0.026069, 0.009201 }
+                [true] = {0.020256,0.000856},
+                [false] = {0.031624,0.000682}
             },
             ['Primary'] = true
         },
@@ -703,7 +713,7 @@ do
             ['Assigned'] = { "Naval" },
             ['Role'] = { HOUND.DB.RadarType.NAVAL },
             ['Band'] = {
-                [true] = { 0.024983, 0.012491 },
+                [true] = HOUND.DB.Bands.I,
                 [false] = HOUND.DB.Bands.I
             },
             ['Primary'] = true
@@ -806,8 +816,8 @@ do
             ['Assigned'] = { "Naval" },
             ['Role'] = { HOUND.DB.RadarType.NAVAL },
             ['Band'] = {
-                [true] = HOUND.DB.Bands.E,
-                [false] = HOUND.DB.Bands.E
+                [true] = {0.031624,0.000682},
+                [false] = {0.031624,0.000682}
             },
             ['Primary'] = true
         },
@@ -818,6 +828,16 @@ do
             ['Band'] = {
                 [true] = HOUND.DB.Bands.E,
                 [false] = HOUND.DB.Bands.E
+            },
+            ['Primary'] = true
+        },
+        ['Type_021_1'] = {
+            ['Name'] = "Type 021-1 Missile Boat",
+            ['Assigned'] = {"Naval"},
+            ['Role'] = { HOUND.DB.RadarType.NAVAL },
+            ['Band'] = {
+                    [true] = {0.024983,0.012491},
+                    [false] = {0.024983,0.012491}
             },
             ['Primary'] = true
         },
@@ -935,6 +955,7 @@ do
             ['AJS37'] = { antenna = { size = 4.5, factor = 1 }, require = { Payload = { 'U22/A Jammer Pod', 'U22 Jammer' } }, ins_error = 50 },
             ['F-16C_50'] = { antenna = { size = 1.45, factor = 1 }, require = { Payload = { 'f-16c_hts_pod' } }, ins_error = 0 },
             ['JF-17'] = { antenna = { size = 3.25, factor = 1 }, require = { Payload = { 'KG-600' } }, ins_error = 0 },
+            ['A6E'] = { antenna = { size = 9, factor = 1 }, require = { Payload = { 'AN/ALQ-99' } }, ins_error = 0 }, -- A-6E stand in for EA-6B
             -- Mirage F1 placeholders. Thanks Viboa and Aerges for supplying the typeNames for the module's aircrafts.
             -- ['Mirage-F1CE'] = {antenna = {size = 3.7, factor = 1}, require = {Payload={'TMV_018_Syrel_POD'}},ins_error=100}, -- temporary for intial release, CE had not INS, therefor could not do ELINT.
             ['Mirage-F1EE'] = { antenna = { size = 3.7, factor = 1 }, require = { Payload = { 'TMV_018_Syrel_POD' } }, ins_error = 50 }, -- does not reflect features in actual released product
