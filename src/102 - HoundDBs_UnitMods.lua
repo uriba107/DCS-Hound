@@ -28,7 +28,8 @@ do
             [true] = HOUND.DB.Bands.C,
             [false] = HOUND.DB.Bands.C
         },
-        ['Primary'] = false
+        ['Primary'] = false,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['S-300PS SA-10B 40B6MD MAST sr'] = {
         ['Name'] = "Clam Shell",
@@ -38,7 +39,8 @@ do
             [true] = HOUND.DB.Bands.I,
             [false] = HOUND.DB.Bands.I
         },
-        ['Primary'] = false
+        ['Primary'] = false,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['S-300PS 40B6M MAST tr'] = {
         ['Name'] = "Flap Lid",
@@ -48,7 +50,8 @@ do
             [true] = HOUND.DB.Bands.J,
             [false] = HOUND.DB.Bands.J
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['S-300PS 30H6 TRAILER tr'] = {
         ['Name'] = "Flap Lid",
@@ -58,7 +61,8 @@ do
             [true] = HOUND.DB.Bands.J,
             [false] = HOUND.DB.Bands.J
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['S-300PS 30N6 TRAILER tr'] = {
         ['Name'] = "Flap Lid",
@@ -68,7 +72,8 @@ do
             [true] = HOUND.DB.Bands.J,
             [false] = HOUND.DB.Bands.J
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['S-300PMU1 40B6MD sr'] = {
         ['Name'] = "Clam Shell",
@@ -78,7 +83,8 @@ do
             [true] = HOUND.DB.Bands.I,
             [false] = HOUND.DB.Bands.I
         },
-        ['Primary'] = false
+        ['Primary'] = false,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['S-300PMU1 64N6E sr'] = {
         ['Name'] = "Big Bird",
@@ -88,7 +94,8 @@ do
             [true] = HOUND.DB.Bands.C,
             [false] = HOUND.DB.Bands.C
         },
-        ['Primary'] = false
+        ['Primary'] = false,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['S-300PMU1 30N6E tr'] = {
         ['Name'] = "Flap Lid",
@@ -98,7 +105,8 @@ do
             [true] = HOUND.DB.Bands.J,
             [false] = HOUND.DB.Bands.J
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['S-300PMU1 40B6M tr'] = {
         ['Name'] = "Grave Stone",
@@ -108,7 +116,8 @@ do
             [true] = HOUND.DB.Bands.J,
             [false] = HOUND.DB.Bands.J
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['S-300V 9S15 sr'] = {
         ['Name'] = 'Bill Board',
@@ -118,7 +127,8 @@ do
             [true] = HOUND.DB.Bands.E,
             [false] = HOUND.DB.Bands.E
         },
-        ['Primary'] = false
+        ['Primary'] = false,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['S-300V 9S19 sr'] = {
         ['Name'] = 'High Screen',
@@ -128,7 +138,8 @@ do
             [true] = HOUND.DB.Bands.C,
             [false] = HOUND.DB.Bands.C
         },
-        ['Primary'] = false
+        ['Primary'] = false,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['S-300V 9S32 tr'] = {
         ['Name'] = 'Grill Pan',
@@ -138,7 +149,8 @@ do
             [true] = HOUND.DB.Bands.J,
             [false] = HOUND.DB.Bands.J
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['S-300PMU2 92H6E tr'] = {
         ['Name'] = 'Grave Stone',
@@ -148,7 +160,8 @@ do
             [true] = HOUND.DB.Bands.I,
             [false] = HOUND.DB.Bands.I
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['S-300PMU2 64H6E2 sr'] = {
         ['Name'] = "Big Bird",
@@ -158,7 +171,8 @@ do
             [true] = HOUND.DB.Bands.C,
             [false] = HOUND.DB.Bands.C
         },
-        ['Primary'] = false
+        ['Primary'] = false,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['S-300VM 9S15M2 sr'] = {
         ['Name'] = 'Bill Board M',
@@ -168,7 +182,8 @@ do
             [true] = HOUND.DB.Bands.E,
             [false] = HOUND.DB.Bands.E
         },
-        ['Primary'] = false
+        ['Primary'] = false,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['S-300VM 9S19M2 sr'] = {
         ['Name'] = 'High Screen M',
@@ -178,7 +193,8 @@ do
             [true] = HOUND.DB.Bands.C,
             [false] = HOUND.DB.Bands.C
         },
-        ['Primary'] = false
+        ['Primary'] = false,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['S-300VM 9S32ME tr'] = {
         ['Name'] = 'Grill Pan M',
@@ -188,7 +204,8 @@ do
             [true] = HOUND.DB.Bands.K,
             [false] = HOUND.DB.Bands.K
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['SA-17 Buk M1-2 LN 9A310M1-2'] = {
         ['Name'] = "Fire Dome M",
@@ -198,7 +215,8 @@ do
             [true] = HOUND.DB.Bands.H,
             [false] = HOUND.DB.Bands.H
         },
-        ['Primary'] = false
+        ['Primary'] = false,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['34Ya6E Gazetchik E decoy'] = {
         ['Name'] = "Flap Lid",
@@ -208,7 +226,8 @@ do
             [true] = HOUND.DB.Bands.J,
             [false] = HOUND.DB.Bands.J
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['SAMPT_MRI_ARABEL'] = {
         ['Name'] = "SAMP/T",
@@ -218,7 +237,8 @@ do
             [true] = HOUND.DB.Bands.I,
             [false] = HOUND.DB.Bands.I
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['SAMPT_MRI_GF300'] = {
         ['Name'] = "SAMP/T",
@@ -228,7 +248,8 @@ do
             [true] = HOUND.DB.Bands.K,
             [false] = HOUND.DB.Bands.K
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['Fire Can radar'] = {
         ['Name'] = "Fire Can",
@@ -238,7 +259,8 @@ do
             [true] = HOUND.DB.Bands.E,
             [false] = HOUND.DB.Bands.E
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     -- SAM Assets pack
     HOUND.DB.Radars['EWR 55G6U NEBO-U'] = {
@@ -249,7 +271,8 @@ do
             [true] = HOUND.DB.Bands.A,
             [false] = HOUND.DB.Bands.A
         },
-        ['Primary'] = false
+        ['Primary'] = false,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['EWR P-37 BAR LOCK'] = {
         ['Name'] = "Bar lock",
@@ -259,7 +282,8 @@ do
             [true] = HOUND.DB.Bands.E,
             [false] = HOUND.DB.Bands.E
         },
-        ['Primary'] = false
+        ['Primary'] = false,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['EWR 1L119 Nebo-SVU'] = {
         ['Name'] = "Box Spring",
@@ -269,7 +293,8 @@ do
             [true] = HOUND.DB.Bands.A,
             [false] = HOUND.DB.Bands.A
         },
-        ['Primary'] = false
+        ['Primary'] = false,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['EWR Generic radar tower'] = {
         ['Name'] = "Civilian Radar",
@@ -279,7 +304,8 @@ do
             [true] = HOUND.DB.Bands.C,
             [false] = HOUND.DB.Bands.C
         },
-        ['Primary'] = false
+        ['Primary'] = false,
+        ['numDistinctFreqs'] = 0
     }
     --Military Assets for DCS by Currenthill (Russia - 1.2.2)
     HOUND.DB.Radars['PantsirS1'] = {
@@ -290,7 +316,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['PantsirS2'] = {
         ['Name'] = "Pantsir",
@@ -300,7 +327,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['Admiral_Kasatonov'] = {
         ['Name'] = "Gorshkov (FF)",
@@ -310,7 +338,8 @@ do
             [true] = HOUND.DB.Bands.F,
             [false] = HOUND.DB.Bands.F
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['Karakurt_AShM'] = {
         ['Name'] = "Karakurt (FS)",
@@ -320,7 +349,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['Karakurt_LACM'] = {
         ['Name'] = "Karakurt (FS)",
@@ -330,7 +360,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['MonolitB'] = {
         ['Name'] = "Monolit B",
@@ -340,7 +371,8 @@ do
             [true] = HOUND.DB.Bands.I,
             [false] = HOUND.DB.Bands.I
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['TorM2'] = {
         ['Name'] = "Tor",
@@ -350,7 +382,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['TorM2K'] = {
         ['Name'] = "Tor",
@@ -360,7 +393,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['TorM2M'] = {
         ['Name'] = "Tor",
@@ -370,7 +404,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
 
     HOUND.DB.Radars['CH_BukM3_9A317M'] = {
@@ -381,7 +416,8 @@ do
             [true] = { 0.136269, 0.013627 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = false
+        ['Primary'] = false,
+        ['numDistinctFreqs'] = 0
 
     }
     HOUND.DB.Radars['CH_BukM3_9A317MA'] = {
@@ -392,7 +428,8 @@ do
             [true] = { 0.136269, 0.013627 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = false
+        ['Primary'] = false,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['CH_BukM3_9S18M13'] = {
         ['Name'] = "Snow Drift",
@@ -402,7 +439,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.516884, 0.082701 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['CH_BukM3_9S36M'] = {
         ['Name'] = "Buk M3",
@@ -412,7 +450,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = false
+        ['Primary'] = false,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['CH_S350_50N6'] = {
         ['Name'] = "S-350 STR",
@@ -422,7 +461,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
 
     }
     HOUND.DB.Radars['CH_S350_96L6'] = {
@@ -433,7 +473,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.516884, 0.082701 }
         },
-        ['Primary'] = false
+        ['Primary'] = false,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['CH_Gremyashchiy_AShM'] = {
         ['Name'] = "Gremyashchiy Corvette",
@@ -443,7 +484,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['CH_Gremyashchiy_LACM'] = {
         ['Name'] = "Gremyashchiy Corvette",
@@ -453,7 +495,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['CH_Grigorovich_AShM'] = {
         ['Name'] = "Krivak 5 (FF)",
@@ -463,7 +506,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['CH_Grigorovich_LACM'] = {
         ['Name'] = "Krivak 5 (FF)",
@@ -473,7 +517,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['CH_Project22160'] = {
         ['Name'] = "Project 22160 (DD)",
@@ -483,7 +528,8 @@ do
             [true] = { 0.136269, 0.013627 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
 
     }
     HOUND.DB.Radars['CH_Steregushchiy'] = {
@@ -494,7 +540,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
 
     }
     HOUND.DB.Radars['Admiral_Gorshkov'] = {
@@ -505,7 +552,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
 
     --Military Assets for DCS by Currenthill (USA - 1.1.8)
@@ -517,7 +565,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['CH_Arleigh_Burke_III'] = {
         ['Name'] = "Arleigh Burke (DD)",
@@ -528,7 +577,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['CH_Constellation'] = {
         ['Name'] = "[CH] Constellation Frigate",
@@ -538,7 +588,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['CH_Ticonderoga'] = {
         ['Name'] = "Ticonderoga (CG)",
@@ -548,7 +599,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['CH_Ticonderoga_CMP'] = {
         ['Name'] = "Ticonderoga (CG)",
@@ -558,7 +610,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['Arleigh_Burke_Flight_III_AShM'] = {
         ['Name'] = "Arleigh Burke (DD)",
@@ -568,7 +621,8 @@ do
             [true] = HOUND.DB.Bands.E,
             [false] = HOUND.DB.Bands.E
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['Arleigh_Burke_Flight_III_LACM'] = {
         ['Name'] = "Arleigh Burke (DD)",
@@ -578,7 +632,8 @@ do
             [true] = HOUND.DB.Bands.E,
             [false] = HOUND.DB.Bands.E
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['Arleigh_Burke_Flight_III_SAM'] = {
         ['Name'] = "Arleigh Burke (DD)",
@@ -588,7 +643,8 @@ do
             [true] = HOUND.DB.Bands.E,
             [false] = HOUND.DB.Bands.E
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['Ticonderoga_CMP_AShM'] = {
         ['Name'] = "Ticonderoga (CG)",
@@ -598,7 +654,8 @@ do
             [true] = HOUND.DB.Bands.E,
             [false] = HOUND.DB.Bands.E
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['Ticonderoga_CMP_LACM'] = {
         ['Name'] = "Ticonderoga (CG)",
@@ -608,7 +665,8 @@ do
             [true] = HOUND.DB.Bands.E,
             [false] = HOUND.DB.Bands.E
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['Ticonderoga_CMP_SAM'] = {
         ['Name'] = "Ticonderoga (CG)",
@@ -618,7 +676,8 @@ do
             [true] = HOUND.DB.Bands.E,
             [false] = HOUND.DB.Bands.E
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['MIM104_ANMPQ65'] = {
         ['Name'] = "Patriot",
@@ -628,7 +687,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['MIM104_ANMPQ65A'] = {
         ['Name'] = "Patriot",
@@ -638,7 +698,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['MIM104_LTAMDS'] = {
         ['Name'] = "Patriot LTAMDS",
@@ -648,7 +709,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['MIM104_ANMPQ65A_HEMTT'] = {
         ['Name'] = "Patriot",
@@ -658,7 +720,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['MIM104_ANMPQ65_HEMTT'] = {
         ['Name'] = "Patriot",
@@ -668,7 +731,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
 
     HOUND.DB.Radars['MIM104_LTAMDS_HEMTT'] = {
@@ -679,7 +743,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
 
     HOUND.DB.Radars['CH_NASAMS3_SR'] = {
@@ -690,7 +755,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['CH_Centurion_C_RAM'] = {
         ['Name'] = "Centurion C-RAM",
@@ -700,7 +766,8 @@ do
             [true] = { 0.136269, 0.013627 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
 
     HOUND.DB.Radars['CH_THAAD_ANTPY2'] = {
@@ -711,7 +778,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
 
 
@@ -724,7 +792,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['CH_Type26'] = {
         ['Name'] = "Type 26 (FF)",
@@ -734,7 +803,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['CH_SkySabreGiraffe'] = {
         ['Name'] = "Giraffe",
@@ -744,7 +814,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     --Military Assets for DCS by Currenthill (Sweden 1.1.0)
     HOUND.DB.Radars['HSwMS_Visby'] = {
@@ -755,7 +826,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['LvKv9040'] = {
         ['Name'] = "LvKv9040",
@@ -765,7 +837,8 @@ do
             [true] = { 0.136269, 0.013627 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['LvS-103_PM103'] = {
         ['Name'] = "Patriot",
@@ -775,7 +848,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['LvS-103_PM103_HX'] = {
         ['Name'] = "Patriot",
@@ -785,7 +859,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['RBS-90'] = {
         ['Name'] = "RBS-90",
@@ -795,7 +870,8 @@ do
             [true] = HOUND.DB.Bands.J,
             [false] = HOUND.DB.Bands.J
         },
-        ['Primary'] = false
+        ['Primary'] = false,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['BV410_RBS90'] = {
         ['Name'] = "RBS-90",
@@ -805,7 +881,8 @@ do
             [true] = HOUND.DB.Bands.J,
             [false] = HOUND.DB.Bands.J
         },
-        ['Primary'] = false
+        ['Primary'] = false,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['UndE23'] = {
         ['Name'] = "UndE23",
@@ -815,7 +892,8 @@ do
             [true] = HOUND.DB.Bands.G,
             [false] = HOUND.DB.Bands.G
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
 
 
@@ -827,7 +905,8 @@ do
             [true] = HOUND.DB.Bands.E,
             [false] = HOUND.DB.Bands.E
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     --Military Assets for DCS by Currenthill (China - 1.1.6)
     HOUND.DB.Radars['CH_Type022'] = {
@@ -838,7 +917,8 @@ do
             [true] = { 0.136269, 0.013627 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['CH_Type054B'] = {
         ['Name'] = "Type 054B Frigate",
@@ -848,7 +928,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['CH_Type056A'] = {
         ['Name'] = "Type 056A Corvette",
@@ -858,7 +939,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['Type055'] = {
         ['Name'] = "Type 055 (CG)",
@@ -868,7 +950,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['Type052D'] = {
         ['Name'] = "Type 052D (DD)",
@@ -878,7 +961,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['PGL_625'] = {
         ['Name'] = "PGL-625",
@@ -888,7 +972,8 @@ do
             [true] = { 0.136269, 0.013627 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['HQ17A'] = {
         ['Name'] = "HQ-17",
@@ -898,7 +983,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['CH_HQ22_SR'] = {
         ['Name'] = "HQ-22 SR",
@@ -908,7 +994,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.516884, 0.082701 }
         },
-        ['Primary'] = false
+        ['Primary'] = false,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['CH_HQ22_STR'] = {
         ['Name'] = "HQ-22 STR",
@@ -918,7 +1005,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['CH_PGZ09'] = {
         ['Name'] = "PGZ-09",
@@ -928,7 +1016,8 @@ do
             [true] = { 0.136269, 0.013627 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['CH_PGZ95'] = {
         ['Name'] = "PGZ-95",
@@ -938,7 +1027,8 @@ do
             [true] = { 0.136269, 0.013627 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['CH_LD3000'] = {
         ['Name'] = "LD-3000 C-RAM",
@@ -948,7 +1038,8 @@ do
             [true] = { 0.136269, 0.013627 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['CH_LD3000_stationary'] = {
         ['Name'] = "LD-3000 C-RAM",
@@ -958,7 +1049,8 @@ do
             [true] = { 0.136269, 0.013627 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     --Military Assets for DCS by Currenthill (Germany 1.1.1)
     HOUND.DB.Radars['CH_MIM104_ANMPQ53_KAT1'] = {
@@ -969,7 +1061,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['CH_F124'] = {
         ['Name'] = "F124 Frigate",
@@ -979,7 +1072,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['CH_BoxerSkyranger'] = {
         ['Name'] = "Boxer",
@@ -989,7 +1083,8 @@ do
             [true] = { 0.136269, 0.013627 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['CH_FlaRakRad'] = {
         ['Name'] = "FlaRakRad",
@@ -999,7 +1094,8 @@ do
             [true] = { 0.024983, 0.012491 },
             [false] = HOUND.DB.Bands.D
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['CH_SkynexHX'] = {
         ['Name'] = "Skynex",
@@ -1009,7 +1105,8 @@ do
             [true] = { 0.136269, 0.013627 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['CH_Skyshield_FCU'] = {
         ['Name'] = "Skyshield",
@@ -1019,7 +1116,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['CH_TRML4D'] = {
         ['Name'] = "IRIS-T",
@@ -1029,7 +1127,8 @@ do
             [true] = { 0.516884, 0.082701 },
             [false] = { 0.136269, 0.013627 }
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     -- Iron Dome Mod
     HOUND.DB.Radars['ELM2048_MMR'] = {
@@ -1040,7 +1139,8 @@ do
             [true] = HOUND.DB.Bands.F,
             [false] = HOUND.DB.Bands.E
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['ELM2084_MMR_AD_SC'] = {
         ['Name'] = "Elta MMR",
@@ -1050,7 +1150,8 @@ do
             [true] = HOUND.DB.Bands.F,
             [false] = HOUND.DB.Bands.E
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['ELM2084_MMR_AD_RT'] = {
         ['Name'] = "Elta MMR",
@@ -1060,7 +1161,8 @@ do
             [true] = HOUND.DB.Bands.F,
             [false] = HOUND.DB.Bands.E
         },
-        ['Primary'] = false
+        ['Primary'] = false,
+        ['numDistinctFreqs'] = 0
     }
     HOUND.DB.Radars['ELM2084_MMR_WLR'] = {
         ['Name'] = "Elta MMR",
@@ -1070,17 +1172,19 @@ do
             [true] = HOUND.DB.Bands.F,
             [false] = HOUND.DB.Bands.E
         },
-        ['Primary'] = true
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
     }
     -- P-14 Mod
     HOUND.DB.Radars['EWR P-14 Tall King'] = {
         ['Name'] = "Tall King",
-        ['Assigned'] = { "EWR" },
-        ['Role'] = { HOUND.DB.RadarType.EWR },
+        ['Assigned'] = { "EWR" , "SA-5" },
+        ['Role'] = { HOUND.DB.RadarType.EWR, HOUND.DB.RadarType.SEARCH },
         ['Band'] = {
-            [true] = HOUND.DB.Bands.A,
-            [false] = HOUND.DB.Bands.A
+            [true] = {1.620500,0.253203},
+            [false] = {1.620500,0.253203}
         },
-        ['Primary'] = false
+        ['Primary'] = false,
+        ['numDistinctFreqs'] = 4
     }
 end

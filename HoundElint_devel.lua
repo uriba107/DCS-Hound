@@ -5,7 +5,7 @@ env.info("Loading Hound Scripts dynamicly")
         -- HoundWorkDir = "E:\\Dropbox\\uri\\Dropbox\\DCS\\Mission Building\\DCS-Hound\\"
     end
 
-    assert(loadfile(HoundWorkDir..'test\\StopWatch.lua'))()
+    assert(loadfile(HoundWorkDir..'tools\\testing\\StopWatch.lua'))()
 
     -- assert(loadfile(HoundWorkDir..'include\\mist.lua'))()
     assert(loadfile(HoundWorkDir..'include\\DCS-SimpleTextToSpeech.lua'))()

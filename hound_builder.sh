@@ -308,6 +308,6 @@ fi
 
 if [ $UPDATE_MISSIONS -eq 1 ]; then
     update_mission "demo_mission/Caucasus_demo" "HoundElint_demo"
-    update_mission "demo_mission/Syria_POC" "Hound_Demo_SyADFGCI"
     update_mission "demo_mission/Syria_HARM" "Hound_Demo_syria"
+    update_mission "demo_mission/Syria_POC" "Hound_Demo_SyADFGCI"
 fi

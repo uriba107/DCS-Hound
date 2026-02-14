@@ -234,8 +234,8 @@ do
     -- @param datapoint @{HOUND.Contact.Datapoint}
     function HOUND.Contact.Emitter:AddPoint(datapoint)
         if HOUND.ENABLE_KALMAN and not self.Kalman and HoundUtils.Dcs.isPoint(self.pos.p) then
-            if self.uncertenty_data.r < 10000 then
-                self.Kalman = HOUND.Contact.Estimator.UPLKF(self.pos.p,{x=0,z=0},self.last_seen,self.uncertenty_data.r)
+            if self.uncertenty_data.r < 15000 then
+                self.Kalman = HOUND.Contact.Estimator.UPLKF(self.pos.p,{x=0,z=0},self.last_seen,self.uncertenty_data.major)
             end
         end
         self.last_seen = datapoint.t
@@ -279,17 +279,14 @@ do
             if  DeltaT >= HOUND.DATAPOINTS_INTERVAL then
                 table.insert(self._dataPoints[datapoint.platformId], 1, datapoint)
             else
-                local deallocate = self._dataPoints[datapoint.platformId][1]
                 self._dataPoints[datapoint.platformId][1] = datapoint
-                deallocate = nil
             end
         end
 
         -- cleanup
         for i=HOUND.Length(self._dataPoints[datapoint.platformId]),1,-1 do
             if self._dataPoints[datapoint.platformId][i]:getAge() > HOUND.CONTACT_TIMEOUT then
-                local deallocate = table.remove(self._dataPoints[datapoint.platformId])
-                deallocate = nil
+                table.remove(self._dataPoints[datapoint.platformId])
             else
                 -- as list is always ordered, if you no longer need to pop the last one out, break out
                 i=1
@@ -299,8 +296,7 @@ do
         if self:countPlatforms(true) > 0 then
             local pointsPerPlatform = l_math.ceil(HOUND.DATAPOINTS_NUM/self:countPlatforms(true))
             while HOUND.Length(self._dataPoints[datapoint.platformId]) > pointsPerPlatform do
-                local deallocate = table.remove(self._dataPoints[datapoint.platformId])
-                deallocate = nil
+                table.remove(self._dataPoints[datapoint.platformId])
             end
         end
     end
@@ -324,12 +320,6 @@ do
         local Northing = m1 * Easting + b1
 
         local pos = {}
-        -- if HOUND.ENABLE_WLS then
-        --     pos.platformPos = {
-        --         p1 = p1,
-        --         p2 = p2
-        --     }
-        -- end
 
         pos.x = Easting
         pos.z = Northing
@@ -350,11 +340,9 @@ do
     -- @local
     -- @param estimatedPositions List of estimated positions
     -- @param[opt] refPos reference position to use for computing the uncertenty ellipse. (will use cluster avarage if none provided)
-    -- @param[opt] giftWrapped pass true if estimatedPosition is just a giftWrap polygon point set (closed polygon, not a point cluster)
     -- @return None (updates self.uncertenty_data)
-    function HOUND.Contact.Emitter.calculateEllipse(estimatedPositions,refPos,giftWrapped)
+    function HOUND.Contact.Emitter.calculateEllipse(estimatedPositions,refPos)
         local percentile = HOUND.ELLIPSE_PERCENTILE
-        if giftWrapped then percentile = 1.0 end
         local RelativeToPos = HoundUtils.Cluster.getDeltaSubsetPercent(estimatedPositions,refPos,percentile,true)
 
         local min = {}
@@ -490,29 +478,18 @@ do
         local staticDataPoints = {}
         local estimatePositions = {}
         local staticPlatformsOnly = true
-        local staticClipPolygon2D = nil
         local AllDataPoints = {}
 
 
         for _,platformDatapoints in pairs(self._dataPoints) do
             if HOUND.Length(platformDatapoints) > 0 then
                 for _,datapoint in pairs(platformDatapoints) do
-                    -- if HOUND.ENABLE_WLS then
-                    --     table.insert(AllDataPoints,datapoint)
-                    -- end
                     if datapoint:isStatic() then
                         table.insert(staticDataPoints,datapoint)
-                        -- if type(datapoint:get2dPoly()) == "table" then
-                        --     staticClipPolygon2D = HoundUtils.Polygon.clipPolygons(staticClipPolygon2D,datapoint:get2dPoly()) or datapoint:get2dPoly()
-                        -- end
                     else
                         staticPlatformsOnly = false
                         table.insert(mobileDataPoints,datapoint)
                     end
-                    -- if HoundUtils.Dcs.isPoint(datapoint:getPos()) then
-                    --     local point = l_mist.utils.deepCopy(datapoint:getPos())
-                    --     table.insert(estimatePositions,point)
-                    -- end
                 end
             end
         end
@@ -553,35 +530,9 @@ do
         end
 
         if HOUND.Length(estimatePositions) > 2 or (HOUND.Length(estimatePositions) > 0 and staticPlatformsOnly) then
-            -- table.sort(estimatePositions, function(a,b) return a.score < b.score end)
-
-            -- WLS feature flag
-            -- if HOUND.ENABLE_WLS then
-            --     local initial_guess = self.pos.p or estimatePositions[1]
-            --     local solution, uncertenty_data = HOUND.Utils.Cluster.WLS_GDOP(AllDataPoints, initial_guess)
-            --     self.pos.p = solution
-            --     self.uncertenty_data = uncertenty_data
-            -- else
-                if HOUND.ENABLE_BETTER_SCORE then
-                    self.pos.p = HoundUtils.Cluster.WeightedCentroid(estimatePositions)
-                else
-                    -- Fallback to current mean/weightedMean logic
-                    self.pos.p = HoundUtils.Cluster.weightedMean(estimatePositions,self.pos.p)
-
-                    if HOUND.Length(estimatePositions) > 10 then
-                        self.pos.p = HoundUtils.Cluster.weightedMean(
-                            HoundUtils.Cluster.getDeltaSubsetPercent(estimatePositions,self.pos.p,HOUND.ELLIPSE_PERCENTILE),
-                            self.pos.p)
-                    end
-                end
-
-                -- Use Kalman filter uncertainty if available, otherwise use point cluster
-                self.uncertenty_data = self.calculateEllipse(estimatePositions,self.pos.p)
-                if type(staticClipPolygon2D) == "table" and ( staticPlatformsOnly) then
-                    self.uncertenty_data = self.calculateEllipse(staticClipPolygon2D,self.pos.p,true)
-                end
-            
-            -- end
+            self.pos.p = HoundUtils.Cluster.WeightedCentroid(estimatePositions)
+               -- Use Kalman filter uncertainty if available, otherwise use point cluster
+            self.uncertenty_data = self.calculateEllipse(estimatePositions,self.pos.p)
 
             self.uncertenty_data.az = l_mist.utils.round(l_math.deg((self.uncertenty_data.theta+l_mist.getNorthCorrection(self.pos.p)+PI_2)%PI_2))
 

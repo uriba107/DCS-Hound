@@ -37,9 +37,7 @@ do
     -- @field MARKER_TEXT_POINTER Char/string used as pointer on text markers
     -- @field TTS_ENGINE Hound will use the table to determin TTS engine priority
     -- @field MENU_PAGE_LENGTH Number of Items Hound will put in a menu before starting a new menu page
-    -- @field ENABLE_BETTER_SCORE If true, will use better scoring algorithm for contacts (default is true)
     -- @field REF_DIST Reference distance for contact scoring. Used to calculate the weight of datap
-    -- @field ENABLE_WLS If true, will use WLS algorithm for contact scoring (currently not implemented, default is false)
     -- @field ENABLE_KALMAN If true, will use Kalman filter for contact scoring (currently not implemented, default is false)
     -- @field AUTO_ADD_PLATFORM_BY_PAYLOAD If true, will automatically add platforms that have ELINT payloads (currently, due to DCS limits, only works for units spawning with the required pods)
     HOUND = {
@@ -59,11 +57,9 @@ do
         MARKER_MAX_ALPHA = 0.2,
         MARKER_LINE_OPACITY = 0.3,
         MARKER_TEXT_POINTER = "⇙ ", -- "¤ « "
-        TTS_ENGINE = {'STTS','GRPC'},
+        TTS_ENGINE = {'STTS'},
         MENU_PAGE_LENGTH = 9,
-        ENABLE_BETTER_SCORE = true,
         REF_DIST = 75000, -- Do not change, used for datapoint weighting
-        ENABLE_WLS = false,
         ENABLE_KALMAN = true,
         KALMAN_DEBUG = false,
         AUTO_ADD_PLATFORM_BY_PAYLOAD = true, -- if true, will automatically add platforms that have ELINT payloads (currently, due to DCS limits, only works for units spawning with the required pods)
@@ -307,6 +303,26 @@ do
         -- Multiply by sigma and add mean for desired distribution
         return math.sqrt(-2 * math.log(math.random())) * sigma *
                    math.cos(2 * math.pi * math.random()) + mean
+    end
+
+    --- return clamped value
+    -- @local
+    -- @param value Value to clamp
+    -- @param min Minimum value
+    -- @param max Maximum value
+    -- @return clamped value
+    function HOUND.Clamp(value, min, max)
+        return math.max(min, math.min(max, value))
+    end
+
+    --- return mixed of gaussian and uniform distribution
+    -- @local
+    -- @param mean Mean value
+    -- @param sigma Standard deviation
+    -- @param uniform Uniform distribution factor (0-1)
+    -- @return mixed value
+    function HOUND.MixedGaussian(mean, sigma, uniform)
+        return mean + sigma * (math.random() - 0.5) * uniform + HOUND.Gaussian(0, sigma) * (1 - uniform)
     end
 
     --- reverse table lookup

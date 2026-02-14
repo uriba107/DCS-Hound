@@ -16,7 +16,12 @@ do
         if not HOUND.DB.Radars[typeName] then return end
         local data = l_mist.utils.deepCopy(HOUND.DB.Radars[typeName])
         data.isEWR = HOUND.setContainsValue(data.Role,HOUND.DB.RadarType.EWR)
-        data.Freqency = HOUND.DB.getEmitterFrequencies(data.Band)
+        local randomFactor = nil
+        if data.numDistinctFreqs and data.numDistinctFreqs > 0 then
+            local spacing = 1/(data.numDistinctFreqs+1)
+            randomFactor = HOUND.Clamp(HOUND.Gaussian(spacing * l_math.random(data.numDistinctFreqs), spacing/6),0,1)
+        end
+        data.Freqency = HOUND.DB.getEmitterFrequencies(data.Band, randomFactor)
         return data
     end
 

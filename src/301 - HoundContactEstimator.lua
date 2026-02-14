@@ -442,9 +442,10 @@ do
         local m_k = cos_beta_k * (estimatedPos.x - p0.x) + sin_beta_k * (estimatedPos.z - p0.z)
 
         -- Safeguard against m_k approaching zero (would cause numerical instability)
-        if l_math.abs(m_k) < 100 then
-            m_k = (m_k >= 0) and 100 or -100
-        end
+        -- Use a soft clamp to avoid discontinuities around the threshold
+        local m_min = 100
+        local m_sign = (m_k >= 0) and 1 or -1
+        m_k = m_sign * l_math.sqrt(m_k * m_k + m_min * m_min)
 
         -- H̄_k matrix per equation (43): [sin(β), -cos(β), 0, 0] / m_k
         -- In DCS coordinates (X=North, Z=East)

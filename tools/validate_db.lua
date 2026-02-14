@@ -56,7 +56,7 @@ end
 function TestHoundDB:TestDCSUnits()
     loadfile(HoundPath..'/src/101 - HoundDBs_UnitDcs.lua')()
     for type,unitData in pairs(HOUND.DB.Radars) do
-        lu.assertItemsEquals({'Name','Assigned','Role','Band','Primary'} ,getKeys(unitData),type)
+        lu.assertItemsEquals({'Name','Assigned','Role','Band','Primary','numDistinctFreqs'} ,getKeys(unitData),type)
         lu.assertItemsEquals({true,false},getKeys(unitData['Band']),type.."['Band']")
     end
 end
@@ -64,7 +64,7 @@ end
 function TestHoundDB:TestModUnits()
     loadfile(HoundPath..'/src/102 - HoundDBs_UnitMods.lua')()
     for type,unitData in pairs(HOUND.DB.Radars) do
-        lu.assertItemsEquals({'Name','Assigned','Role','Band','Primary'},getKeys(unitData),type)
+        lu.assertItemsEquals({'Name','Assigned','Role','Band','Primary','numDistinctFreqs'},getKeys(unitData),type)
         lu.assertItemsEquals({true,false},getKeys(unitData['Band']),type.."['Band']")
     end
 end
