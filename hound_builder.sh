@@ -115,8 +115,13 @@ function build_docs {
     $LDOC -c config_developer.ld -p "Hound<br> ELINT for DCS" -a -d docs/dev --merge --multimodule  --style !fixed src
 }
 
-function build_markdown_docs {
-    highlight "Building Markdown API Docs"
+# function build_markdown_docs {
+#     highlight "Building Markdown API Docs"
+#     python3 tools/generate_md_docs.py --src-dir ./src --public-output-dir ./docs --dev-output-dir ./docs/dev --skip-integration-guide -v
+# }
+
+function build_llm_docs {
+    highlight "Building Markdown API Docs + LLM Integration Guide"
     python3 tools/generate_md_docs.py --src-dir ./src --public-output-dir ./docs --dev-output-dir ./docs/dev -v
 }
 
@@ -300,14 +305,15 @@ if [ $COMPILE -eq 1 ]; then
     lint_compiled
 fi
 
-if [ $BUILD_DOCS -eq 1 ]; then
-    build_docs
-    build_markdown_docs
-    build_toc
-fi
 
 if [ $UPDATE_MISSIONS -eq 1 ]; then
     update_mission "demo_mission/Caucasus_demo" "HoundElint_demo"
     update_mission "demo_mission/Syria_HARM" "Hound_Demo_syria"
     update_mission "demo_mission/Syria_POC" "Hound_Demo_SyADFGCI"
+fi
+
+if [ $BUILD_DOCS -eq 1 ]; then
+    build_docs
+    build_llm_docs
+    build_toc
 fi
