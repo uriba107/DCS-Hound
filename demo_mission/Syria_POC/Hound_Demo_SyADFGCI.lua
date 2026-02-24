@@ -33,12 +33,12 @@ do
     Elint_blue:enableNotifier("default",{freq = "251.000,35.000", modulation = "AM,FM", speed=1})
     
     Elint_blue:enableController("Damascus",{freq="306.000", modulation = "AM"})
-    Elint_blue:enableAtis("Damascus",{freq="306.250", modulation = "AM"})
+    Elint_blue:enableAtis("Damascus",{freq="306.250", modulation = "AM", provider="piper", voice = "en_US-libritts-high", speaker=math.random(200),speed = 1.15})
     Elint_blue:setCallsign("Damascus","OPTIMUS")
     Elint_blue:setZone("Damascus","Damascus")
 
     Elint_blue:enableController("South Syria",{freq="306.500", modulation = "AM"})
-    Elint_blue:enableAtis("South Syria",{freq="306.750", modulation = "AM"})
+    Elint_blue:enableAtis("South Syria",{freq="306.750", modulation = "AM", provider="piper", voice = "en_US-libritts-high", speaker=math.random(200),speed = 1.15})
     Elint_blue:setCallsign("South Syria","JAZZ")
     Elint_blue:setZone("South Syria","South Syria")
 
@@ -47,7 +47,7 @@ do
     Elint_blue:setZone("Homs","Homs")
 
     Elint_blue:enableController("Latakya",{freq="307.500", modulation = "AM"})
-    Elint_blue:enableAtis("Latakya",{freq="307.750", modulation = "AM"})
+    Elint_blue:enableAtis("Latakya",{freq="307.750", modulation = "AM", provider="piper", voice = "en_US-libritts-high", speaker=math.random(200),speed = 1.15})
     Elint_blue:setCallsign("Latakya","WHEELJACK")
     Elint_blue:setZone("Latakya","Latakya")
 
@@ -64,7 +64,7 @@ do
     Elint_blue:setZone("Saykal","Saykal")
 
     Elint_blue:enableController("Haleb",{freq="309.500", modulation = "AM"})
-    Elint_blue:enableAtis("Haleb",{freq="309.750", modulation = "AM"})
+    Elint_blue:enableAtis("Haleb",{freq="309.750", modulation = "AM", provider="piper", voice = "en_US-libritts-high", speaker=math.random(200),speed = 1.15})
     Elint_blue:setCallsign("Haleb","SLAG")
     Elint_blue:setZone("Haleb","Haleb")
 
@@ -72,11 +72,11 @@ do
     Elint_blue:setCallsign("Tabqa","IRONHIDE")
     Elint_blue:setZone("Tabqa","Tabqa")
 
-    Elint_blue:enableAtis("Homs",{freq="307.250", modulation = "AM"})
-    Elint_blue:enableAtis("Lebanon",{freq="308.250", modulation = "AM"})
-    Elint_blue:enableAtis("Palmyra",{freq="308.750", modulation = "AM"})
-    Elint_blue:enableAtis("Saykal",{freq="309.250", modulation = "AM"})
-    Elint_blue:enableAtis("Tabqa",{freq="310.250", modulation = "AM"})
+    Elint_blue:enableAtis("Homs",{freq="307.250", modulation = "AM", provider="piper", voice = "en_US-libritts-high", speaker=math.random(200),speed = 1.15})
+    Elint_blue:enableAtis("Lebanon",{freq="308.250", modulation = "AM", provider="piper", voice = "en_US-libritts-high", speaker=math.random(200),speed = 1.15})
+    Elint_blue:enableAtis("Palmyra",{freq="308.750", modulation = "AM", provider="piper", voice = "en_US-libritts-high", speaker=math.random(200),speed = 1.15})
+    Elint_blue:enableAtis("Saykal",{freq="309.250", modulation = "AM", provider = "piper", voice = "en_US-libritts-high", speaker=math.random(200),speed = 1.15})
+    Elint_blue:enableAtis("Tabqa",{freq="310.250", modulation = "AM", provider = "piper", voice = "en_US-libritts-high", speaker=math.random(200),speed = 1.15})
     
     
     Elint_blue:enableText("all")
