@@ -41,7 +41,7 @@ do
     -- @field ENABLE_KALMAN If true, will use Kalman filter for contact scoring (currently not implemented, default is false)
     -- @field AUTO_ADD_PLATFORM_BY_PAYLOAD If true, will automatically add platforms that have ELINT payloads (currently, due to DCS limits, only works for units spawning with the required pods)
     HOUND = {
-        VERSION = "0.4.6-TRUNK",
+        VERSION = "0.5.0-TRUNK",
         DEBUG = true,
         ELLIPSE_PERCENTILE = 0.6,
         DATAPOINTS_NUM = 30,
@@ -57,7 +57,7 @@ do
         MARKER_MAX_ALPHA = 0.2,
         MARKER_LINE_OPACITY = 0.3,
         MARKER_TEXT_POINTER = "⇙ ", -- "¤ « "
-        TTS_ENGINE = {'STTS'},
+        TTS_ENGINE = {'HOUND','STTS'},
         MENU_PAGE_LENGTH = 9,
         REF_DIST = 75000, -- Do not change, used for datapoint weighting
         ENABLE_KALMAN = true,

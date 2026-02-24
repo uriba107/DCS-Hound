@@ -5,6 +5,8 @@ do
     local l_mist = HOUND.Mist
     local l_math = math
     local l_grpc = GRPC
+    local l_stts = HoundTTS or STTS
+    local l_houndTTS = HoundTTS
     local PI_2 = 2*l_math.pi
 
     HOUND.Utils.TTS = {}
@@ -15,8 +17,9 @@ do
     -- @return[type=Bool] True if TTS is available
     function HOUND.Utils.TTS.isAvailable()
         for _,engine in ipairs(HOUND.TTS_ENGINE) do
+            if engine == "HOUND" and l_houndTTS ~= nil then return true end
             if engine == "GRPC" and (l_grpc ~= nil and type(l_grpc.tts) == "function") then return true end
-            if engine == "STTS" and STTS ~= nil then return true end
+            if engine == "STTS" and l_stts ~= nil then return true end
         end
         return false
     end
@@ -62,24 +65,31 @@ do
         args.volume = args.volume or "1.0"
         args.name = args.name or "Hound"
         args.gender = args.gender or "female"
-        if type(args.engine) ~= "string" or not HOUND.setContainsValue(HOUND.TTS_ENGINE,args.engine) then
+        if type(args.tts_engine) ~= "string" or not HOUND.setContainsValue(HOUND.TTS_ENGINE,args.tts_engine) then
             for _,engine in ipairs(HOUND.TTS_ENGINE) do
-                if engine == "GRPC" and (l_grpc ~= nil and type(l_grpc.tts) == "function") then
-                    -- HOUND.Logger.debug("gRPC TTS message: "..msg)
-                    args.engine = engine
+                if engine == "HOUND" and (l_houndTTS ~= nil and type(l_houndTTS.Transmit) == "function") then
+                    args.tts_engine = engine
                     break
                 end
-                if engine == "STTS" and STTS ~= nil then
-                    args.engine = engine
+                if engine == "GRPC" and (l_grpc ~= nil and type(l_grpc.tts) == "function") then
+                    -- HOUND.Logger.debug("gRPC TTS message: "..msg)
+                    args.tts_engine = engine
+                    break
+                end
+                if engine == "STTS" and l_stts ~= nil then
+                    args.tts_engine = engine
                     break
                 end
             end
         end
-        if args.engine == "STTS" then
+        if args.tts_engine == "STTS" then
             return HOUND.Utils.TTS.TransmitSTTS(msg,coalitionID,args,transmitterPos)
         end
-        if args.engine == "GRPC" then
+        if args.tts_engine == "GRPC" then
             return HOUND.Utils.TTS.TransmitGRPC(msg,coalitionID,args,transmitterPos)
+        end
+        if args.tts_engine == "HOUND" then
+            return HOUND.Utils.TTS.TransmitHound(msg,coalitionID,args,transmitterPos)
         end
     end
 
@@ -93,7 +103,49 @@ do
     function HOUND.Utils.TTS.TransmitSTTS(msg,coalitionID,args,transmitterPos)
         args.modulation = args.modulation or HOUND.Utils.TTS.getdefaultModulation(args.freq)
         args.culture = args.culture or "en-US"
-        return STTS.TextToSpeech(msg,args.freq,args.modulation,args.volume,args.name,coalitionID,transmitterPos,args.speed,args.gender,args.culture,args.voice,args.googletts,args.azurecreds)
+        return l_stts.TextToSpeech(msg,args.freq,args.modulation,args.volume,args.name,coalitionID,transmitterPos,args.speed,args.gender,args.culture,args.voice,args.googletts,args.azurecreds)
+    end
+
+    --- Transmit message using HoundTTS
+    -- @local
+    function HOUND.Utils.TTS.TransmitHound(msg,coalitionID,args,transmitterPos)
+        local transmitter_params = {
+            name = args.name,
+            freq = args.freq,
+            modulation = args.modulation or HOUND.Utils.TTS.getdefaultModulation(args.freq),
+            point = transmitterPos,
+            coalition = coalitionID,
+            transmitter = args.transmitter or "srs"
+        }
+        local provider_params = {
+            provider = args.provider or "sapi",
+            culture = args.culture or "en-US",
+            gender = args.gender or "female",
+            voice = args.voice,
+            speed = args.speed,
+            volume = args.volume or "1.0"
+        }
+
+        if args.googletts then
+            provider_params.provider = "google"
+        end
+
+
+        if provider_params.provider == "piper" then
+            provider_params.voice = args.voice or "en_US-lessac-low"
+            provider_params.speaker = args.speaker
+        elseif provider_params.provider == "google" or provider_params.provider == "gcloud" then
+            provider_params.voice = args.voice or "google-auto"
+        elseif provider_params.provider == "aws" or provider_params.provider == "polly" then
+            provider_params.voice = args.voice or "Joanna"
+            provider_params.engine = provider_params.engine or "standard"
+        elseif provider_params.provider == "azure" then
+            provider_params.voice = args.voice
+        elseif provider_params.provider == "elevenlabs" then
+            provider_params.voice = args.voice or "pNInz6obpgDQGcFmaJgB" -- Default to "Adam"
+        end
+
+        return l_houndTTS.Transmit(msg,transmitter_params,provider_params)
     end
 
     --- Transmit message using gRPC.tts

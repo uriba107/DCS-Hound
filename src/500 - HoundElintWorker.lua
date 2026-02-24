@@ -75,6 +75,10 @@ do
                 })
                 return true
         end
+        if candidate ~= nil and HOUND.setContainsValue(self.platforms,candidate) then
+            HOUND.Logger.debug("[Hound] - "..platformName.." Already registered platform.")
+            return false
+        end
         HOUND.Logger.warn("[Hound] - Failed to add platform "..platformName..". Make sure you use unit name and that all requirments are met.")
         return false
     end

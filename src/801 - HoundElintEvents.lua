@@ -136,7 +136,7 @@ do
             local grp = DcsEvent.initiator:getGroup()
             if HoundUtils.Dcs.isGroup(grp) then
                 self.contacts:Sniff(grp:getName())
-                if DcsEvent.weapon:getDesc().category ~= Weapon.Category.Missile then return end
+                if DcsEvent.weapon:getDesc().category ~= Weapon.Category.MISSILE then return end
                 local tgtPos = nil
                 local wpnTgt = DcsEvent.weapon:getTarget()
                 if HoundUtils.Dcs.isUnit(wpnTgt) then
@@ -145,7 +145,7 @@ do
                 if HoundUtils.Dcs.isPoint(tgtPos) then
                     HoundUtils.Geo.setPointHeight(tgtPos)
                 end
-                self.contacts:ensureSitePrimaryHasPos(grp:getName(),tgtPos)
+                self.contacts:ensureSitePrimaryHasPos(grp:getName(),tgtPos) -- pass target position, if no position available, it will alert on target position
                 self:AlertOnLaunch(grp)
             end
         end
@@ -156,14 +156,8 @@ do
             and DcsEvent.initiator:getCoalition() == self.settings:getCoalition()
         then
             local unit = DcsEvent.initiator
-            local type = unit:getTypeName()
-            HOUND.Logger.debug("S_EVENT_WEAPON_ADD for " .. unit:getName() .. " (" .. type .. ") with weapon " .. DcsEvent.weapon_name )
-
             if not HOUND.DB.isValidPlatform(unit,DcsEvent.weapon_name) then return end
-            HOUND.Logger.debug(self:countPlatforms())
-            HOUND.Logger.debug("S_EVENT_WEAPON_ADD for " .. unit:getName() .. " (" .. type .. ") with weapon " .. DcsEvent.weapon_name .. " add platform")
             self:addPlatform(unit:getName())
-            HOUND.Logger.debug(self:countPlatforms())
         end
     end
 

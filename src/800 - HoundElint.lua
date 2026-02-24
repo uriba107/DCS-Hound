@@ -231,9 +231,8 @@ do
     --- Issue a Launch Alert
     -- @param[type=string|tab] fireUnit DCS Unit, DCS Group or Unit/Group name currently Launching
     function HoundElint:AlertOnLaunch(fireUnit)
-        HOUND.Logger.trace("AlertOnLaunch: ".. tostring(self:getAlertOnLaunch()).. " | " .. tostring(HoundUtils.Dcs.isGroup(fireUnit)) .. "|" .. tostring(HoundUtils.Dcs.isUnit(fireUnit)))
         if not self:getAlertOnLaunch() or (not HoundUtils.Dcs.isGroup(fireUnit) and not HoundUtils.Dcs.isUnit(fireUnit)) then return end
-        HOUND.Logger.trace("Launch Alert called for " .. fireUnit:getName())
+        HOUND.Logger.debug("Launch Alert called for " .. fireUnit:getName())
 
         self.contacts:AlertOnLaunch(fireUnit)
     end
