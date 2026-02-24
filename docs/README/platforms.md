@@ -51,6 +51,7 @@ Complete list of units capable of ELINT operations in Hound.
 | Platform    | C Band / H Band Accuracy | Min. Band | Notes                                 |
 | ----------- | ------------------------ | --------- | ------------------------------------- |
 | **C-130**   | 0.65° / 0.07°            | A         | Excellent all-around, common          |
+| **C-130J**  | 0.65° / 0.07°            | A         | DCS:C-130                             |
 | **C-17**    | 0.57° / 0.06°            | A         | Best large aircraft (RC-135 stand-in) |
 | **IL-76MD** | 0.60° / 0.06°            | A         | Russian equivalent to C-130           |
 | **Tu-95**   | 0.46° / 0.05°            | A         | Excellent accuracy, large size        |
@@ -85,6 +86,8 @@ Complete list of units capable of ELINT operations in Hound.
 | **Su-25TM**        | 6.54° / 0.70°            | C         | Fantasmagoria pod         |
 | **Su-24M**         | 6.54° / 0.70°            | C         | Fantasmagoria             |
 | **Su-24MR**        | 5.09° / 0.55°            | C         | Tangazh system            |
+| **A-6E** (PlaceHolder for EA-6B) | 2.54° / 0.27°            | B         |  ALQ-167 ECM (ALQ-99 placeholder)           |
+
 
 **Note:** Tactical aircraft have smaller antennas = lower accuracy. Best used as gap-fillers or when precision platforms unavailable.
 
@@ -187,6 +190,8 @@ Supported third-party aircraft:
 | **EF-18G** (CJS)        | 1.64° / 0.18°            | A         | Growler equivalent, excellent  |
 | **EA-6B Prowler** (VSN) | 2.54° / 0.27°            | B         | Electronic warfare             |
 | **UH-60L**              | 2.86° / 0.31°            | B         | Modernized Blackhawk           |
+| **Su-22M4**             | 6.54° / 0.70°            | C         | Wyuga pod                      |
+
 
 **Note:** Requires respective mods installed. Hound will work without mods but won't detect these units.
 
@@ -228,8 +233,7 @@ Supported third-party aircraft:
 - C-130 "ELINT North" - Racetrack north at 28,000 ft
 - C-130 "ELINT South" - Racetrack south at 28,000 ft
 - C-17 "ELINT East" - Racetrack east at 32,000 ft
-- TV Tower "ELINT Hermon" - Mt. Hermon (high terrain)
-- Comms Tower "ELINT Meron" - Mt. Meron (high terrain)
+- TV Tower/Cooms Tower - On high terrain
 ```
 
 ### Small Theater (Persian Gulf):
