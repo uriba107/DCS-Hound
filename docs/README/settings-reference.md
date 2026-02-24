@@ -6,21 +6,21 @@ Complete reference for all Hound configuration options.
 
 ## Quick Reference
 
-| Setting            | Scope    | Default    | Reference                                            |
-| ------------------ | -------- | ---------- | ---------------------------------------------------- |
-| Marker Type        | Instance | CIRCLE     | [Markers](#markers)                                  |
-| Timer Intervals    | Instance | Various    | [Timers](#timer-intervals)                           |
-| BDA                | Instance | Enabled    | [Alerts](#alerts)                                    |
-| Launch Alerts      | Instance | Disabled   | [Alerts](#alerts)                                    |
-| Platform Errors    | Instance | Disabled   | [Platforms](#platforms)                              |
-| MGRS Precision     | Global   | 5          | [Global](#global-settings)                           |
-| TTS Engine         | Global   | STTS, GRPC | [TTS](#text-to-speech)                               |
-| Extended Info      | Global   | Enabled    | [Global](#global-settings)                           |
-| Auto Add Platforms | Global   | Enabled    | [Automatic Detection](#automatic-platform-detection) |
-| Antenna Factor     | Global   | 1.0        | [Antenna Factor](#antenna-factor)                    |
-| Menu Pagination    | Global   | 9          | [Menu Pagination](#menu-pagination)                  |
-| Contact Tracking   | Global   | Various    | [Tracking Parameters](#contact-tracking-parameters)  |
-| Marker Appearance  | Global   | Various    | [Marker Appearance](#marker-appearance)              |
+| Setting            | Scope    | Default        | Reference                                            |
+| ------------------ | -------- | -------------- | ---------------------------------------------------- |
+| Marker Type        | Instance | CIRCLE         | [Markers](#markers)                                  |
+| Timer Intervals    | Instance | Various        | [Timers](#timer-intervals)                           |
+| BDA                | Instance | Enabled        | [Alerts](#alerts)                                    |
+| Launch Alerts      | Instance | Disabled       | [Alerts](#alerts)                                    |
+| Platform Errors    | Instance | Disabled       | [Platforms](#platforms)                              |
+| MGRS Precision     | Global   | 5              | [Global](#global-settings)                           |
+| TTS Engine         | Global   | HoundTTS, STTS | [TTS](#tts-configuration)                            |
+| Extended Info      | Global   | Enabled        | [Global](#global-settings)                           |
+| Auto Add Platforms | Global   | Enabled        | [Automatic Detection](#automatic-platform-detection) |
+| Antenna Factor     | Global   | 1.0            | [Antenna Factor](#antenna-factor)                    |
+| Menu Pagination    | Global   | 9              | [Menu Pagination](#menu-pagination)                  |
+| Contact Tracking   | Global   | Various        | [Tracking Parameters](#contact-tracking-parameters)  |
+| Marker Appearance  | Global   | Various        | [Marker Appearance](#marker-appearance)              |
 
 ---
 
@@ -300,20 +300,37 @@ HoundInstance:setAtisUpdateInterval(300)  -- Seconds
 
 ## TTS Configuration
 
-### TTS Settings (STTS)
+### TTS Settings (HoundTTS) ⭐ Default
 
 ```lua
 local config = {
     freq = "251.000",              -- String or number
     modulation = "AM",              -- "AM" or "FM"
+    volume = "1.0",                 -- "0.0" to "1.0"
+    speed = 1.0,                    -- 0.5 (slow) to 2.0 (fast), 1.0 = normal
+    provider = "sapi",              -- "piper", "sapi"/"win", "google"/"gcloud", "aws"/"polly", "azure", "elevenlabs"
+    gender = "female",              -- "male" or "female" (SAPI, Google)
+    culture = "en-US",              -- Voice culture
+    voice = "David",                -- Specific voice (optional, provider-dependent)
+}
+```
+
+### TTS Settings (STTS) — Legacy
+
+```lua
+local config = {
+    freq = "251.000",
+    modulation = "AM",
     volume = "1.0",                 -- "0.0" to "1.0" (string)
     speed = 0,                      -- -10 to +10
-    gender = "male",                -- "male" or "female"
-    culture = "en-US",              -- Voice culture
+    gender = "male",
+    culture = "en-US",
     voice = "David",                -- Specific voice (optional)
     googleTTS = false               -- Use Google TTS
 }
 ```
+
+> **Note:** If HoundTTS is installed, it transparently takes over from STTS. Existing STTS settings (including `googleTTS` and Azure credentials) are automatically mapped to HoundTTS providers.
 
 ### TTS Settings (gRPC)
 
@@ -362,10 +379,10 @@ Affects controller report verbosity.
 ### TTS Engine Priority
 
 ```lua
-HOUND.TTS_ENGINE = {'STTS', 'GRPC'}  -- Default
-HOUND.TTS_ENGINE = {'GRPC', 'STTS'}  -- Prefer gRPC
-HOUND.TTS_ENGINE = {'STTS'}          -- STTS only
-HOUND.TTS_ENGINE = {}                 -- Disable TTS
+HOUND.TTS_ENGINE = {'HoundTTS', 'STTS'}  -- Default
+HOUND.TTS_ENGINE = {'STTS'}               -- STTS only (legacy)
+HOUND.TTS_ENGINE = {'GRPC'}               -- gRPC only (not recommended)
+HOUND.TTS_ENGINE = {}                      -- Disable TTS
 ```
 
 **Set before creating Hound instances.**

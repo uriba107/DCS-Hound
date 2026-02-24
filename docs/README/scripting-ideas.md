@@ -179,7 +179,7 @@ Use **DCS Draw Tool** to create zones around waypoints:
 ### Requirements
 
 - Players must **spawn with ELINT pods loaded** (F-16 HTS, Su-25T Fantasmagoria, etc.)
-- STTS for voice (optional)
+- HoundTTS or STTS for voice (optional)
 
 ### Example Alert
 
@@ -192,4 +192,4 @@ SA-6 Straight Flush is now active in Waypoint 3."
 
 - **Players not added?** Must spawn with pods loaded (DCS limitation - can't add after spawn)
 - **No sector names?** Check Draw tool polygon names match `WAYPOINT_ZONES` table
-- **No voice?** Enable STTS
+- **No voice?** Install HoundTTS or enable STTS

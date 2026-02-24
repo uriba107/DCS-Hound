@@ -146,7 +146,7 @@
 	<td class="summary">return rounted number nearest a set interval</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.getNormalAngularError">HOUND.Utils.getNormalAngularError (variance)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.getNormalAngularError">HOUND.Utils.getNormalAngularError (maxError)</a></td>
 	<td class="summary">get normal distribution angular error.</td>
 	</tr>
 	<tr>
@@ -384,7 +384,7 @@
 <h2><a href="#Elint_functions">Elint functions </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.Elint.generateAngularError">HOUND.Utils.Elint.generateAngularError (variance)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Elint.generateAngularError">HOUND.Utils.Elint.generateAngularError (maxError)</a></td>
 	<td class="summary">Elint Function - Generate angular error</td>
 	</tr>
 	<tr>
@@ -415,13 +415,13 @@
 	<td class="summary">get UnitVector</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.Vector.getRandomVec2">HOUND.Utils.Vector.getRandomVec2 (variance)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Vector.getRandomVec2">HOUND.Utils.Vector.getRandomVec2 (maxError)</a></td>
 	<td class="summary">Get random 2D vector
  use Box–Muller transform to randomize errors on 2D vector
  https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform}</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.Vector.getRandomVec3">HOUND.Utils.Vector.getRandomVec3 (variance)</a></td>
+	<td class="name" nowrap><a href="#HOUND.Utils.Vector.getRandomVec3">HOUND.Utils.Vector.getRandomVec3 (maxError)</a></td>
 	<td class="summary">Get random 3d vector
  use Box–Muller transform to randomize errors on 3D vector
  https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform}</td>
@@ -500,6 +500,10 @@
 	<td class="summary">Transmit message using STTS</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.TTS.TransmitHound">HOUND.Utils.TTS.TransmitHound (msg, coalitionID, args, transmitterPos)</a></td>
+	<td class="summary">Transmit message using HoundTTS</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#HOUND.Utils.TTS.TransmitGRPC">HOUND.Utils.TTS.TransmitGRPC (msg, coalitionID, args[, transmitterPos])</a></td>
 	<td class="summary">Transmit message using gRPC.tts</td>
 	</tr>
@@ -542,34 +546,6 @@
 	<td class="summary">Check if polygon is under threat of SAM</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.Polygon.filterPointsByPolygon">HOUND.Utils.Polygon.filterPointsByPolygon (points, polygon)</a></td>
-	<td class="summary">Filter out points not in polygon</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.Polygon.clipPolygons">HOUND.Utils.Polygon.clipPolygons (subjectPolygon, clipPolygon)</a></td>
-	<td class="summary">calculate cliping of polygons
- <a href="https://rosettacode.org/wiki/Sutherland-Hodgman_polygon_clipping#Lua">Sutherland-Hodgman polygon clipping</a></td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.Polygon.giftWrap">HOUND.Utils.Polygon.giftWrap (points)</a></td>
-	<td class="summary">Gift wrapping algorithem
- Returns the convex hull (using <a href="http://en.wikipedia.org/wiki/Gift_wrapping_algorithm">Jarvis' Gift wrapping algorithm</a>).</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.Polygon.circumcirclePoints">HOUND.Utils.Polygon.circumcirclePoints (points)</a></td>
-	<td class="summary">calculate Smallest circle around point cloud
- Welzel algorithm for <a href="https://en.wikipedia.org/wiki/Smallest-circle_problem">Smallest-circle problem</a>
- Implementation taken from <a href="https://github.com/rowanwins/smallest-enclosing-circle/blob/master/src/main.js">github/rowins</a></td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.Polygon.getArea">HOUND.Utils.Polygon.getArea (polygon)</a></td>
-	<td class="summary">return the area of a convex polygon</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.Polygon.clipOrHull">HOUND.Utils.Polygon.clipOrHull (polyA, polyB)</a></td>
-	<td class="summary">clip or hull two polygons</td>
-	</tr>
-	<tr>
 	<td class="name" nowrap><a href="#HOUND.Utils.Polygon.azMinMax">HOUND.Utils.Polygon.azMinMax (poly, refPos)</a></td>
 	<td class="summary">find min/max azimuth</td>
 	</tr>
@@ -581,25 +557,12 @@
 	<td class="summary">Get gaussian weight</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.Cluster.stdDev">HOUND.Utils.Cluster.stdDev ()</a></td>
-	<td class="summary">Calculate running std dev</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.Cluster.weightedMean">HOUND.Utils.Cluster.weightedMean (origPoints[, initPos[, threashold[, maxIttr]]])</a></td>
-	<td class="summary">find the weighted mean of a points cluster (meanShift)</td>
-	</tr>
-	<tr>
 	<td class="name" nowrap><a href="#HOUND.Utils.Cluster.getDeltaSubsetPercent">HOUND.Utils.Cluster.getDeltaSubsetPercent (Table, referencePos, NthPercentile, returnRelative)</a></td>
 	<td class="summary">Get a list of Nth elements centerd around a position from table of positions.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Utils.Cluster.WeightedCentroid">HOUND.Utils.Cluster.WeightedCentroid (PosList)</a></td>
 	<td class="summary">Calculate weighted least squares estimate from a list of positions with scores</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Utils.Cluster.WLS_GDOP">HOUND.Utils.Cluster.WLS_GDOP (measurements, initial_guess[, max_iter=10[, tol=0.001]])</a></td>
-	<td class="summary">Weighted Least Squares with GDOP-based uncertainty ellipse
- Calculates position estimate using weighted least squares with geometric dilution of precision</td>
 	</tr>
 </table>
 
@@ -978,17 +941,17 @@
 </dd>
     <dt>
     <a name = "HOUND.Utils.getNormalAngularError"></a>
-    <strong>HOUND.Utils.getNormalAngularError (variance)</strong>
+    <strong>HOUND.Utils.getNormalAngularError (maxError)</strong>
     </dt>
     <dd>
     get normal distribution angular error.
- will generate gaussian magnitude based on variance and random angle
+ will generate gaussian magnitude based on maxError and random angle
 
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">variance</span>
-         error margin requester (in radians)
+        <li><span class="parameter">maxError</span>
+         maximum expected error (~2σ bound) in radians
         </li>
     </ul>
 
@@ -2418,7 +2381,7 @@
     <dl class="function">
     <dt>
     <a name = "HOUND.Utils.Elint.generateAngularError"></a>
-    <strong>HOUND.Utils.Elint.generateAngularError (variance)</strong>
+    <strong>HOUND.Utils.Elint.generateAngularError (maxError)</strong>
     </dt>
     <dd>
     Elint Function - Generate angular error
@@ -2426,8 +2389,8 @@
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">variance</span>
-         amount of variance in gausian random function
+        <li><span class="parameter">maxError</span>
+         maximum expected error (~2σ bound) in radians
         </li>
     </ul>
 
@@ -2621,7 +2584,7 @@
 </dd>
     <dt>
     <a name = "HOUND.Utils.Vector.getRandomVec2"></a>
-    <strong>HOUND.Utils.Vector.getRandomVec2 (variance)</strong>
+    <strong>HOUND.Utils.Vector.getRandomVec2 (maxError)</strong>
     </dt>
     <dd>
     Get random 2D vector
@@ -2631,8 +2594,8 @@
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">variance</span>
-         amount of variance in gausian random function
+        <li><span class="parameter">maxError</span>
+         maximum expected error (~2σ bound)
         </li>
     </ul>
 
@@ -2648,7 +2611,7 @@
 </dd>
     <dt>
     <a name = "HOUND.Utils.Vector.getRandomVec3"></a>
-    <strong>HOUND.Utils.Vector.getRandomVec3 (variance)</strong>
+    <strong>HOUND.Utils.Vector.getRandomVec3 (maxError)</strong>
     </dt>
     <dd>
     Get random 3d vector
@@ -2658,8 +2621,8 @@
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">variance</span>
-         amount of variance in gausian random function
+        <li><span class="parameter">maxError</span>
+         maximum expected error (~2σ bound)
         </li>
     </ul>
 
@@ -3116,6 +3079,35 @@
 
 </dd>
     <dt>
+    <a name = "HOUND.Utils.TTS.TransmitHound"></a>
+    <strong>HOUND.Utils.TTS.TransmitHound (msg, coalitionID, args, transmitterPos)</strong>
+    </dt>
+    <dd>
+    Transmit message using HoundTTS
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">msg</span>
+
+        </li>
+        <li><span class="parameter">coalitionID</span>
+
+        </li>
+        <li><span class="parameter">args</span>
+
+        </li>
+        <li><span class="parameter">transmitterPos</span>
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
     <a name = "HOUND.Utils.TTS.TransmitGRPC"></a>
     <strong>HOUND.Utils.TTS.TransmitGRPC (msg, coalitionID, args[, transmitterPos])</strong>
     </dt>
@@ -3399,169 +3391,6 @@
 
 </dd>
     <dt>
-    <a name = "HOUND.Utils.Polygon.filterPointsByPolygon"></a>
-    <strong>HOUND.Utils.Polygon.filterPointsByPolygon (points, polygon)</strong>
-    </dt>
-    <dd>
-    Filter out points not in polygon
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">points</span>
-         Points to filter
-        </li>
-        <li><span class="parameter">polygon</span>
-         - enclosing polygon to filter by
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        points from original set which are inside polygon.
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Utils.Polygon.clipPolygons"></a>
-    <strong>HOUND.Utils.Polygon.clipPolygons (subjectPolygon, clipPolygon)</strong>
-    </dt>
-    <dd>
-    calculate cliping of polygons
- <a href="https://rosettacode.org/wiki/Sutherland-Hodgman_polygon_clipping#Lua">Sutherland-Hodgman polygon clipping</a>
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">subjectPolygon</span>
-         List of points of first polygon
-        </li>
-        <li><span class="parameter">clipPolygon</span>
-         list of points of second polygon
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        List of points of the clipped polygon or nil if not clipping found
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Utils.Polygon.giftWrap"></a>
-    <strong>HOUND.Utils.Polygon.giftWrap (points)</strong>
-    </dt>
-    <dd>
-    Gift wrapping algorithem
- Returns the convex hull (using <a href="http://en.wikipedia.org/wiki/Gift_wrapping_algorithm">Jarvis' Gift wrapping algorithm</a>).
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">points</span>
-         array of DCS points ({x=&ltvalue&gt,z=&ltvalue&gt})
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        the convex hull as an array of points
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Utils.Polygon.circumcirclePoints"></a>
-    <strong>HOUND.Utils.Polygon.circumcirclePoints (points)</strong>
-    </dt>
-    <dd>
-    calculate Smallest circle around point cloud
- Welzel algorithm for <a href="https://en.wikipedia.org/wiki/Smallest-circle_problem">Smallest-circle problem</a>
- Implementation taken from <a href="https://github.com/rowanwins/smallest-enclosing-circle/blob/master/src/main.js">github/rowins</a>
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">points</span>
-         Table containing cloud points
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        Circle {x=&ltCenter X&gt,z=&ltCenter Z&gt, y=&ltLand height at XZ&gt,r=&ltradius in meters&gt}
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Utils.Polygon.getArea"></a>
-    <strong>HOUND.Utils.Polygon.getArea (polygon)</strong>
-    </dt>
-    <dd>
-    return the area of a convex polygon
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">polygon</span>
-         list of DCS points
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        area of polygon
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Utils.Polygon.clipOrHull"></a>
-    <strong>HOUND.Utils.Polygon.clipOrHull (polyA, polyB)</strong>
-    </dt>
-    <dd>
-    clip or hull two polygons
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">polyA</span>
-         polygon
-        </li>
-        <li><span class="parameter">polyB</span>
-         polygon
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        Polygon which is clip or convexHull of the two input polygons
-    </ol>
-
-
-
-
-</dd>
-    <dt>
     <a name = "HOUND.Utils.Polygon.azMinMax"></a>
     <strong>HOUND.Utils.Polygon.azMinMax (poly, refPos)</strong>
     </dt>
@@ -3615,63 +3444,6 @@
         </li>
     </ul>
 
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Utils.Cluster.stdDev"></a>
-    <strong>HOUND.Utils.Cluster.stdDev ()</strong>
-    </dt>
-    <dd>
-    Calculate running std dev
-
-
-
-    <h3>Returns:</h3>
-    <ol>
-
-        std calc instance
- https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford's_online_algorithm
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Utils.Cluster.weightedMean"></a>
-    <strong>HOUND.Utils.Cluster.weightedMean (origPoints[, initPos[, threashold[, maxIttr]]])</strong>
-    </dt>
-    <dd>
-    find the weighted mean of a points cluster (meanShift)
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">origPoints</span>
-         DCS points cluster
-        </li>
-        <li><span class="parameter">initPos</span>
-         externally provided initial mean (DCS Point)
-         (<em>optional</em>)
-        </li>
-        <li><span class="parameter">threashold</span>
-         distance in meters below with solution is considered converged (default 1m)
-         (<em>optional</em>)
-        </li>
-        <li><span class="parameter">maxIttr</span>
-         Max itterations from converging solution (default 100)
-         (<em>optional</em>)
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        DCS point of the cluster weighted mean
-    </ol>
 
 
 
@@ -3736,43 +3508,6 @@
 
 
 </dd>
-    <dt>
-    <a name = "HOUND.Utils.Cluster.WLS_GDOP"></a>
-    <strong>HOUND.Utils.Cluster.WLS_GDOP (measurements, initial_guess[, max_iter=10[, tol=0.001]])</strong>
-    </dt>
-    <dd>
-    Weighted Least Squares with GDOP-based uncertainty ellipse
- Calculates position estimate using weighted least squares with geometric dilution of precision
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">measurements</span>
-         Table of measurements containing azimuth angles and platform positions
-        </li>
-        <li><span class="parameter">initial_guess</span>
-         Initial position estimate {x,z}
-        </li>
-        <li><span class="parameter">max_iter</span>
-         Maximum number of iterations for convergence
-         (<em>default</em> 10)
-        </li>
-        <li><span class="parameter">tol</span>
-         Convergence tolerance in meters
-         (<em>default</em> 0.001)
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        solution Position estimate {x,y,z}, uncertenty_data Uncertainty ellipse parameters
-    </ol>
-
-
-
-
-</dd>
 </dl>
 
 
@@ -3780,7 +3515,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/lunarmodules/LDoc">LDoc 1.5.0</a></i>
-<i style="float:right;">Last updated 2025-10-11 20:05:16 </i>
+<i style="float:right;">Last updated 2026-02-25 00:19:36 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

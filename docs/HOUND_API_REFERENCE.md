@@ -2,7 +2,7 @@
 
 This document provides public API documentation for the HOUND ELINT system, focusing on functions and classes intended for external use.
 
-*Generated on: 2025-10-11 20:05:16*
+*Generated on: 2026-02-25 00:19:36*
 
 ## Overview
 
@@ -818,9 +818,7 @@ Global settings and paramters
 - `MARKER_TEXT_POINTER`: Char/string used as pointer on text markers
 - `TTS_ENGINE`: Hound will use the table to determin TTS engine priority
 - `MENU_PAGE_LENGTH`: Number of Items Hound will put in a menu before starting a new menu page
-- `ENABLE_BETTER_SCORE`: If true, will use better scoring algorithm for contacts (default is true)
 - `REF_DIST`: Reference distance for contact scoring. Used to calculate the weight of datap
-- `ENABLE_WLS`: If true, will use WLS algorithm for contact scoring (currently not implemented, default is false)
 - `ENABLE_KALMAN`: If true, will use Kalman filter for contact scoring (currently not implemented, default is false)
 - `AUTO_ADD_PLATFORM_BY_PAYLOAD`: If true, will automatically add platforms that have ELINT payloads (currently, due to DCS limits, only works for units spawning with the required pods)
 

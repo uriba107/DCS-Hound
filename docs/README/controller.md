@@ -32,7 +32,7 @@ local controller_config = {
     -- TTS options (see tts-configuration.md for details)
     gender = "male",
     culture = "en-US",
-    speed = 0,                   -- -10 to +10 (STTS) or 50-250 (gRPC)
+    speed = 1.0,                 -- 0.5-2.0 (HoundTTS) or -10 to +10 (STTS) or 50-250 (gRPC)
     volume = "1.0"
 }
 

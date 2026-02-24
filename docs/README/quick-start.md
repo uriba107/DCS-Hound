@@ -40,7 +40,7 @@ Hound includes ready-to-fly demo missions with everything configured:
 
 - DCS World Mission Editor
 - `HoundElint.lua` file
-- Optional: STTS or gRPC for voice communications
+- Optional: HoundTTS (recommended), STTS, or gRPC for voice communications
 
 ---
 
@@ -58,12 +58,14 @@ Hound includes ready-to-fly demo missions with everything configured:
 
 ### If Using Text-To-Speech (Optional):
 
-If you want voice communications, add STTS **before** HoundElint:
+If you want voice communications:
 
-1. First action: **DO SCRIPT FILE** → `DCS-SimpleTextToSpeech.lua`
-2. Second action: **DO SCRIPT FILE** → `HoundElint.lua`
+- **HoundTTS (recommended):** Install the DLL once — no mission trigger needed, it loads automatically via `MissionScripting.lua`. Just add `HoundElint.lua` as usual.
+- **STTS (legacy):** Add STTS **before** HoundElint in triggers:
+  1. First action: **DO SCRIPT FILE** → `DCS-SimpleTextToSpeech.lua`
+  2. Second action: **DO SCRIPT FILE** → `HoundElint.lua`
 
-![Script Load Order](/images/hound_setup.jpg)
+![Script Load Order](../../images/hound_setup.jpg)
 
 📖 **More details:** [Installation Guide](installation.md)
 
@@ -143,7 +145,7 @@ With this minimal setup, Hound will:
 
 ## Adding Voice Communications (Optional)
 
-If you installed STTS and desanitized the scripting engine, add voice:
+If you installed HoundTTS or STTS, add voice:
 
 ```lua
 do
@@ -210,8 +212,8 @@ end
 
 ### Voice Not Working?
 
-- STTS installed and loaded before HoundElint?
-- DCS scripting engine desanitized? See [Installation](installation.md#desanitizing-scripting-engine)
+- **HoundTTS:** DLL installed and `MissionScripting.lua` line added?
+- **STTS:** Loaded before HoundElint? Scripting engine desanitized?
 - SRS running and connected?
 - Correct frequency tuned?
 

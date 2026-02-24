@@ -377,7 +377,7 @@ Configure via `setTimerInterval("scan", 10)` etc.
 - **Radar count is primary performance factor**, not platform count
 - Hound core processing: ~2ms per position update cycle (even with ~900 radars)
 - **MP performance bottlenecks:**
-  - STTS transmission handling
+  - TTS transmission handling (HoundTTS/STTS)
   - DCS script execution
   - Map marker updates (DCS limitation)
   - May cause lags in some scenarios
@@ -393,6 +393,6 @@ Configure via `setTimerInterval("scan", 10)` etc.
 
 ## See Also
 
-- [API Index](api-index.md) - All methods and parameters
+- [LLM Integration Guide](llm-integration-guide.md) - API reference and integration examples
 - [How It Works](how-it-works.md) - Triangulation deep dive
 - [Event Handlers](event-handlers.md) - Custom scripting

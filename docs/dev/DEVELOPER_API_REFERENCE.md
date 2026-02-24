@@ -2,7 +2,7 @@
 
 This document provides comprehensive API documentation for the HOUND ELINT system, automatically generated from LDOC comments in the source code.
 
-*Generated on: 2025-10-11 20:05:16*
+*Generated on: 2026-02-25 00:19:36*
 
 ## Overview
 
@@ -95,9 +95,7 @@ Global settings and paramters
 - `MARKER_TEXT_POINTER`: Char/string used as pointer on text markers
 - `TTS_ENGINE`: Hound will use the table to determin TTS engine priority
 - `MENU_PAGE_LENGTH`: Number of Items Hound will put in a menu before starting a new menu page
-- `ENABLE_BETTER_SCORE`: If true, will use better scoring algorithm for contacts (default is true)
 - `REF_DIST`: Reference distance for contact scoring. Used to calculate the weight of datap
-- `ENABLE_WLS`: If true, will use WLS algorithm for contact scoring (currently not implemented, default is false)
 - `ENABLE_KALMAN`: If true, will use Kalman filter for contact scoring (currently not implemented, default is false)
 - `AUTO_ADD_PLATFORM_BY_PAYLOAD`: If true, will automatically add platforms that have ELINT payloads (currently, due to DCS limits, only works for units spawning with the required pods)
 
@@ -281,10 +279,38 @@ return Gaussian random number
 
 **Parameters:**
 - `Mean` (mean): value (i.e center of the gausssian curve)
-- `amount` (sigma): of variance in the random value
+- `standard` (sigma): deviation (σ) of the distribution
 
 **Returns:**
 - (random): number in gaussian space
+
+*Note: This is a local function*
+
+### `HOUND.Clamp(value, min, max)`
+
+return clamped value
+
+**Parameters:**
+- `Value` (value): to clamp
+- `Minimum` (min): value
+- `Maximum` (max): value
+
+**Returns:**
+- (clamped): value
+
+*Note: This is a local function*
+
+### `HOUND.MixedGaussian(mean, sigma, uniform)`
+
+return mixed of gaussian and uniform distribution
+
+**Parameters:**
+- `Mean` (mean): value
+- `Standard` (sigma): deviation
+- `Uniform` (uniform): distribution factor (0-1)
+
+**Returns:**
+- (mixed): value
 
 *Note: This is a local function*
 
@@ -837,7 +863,7 @@ Hound databases (Units DCS)
 
 ### `HOUND.DB.Radars`
 
-Radar database ['p-19 s-125 sr'] = { ['Name'] = "Flat Face", ['Assigned'] = {"SA-2","SA-3"}, ['Role'] = {HOUND.DB.RadarType.SEARCH}, ['Band'] = { [true] = HOUND.DB.Bands.C, [false] = HOUND.DB.Bands.C }, ['Primary'] = false }
+Radar database ['p-19 s-125 sr'] = { ['Name'] = "Flat Face", ['Assigned'] = {"SA-2","SA-3"}, ['Role'] = {HOUND.DB.RadarType.SEARCH}, ['Band'] = { [true] = HOUND.DB.Bands.C, [false] = HOUND.DB.Bands.C }, ['Primary'] = false ['numDistinctFreqs'] = 4 }
 
 **Fields:**
 - `@string`: Name NATO Name
@@ -845,6 +871,7 @@ Radar database ['p-19 s-125 sr'] = { ['Name'] = "Flat Face", ['Assigned'] = {"SA
 - `#table`: Role Role of radar in battery
 - `#table`: Band Radio Band the radar operates in true is when tracking target
 - `#bool`: Primary set to True if this is a primary radar for site (usually FCR)
+- `#number`: numDistinctFreqs (Optional) Number of distinct frequencies the radar can tune to
 
 ### `HOUND.DB.Platform`
 
@@ -1135,6 +1162,12 @@ Transmit message using STTS
 
 *Note: This is a local function*
 
+### `HOUND.Utils.TTS.TransmitHound(msg, coalitionID, args, transmitterPos)`
+
+Transmit message using HoundTTS
+
+*Note: This is a local function*
+
 ### `HOUND.Utils.TTS.TransmitGRPC(msg, coalitionID, args, transmitterPos)`
 
 Transmit message using gRPC.tts
@@ -1274,77 +1307,6 @@ Check if polygon is under threat of SAM
 - (type=Bool): True if point is in polygon
 - (type=Bool): True if radius around point intersects polygon
 
-### `HOUND.Utils.Polygon.filterPointsByPolygon(points, polygon)`
-
-Filter out points not in polygon
-
-**Parameters:**
-- `Points` (points): to filter
-- `-` (polygon): enclosing polygon to filter by
-
-**Returns:**
-- (points): from original set which are inside polygon.
-
-### `HOUND.Utils.Polygon.clipPolygons(subjectPolygon, clipPolygon)`
-
-calculate cliping of polygons <a href="https://rosettacode.org/wiki/Sutherland-Hodgman_polygon_clipping#Lua">Sutherland-Hodgman polygon clipping</a>
-
-**Parameters:**
-- `List` (subjectPolygon): of points of first polygon
-- `list` (clipPolygon): of points of second polygon
-
-**Returns:**
-- (List): of points of the clipped polygon or nil if not clipping found
-
-### `HOUND.Utils.Polygon.giftWrap(points)`
-
-Gift wrapping algorithem Returns the convex hull (using <a href="http://en.wikipedia.org/wiki/Gift_wrapping_algorithm">Jarvis' Gift wrapping algorithm</a>).
-
-**Parameters:**
-- `array` (points): of DCS points ({x=&ltvalue&gt,z=&ltvalue&gt})
-
-**Returns:**
-- (the): convex hull as an array of points
-
-### `signedArea(p, q, r)`
-
-Calculates the signed area
-
-### `isCCW(p, q, r)`
-
-Checks if points p, q, r are oriented counter-clockwise
-
-### `HOUND.Utils.Polygon.circumcirclePoints(points)`
-
-calculate Smallest circle around point cloud Welzel algorithm for <a href="https://en.wikipedia.org/wiki/Smallest-circle_problem">Smallest-circle problem</a> Implementation taken from <a href="https://github.com/rowanwins/smallest-enclosing-circle/blob/master/src/main.js">github/rowins</a>
-
-**Parameters:**
-- `Table` (points): containing cloud points
-
-**Returns:**
-- (Circle): {x=&ltCenter X&gt,z=&ltCenter Z&gt, y=&ltLand height at XZ&gt,r=&ltradius in meters&gt}
-
-### `HOUND.Utils.Polygon.getArea(polygon)`
-
-return the area of a convex polygon
-
-**Parameters:**
-- `list` (polygon): of DCS points
-
-**Returns:**
-- (area): of polygon
-
-### `HOUND.Utils.Polygon.clipOrHull(polyA, polyB)`
-
-clip or hull two polygons
-
-**Parameters:**
-- `A` (poly): polygon
-- `B` (poly): polygon
-
-**Returns:**
-- (Polygon): which is clip or convexHull of the two input polygons
-
 ### `HOUND.Utils.Polygon.azMinMax(poly, refPos)`
 
 find min/max azimuth
@@ -1365,26 +1327,6 @@ Get gaussian weight
 **Parameters:**
 - `input` (value): to evaluate
 - `Standard` (bandwidth): diviation for weight calculation
-
-### `HOUND.Utils.Cluster.stdDev()`
-
-Calculate running std dev https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford's_online_algorithm
-
-**Returns:**
-- (std): calc instance
-
-### `HOUND.Utils.Cluster.weightedMean(origPoints, initPos, threashold, maxIttr)`
-
-find the weighted mean of a points cluster (meanShift)
-
-**Parameters:**
-- `DCS` (origPoints): points cluster
-- `initPos` (opt): externally provided initial mean (DCS Point)
-- `threashold` (opt): distance in meters below with solution is considered converged (default 1m)
-- `maxIttr` (opt): Max itterations from converging solution (default 100)
-
-**Returns:**
-- (DCS): point of the cluster weighted mean
 
 ### `HOUND.Utils.Cluster.getDeltaSubsetPercent(Table, referencePos, NthPercentile, returnRelative)`
 
@@ -1408,19 +1350,6 @@ Calculate weighted least squares estimate from a list of positions with scores
 
 **Returns:**
 - (Weighted): average position estimate {x,y,z}
-
-### `HOUND.Utils.Cluster.WLS_GDOP(measurements, initial_guess, max_iter, tol)`
-
-Weighted Least Squares with GDOP-based uncertainty ellipse Calculates position estimate using weighted least squares with geometric dilution of precision
-
-**Parameters:**
-- `Table` (measurements): of measurements containing azimuth angles and platform positions
-- `Initial` (initial_guess): position estimate {x,z}
-- `max_iter` (opt=10): Maximum number of iterations for convergence
-- `tol` (opt=0.001): Convergence tolerance in meters
-
-**Returns:**
-- (solution): Position estimate {x,y,z}, uncertenty_data Uncertainty ellipse parameters
 
 ---
 
@@ -1780,12 +1709,12 @@ Kalman Filter implementation for position
 
 *Note: This is a local function*
 
-### `HOUND.Contact.Estimator.Kalman.AzFilter(noise)`
+### `HOUND.Contact.Estimator.Kalman.AzFilter(maxError)`
 
 Kalman Filter implementation for Azimuth
 
 **Parameters:**
-- `angular` (noise): error
+- `maximum` (maxError): expected angular error (~2σ bound) in radians
 
 **Returns:**
 - (Kalman): filter instance
@@ -1826,6 +1755,18 @@ get current estimated position in DCS point from a Kalman state
 
 *Note: This is a local function*
 
+### `HOUND.Contact.Estimator.UPLKF:getUncertainty(confidence)`
+
+Get uncertainty ellipse from covariance matrix P Extracts position covariance (upper-left 2x2 of P) and computes ellipse parameters
+
+**Parameters:**
+- `confidence` (opt): Confidence level multiplier (default 2.45 for ~95% confidence)
+
+**Returns:**
+- (table): with major, minor, theta, az, r (same format as calculateEllipse)
+
+*Note: This is a local function*
+
 ### `HOUND.Contact.Estimator.UPLKF.normalizeAz(azimuth)`
 
 normalize azimuth to East aligned counterclockwise
@@ -1859,13 +1800,12 @@ create F matrix
 
 *Note: This is a local function*
 
-### `HOUND.Contact.Estimator.UPLKF:getQ(deltaT, sigma)`
+### `HOUND.Contact.Estimator.UPLKF:getQ(deltaT)`
 
-create the Q matrix
+create the Q matrix Process noise represents target motion uncertainty (acceleration), NOT measurement noise For stationary radars: very low (q_a ~ 0.01 m/s²) For mobile targets: moderate (q_a ~ 1 m/s² for slowly maneuvering)
 
 **Parameters:**
 - `deltaT` (type=?number): time from last mesurement. default is 10 seconds
-- `sigma` (type=?number): error in mesurment. default is 0.1 radians
 
 **Returns:**
 - (Q): matrix
@@ -2158,14 +2098,13 @@ Take two HOUND.Contact.Datapoints and return the location of intersection
 
 *Note: This is a local function*
 
-### `HOUND.Contact.Emitter.calculateEllipse(estimatedPositions, refPos, giftWrapped)`
+### `HOUND.Contact.Emitter.calculateEllipse(estimatedPositions, refPos)`
 
 Calculate Cotact's Ellipse of uncertenty
 
 **Parameters:**
 - `List` (estimatedPositions): of estimated positions
 - `refPos` (opt): reference position to use for computing the uncertenty ellipse. (will use cluster avarage if none provided)
-- `giftWrapped` (opt): pass true if estimatedPosition is just a giftWrap polygon point set (closed polygon, not a point cluster)
 
 **Returns:**
 - (None): (updates self.uncertenty_data)

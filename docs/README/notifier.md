@@ -101,7 +101,7 @@ local notifier_config = {
 HoundInstance:enableNotifier(notifier_config)
 ```
 
-### Advanced Configuration (STTS):
+### Advanced Configuration:
 
 ```lua
 local notifier_config = {
@@ -478,7 +478,7 @@ HoundInstance:enableNotifier({freq = "243.000", modulation = "AM"})
 
 **Check 3:** TTS working?
 
-- STTS/gRPC installed?
+- HoundTTS/STTS installed?
 - SRS connected?
 
 **Check 4:** Transmitter alive?

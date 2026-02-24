@@ -190,7 +190,7 @@ Export data to CSV file for external analysis.
 - `io` module
 - `lfs` module
 
-📖 See: [Installation Guide](installation.md#desanitizing-scripting-engine)
+📖 See: [Installation Guide](installation.md#3-desanitize-scripting-engine-if-using-tts)
 
 ### Usage:
 
@@ -352,19 +352,16 @@ periodicExport()
 ### CSV Export Good For:
 
 1. **Mission Debrief**
-
    - Analyze threat distribution
    - Review platform effectiveness
    - Assess mission success
 
 2. **Mission Planning**
-
    - Import to mapping software
    - Plan strike routes
    - Identify coverage gaps
 
 3. **Training Analysis**
-
    - Student performance review
    - Threat detection patterns
    - Timing analysis
@@ -377,13 +374,11 @@ periodicExport()
 ### LUA Export Good For:
 
 1. **Real-Time Integration**
-
    - Dynamic mission scripting
    - Automated responses
    - Live overlays
 
 2. **Mission Logic**
-
    - Win/loss conditions
    - Dynamic tasking
    - Objective tracking

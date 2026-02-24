@@ -163,15 +163,34 @@ Unit is already dead when event fires.
 ### Windows TTS Quality
 
 **Issue:**
-Default Windows TTS voices may sound robotic.
+Default Windows SAPI voices may sound robotic.
 
 **Solutions:**
 
-- Use Google TTS (requires setup)
-- Use gRPC with cloud providers (AWS, Azure, Google)
-- Install additional Windows voices
+- Use HoundTTS with **Piper** (bundled offline voices, better than SAPI)
+- Use HoundTTS with cloud providers (Google, Azure, AWS Polly, ElevenLabs)
+- Install additional Windows voices via **Settings → Time & Language → Speech**
 
 📖 See: [TTS Configuration](tts-configuration.md)
+
+### ElevenLabs Free Tier
+
+**Issue:**
+ElevenLabs free tier only allows one concurrent WebSocket connection. Hound routinely sends parallel transmissions (Controller, ATIS, Notifier), so overlapping requests are rejected.
+
+**Solution:**
+
+- Use a paid ElevenLabs plan, or choose a different provider for Hound
+
+### gRPC Parallel Transmissions
+
+**Issue:**
+gRPC has known limitations with parallel transmissions in DCS. When Controller, ATIS, and Notifier transmit simultaneously, conflicts occur.
+
+**Solution:**
+
+- Use HoundTTS instead (native non-blocking parallel transmissions)
+- Or use STTS as fallback
 
 ### SRS Requirements
 
@@ -273,7 +292,7 @@ Requires `io` and `lfs` Lua modules for file operations.
 - Desanitize `io` and `lfs` in `MissionScripting.lua`
 - Restart DCS after changes
 
-📖 See: [Installation Guide](installation.md#desanitizing-scripting-engine)
+📖 See: [Installation Guide](installation.md#3-desanitize-scripting-engine-if-using-tts)
 
 **Security Note:**
 Only desanitize if you need file export features and understand the risks.
@@ -322,7 +341,7 @@ These are sometimes reported but are **expected behavior:**
 
 ### No Voice Without TTS
 
-**Expected:** Voice requires STTS/gRPC installation and configuration.
+**Expected:** Voice requires HoundTTS (recommended), STTS, or gRPC installation and configuration.
 
 ### Markers Update Slowly
 

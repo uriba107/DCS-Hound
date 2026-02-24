@@ -8,7 +8,7 @@ env.info("Loading Hound Scripts dynamicly")
     assert(loadfile(HoundWorkDir..'tools\\testing\\StopWatch.lua'))()
 
     -- assert(loadfile(HoundWorkDir..'include\\mist.lua'))()
-    assert(loadfile(HoundWorkDir..'include\\DCS-SimpleTextToSpeech.lua'))()
+    -- assert(loadfile(HoundWorkDir..'include\\DCS-SimpleTextToSpeech.lua'))()
 
     assert(loadfile(HoundWorkDir..'src\\000 - HoundGlobals.lua'))()
     assert(loadfile(HoundWorkDir..'src\\010 - HoundLogger.lua'))()

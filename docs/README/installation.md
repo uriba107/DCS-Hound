@@ -15,8 +15,9 @@ Complete installation instructions for Hound ELINT.
 
 Choose **ONE** of these Text-To-Speech solutions:
 
-- **[DCS-SimpleTextToSpeech (STTS)](https://github.com/ciribob/DCS-SimpleTextToSpeech)** - Recommended, easiest
-- **[DCS-gRPC](https://github.com/DCS-gRPC/rust-server)** - Advanced, requires Rust server
+- **[HoundTTS](https://github.com/uriba107/HoundTTS)** - **Recommended (default)**, native C++ DLL, 6 TTS providers, no PowerShell
+- **[DCS-SimpleTextToSpeech (STTS)](https://github.com/ciribob/DCS-SimpleTextToSpeech)** - Legacy (HoundTTS takes over transparently if both installed)
+- **[DCS-gRPC](https://github.com/DCS-gRPC/rust-server)** - Not recommended due to parallel transmission limitations
 
 ---
 
@@ -30,19 +31,29 @@ Choose **ONE** of these Text-To-Speech solutions:
 
 ### 2. Install Text-To-Speech (Optional)
 
-If you want voice communications, install ONE TTS solution:
+If you want voice communications, install a TTS solution:
 
-#### Option A: STTS (Recommended)
+#### Option A: HoundTTS (Recommended)
+
+1. Download from: https://github.com/uriba107/HoundTTS
+2. Copy `dist\base\` into your DCS Saved Games folder
+3. (Optional) Copy `dist\piper-addon\` for offline Piper voices
+4. Add one line to `MissionScripting.lua` (see HoundTTS README)
+5. Copy config examples and edit as needed
+
+> If you already have STTS installed, just install HoundTTS — it takes over transparently, no config changes needed.
+
+#### Option B: STTS (Legacy)
 
 1. Download from: https://github.com/ciribob/DCS-SimpleTextToSpeech
 2. Follow STTS installation instructions
 3. Requires desanitizing DCS scripting engine (see below)
 
-#### Option B: gRPC
+#### Option C: gRPC (Not recommended)
 
 1. Download from: https://github.com/DCS-gRPC/rust-server
 2. Follow gRPC installation and setup
-3. More complex but offers cloud TTS providers
+3. Known parallel transmission issues with Hound
 
 ### 3. Desanitize Scripting Engine (If Using TTS)
 
@@ -70,12 +81,13 @@ Comment them out:
 
 #### Which Modules to Enable:
 
-| Feature          | Requires          |
-| ---------------- | ----------------- |
-| STTS             | `os`, `io`, `lfs` |
-| gRPC             | `os`, `io`, `lfs` |
-| CSV Export       | `io`, `lfs`       |
-| Map markers only | None              |
+| Feature          | Requires                         |
+| ---------------- | -------------------------------- |
+| HoundTTS         | None (loads before sanitization) |
+| STTS             | `os`, `io`, `lfs`                |
+| gRPC             | `os`, `io`, `lfs`                |
+| CSV Export       | `io`, `lfs`                      |
+| Map markers only | None                             |
 
 **Note:** This change is reverted with every DCS update and must be reapplied.
 
@@ -96,7 +108,7 @@ Comment them out:
 - **TYPE:** ONCE
 - **CONDITION:** TIME MORE 1
 - **ACTIONS:**
-  1. DO SCRIPT FILE: `DCS-SimpleTextToSpeech.lua` (if using STTS)
+  1. DO SCRIPT FILE: `DCS-SimpleTextToSpeech.lua` (only if using STTS without HoundTTS)
   2. DO SCRIPT FILE: `HoundElint.lua`
 
 **Trigger 2: Configure Hound**
@@ -109,10 +121,12 @@ Comment them out:
 ### Script Load Order (Important!)
 
 ```
-1. STTS/gRPC (if using)
+1. STTS (if using without HoundTTS)
 2. HoundElint.lua
 3. Your configuration code
 ```
+
+> **Note:** HoundTTS loads via `MissionScripting.lua` before mission scripts, so no load order concerns — it's always available.
 
 **❌ Wrong Order:**
 
@@ -195,24 +209,23 @@ end
 
 ### "attempt to call global 'STTS'" Error
 
-**Cause:** STTS not loaded before Hound
+**Cause:** STTS not loaded before Hound (only applies if using STTS without HoundTTS)
 
 **Fix:**
 
-1. Load `DCS-SimpleTextToSpeech.lua` first
-2. Then load `HoundElint.lua`
+1. **Recommended:** Install HoundTTS instead — no load order issues
+2. Or load `DCS-SimpleTextToSpeech.lua` before `HoundElint.lua`
 3. Check both load in same trigger
 
 ### Voice Not Working
 
-**Cause:** Scripting engine not desanitized
+**Cause:** TTS not installed, or scripting engine not desanitized (STTS/gRPC only)
 
 **Fix:**
 
-1. Edit `DCS World\Scripts\MissionScripting.lua`
-2. Comment out sanitize lines (see above)
-3. Restart DCS World completely
-4. Verify with test code above
+1. **HoundTTS:** Verify DLL installed and `MissionScripting.lua` line added (no desanitization needed)
+2. **STTS:** Edit `DCS World\Scripts\MissionScripting.lua`, comment out sanitize lines (see above), restart DCS
+3. Verify SRS is running and correct frequency tuned
 
 ### "cannot open file" Error (CSV Export)
 
@@ -275,7 +288,7 @@ C:\Users\<YourName>\Saved Games\DCS.openbeta\
 1. Install Hound on server machine
 2. Desanitize server's scripting engine
 3. Include all scripts in .miz file using **DO SCRIPT FILE**
-4. Server needs TTS software if using voice (STTS/gRPC)
+4. Server needs TTS software if using voice (HoundTTS recommended, STTS/gRPC also supported)
 
 ### Client Requirements:
 

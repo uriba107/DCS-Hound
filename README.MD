@@ -43,7 +43,7 @@ end
 - Check F10 map for markers (updates every 2 minutes)
 - Position accuracy improves over time
 
-**📖 For detailed setup:** [Quick Start Guide](quick-start.md)
+**📖 For detailed setup:** [Quick Start Guide](docs/README/quick-start.md)
 
 ---
 
@@ -51,57 +51,57 @@ end
 
 ### For New Users - Start Here
 
-| Document                                          | What You'll Learn                             |
-| ------------------------------------------------- | --------------------------------------------- |
-| **[Quick Start](quick-start.md)**                 | Get Hound running in your mission immediately |
-| **[Installation](installation.md)**               | Detailed installation and requirements        |
-| **[Basic Configuration](basic-configuration.md)** | Essential settings and simple examples        |
+| Document                                                      | What You'll Learn                             |
+| ------------------------------------------------------------- | --------------------------------------------- |
+| **[Quick Start](docs/README/quick-start.md)**                 | Get Hound running in your mission immediately |
+| **[Installation](docs/README/installation.md)**               | Detailed installation and requirements        |
+| **[Basic Configuration](docs/README/basic-configuration.md)** | Essential settings and simple examples        |
 
 ### Core Concepts
 
-| Document                                | What You'll Learn                                              |
-| --------------------------------------- | -------------------------------------------------------------- |
-| **[Available Platforms](platforms.md)** | Complete list of supported ELINT assets and their capabilities |
-| **[How Hound Works](how-it-works.md)**  | Understanding triangulation, accuracy, and system behavior     |
-| **[Map Markers](map-markers.md)**       | Visual feedback, marker types, and customization               |
+| Document                                            | What You'll Learn                                              |
+| --------------------------------------------------- | -------------------------------------------------------------- |
+| **[Available Platforms](docs/README/platforms.md)** | Complete list of supported ELINT assets and their capabilities |
+| **[How Hound Works](docs/README/how-it-works.md)**  | Understanding triangulation, accuracy, and system behavior     |
+| **[Map Markers](docs/README/map-markers.md)**       | Visual feedback, marker types, and customization               |
 
 ### Communication Systems
 
-| Document                                       | What You'll Learn                              |
-| ---------------------------------------------- | ---------------------------------------------- |
-| **[Communication Overview](communication.md)** | Understanding ATIS, Controller, and Notifier   |
-| **[ATIS Setup](atis.md)**                      | Automated threat broadcasts                    |
-| **[Controller Setup](controller.md)**          | Interactive SAM controller with voice and text |
-| **[TTS Configuration](tts-configuration.md)**  | Configuring STTS, MOOSE, or gRPC for voice     |
+| Document                                                   | What You'll Learn                              |
+| ---------------------------------------------------------- | ---------------------------------------------- |
+| **[Communication Overview](docs/README/communication.md)** | Understanding ATIS, Controller, and Notifier   |
+| **[ATIS Setup](docs/README/atis.md)**                      | Automated threat broadcasts                    |
+| **[Controller Setup](docs/README/controller.md)**          | Interactive SAM controller with voice and text |
+| **[TTS Configuration](docs/README/tts-configuration.md)**  | Configuring STTS, MOOSE, or gRPC for voice     |
 
 ### Advanced Features
 
-| Document                                                | What You'll Learn                                     |
-| ------------------------------------------------------- | ----------------------------------------------------- |
-| **[Sectors and Zones](sectors.md)**                     | Organizing multiple regions with separate controllers |
-| **[Advanced Configuration](advanced-configuration.md)** | Complex setups, multi-sector missions                 |
-| **[Event Handlers](event-handlers.md)**                 | Custom scripting and automation triggers              |
-| **[Exports](exports.md)**                               | Exporting data (LUA tables, CSV files)                |
+| Document                                                            | What You'll Learn                                     |
+| ------------------------------------------------------------------- | ----------------------------------------------------- |
+| **[Sectors and Zones](docs/README/sectors.md)**                     | Organizing multiple regions with separate controllers |
+| **[Advanced Configuration](docs/README/advanced-configuration.md)** | Complex setups, multi-sector missions                 |
+| **[Event Handlers](docs/README/event-handlers.md)**                 | Custom scripting and automation triggers              |
+| **[Exports](docs/README/exports.md)**                               | Exporting data (LUA tables, CSV files)                |
 
 ### Reference & Troubleshooting
 
-| Document                                        | What You'll Learn                          |
-| ----------------------------------------------- | ------------------------------------------ |
-| **[Settings Reference](settings-reference.md)** | Complete list of all configuration options |
-| **[Troubleshooting](troubleshooting.md)**       | Common issues and solutions                |
-| **[Performance Tuning](performance.md)**        | Optimizing for large missions              |
-| **[Breaking Changes](breaking-changes.md)**     | Version upgrade guide                      |
+| Document                                                    | What You'll Learn                          |
+| ----------------------------------------------------------- | ------------------------------------------ |
+| **[Settings Reference](docs/README/settings-reference.md)** | Complete list of all configuration options |
+| **[Troubleshooting](docs/README/troubleshooting.md)**       | Common issues and solutions                |
+| **[Performance Tuning](docs/README/performance.md)**        | Optimizing for large missions              |
+| **[Breaking Changes](docs/README/breaking-changes.md)**     | Version upgrade guide                      |
 
 ---
 
 ## 🎯 Quick Links for Common Tasks
 
-- **[Adding ELINT platforms](basic-configuration.md#adding-platforms)** - How to assign units
-- **[Enabling voice communications](controller.md#basic-setup)** - Set up SAM controller
-- **[Configuring map markers](map-markers.md#marker-types)** - Customizing visual feedback
-- **[Creating sectors](sectors.md#creating-sectors)** - Multiple geographic regions
-- **[Pre-briefed contacts](basic-configuration.md#pre-briefed-contacts)** - Fixed SAM sites
-- **[Troubleshooting detection issues](troubleshooting.md#platforms-not-detecting)** - Common problems
+- **[Adding ELINT platforms](docs/README/basic-configuration.md#adding-platforms)** - How to assign units
+- **[Enabling voice communications](docs/README/controller.md#basic-setup)** - Set up SAM controller
+- **[Configuring map markers](docs/README/map-markers.md#marker-types)** - Customizing visual feedback
+- **[Creating sectors](docs/README/sectors.md#creating-sectors)** - Multiple geographic regions
+- **[Pre-briefed contacts](docs/README/basic-configuration.md#pre-briefed-contacts)** - Fixed SAM sites
+- **[Troubleshooting detection issues](docs/README/troubleshooting.md#detection-issues)** - Common problems
 
 ---
 
@@ -134,7 +134,7 @@ For experienced users and developers:
 
 - **[Main Script Documentation](https://uriba107.github.io/DCS-Hound/)** - All available functions
 - **[Developer Documentation](https://uriba107.github.io/DCS-Hound/dev/)** - Internal API and architecture
-- **[Scripting Ideas](../../SCRIPTING_IDEAS.MD)** - Community examples and creative uses
+- **[Scripting Ideas](docs/README/scripting-ideas.md)** - Community examples and creative uses
 
 ---
 
@@ -178,7 +178,7 @@ HoundBlue:setZone("Lebanon", "Zone_Lebanon")
 HoundBlue:systemOn()
 ```
 
-**📖 More examples:** [Advanced Configuration](advanced-configuration.md)
+**📖 More examples:** [Advanced Configuration](docs/README/advanced-configuration.md)
 
 ---
 
@@ -199,5 +199,5 @@ HoundBlue:systemOn()
 
 Current documentation is for **Hound ELINT v0.4.x**
 
-- [Breaking Changes Between Versions](breaking-changes.md)
-- [Known Issues](known-issues.md)
+- [Breaking Changes Between Versions](docs/README/breaking-changes.md)
+- [Known Issues](docs/README/known-issues.md)

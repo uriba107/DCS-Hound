@@ -59,26 +59,33 @@ HoundBlue:disableMarkers()                   -- or disable
 
 **No voice:**
 
-- TTS installed? (STTS or gRPC required, loaded BEFORE HoundElint.lua)
-- Desanitized? (`MissionScripting.lua` uncomment `sanitizeModule('os')`, `'io'`, `'lfs'`, restart DCS)
+- **HoundTTS:** DLL installed? `MissionScripting.lua` line added? (no desanitization needed)
+- **STTS:** Loaded BEFORE HoundElint.lua? Desanitized? (`MissionScripting.lua` uncomment `sanitizeModule('os')`, `'io'`, `'lfs'`, restart DCS)
 - SRS connected, correct frequency/modulation tuned?
 - Transmitter alive (if used)?
 
-**Test STTS:**
+**Test TTS availability:**
 
 ```lua
-if STTS then trigger.action.outText("STTS available", 10)
-else trigger.action.outText("STTS NOT available", 10) end
+if HoundTTS then trigger.action.outText("HoundTTS available", 10)
+elseif STTS then trigger.action.outText("STTS available", 10)
+else trigger.action.outText("No TTS available", 10) end
 ```
 
 **Speech issues:**
 
 ```lua
--- Adjust speed: -10 to +10 (STTS) or 50-250 (gRPC)
+-- HoundTTS: speed is a ratio (0.5–2.0, default 1.0)
+HoundBlue:enableController({freq = "251.000", modulation = "AM", speed = 1.0})
+
+-- STTS (legacy): speed is -10 to +10
 HoundBlue:enableController({freq = "251.000", modulation = "AM", speed = -2})
 
 -- Change voice/accent
-HoundBlue:enableController({culture = "en-US", gender = "male"})  -- Check Control Panel → Speech Recognition
+HoundBlue:enableController({culture = "en-US", gender = "male"})
+
+-- HoundTTS: select provider
+HoundBlue:enableController({provider = "piper", voice = "en_US-lessac-low"})
 
 -- Volume (also check SRS/DCS/Windows volume)
 HoundBlue:enableController({volume = "1.0"})  -- Maximum (string!)
@@ -115,7 +122,7 @@ HoundBlue:setRadioMenuParent(CustomMenu)  -- Before enableController()
 
 **"attempt to call method":** Config running before Hound loaded (separate triggers, Hound first)
 
-**"STTS is nil":** Load DCS-SimpleTextToSpeech.lua BEFORE HoundElint.lua
+**"STTS is nil":** Install HoundTTS (recommended, no load order issues) or load DCS-SimpleTextToSpeech.lua BEFORE HoundElint.lua
 
 **Lua errors:** Check `Saved Games\DCS\Logs\dcs.log` for error details. Common: missing comma, curly quotes, missing `end`, typos.
 
@@ -190,7 +197,7 @@ HoundBlue:disableSiteMarkers()
 ## Common Mistakes
 
 1. **Group name instead of unit name:** Use `addPlatform("ELINT Unit #001")` not `"ELINT_Group"`
-2. **Wrong script load order:** Load DCS-SimpleTextToSpeech.lua BEFORE HoundElint.lua
+2. **Wrong script load order:** Use HoundTTS (no load order issues) or load DCS-SimpleTextToSpeech.lua BEFORE HoundElint.lua
 3. **Forgetting `systemOn()`:** Always call after configuration
 4. **Expecting instant results:** Initial detection 30-60s, accurate positions 1-2min, first markers up to 2min
 
