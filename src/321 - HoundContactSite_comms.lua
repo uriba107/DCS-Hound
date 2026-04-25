@@ -253,6 +253,6 @@ do
         for _,emitter in ipairs(self.emitters) do
             table.insert(report.emitters,emitter:export())
         end
-        return l_mist.utils.deepCopy(report)
+        return report
     end
 end

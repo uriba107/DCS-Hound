@@ -290,7 +290,7 @@ do
         self:ensurePrimaryHasPos()
         for _,emitter in ipairs(self.emitters) do
             if emitter:hasPos() then
-                self.pos.p = l_mist.utils.deepCopy(emitter:getPos())
+                self.pos.p = emitter:getPos()
                 break
             end
         end
@@ -306,15 +306,16 @@ do
         if ( not primary:hasPos() ) then
             for _,emitter in ipairs(self.emitters) do
                 if ( emitter:hasPos() ) then
-                    primary.pos = l_mist.utils.deepCopy(emitter.pos)
-                    primary.uncertenty_data = l_mist.utils.deepCopy(emitter.uncertenty_data)
+                    primary.pos = HOUND.shallowCopy(emitter.pos)
+                    primary.pos.p = HoundUtils.Dcs.copyPoint(emitter.pos.p)
+                    primary.uncertenty_data = HOUND.shallowCopy(emitter.uncertenty_data)
                     break
                 end
             end
 
             if ( not primary:hasPos() and HoundUtils.Dcs.isPoint(refPos)) then
                 local uncertenty = primary:getMaxWeaponsRange() * 0.75
-                primary.pos.p = l_mist.utils.deepCopy(refPos)
+                primary.pos.p = HoundUtils.Dcs.copyPoint(refPos)
                 primary.pos = primary:calculateExtrasPosData(primary.pos)
                 primary.uncertenty_data = {}
                 primary.uncertenty_data.major = uncertenty

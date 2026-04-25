@@ -43,13 +43,10 @@ do
                     local platformData = HOUND.DB.Platform[mainCategory][UnitType]
                     -- TODO: actually make logic here
                     if HOUND.setContains(platformData['require'],'Payload') then
-                        HOUND.Logger.debug(tostring(PayloadAdded).. " | " .. type(PayloadAdded))
                         local required = platformData['require']['Payload']
                         if type(PayloadAdded) == 'string' then
-                            HOUND.Logger.debug("HOUND.DB.isValidPlatform: checking payload " .. PayloadAdded .. " for platform " .. UnitType)
                             -- check for payload requirements
                             isValid = HOUND.setContainsValue(required,PayloadAdded)
-                            HOUND.Logger.debug("HOUND.DB.isValidPlatform: isValid = " .. tostring(isValid))
                         else
                             -- check for payload requirements (for now will always return false)
                             isValid = HOUND.Utils.hasPayload(candidate,required)
@@ -76,7 +73,7 @@ do
         if not HOUND.Utils.Dcs.isUnit(DcsObject) and not HOUND.Utils.Dcs.isStaticObject(DcsObject) then return end
 
         local platformData={
-            pos = l_mist.utils.deepCopy(DcsObject:getPosition().p),
+            pos = HOUND.Utils.Dcs.copyPoint(DcsObject:getPosition().p),
             isStatic = false,
             isAerial = false,
         }

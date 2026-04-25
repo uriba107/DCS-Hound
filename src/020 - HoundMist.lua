@@ -10,7 +10,7 @@ do
     HOUND.Mist.__index = HOUND.Mist
 
     function HOUND.Mist.getNorthCorrection(gPoint)	--gets the correction needed for true north
-		local point = HOUND.Mist.utils.deepCopy(gPoint)
+		local point = HOUND.Utils.Dcs.copyPoint(gPoint)
 		if not point.z then --Vec2; convert to Vec3
 			point.z = point.y
 			point.y = 0

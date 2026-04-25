@@ -53,7 +53,7 @@ do
     -- initiates cleanup
     function HoundElint:destroy()
         self:systemOff(false)
-        self:defaultEventHandler(false)
+        self:defaultEventHandler(true)
 
         for name,sector in pairs(self.sectors) do
             self.sectors[name] = sector:destroy()
@@ -233,7 +233,6 @@ do
     function HoundElint:AlertOnLaunch(fireUnit)
         if not self:getAlertOnLaunch() or (not HoundUtils.Dcs.isGroup(fireUnit) and not HoundUtils.Dcs.isUnit(fireUnit)) then return end
         HOUND.Logger.debug("Launch Alert called for " .. fireUnit:getName())
-
         self.contacts:AlertOnLaunch(fireUnit)
     end
 
@@ -1170,11 +1169,12 @@ do
     --- Trigger building of radio menu in all sectors
     -- @local
     function HoundElint:populateRadioMenu()
-        if not self:isRunning() or not self.contacts or self.contacts:countContacts() == 0 or self.settings:getCoalition() == nil then
+        if not self:isRunning() or not self.contacts or type(self.contacts:countContacts()) ~= "number" or self.settings:getCoalition() == nil then
             return
         end
         local menuTimer = StopWatch:Start("Draw Menus " .. timer.getAbsTime())
         HOUND.DB.updateHumanDb(self.settings:getCoalition())
+
         local sectors = self:getSectors()
         table.sort(sectors,HoundUtils.Sort.sectorsByPriorityLowLast)
         for _,sector in pairs(sectors) do
@@ -1212,7 +1212,8 @@ do
             trigger.action.outTextForCoalition(self.settings:getCoalition(),
                                            "Hound ELINT system is now Operating", 10)
         end
-        env.info("Hound is now on")
+        env.info("Hound instance " .. self.settings:getId() .. " is now on")
+        self:populateRadioMenu()
         HOUND.EventHandler.publishEvent({
             id = HOUND.EVENTS.HOUND_ENABLED,
             houndId = self.settings:getId(),
@@ -1232,7 +1233,7 @@ do
             trigger.action.outTextForCoalition(self.settings:getCoalition(),
                                            "Hound ELINT system is now Offline", 10)
         end
-        env.info("Hound is now off")
+        env.info("Hound instance " ..  self.settings:getId() .. " is now off")
         HOUND.EventHandler.publishEvent({
             id = HOUND.EVENTS.HOUND_DISABLED,
             houndId = self.settings:getId(),

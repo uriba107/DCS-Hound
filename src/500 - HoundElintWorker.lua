@@ -111,7 +111,7 @@ do
 
     --- make sure all platforms are still alive and relevate
     function HOUND.ElintWorker:platformRefresh()
-        if HOUND.Length(self.platforms) < 1 then return end
+        if #self.platforms < 1 then return end
         for id,platform in ipairs(self.platforms) do
             if platform:isExist() == false or platform:getLife() <1 then
                 table.remove(self.platforms, id)
@@ -127,7 +127,7 @@ do
 
     --- remove dead platforms
     function HOUND.ElintWorker:removeDeadPlatforms()
-        if HOUND.Length(self.platforms) < 1 then return end
+        if #self.platforms < 1 then return end
         for id,platform in ipairs(self.platforms) do
             if platform:isExist() == false or platform:getLife() <1  or (platform:getCategory() ~= Object.Category.STATIC and platform:isActive() == false) then
                 table.remove(self.platforms, id)
@@ -144,7 +144,7 @@ do
     --- count number of platforms
     -- @return[type=int] number of platforms
     function HOUND.ElintWorker:countPlatforms()
-        return HOUND.Length(self.platforms)
+        return #self.platforms
     end
 
     --- list all associated platform unit names
@@ -419,14 +419,14 @@ do
         for _, contact in pairs(self.contacts) do
             contact:KalmanPredict()
         end
-        if HOUND.Length(self.platforms) == 0 then return end
+        if #self.platforms == 0 then return end
         local Radars = {}
         if GroupName then
             Radars = HoundUtils.Elint.getActiveRadarsInGroup(GroupName)
         else
             Radars = HoundUtils.Elint.getActiveRadars(self:getCoalition())
         end
-        if HOUND.Length(Radars) == 0 then return end
+        if #Radars == 0 then return end
         -- env.info("Recivers: " .. table.getn(self.platform) .. " | Radars: " .. table.getn(Radars))
         for _,RadarName in ipairs(Radars) do
             local radar = Unit.getByName(RadarName)

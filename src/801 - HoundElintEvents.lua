@@ -99,12 +99,10 @@ do
             and DcsEvent.initiator:getCoalition() ~= self.settings:getCoalition()
             and self:getBDA()
             then
-                -- HOUND.Logger.trace("triggered S_EVENT_DEAD for " .. DcsEvent.initiator:getName())
                 return self:markDeadContact(DcsEvent.initiator)
         end
 
         if not self:isRunning() then return end
-        -- HOUND.Logger.debug(mist.utils.tableShow(DcsEvent))
 
         if (DcsEvent.id == world.event.S_EVENT_BIRTH)
             and DcsEvent.initiator:getCoalition() == self.settings:getCoalition()
@@ -162,10 +160,10 @@ do
     end
 
     --- enable/disable Hound instance internal event handling
-    -- @bool[opt] remove if true default event handler will be removed
+    -- @bool[opt] purge if true default event handler will be removed
     -- @local
-    function HoundElint:defaultEventHandler(remove)
-        if remove == false then
+    function HoundElint:defaultEventHandler(purge)
+        if purge == true then
             HOUND.EventHandler.removeInternalEventHandler(self)
             world.removeEventHandler(self)
             return
