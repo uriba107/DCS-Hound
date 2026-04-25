@@ -1,5 +1,17 @@
 do
     -- extends TestHoundFunctional 
+    TestHoundFunctional.baseUnitCount = {
+        platforms = 2,
+        sectors = 3,
+        zones = 2,
+        controllers = 2,
+        atis = 2,
+        notifiers = 1,
+        sites = 3,
+        contacts = 5,
+        preBriefed = 4,
+        active = 2
+    }
     function TestHoundFunctional:Test_1mDelay_00_debugOutput()
         local delayTest = function (expectedStr)
             -- env.info(self.houndBlue:printDebugging())
@@ -11,7 +23,7 @@ do
         self.houndBlue:preBriefedContact('SA-5_SAIPAN')
 
         lu.assertEquals(self.houndBlue:countPreBriefedContacts(),4)
-        lu.assertStrContains(self.houndBlue:printDebugging(),"Platforms: 2 | sectors: 3 (Z:2 ,C:2 ,A: 2 ,N:1) | Sites: 3 | Contacts: 5 (A:2 ,PB:4)")
+        lu.assertStrContains(self.houndBlue:printDebugging(),string.format("Platforms: %d | sectors: %d (Z:%d ,C:%d ,A: %d ,N:%d) | Sites: %d | Contacts: %d (A:%d ,PB:%d)",self.baseUnitCount.platforms,self.baseUnitCount.sectors,self.baseUnitCount.zones,self.baseUnitCount.controllers,self.baseUnitCount.atis,self.baseUnitCount.notifiers,self.baseUnitCount.sites,self.baseUnitCount.contacts,self.baseUnitCount.active,self.baseUnitCount.preBriefed))
         self.houndBlue:preBriefedContact('EWR_SAIPAN')
         lu.assertEquals(self.houndBlue:countPreBriefedContacts(),5)
         local tor = Group.getByName("TOR_SAIPAN")
@@ -22,7 +34,7 @@ do
         local sa5 = Group.getByName('SA-5_SAIPAN')
         sa5:enableEmission(true)
 
-        assert(timer.scheduleFunction(delayTest,"Platforms: 2 | sectors: 3 (Z:2 ,C:2 ,A: 2 ,N:1) | Sites: 4 | Contacts: 6 (A:3 ,PB:4)",timer.getTime()+90))
+        assert(timer.scheduleFunction(delayTest,string.format("Platforms: %d | sectors: %d (Z:%d ,C:%d ,A: %d ,N:%d) | Sites: %d | Contacts: %d (A:%d ,PB:%d)",self.baseUnitCount.platforms,self.baseUnitCount.sectors,self.baseUnitCount.zones,self.baseUnitCount.controllers,self.baseUnitCount.atis,self.baseUnitCount.notifiers,self.baseUnitCount.sites+1,self.baseUnitCount.contacts+1,self.baseUnitCount.active+1,self.baseUnitCount.preBriefed),timer.getTime()+90))
         assert(timer.scheduleFunction(delayMove,nil,timer.getTime()+60))
 
     end
@@ -92,7 +104,10 @@ do
                 lu.assertEquals(event.initiator:getDcsGroupName(),"SA-5_SAIPAN")
                 lu.assertEquals(event.initiator:countEmitters(),0)
                 lu.assertIsFalse(event.initiator:hasRadarUnits())
-                lu.assertStrContains(self:printDebugging(),"Platforms: 2 | sectors: 3 (Z:2 ,C:2 ,A: 2 ,N:1) | Sites: 4 | Contacts: 6 (A:3 ,PB:4)")
+                lu.assertStrContains(self:printDebugging(),string.format("Platforms: %d | sectors: %d (Z:%d ,C:%d ,A: %d ,N:%d) | Sites: %d | Contacts: %d (A:%d ,PB:%d)",
+                    TestHoundFunctional.baseUnitCount.platforms,
+                    TestHoundFunctional.baseUnitCount.sectors,TestHoundFunctional.baseUnitCount.zones,TestHoundFunctional.baseUnitCount.controllers,TestHoundFunctional.baseUnitCount.atis,TestHoundFunctional.baseUnitCount.notifiers,
+                    TestHoundFunctional.baseUnitCount.sites,TestHoundFunctional.baseUnitCount.contacts,TestHoundFunctional.baseUnitCount.active+1,TestHoundFunctional.baseUnitCount.preBriefed-2))
             end
         end
         lu.assertEquals(type(self.houndBlue.onHoundEvent),"function")
@@ -154,10 +169,10 @@ do
         end
         self.houndBlue:onScreenDebug(true)
 
-        lu.assertStrContains(self.houndBlue:printDebugging(),"Platforms: 2 | sectors: 3 (Z:2 ,C:2 ,A: 2 ,N:1) | Sites: 4 | Contacts: 6 (A:3 ,PB:4)")
+        lu.assertStrContains(self.houndBlue:printDebugging(),string.format("Platforms: %d | sectors: %d (Z:%d ,C:%d ,A: %d ,N:%d) | Sites: %d | Contacts: %d (A:%d ,PB:%d)",self.baseUnitCount.platforms,self.baseUnitCount.sectors,self.baseUnitCount.zones,self.baseUnitCount.controllers,self.baseUnitCount.atis,self.baseUnitCount.notifiers,self.baseUnitCount.sites+1,self.baseUnitCount.contacts+1,self.baseUnitCount.active+1,self.baseUnitCount.preBriefed))
         local tor = Group.getByName("TOR_SAIPAN")
         tor:enableEmission(true)
-        assert(timer.scheduleFunction(delayTest,"Platforms: 2 | sectors: 3 (Z:2 ,C:2 ,A: 2 ,N:1) | Sites: 5 | Contacts: 7 (A:5 ,PB:3)",timer.getTime()+45))
+        assert(timer.scheduleFunction(delayTest,string.format("Platforms: %d | sectors: %d (Z:%d ,C:%d ,A: %d ,N:%d) | Sites: %d | Contacts: %d (A:%d ,PB:%d)",self.baseUnitCount.platforms,self.baseUnitCount.sectors,self.baseUnitCount.zones,self.baseUnitCount.controllers,self.baseUnitCount.atis,self.baseUnitCount.notifiers,self.baseUnitCount.sites+1,self.baseUnitCount.contacts+1,self.baseUnitCount.active+2,self.baseUnitCount.preBriefed-1),timer.getTime()+45))
     end
 
     function TestHoundFunctional:Test_5mDelay_01_exports()
@@ -221,7 +236,7 @@ do
         -- lu.assertIsTrue(uavgrp:isExist())
         local sam_brain = SA6:getUnit(1):getController()
         sam_brain:knowTarget(Unit.getByName("MQ-9_TGT"))
-        assert(timer.scheduleFunction(delayTest,"Platforms: 2 | sectors: 3 (Z:2 ,C:2 ,A: 2 ,N:1) | Sites: 6 | Contacts: 7 (A:5 ,PB:3)",timer.getTime()+120))
+        assert(timer.scheduleFunction(delayTest,string.format("Platforms: %d | sectors: %d (Z:%d ,C:%d ,A: %d ,N:%d) | Sites: %d | Contacts: %d (A:%d ,PB:%d)",self.baseUnitCount.platforms,self.baseUnitCount.sectors,self.baseUnitCount.zones,self.baseUnitCount.controllers,self.baseUnitCount.atis,self.baseUnitCount.notifiers,self.baseUnitCount.sites,self.baseUnitCount.contacts,self.baseUnitCount.active,self.baseUnitCount.preBriefed),timer.getTime()+120))
 
     end
 end

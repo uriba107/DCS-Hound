@@ -260,6 +260,7 @@ do
     -- @param T table to copy (must be flat table)
     -- @return copied table
     function HOUND.shallowCopy(T)
+        if type(T) ~= "table" then return {} end
         local newTable = {}
         for k,v in pairs(T) do
             newTable[k] = v

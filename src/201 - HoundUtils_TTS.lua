@@ -50,11 +50,12 @@ do
 
     --- returns configured transmitter position
     -- @local
+    -- @param dcsObject DCS object (unit or static object)
     -- @return DCS position of transmitter or nil if none set
     function HOUND.Utils.TTS.getTransmitterPos(dcsObject)
         if dcsObject == nil then return nil end
         if HOUND.Utils.Dcs.isPoint(dcsObject) then return dcsObject end
-        if not HOUND.Utils.Dcs.isUnit(dcsObject) or not HOUND.Utils.Dcs.isStaticObject(dcsObject) then
+        if not HOUND.Utils.Dcs.isUnit(dcsObject) and not HOUND.Utils.Dcs.isStaticObject(dcsObject) then
             return nil
         end
         if (dcsObject:isExist() == false or dcsObject:getLife() < 1) then
@@ -97,11 +98,24 @@ do
                 end
             end
         end
+        -- normlize transmitter
+        local dcsObject = nil
+        if type(transmitterPos) == "string" then
+            dcsObject = HOUND.Utils.Dcs.getUnitPos(transmitterPos)
+            transmitterPos = nil
+        end
+        if HOUND.Utils.Dcs.isUnit(dcsObject) or HOUND.Utils.Dcs.isStaticObject(dcsObject) then
+            transmitterPos = HOUND.Utils.TTS.getTransmitterPos(dcsObject)
+            if transmitterPos == false then return end
+        else
+            dcsObject = nil
+        end
+
         if args.tts_engine == "STTS" then
             return HOUND.Utils.TTS.TransmitSTTS(msg,coalitionID,args,transmitterPos)
         end
         if args.tts_engine == "HOUND" then
-            return HOUND.Utils.TTS.TransmitHound(msg,coalitionID,args,transmitterPos)
+            return HOUND.Utils.TTS.TransmitHound(msg,coalitionID,args,transmitterPos,dcsObject)
         end
     end
 
@@ -115,21 +129,18 @@ do
     function HOUND.Utils.TTS.TransmitSTTS(msg,coalitionID,args,transmitterPos)
         args.modulation = args.modulation or HOUND.Utils.TTS.getdefaultModulation(args.freq)
         args.culture = args.culture or "en-US"
-        if HOUND.Utils.Dcs.isUnit(transmitterPos) or HOUND.Utils.Dcs.isStaticObject(transmitterPos) then
-            transmitterPos = HOUND.Utils.TTS.getTransmitterPos(transmitterPos)
-        end
         return l_stts.TextToSpeech(msg,args.freq,args.modulation,args.volume,args.name,coalitionID,transmitterPos,args.speed,args.gender,args.culture,args.voice,args.googletts,args.azurecreds)
     end
 
     --- Transmit message using HoundTTS
     -- @local
-    function HOUND.Utils.TTS.TransmitHound(msg,coalitionID,args,transmitterPos)
-        local dcsObject = transmitterPos
-        if HOUND.Utils.Dcs.isUnit(dcsObject) or HOUND.Utils.Dcs.isStaticObject(dcsObject) then
-            transmitterPos = HOUND.Utils.TTS.getTransmitterPos(dcsObject)
-        else
-            dcsObject = nil
-        end
+    -- @param msg The message to transmit
+    -- @param coalitionID Coalition to recive transmission
+    -- @param args STTS settings in hash table (minimum required is {freq=})
+    -- @param[opt] transmitterPos DCS Position point or unit name for transmitter
+    -- @param[opt] dcsObject DCS Object for transmitter
+    -- @return currently estimated speechTime
+    function HOUND.Utils.TTS.TransmitHound(msg,coalitionID,args,transmitterPos,dcsObject)
         local transmitter_params = {
             name = args.name,
             freq = args.freq,
@@ -348,7 +359,7 @@ do
         local distanceUnit = "meters"
         local distance = HOUND.Utils.roundToNearest(distanceM,50) or 0
         if distance >= 1000 then
-            distance = string.format("%.1f",tostring(HOUND.Utils.roundToNearest(distanceM,100)/1000))
+            distance = string.format("%.1f",HOUND.Utils.roundToNearest(distanceM,100)/1000)
             distanceUnit = "kilometers"
         end
         return distance .. " " .. distanceUnit

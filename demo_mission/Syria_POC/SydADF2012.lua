@@ -92,7 +92,7 @@ local EWRtoDestroy = EWRcount - EWRtoKeep
   end
 --end 
 
-redIADS = MANTIS:New('SYRIA','SAM','EWR',nil,"red",false,nil,true)
+local redIADS = MANTIS:New('SYRIA','SAM','EWR',nil,"red",false,nil,true)
 redIADS:SetDetectInterval(15)
 redIADS:SetSAMRange(80)
 redIADS:Start()
@@ -129,9 +129,9 @@ redGCI:AddAcceptZone(ZONE_POLYGON:New("RED-BORDER", GROUP:FindByName("SyAF-GCI")
 
 -- Defaults
 redGCI:SetDefaultCAPGrouping(2)
-redGCI:SetDefaultEngageRange(97)    -- ~180km in NM
-redGCI:SetDefaultMissionRange(54)   -- ~100km in NM
-redGCI:SetDefaultDespawnAfterLanding()
+redGCI:SetDefaultEngageRange(97)    -- 97 NM (~180 km)
+redGCI:SetDefaultMissionRange(54)   -- 54 NM (~100 km)
+redGCI:SetDefaultDespawnAfterLanding(true)
 
 redGCI:Start()
 

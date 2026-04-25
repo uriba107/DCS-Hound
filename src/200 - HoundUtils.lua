@@ -567,8 +567,11 @@ do
     -- @param point DCS point
     -- @return[type=table] Shallow copy of point
     function HOUND.Utils.Dcs.copyPoint(point)
-        if HOUND.Utils.Dcs.isPoint(point) then
-            return {x = point.x, y = point.y or nil, z = point.z}
+        if type(point) ~= "table" or type(point.x) ~= "number" then return nil end
+        if point.z ~= nil then
+            return {x = point.x, y = point.y, z = point.z}
+        elseif point.y ~= nil then
+            return {x = point.x, y = 0, z = point.y}
         end
         return nil
     end

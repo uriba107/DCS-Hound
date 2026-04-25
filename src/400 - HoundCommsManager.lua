@@ -324,7 +324,6 @@ do
         end
     end
 
-  
     --- Trsnsmit next message from queue
     -- @local
     -- @param gSelf #Table pointer to self
@@ -345,6 +344,7 @@ do
                     transmitter = gSelf.transmitter
                 })
 
+            gSelf.transmitter = nil
             return timer.getTime() + 10
         end
 

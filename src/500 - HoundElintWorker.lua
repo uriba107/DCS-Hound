@@ -302,17 +302,6 @@ do
         return false
     end
 
-    -- --- add datapoint to emitter
-    -- -- @param emitter DCS UNIT with radar
-    -- -- @param datapoint @{HOUND.Contact.Datapoint} instance
-    -- function HOUND.ElintWorker:addDatapointToEmitter(emitter,datapoint)
-    --     if not self:isTracked(emitter) then
-    --         self:addContact(emitter)
-    --     end
-    --     local HoundContact = self:getContact(emitter)
-    --     HoundContact:AddPoint(datapoint)
-    -- end
-
     --- Site functions
     -- @section Sites
 
@@ -396,19 +385,6 @@ do
                 site:updateMarkers(emitterMarker,drawSites)
             end
         end
-        -- current
-        -- if self.settings:getUseMarkers() then
-        --     for _,contact in pairs(self.contacts) do
-        --         HOUND.Logger.debug("Updating marker for " .. contact:getName())
-        --         contact:updateMarker(self.settings:getMarkerType())
-        --     end
-        -- end
-        -- if self.settings:getMarkSites() then
-        --     for _,site in pairs(self.sites) do
-        --         HOUND.Logger.debug("Updating marker for " .. site:getName())
-        --         site:updateMarker(HOUND.MARKER.NONE)
-        --     end
-        -- end
     end
 
     --- Perform a sample of all emitting radars against all platforms
@@ -426,13 +402,9 @@ do
         else
             Radars = HoundUtils.Elint.getActiveRadars(self:getCoalition())
         end
-        if #Radars == 0 then return end
-        -- env.info("Recivers: " .. table.getn(self.platform) .. " | Radars: " .. table.getn(Radars))
+        if HOUND.Length(Radars) == 0 then return end
         for _,RadarName in ipairs(Radars) do
             local radar = Unit.getByName(RadarName)
-            -- local RadarUid = radar:getName()
-            -- local RadarType = radar:getTypeName()
-            -- local RadarName = radar:getName()
             local radarPos = radar:getPosition().p
             radarPos.y = radarPos.y + radar:getDesc()["box"]["max"]["y"] -- use vehicle bounting box for height
             local _,isRadarTracking = radar:getRadar()
@@ -477,9 +449,6 @@ do
                     if self.settings:getUseMarkers() then
                         contact:updateMarker(self.settings:getMarkerType())
                     end
-                    -- if self.settings:getMarkSites() then
-                    --     self:getSite(contact,true):updateMarker(HOUND.MARKER.NONE)
-                    -- end
                 end
 
                 if contact:isTimedout() and not contact:getPreBriefed() then
@@ -498,8 +467,6 @@ do
                     local contactEvents = contact:getEventQueue()
                     while #contactEvents > 0 do
                         local event = table.remove(contactEvents,1)
-                        -- HOUND.Logger.onScreenDebug(contact:getDcsName() .. " has triggered " .. HOUND.reverseLookup(HOUND.EVENTS,event.id),5)
-                        -- HOUND.Logger.trace(contact:getDcsName() .. " has triggered " .. HOUND.reverseLookup(HOUND.EVENTS,event.id))
                         event.houndId = self.settings:getId()
                         event.coalition = self.settings:getCoalition()
                         HOUND.EventHandler.publishEvent(event)
@@ -513,7 +480,6 @@ do
                 local siteEvents = site:getEventQueue()
                 while #siteEvents > 0 do
                     local event = table.remove(siteEvents,1)
-                    -- HOUND.Logger.onScreenDebug(site:getDcsName() .. " has triggered " .. HOUND.reverseLookup(HOUND.EVENTS,event.id),5)
                     event.houndId = self.settings:getId()
                     event.coalition = self.settings:getCoalition()
                     HOUND.EventHandler.publishEvent(event)

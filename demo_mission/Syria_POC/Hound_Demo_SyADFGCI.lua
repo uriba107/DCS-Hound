@@ -113,10 +113,19 @@ do
                 -- select SEAD flight
                 local posCoord = COORDINATE:NewFromVec3(site:getPos())
                 local seadFlights = {'SEAD_NORTH','SEAD_WEST','SEAD_SOUTH'}
+                local coordCache = {}
+                for _, name in ipairs(seadFlights) do
+                    local seadGrp = GROUP:FindByName(name)
+                    if seadGrp then
+                        coordCache[name] = seadGrp:GetCoordinate()
+                    end
+                end
                 table.sort(seadFlights,
-                            function (f1,f2) 
-                                local c1 = GROUP:FindByName(f1):GetCoordinate()
-                                local c2 = GROUP:FindByName(f2):GetCoordinate()
+                            function (f1,f2)
+                                local c1 = coordCache[f1]
+                                local c2 = coordCache[f2]
+                                if not c1 then return false end
+                                if not c2 then return true end
                                 return posCoord:Get2DDistance(c1) < posCoord:Get2DDistance(c2)
                             end)
                 -- initilize mission

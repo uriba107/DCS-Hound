@@ -112,7 +112,7 @@ function build_docs {
     $LDOC -c config_general.ld -p "Hound<br> ELINT for DCS" --merge --multimodule  --style !fixed .
 
     highlight "Building Dev Docs"
-    $LDOC -c config_developer.ld -p "Hound<br> ELINT for DCS" -a -d docs/dev --merge --multimodule  --style !fixed src
+    $LDOC -c config_developer.ld -p "Hound<br> ELINT for DCS" -a -d docs/web/dev --merge --multimodule  --style !fixed src
 }
 
 # function build_markdown_docs {
@@ -122,7 +122,7 @@ function build_docs {
 
 function build_llm_docs {
     highlight "Building Markdown API Docs + LLM Integration Guide"
-    python3 tools/generate_md_docs.py --src-dir ./src --public-output-dir ./docs --dev-output-dir ./docs/dev -v
+    python3 tools/generate_md_docs.py --src-dir ./src --public-output-dir ./ --dev-output-dir ./ --guides-dir ./docs -v
 }
 
 function build_toc {

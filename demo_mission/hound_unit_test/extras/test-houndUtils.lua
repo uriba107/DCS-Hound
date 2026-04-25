@@ -196,8 +196,8 @@ do
 
     function TestHoundUtils:TestText()
         -- HOUND.Utils.Text.getLL
-        lu.assertEquals(HOUND.Utils.Text.getLL(33.2533333,42.1792),"N33°15'11\" E42°10'45\"")
-        lu.assertEquals(HOUND.Utils.Text.getLL(33.2533333,42.1791666,true),"N33°15.200' E42°10.750'")
+        lu.assertEquals(HOUND.Utils.Text.getLL(33.2533333,42.1792),"N33°15'11\" E042°10'45\"")
+        lu.assertEquals(HOUND.Utils.Text.getLL(33.2533333,42.1791666,true),"N33°15.200' E042°10.750'")
         lu.assertEquals(HOUND.Utils.Text.getLL(-35.443,-124.5543),"S35°26'34\" W124°33'15\"")
         lu.assertEquals(HOUND.Utils.Text.getLL(-35.443,-124.5543,true),"S35°26.580' W124°33.258'")
 

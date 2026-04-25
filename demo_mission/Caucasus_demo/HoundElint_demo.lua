@@ -5,8 +5,6 @@ do
         l_stts.GOOGLE_CREDENTIALS = "E:\\Dropbox\\uri\\Dropbox\\DCS\\Mission Building\\googletts.json"
     end
     HOUND.USE_LEGACY_MARKS = false
-    -- HOUND.TTS_ENGINE = {'STTS','GRPC'}
-    -- HOUND.ENABLE_KALMAN = true
 end
 
 do
