@@ -111,13 +111,13 @@ do
                 local grp = site:getDcsObject()
                 if not grp then return end
                 -- select SEAD flight
-                local pos = site:getPos()
+                local posCoord = COORDINATE:NewFromVec3(site:getPos())
                 local seadFlights = {'SEAD_NORTH','SEAD_WEST','SEAD_SOUTH'}
                 table.sort(seadFlights,
                             function (f1,f2) 
-                                local p1 = Group.getByName(f1):getUnit(1):getPoint()
-                                local p2 = Group.getByName(f2):getUnit(1):getPoint()
-                                return mist.utils.get2DDist(pos,p1) < mist.utils.get2DDist(pos,p2)
+                                local c1 = GROUP:FindByName(f1):GetCoordinate()
+                                local c2 = GROUP:FindByName(f2):GetCoordinate()
+                                return posCoord:Get2DDistance(c1) < posCoord:Get2DDistance(c2)
                             end)
                 -- initilize mission
                 local mooseGroup = GROUP:FindByName(site:getDcsName())
@@ -126,7 +126,7 @@ do
                 env.info(tostring(sector:hasController()))
                 local controllerFreq = nil
                 if sector:hasController() then
-                    controllerFreq = string.split(sector:getControllerFreq()[1]," ")
+                    controllerFreq = UTILS.Split(sector:getControllerFreq()[1]," ")
                     if controllerFreq[2] == "FM" then controllerFreq[3] = 1 else controllerFreq[3] = 0 end
                     mission:SetRadio(tonumber(controllerFreq[1]),controllerFreq[3])
                 end
