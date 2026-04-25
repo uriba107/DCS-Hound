@@ -135,7 +135,7 @@ do
                 then
                     msg = msg .. ", Reported " .. HoundUtils.TTS.getVerbalContactAge(self.first_seen) .. " ago"
                 else
-                    msg = msg .. ", ellipse " ..  HoundUtils.TTS.simplfyDistance(self.uncertenty_data.major) .. " by " ..  HoundUtils.TTS.simplfyDistance(self.uncertenty_data.minor) .. ", aligned bearing " .. HoundUtils.TTS.toPhonetic(string.format("%03d",self.uncertenty_data.az))
+                    msg = msg .. ", ellipse " ..  HoundUtils.TTS.simplifyDistance(self.uncertenty_data.major) .. " by " ..  HoundUtils.TTS.simplifyDistance(self.uncertenty_data.minor) .. ", aligned bearing " .. HoundUtils.TTS.toPhonetic(string.format("%03d",self.uncertenty_data.az))
                     msg = msg .. ", Tracked for " .. HoundUtils.TTS.getVerbalContactAge(self.first_seen) .. ", last seen " .. HoundUtils.TTS.getVerbalContactAge(self.last_seen) .. " ago"
                 end
         end
