@@ -102,11 +102,11 @@ do
 
     function HOUND.Utils.AzimuthAverage(azimuths)
         -- TODO: fix this function. Circular mean has errors, bad ones..
-        if not azimuths or HOUND.Length(azimuths) == 0 then return nil end
+        if not azimuths or #azimuths == 0 then return nil end
 
         local sumSin = 0
         local sumCos = 0
-        for i=1, HOUND.Length(azimuths) do
+        for i=1, #azimuths do
             sumSin = sumSin + l_math.sin(azimuths[i])
             sumCos = sumCos + l_math.cos(azimuths[i])
         end
@@ -215,7 +215,7 @@ do
             "Come back with E T A, T O T, and B D A.",
             " "
         }
-        return response[l_math.max(1,l_math.min(l_math.ceil(timer.getAbsTime() % HOUND.Length(response)),HOUND.Length(response)))]
+        return response[l_math.max(1,l_math.min(l_math.ceil(timer.getAbsTime() % #response),#response))]
     end
 
     --- get coalition string
@@ -335,10 +335,16 @@ do
             override,flightMember = flightMember,override
         end
         local formationCallsign = string.gsub(player.callsign.name,"[%d%s]","")
+        callsign = formationCallsign
 
-        callsign =  formationCallsign .. " " .. player.callsign[2]
-        if flightMember then
-            callsign = callsign .. " " .. player.callsign[3]
+        if string.len(formationCallsign) == 0 and type(player.callsign.name) == "string" then
+            callsign = player.callsign.name
+        end
+        if HOUND.Length(player.callsign) > 1 then
+            callsign = callsign .. " " .. player.callsign[2]
+            if flightMember then
+                callsign = callsign .. " " .. player.callsign[3]
+            end
         end
 
         if type(override) == "table" then
@@ -353,19 +359,31 @@ do
         end
 
         if not DcsUnit then return string.upper(callsign:match( "^%s*(.-)%s*$" )) end
+        local rawPlayerName = DcsUnit:getPlayerName()
+        if rawPlayerName then
+            local callsign = rawPlayerName
 
-        local playerName = DcsUnit:getPlayerName()
-        playerName = playerName:match("%a+%s%d+[?%p%s*]%d*")
-        if playerName then
-            callsign = playerName
-            local base = string.match(callsign,"%a+")
-            local num = tonumber(string.match(callsign,"%d+"))
-            local memberNum = string.gsub(callsign,"%a+%s%d+[%p%s*]","")
-            if memberNum:len() > 0 then
-                memberNum = tonumber(memberNum:match("%d+"))
-            else
-                memberNum = nil
+            -- 1. Split by the mandatory delimiter "|"
+            -- If no pipe exists, 'callsign' remains 'rawPlayerName'
+            if rawPlayerName:find("|") then
+                callsign = rawPlayerName:match("([^|]+)")
             end
+
+            -- 2. Clean up whitespace
+            callsign = callsign:match("^%s*(.-)%s*$")
+
+            -- 3. Extract the "Base" (Everything before the first digit, unless digit is part of the string i.e. "sn4ke")
+            local base = callsign:match("^(.-)%s+[%d]") or callsign
+            base = base:match("^%s*(.-)%s*$")
+
+            -- 4. Extract all digits into a list
+            local numbers = {}
+            for n in callsign:gmatch("%d+") do
+                table.insert(numbers, tonumber(n))
+            end
+
+            local num = numbers[1]       -- First number found (e.g., the '1' in Carbon 1-1)
+            local memberNum = numbers[2] -- Second number found (e.g., the '2' in Carbon 1-2)
 
             callsign = base
             if type(num) == "number" and type(memberNum) == "number" then
@@ -390,7 +408,7 @@ do
     -- @return string random callsign from pool
     function HOUND.Utils.getHoundCallsign(namePool)
         local SelectedPool = HOUND.DB.CALLSIGNS[namePool] or HOUND.DB.CALLSIGNS.GENERIC
-        return SelectedPool[l_math.random(1, HOUND.Length(SelectedPool))]
+        return SelectedPool[l_math.random(1, #SelectedPool)]
     end
 
     --- Unit use DMM
@@ -542,11 +560,17 @@ do
     -- @return[type=Bool] True if is valid point
     function HOUND.Utils.Dcs.isPoint(point)
         if type(point) ~= "table" then return false end
-        -- local point_meta = getmetatable(point)
-        -- local vec2_meta = getmetatable({x=0,z=0})
-        -- local vec3_meta = getmetatable({x=0,z=0,y=0})
-        -- return point_meta == vec3_meta or point_meta == vec2_meta
         return (type(point.x) == "number") and (type(point.z) == "number")
+    end
+
+    --- shallow copy DCS points
+    -- @param point DCS point
+    -- @return[type=table] Shallow copy of point
+    function HOUND.Utils.Dcs.copyPoint(point)
+        if HOUND.Utils.Dcs.isPoint(point) then
+            return {x = point.x, y = point.y or nil, z = point.z}
+        end
+        return nil
     end
 
     --- check if object is DCS Unit
@@ -587,6 +611,7 @@ do
     function HOUND.Utils.Dcs.getPlayers(coalitionId)
         if type(coalitionId) ~= "number" or (coalitionId > 2 or coalitionId < 0) then return {} end
         local players = coalition.getPlayers(coalitionId)
+
         local humanUnits = {}
         for i = 1, #players do
             local playerUnit = players[i]
@@ -1023,13 +1048,13 @@ do
         -- @param self Hound Marker instance
         instance.remove = function(self)
             if self.id > 0 then
-                local GC = (self.id % 5 == 0)
+                -- local GC = (self.id % 5 == 0)
                 trigger.action.removeMark(self.id)
                 self.id = -1
                 self.type = HOUND.Utils.Marker.Type.NONE
-                if GC then
-                    collectgarbage("collect")
-                end
+                -- if GC then
+                --     collectgarbage("step",100)
+                -- end
             end
         end
 
@@ -1062,21 +1087,21 @@ do
                 trigger.action.textToAll(coalition,self.id, pos,lineColor,fillColor,fontSize,true,HOUND.MARKER_TEXT_POINTER .. text)
                 return true
             end
-
-            if HOUND.Length(pos) == 2 and HOUND.Utils.Dcs.isPoint(pos.p) and type(pos.r) == "number" then
+            local len_pos = HOUND.Length(pos)
+            if len_pos == 2 and HOUND.Utils.Dcs.isPoint(pos.p) and type(pos.r) == "number" then
                 self.type = HOUND.Utils.Marker.Type.CIRCLE
                 trigger.action.circleToAll(coalition,self.id, pos.p,pos.r,lineColor,fillColor,lineType,true)
                 return true
             end
 
-            if HOUND.Length(pos) == 4 then
+            if len_pos == 4 then
                 self.type = HOUND.Utils.Marker.Type.FREEFORM
                 trigger.action.markupToAll(6,coalition,self.id,
                     pos[1], pos[2], pos[3], pos[4],
                     lineColor,fillColor,lineType,true)
             end
 
-            if HOUND.Length(pos) == 8 then
+            if len_pos == 8 then
                 self.type = HOUND.Utils.Marker.Type.FREEFORM
                 trigger.action.markupToAll(7,coalition,self.id,
                     pos[1], pos[2], pos[3], pos[4],
@@ -1084,7 +1109,7 @@ do
                     lineColor,fillColor,lineType,true)
             end
 
-            if HOUND.Length(pos) == 16 then
+            if len_pos == 16 then
                 self.type = HOUND.Utils.Marker.Type.FREEFORM
                 trigger.action.markupToAll(7,coalition,self.id,
                     pos[1], pos[2], pos[3], pos[4],
@@ -1123,11 +1148,12 @@ do
                 if HOUND.Utils.Dcs.isPoint(pos) then
                     self:setPos(pos)
                 end
-                if HOUND.Length(pos) == 2 and type(pos.r) == "number" and HOUND.Utils.Dcs.isPoint(pos.p) then
+                local len_pos = HOUND.Length(pos)
+                if len_pos == 2 and type(pos.r) == "number" and HOUND.Utils.Dcs.isPoint(pos.p) then
                     self:setPos(pos.p)
                     self:setRadius(pos.r)
                 end
-                if type(pos) == "table" and HOUND.Length(pos) > 2 and HOUND.Utils.Dcs.isPoint(pos[1]) then
+                if type(pos) == "table" and len_pos > 2 and HOUND.Utils.Dcs.isPoint(pos[1]) then
                     return self:_replace(args)
                 end
             end
@@ -1383,7 +1409,7 @@ do
                     if drawObject["name"] == zoneName and drawObject["primitiveType"] == "Polygon" then
                         local points = {}
                         local theta = nil
-                        if drawObject["polygonMode"] == "free" and HOUND.Length(drawObject["points"]) >2 then
+                        if drawObject["polygonMode"] == "free" and #drawObject["points"] >2 then
                             points = l_mist.utils.deepCopy(drawObject["points"])
                             table.remove(points)
                         end
@@ -1418,7 +1444,7 @@ do
                                 point.y = x * l_math.sin(theta) + y * l_math.cos(theta)
                             end
                         end
-                        if HOUND.Length(points) < 3 then return nil end
+                        if #points < 3 then return nil end
                         local objectX,objecty = drawObject["mapX"],drawObject["mapY"]
                         for _,point in pairs(points) do
                             point.x = point.x + objectX

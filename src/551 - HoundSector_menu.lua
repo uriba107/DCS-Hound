@@ -131,7 +131,7 @@ do
 
         local grpMenuDone = {}
         if HOUND.Length(self.comms.enrolled) > 0 then
-            if HOUND.Length(sitesData) and not HOUND.setContains(sitesData.noData) then
+            if HOUND.Length(sitesData) > 0 and not HOUND.setContains(sitesData, "noData") then
                 -- do all the caching needed
                 for _,siteData in ipairs(sitesData) do
                     if not HOUND.setContainsValue(typesSpotted,siteData.typeAssigned) then
