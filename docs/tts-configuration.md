@@ -8,13 +8,12 @@ Guide to configuring voice communications. **TTS is optional** - Hound works wit
 
 | Provider     | Setup    | Voices                                                          | Best For                                       |
 | ------------ | -------- | --------------------------------------------------------------- | ---------------------------------------------- |
-| **HoundTTS** | Easy     | Piper (offline), SAPI (Windows), Google, Azure, AWS, ElevenLabs | **All users (default)**                        |
+| **HoundTTS** | Easy     | Piper (offline), SAPI (Windows), Google, Azure, AWS, ElevenLabs, OpenAI (and compatible) | **All users (default)**                        |
 | **STTS**     | Easy     | Windows TTS, Google Cloud (opt.)                                | Legacy — HoundTTS supersedes it                |
-| **gRPC**     | Advanced | Cloud (AWS/Azure/Google), Local                                 | Not recommended due to concurrency limitations |
 
 HoundTTS is a native C++ DLL that connects directly to SRS — no PowerShell, no focus stealing, fully parallel. If HoundTTS is installed, it automatically takes over from STTS transparently.
 
-STTS and gRPC both require desanitizing DCS scripting engine (see [installation.md](installation.md#3-desanitize-scripting-engine-if-using-tts)).
+STTS requires desanitizing DCS scripting engine (see [installation.md](installation.md#3-desanitize-scripting-engine-if-using-tts)).
 
 ---
 
@@ -26,8 +25,9 @@ Hound automatically detects and uses available TTS:
 
 1. HoundTTS (if present) ← **default**
 2. STTS (if present — HoundTTS takes over transparently even if STTS is specified)
-3. gRPC (if present)
-4. None (no voice)
+3. None (no voice)
+
+> **Note:** gRPC TTS support was removed in 0.5.1. Only HoundTTS and STTS are dispatched.
 
 ### Override Default Order:
 
@@ -35,14 +35,8 @@ Hound automatically detects and uses available TTS:
 -- Set before creating Hound instance
 HOUND.TTS_ENGINE = {'HoundTTS', 'STTS'}  -- Default
 
--- Prefer gRPC over STTS
-HOUND.TTS_ENGINE = {'GRPC', 'STTS'}
-
 -- STTS only
 HOUND.TTS_ENGINE = {'STTS'}
-
--- gRPC only
-HOUND.TTS_ENGINE = {'GRPC'}
 
 -- Disable TTS
 HOUND.TTS_ENGINE = {}
@@ -325,45 +319,6 @@ local tts_config = {
 
 ---
 
-## gRPC Configuration
-
-**Installation:** https://github.com/DCS-gRPC/rust-server → Configure cloud providers if needed
-
-**Key distinctions:**
-
-- `speed` uses **50-250 percentage** (not -10 to +10) - or converts STTS-style values
-- `volume` is **string** `"1.0"` (same as STTS)
-- Uses `name` parameter (not `voice`) for full voice specification
-- Supports `provider` block for cloud TTS (AWS/Azure/Google)
-
-```lua
--- Basic
-HoundBlue:enableController({freq = "251.000", modulation = "AM"})
-
--- Full gRPC options
-local tts_config = {
-    freq = "251.000",
-    modulation = "AM",
-    volume = "1.0",                          -- "0.0" to "1.0" (STRING)
-    speed = 100,                             -- 50 (slow) to 250 (fast), percentage
-    gender = "male",                         -- "male" or "female"
-    culture = "en-US",                       -- Voice culture
-    name = "Microsoft David Desktop",        -- Full voice name (overrides gender/culture)
-    provider = {                             -- Provider settings (optional)
-        aws = {voice = "Matthew", region = "us-east-1"},
-        azure = {voice = "en-US-GuyNeural", region = "westus"},
-        gcloud = {voice = "en-US-Neural2-D"},
-        windows = {}
-    }
-}
-```
-
-**Speed examples:** `50` (slow), `100` (normal), `150` (fast), `200` (very fast)
-
-📖 **Cloud setup:** See DCS-gRPC documentation for provider configuration
-
----
-
 ## Configuration Examples
 
 ```lua
@@ -409,13 +364,6 @@ HoundBlue:enableController({
     speed = -2                -- STTS: -10 to +10
 })
 
--- gRPC: Cloud provider
-HoundBlue:enableController({
-    freq = "251.000",
-    modulation = "AM",
-    speed = 125,              -- gRPC: 50-250 percentage
-    provider = {aws = {voice = "Matthew"}}
-})
 ```
 
 ---
@@ -423,8 +371,8 @@ HoundBlue:enableController({
 ## Troubleshooting
 
 **No voice:** Check TTS installed/loaded before Hound, desanitized, SRS running, correct frequency.  
-**Speed issues:** HoundTTS uses `1.0` (normal), STTS uses `-5` to `5`, gRPC uses `75` to `150`.  
-**Wrong voice:** HoundTTS uses `provider` + `voice`, STTS uses `voice = "David"`, gRPC uses `name = "Full Name"`.  
+**Speed issues:** HoundTTS uses `1.0` (normal), STTS uses `-5` to `5`.  
+**Wrong voice:** HoundTTS uses `provider` + `voice`, STTS uses `voice = "David"`.  
 **Volume:** `volume = "1.0"` (string!), also check SRS/DCS/system volume.  
 **Cloud not working:** Check `HoundTTS-credentials.ini` has correct API keys/paths.
 
@@ -447,6 +395,5 @@ See [troubleshooting.md](troubleshooting.md) for detailed diagnostics.
 | -------- | ----------- | ---------- | -------------- | -------------------- | ------------------------ |
 | HoundTTS | `"251.000"` | `"AM"`     | `0.5` to `2.0` | `voice = "name"`     | `provider = "sapi"`      |
 | STTS     | `"251.000"` | `"AM"`     | `-10` to `+10` | `voice = "David"`    | N/A                      |
-| gRPC     | `"251.000"` | `"AM"`     | `50` to `250`  | `name = "Full Name"` | `provider = {aws={...}}` |
 
 All use `volume = "1.0"` (string), `gender = "male"/"female"`, `culture = "en-US"`

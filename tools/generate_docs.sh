@@ -48,8 +48,9 @@ if [ "$HELP" = true ]; then
     echo "in the HOUND ELINT system source files."
     echo ""
     echo "Generated files:"
-    echo "  - docs/generated/hound_full_api.md    - Complete API documentation"
-    echo "  - docs/generated/hound_public_api.md  - Public API documentation only"
+    echo "  - HOUND_API_REFERENCE.md              - Public API documentation (repo root)"
+    echo "  - DEVELOPER_API_REFERENCE.md           - Full developer documentation (repo root)"
+    echo "  - llm-integration-guide.md             - LLM integration guide (repo root)"
     exit 0
 fi
 
@@ -87,8 +88,8 @@ if [ $? -eq 0 ]; then
     echo -e "${GREEN}✓ Documentation generated successfully!${NC}"
     echo ""
     echo "Generated files:"
-    echo -e "  ${BLUE}Public API:${NC}       docs/HOUND_API_REFERENCE.md"
-    echo -e "  ${BLUE}Developer API:${NC}    docs/dev/DEVELOPER_API_REFERENCE.md"
+    echo -e "  ${BLUE}Public API:${NC}       HOUND_API_REFERENCE.md"
+    echo -e "  ${BLUE}Developer API:${NC}    DEVELOPER_API_REFERENCE.md"
     echo ""
     echo "The HOUND_API_REFERENCE.md is optimized for AI agents and contains the public API"
     echo "that users need to interact with HOUND. The DEVELOPER_API_REFERENCE.md contains"

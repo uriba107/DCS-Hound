@@ -65,7 +65,7 @@ If you want voice communications:
   1. First action: **DO SCRIPT FILE** → `DCS-SimpleTextToSpeech.lua`
   2. Second action: **DO SCRIPT FILE** → `HoundElint.lua`
 
-![Script Load Order](../../images/hound_setup.jpg)
+![Script Load Order](../images/hound_setup.jpg)
 
 📖 **More details:** [Installation Guide](installation.md)
 

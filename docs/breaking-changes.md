@@ -3,8 +3,52 @@
 Important changes between Hound versions that may break existing missions.
 
 ---
+## Version 0.5.x
 
-## Version 0.4.x (Current)
+### From 0.5.0 to 0.5.1
+#### Function HOUND.Utils.TTS.simplfyDistance renamed
+
+**Breaking Change:**
+Function `HOUND.Utils.TTS.simplfyDistance` renamed to `HOUND.Utils.TTS.simplifyDistance` to fix a typo.
+
+**Impact:**
+- Any code calling `HOUND.Utils.TTS.simplfyDistance` will fail with a runtime error
+- Affects custom scripts that use the TTS utility function for distance formatting
+
+**Old Behavior (0.5.0):**
+
+```lua
+HOUND.Utils.TTS.simplfyDistance(distance)  -- Typo in function name
+```
+
+**New Behavior (0.5.1):**
+
+```lua
+HOUND.Utils.TTS.simplifyDistance(distance)  -- Corrected spelling
+```
+
+**Migration:**
+
+```lua
+-- Change all occurrences of:
+HOUND.Utils.TTS.simplfyDistance(distance)
+-- To:
+HOUND.Utils.TTS.simplifyDistance(distance)
+```
+
+#### Removed DCS-gRPC Support for TTS
+
+**Breaking Change:**
+Due to numerous limitations, gRPC as TTS provider for hound has been dropped in 0.5.1
+
+**Impact:**
+If you are using gRPC as your sole TTS provider, no radio calls will be made.
+
+**Mitigation:**
+Revert to STTS or install [HoundTTS](https://github.com/uriba107/HoundTTS)
+
+
+## Version 0.4.x 
 
 ### From 0.3.x to 0.4.x
 
@@ -315,7 +359,8 @@ Original release, no breaking changes.
 
 | Version   | Compatible With | Notes                           |
 | --------- | --------------- | ------------------------------- |
-| **0.4.x** | 0.4.x           | Current                         |
+| **0.5.x** | 0.5.x           | Current                         |
+| **0.4.x** | 0.4.x           | Supported                       |
 | **0.3.x** | 0.3.x           | Minor breaking changes from 0.2 |
 | **0.2.x** | 0.2.x           | Major breaking changes from 0.1 |
 | **0.1.x** | 0.1.x           | Original                        |

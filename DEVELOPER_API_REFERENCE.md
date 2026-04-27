@@ -2,7 +2,7 @@
 
 This document provides comprehensive API documentation for the HOUND ELINT system, automatically generated from LDOC comments in the source code.
 
-*Generated on: 2026-02-25 00:19:36*
+*Generated on: 2026-04-27 10:40:54*
 
 ## Overview
 
@@ -231,6 +231,18 @@ get Length of a table
 
 **Returns:**
 - (length): of T
+
+*Note: This is a local function*
+
+### `HOUND.shallowCopy(T)`
+
+Shallow Copy a table
+
+**Parameters:**
+- `table` (T): to copy (must be flat table)
+
+**Returns:**
+- (copied): table
 
 *Note: This is a local function*
 
@@ -1134,6 +1146,18 @@ Return default Modulation based on frequency
 **Returns:**
 - (Modulation): string "AM" or "FM"
 
+### `HOUND.Utils.TTS.getTransmitterPos(dcsObject)`
+
+returns configured transmitter position
+
+**Parameters:**
+- `DCS` (dcsObject): object (unit or static object)
+
+**Returns:**
+- (DCS): position of transmitter or nil if none set
+
+*Note: This is a local function*
+
 ### `HOUND.Utils.TTS.Transmit(msg, coalitionID, args, transmitterPos)`
 
 Transmit message using STTS (private)
@@ -1142,7 +1166,7 @@ Transmit message using STTS (private)
 - `The` (msg): message to transmit
 - `Coalition` (coalitionID): to recive transmission
 - `STTS` (args): settings in hash table (minimum required is {freq=})
-- `transmitterPos` (opt): DCS Position point for transmitter
+- `transmitterPos` (opt): DCS Position point or unit name for transmitter
 
 **Returns:**
 - (STTS.TextToSpeech): return value recived from STTS, currently estimated speechTime
@@ -1155,28 +1179,23 @@ Transmit message using STTS
 - `The` (msg): message to transmit
 - `Coalition` (coalitionID): to recive transmission
 - `STTS` (args): settings in hash table (minimum required is {freq=})
-- `transmitterPos` (opt): DCS Position point for transmitter
+- `transmitterPos` (opt): DCS Position point or unit name for transmitter
 
 **Returns:**
 - (currently): estimated speechTime
 
 *Note: This is a local function*
 
-### `HOUND.Utils.TTS.TransmitHound(msg, coalitionID, args, transmitterPos)`
+### `HOUND.Utils.TTS.TransmitHound(msg, coalitionID, args, transmitterPos, dcsObject)`
 
 Transmit message using HoundTTS
-
-*Note: This is a local function*
-
-### `HOUND.Utils.TTS.TransmitGRPC(msg, coalitionID, args, transmitterPos)`
-
-Transmit message using gRPC.tts
 
 **Parameters:**
 - `The` (msg): message to transmit
 - `Coalition` (coalitionID): to recive transmission
 - `STTS` (args): settings in hash table (minimum required is {freq=})
-- `transmitterPos` (opt): DCS Position point for transmitter
+- `transmitterPos` (opt): DCS Position point or unit name for transmitter
+- `dcsObject` (opt): DCS Object for transmitter
 
 **Returns:**
 - (currently): estimated speechTime
@@ -1266,7 +1285,7 @@ get estimated message read time returns estimated time in seconds STTS will need
 **Returns:**
 - (estimated): message read time in seconds
 
-### `HOUND.Utils.TTS.simplfyDistance(distanceM)`
+### `HOUND.Utils.TTS.simplifyDistance(distanceM)`
 
 simplify distance below 1km function will return number in meters eg. 140m => 150m, 520m => 500m, 4539m => 4.5km
 
@@ -2869,15 +2888,6 @@ add text message to queue
 ### `HOUND.Comms.Manager:getNextMsg()`
 
 Get next message from queue
-
-*Note: This is a local function*
-
-### `HOUND.Comms.Manager:getTransmitterPos()`
-
-returns configured transmitter position
-
-**Returns:**
-- (DCS): position of transmitter or nil if none set
 
 *Note: This is a local function*
 
@@ -4758,7 +4768,7 @@ built in dcs onEvent
 
 *Note: This is a local function*
 
-### `HoundElint:defaultEventHandler(remove)`
+### `HoundElint:defaultEventHandler(purge)`
 
 enable/disable Hound instance internal event handling
 

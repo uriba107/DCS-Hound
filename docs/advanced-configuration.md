@@ -165,7 +165,7 @@ Filter events by coalition in handlers: `if event.coalition == coalition.side.BL
 -- Set BEFORE creating instances
 HOUND.setMgrsPresicion(5)                     -- MGRS precision
 HOUND.showExtendedInfo(false)                 -- Shorter reports
-HOUND.TTS_ENGINE = {'GRPC', 'STTS'}          -- TTS priority
+HOUND.TTS_ENGINE = {'HOUNDTTS', 'STTS'}          -- TTS priority
 HOUND.FORCE_MANAGE_MARKERS = true             -- Force internal marker IDs
 HOUND.Utils.setInitialMarkId(20000)
 

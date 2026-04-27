@@ -17,7 +17,6 @@ Choose **ONE** of these Text-To-Speech solutions:
 
 - **[HoundTTS](https://github.com/uriba107/HoundTTS)** - **Recommended (default)**, native C++ DLL, 6 TTS providers, no PowerShell
 - **[DCS-SimpleTextToSpeech (STTS)](https://github.com/ciribob/DCS-SimpleTextToSpeech)** - Legacy (HoundTTS takes over transparently if both installed)
-- **[DCS-gRPC](https://github.com/DCS-gRPC/rust-server)** - Not recommended due to parallel transmission limitations
 
 ---
 
@@ -49,11 +48,7 @@ If you want voice communications, install a TTS solution:
 2. Follow STTS installation instructions
 3. Requires desanitizing DCS scripting engine (see below)
 
-#### Option C: gRPC (Not recommended)
-
-1. Download from: https://github.com/DCS-gRPC/rust-server
-2. Follow gRPC installation and setup
-3. Known parallel transmission issues with Hound
+> **Note:** gRPC TTS support was removed in 0.5.1. See [breaking-changes.md](breaking-changes.md) for details.
 
 ### 3. Desanitize Scripting Engine (If Using TTS)
 
@@ -85,7 +80,6 @@ Comment them out:
 | ---------------- | -------------------------------- |
 | HoundTTS         | None (loads before sanitization) |
 | STTS             | `os`, `io`, `lfs`                |
-| gRPC             | `os`, `io`, `lfs`                |
 | CSV Export       | `io`, `lfs`                      |
 | Map markers only | None                             |
 
@@ -219,11 +213,11 @@ end
 
 ### Voice Not Working
 
-**Cause:** TTS not installed, or scripting engine not desanitized (STTS/gRPC only)
+**Cause:** TTS not installed, or scripting engine not desanitized (STTS requires desanitization; HoundTTS requires either MissionScripting.lua line or desanitization)
 
 **Fix:**
 
-1. **HoundTTS:** Verify DLL installed and `MissionScripting.lua` line added (no desanitization needed)
+1. **HoundTTS:** Verify DLL installed and `MissionScripting.lua` line added (no desanitization needed), or desanitize for auto deploy
 2. **STTS:** Edit `DCS World\Scripts\MissionScripting.lua`, comment out sanitize lines (see above), restart DCS
 3. Verify SRS is running and correct frequency tuned
 
@@ -288,7 +282,7 @@ C:\Users\<YourName>\Saved Games\DCS.openbeta\
 1. Install Hound on server machine
 2. Desanitize server's scripting engine
 3. Include all scripts in .miz file using **DO SCRIPT FILE**
-4. Server needs TTS software if using voice (HoundTTS recommended, STTS/gRPC also supported)
+4. Server needs TTS software if using voice (HoundTTS recommended, STTS also supported)
 
 ### Client Requirements:
 

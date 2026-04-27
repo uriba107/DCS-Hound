@@ -182,16 +182,6 @@ ElevenLabs free tier only allows one concurrent WebSocket connection. Hound rout
 
 - Use a paid ElevenLabs plan, or choose a different provider for Hound
 
-### gRPC Parallel Transmissions
-
-**Issue:**
-gRPC has known limitations with parallel transmissions in DCS. When Controller, ATIS, and Notifier transmit simultaneously, conflicts occur.
-
-**Solution:**
-
-- Use HoundTTS instead (native non-blocking parallel transmissions)
-- Or use STTS as fallback
-
 ### SRS Requirements
 
 **Issue:**

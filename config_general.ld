@@ -1,6 +1,6 @@
 title = 'Hound Documentation'
 description='Hound ELINT for DCS'
-dir='docs'
+dir='docs/web'
 file = {'src'}
 file.exclude = {
 'src/010 - HoundLogger.lua',

@@ -114,19 +114,6 @@ local notifier_config = {
 }
 ```
 
-### Advanced Configuration (gRPC):
-
-```lua
-local notifier_config = {
-    freq = "243.000",
-    modulation = "AM",
-    gender = "male",
-    culture = "en-US",
-    speed = 100,
-    volume = "1.0"
-}
-```
-
 📖 **Full TTS options:** [TTS Configuration](tts-configuration.md)
 
 ---

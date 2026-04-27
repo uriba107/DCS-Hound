@@ -2,7 +2,7 @@
 
 This document provides public API documentation for the HOUND ELINT system, focusing on functions and classes intended for external use.
 
-*Generated on: 2026-02-25 00:19:36*
+*Generated on: 2026-04-27 10:40:53*
 
 ## Overview
 
@@ -781,7 +781,7 @@ built in dcs onEvent
 
 *Note: This is a local function*
 
-### `HoundElint:defaultEventHandler(remove)`
+### `HoundElint:defaultEventHandler(purge)`
 
 enable/disable Hound instance internal event handling
 

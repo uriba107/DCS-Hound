@@ -1,0 +1,29 @@
+# Hound ELINT for DCS World
+
+> Radar detection and tracking system for DCS World missions.
+> Detects enemy radar emitters using ELINT platforms, triangulates positions,
+> and provides intelligence via map markers, voice radio, and data exports.
+
+## Docs
+
+- [LLM Integration Guide (start here)](llm-integration-guide.md): Self-contained guide with API reference, examples, and patterns for integrating Hound into a DCS mission.
+- [Public API Reference](HOUND_API_REFERENCE.md): Complete public API documentation generated from source.
+- [Developer API Reference](DEVELOPER_API_REFERENCE.md): Internal API documentation for Hound developers.
+- [Quick Start](docs/quick-start.md): Get Hound running in 5 minutes.
+- [Installation](docs/installation.md): Detailed installation and requirements.
+- [Basic Configuration](docs/basic-configuration.md): Essential settings and examples.
+- [Available Platforms](docs/platforms.md): Supported ELINT assets and capabilities.
+- [Controller Setup](docs/controller.md): Interactive SAM controller with voice and text.
+- [ATIS Setup](docs/atis.md): Automated threat broadcasts.
+- [TTS Configuration](docs/tts-configuration.md): Text-to-speech voice setup.
+- [Sectors and Zones](docs/sectors.md): Multi-region missions.
+- [Event Handlers](docs/event-handlers.md): Custom scripting and automation.
+- [Exports](docs/exports.md): Data export (Lua tables, CSV).
+- [Settings Reference](docs/settings-reference.md): All configuration options.
+- [Architecture](docs/architecture.md): System internals and design.
+- [Troubleshooting](docs/troubleshooting.md): Common issues and solutions.
+
+## Optional
+
+- [HTML API Docs](https://uriba107.github.io/DCS-Hound/web/): LDoc-generated browsable API.
+- [Developer HTML Docs](https://uriba107.github.io/DCS-Hound/web/dev/): Internal developer API.

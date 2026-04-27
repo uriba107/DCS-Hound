@@ -2,7 +2,7 @@
 
 Everything needed to integrate the Hound ELINT radar detection system into a DCS World mission. This document is self-contained — no other files required.
 
-*Generated on: 2026-02-25 00:20:46*
+*Generated on: 2026-04-27 10:42:16*
 
 ---
 
@@ -216,6 +216,258 @@ Place at least 2 ELINT platform units (for triangulation):
 
 ## Integration Examples
 
+### Example 1: Minimal Setup — Map Markers Only
+
+```lua
+do
+  -- Create Hound instance for Blue coalition
+  local HoundBlue = HoundElint:create(coalition.side.BLUE)
+
+  -- Add ELINT platforms by unit name
+  HoundBlue:addPlatform("ELINT_Unit_1")
+  HoundBlue:addPlatform("ELINT_Unit_2")
+
+  -- Configure and enable polygon map markers
+  HoundBlue:setMarkerType(HOUND.MARKER.POLYGON)
+  HoundBlue:enableMarkers()
+
+  -- Activate the system
+  HoundBlue:systemOn()
+end
+```
+
+---
+
+### Example 2: Basic Setup with Voice Communications
+
+```lua
+do
+  -- Create Hound instance for Blue coalition
+  local HoundBlue = HoundElint:create(coalition.side.BLUE)
+
+  -- Add 3 ELINT platforms
+  HoundBlue:addPlatform("ELINT_Platform_1")
+  HoundBlue:addPlatform("ELINT_Platform_2")
+  HoundBlue:addPlatform("ELINT_Platform_3")
+
+  -- Enable Controller on 251.000 AM and enable text notifications
+  HoundBlue:enableController({
+    freq = "251.000",
+    modulation = "AM"
+  })
+  HoundBlue:enableText()
+
+  -- Enable ATIS on 253.000 AM
+  HoundBlue:enableAtis({
+    freq = "253.000",
+    modulation = "AM"
+  })
+
+  -- Enable BDA (Battle Damage Assessment) and Launch Alerts
+  HoundBlue:enableBDA()
+  HoundBlue:setAlertOnLaunch(true)
+
+  -- Pre-brief 2 known SAM sites with custom code names
+  HoundBlue:preBriefedContact("SAM_Site_Alpha", "VULCAN")
+  HoundBlue:preBriefedContact("SAM_Site_Bravo", "TITAN")
+
+  -- Configure map markers to use circles
+  HoundBlue:setMarkerType(HOUND.MARKER.CIRCLE)
+  HoundBlue:enableMarkers()
+
+  -- Activate the system
+  HoundBlue:systemOn()
+end
+```
+
+---
+
+### Example 3: Multi-Sector Mission with Zones
+
+```lua
+do
+  -- Create Hound instance for Blue coalition
+  local HoundBlue = HoundElint:create(coalition.side.BLUE)
+
+  -- Add 4 ELINT platforms
+  HoundBlue:addPlatform("ELINT_1")
+  HoundBlue:addPlatform("ELINT_2")
+  HoundBlue:addPlatform("ELINT_3")
+  HoundBlue:addPlatform("ELINT_4")
+
+  -- Create named sectors
+  HoundBlue:addSector("North")
+  HoundBlue:addSector("South")
+
+  -- Set geographic zones for each sector
+  HoundBlue:setZone("North", "Zone_North")
+  HoundBlue:setZone("South", "Zone_South")
+
+  -- Set custom callsigns per sector
+  HoundBlue:setCallsign("North", "NORTHERN_WATCH")
+  HoundBlue:setCallsign("South", "SOUTHERN_WATCH")
+
+  -- Configure North Sector: Controller (Male) and ATIS (Female)
+  HoundBlue:enableController("North", {
+    freq = "251.000",
+    modulation = "AM",
+    gender = "male"
+  })
+  HoundBlue:enableAtis("North", {
+    freq = "253.000",
+    modulation = "AM",
+    gender = "female"
+  })
+
+  -- Configure South Sector: Controller (Male) and ATIS (Female)
+  HoundBlue:enableController("South", {
+    freq = "255.000",
+    modulation = "AM",
+    gender = "male"
+  })
+  HoundBlue:enableAtis("South", {
+    freq = "257.000",
+    modulation = "AM",
+    gender = "female"
+  })
+
+  -- Add a global Notifier on guard frequency 243.000 AM
+  HoundBlue:enableNotifier({
+    freq = "243.000",
+    modulation = "AM",
+    gender = "male"
+  })
+
+  -- Enable text notifications for all sectors
+  HoundBlue:enableText("all")
+
+  -- Activate the system
+  HoundBlue:systemOn()
+end
+```
+
+---
+
+### Example 4: Event Handlers — Custom Mission Logic
+
+```lua
+do
+  -- Create basic Hound instance for Blue coalition
+  local HoundBlue = HoundElint:create(coalition.side.BLUE)
+  HoundBlue:addPlatform("ELINT_Platform_1")
+  HoundBlue:systemOn()
+
+  -- Define mission objectives for SITE_REMOVED tracking
+  local MissionObjectives = {
+    targetSites = {"SAM_Site_1", "SAM_Site_2"},
+    destroyedCount = 0,
+    completed = false
+  }
+
+  -- Create the event handler TABLE with an onHoundEvent METHOD
+  function MissionObjectives:onHoundEvent(event)
+    -- Always filter by event coalition to ensure we only process Blue events
+    if event.coalition ~= coalition.side.BLUE then 
+      return 
+    end
+
+    -- Handle RADAR_NEW: Announce new threat via outText
+    if event.id == HOUND.EVENTS.RADAR_NEW then
+      local contact = event.initiator
+      trigger.action.outText("ELINT Alert: New radar contact detected: " .. tostring(contact:getName()), 10)
+    end
+
+    -- Handle RADAR_DESTROYED: Count kills
+    if event.id == HOUND.EVENTS.RADAR_DESTROYED then
+      self.destroyedCount = self.destroyedCount + 1
+      trigger.action.outText("ELINT Update: Radar destroyed. Total kills: " .. self.destroyedCount, 10)
+    end
+
+    -- Handle SITE_REMOVED: Check mission objectives
+    if event.id == HOUND.EVENTS.SITE_REMOVED then
+      local site = event.initiator
+      -- Check if the removed site is one of our target sites
+      for _, targetName in ipairs(self.targetSites) do
+        if site.DcsGroupName == targetName then
+          trigger.action.outText("Objective Complete: Target site " .. targetName .. " is offline!", 15)
+          
+          -- Simple logic to check if all targets are gone (simplified for this example)
+          -- In a real scenario, you would track which specific sites were removed
+        end
+      end
+    end
+  end
+
+  -- Register the handler table with the global HOUND event system
+  HOUND.addEventHandler(MissionObjectives)
+end
+```
+
+---
+
+### Example 5: Data Export and Periodic Intelligence
+
+```lua
+do
+  -- Create Hound instance for Blue coalition
+  local HoundBlue = HoundElint:create(coalition.side.BLUE)
+  HoundBlue:addPlatform("ELINT_Platform_1")
+  HoundBlue:systemOn()
+
+  -- Function to iterate through sites and print detailed emitter data
+  local function exportSiteData()
+    -- getSites() returns a table: {sam={count=N, sites={...}}, ewr={count=N, sites={...}}}
+    local data = HoundBlue:getSites()
+
+    -- Iterate through SAM sites
+    if data and data.sam and data.sam.sites then
+      for _, site in ipairs(data.sam.sites) do
+        local siteName = site.name or "Unknown Site"
+        local siteType = site.Type or "Unknown Type"
+        
+        -- Iterate through emitters within the site
+        if site.emitters then
+          for _, emitter in ipairs(site.emitters) do
+            local typeName = emitter.typeName or "Unknown Emitter"
+            local accuracy = emitter.accuracy or 0
+            
+            -- IMPORTANT: Check if emitter.pos exists before accessing LL (lat/lon)
+            if emitter.pos then
+              local lat = emitter.LL.lat
+              local lon = emitter.LL.lon
+              trigger.action.outText(string.format("Site: %s [%s] | Emitter: %s | Pos: %f, %f | Acc: %f", 
+                siteName, siteType, typeName, lat, lon, accuracy), 10)
+            else
+              trigger.action.outText(string.format("Site: %s [%s] | Emitter: %s | Pos: N/A", 
+                siteName, siteType, typeName), 10)
+            end
+          end
+        end
+      end
+    end
+  end
+
+  -- Function to handle periodic CSV export and site data printing
+  local function periodicIntelUpdate()
+    -- (1) Iterate and print site data
+    exportSiteData()
+
+    -- (2) Call dumpIntelBrief() for CSV export to saved games folder
+    HoundBlue:dumpIntelBrief("Mission_Intel_Export.csv")
+
+    -- (3) Reschedule the function to run again in 300 seconds (5 minutes)
+    -- timer.scheduleFunction(function, argument, absoluteTime)
+    timer.scheduleFunction(periodicIntelUpdate, nil, timer.getTime() + 300)
+  end
+
+  -- Schedule the first run to occur after 120 seconds (2 minutes) 
+  -- to allow the system time to detect radars
+  timer.scheduleFunction(periodicIntelUpdate, nil, timer.getTime() + 120)
+end
+```
+
+---
+
 ## Common Patterns and Pitfalls
 
 ### Controller/ATIS Settings Table
@@ -282,17 +534,17 @@ end
 
 ## Documentation Quality Check
 
-*Validation skipped: LLM call failed.*
+**PASSED** — An LLM successfully wrote correct integration code using only this guide as context.
 
 ---
 
 ## Further Reading
 
-- `docs/README/quick-start.md` — Step-by-step setup guide
-- `docs/README/basic-configuration.md` — All basic options
-- `docs/README/controller.md` — Controller details
-- `docs/README/sectors.md` — Multi-sector setup
-- `docs/README/event-handlers.md` — Event system details
-- `docs/README/exports.md` — Data export formats
-- `docs/HOUND_API_REFERENCE.md` — Complete public API reference
+- `docs/quick-start.md` — Step-by-step setup guide
+- `docs/basic-configuration.md` — All basic options
+- `docs/controller.md` — Controller details
+- `docs/sectors.md` — Multi-sector setup
+- `docs/event-handlers.md` — Event system details
+- `docs/exports.md` — Data export formats
+- `HOUND_API_REFERENCE.md` — Complete public API reference
 - `demo_mission/` — Ready-to-fly demo missions

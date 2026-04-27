@@ -393,6 +393,6 @@ Configure via `setTimerInterval("scan", 10)` etc.
 
 ## See Also
 
-- [LLM Integration Guide](llm-integration-guide.md) - API reference and integration examples
+- [LLM Integration Guide](../llm-integration-guide.md) - API reference and integration examples
 - [How It Works](how-it-works.md) - Triangulation deep dive
 - [Event Handlers](event-handlers.md) - Custom scripting
