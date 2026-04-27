@@ -18,8 +18,7 @@ do
     }
     local blue_atis_args = {
         freq = 251.500,
-        NATO = false,
-
+        NATO = true,
     }
 
     local blue_notifier_args = {
@@ -32,15 +31,15 @@ do
     local red_tts_args = {
         freq = "251.100,127.600,35.100",
         modulation = "AM,AM,FM",
-        gender = "female"
+        gender = "male"
         -- voice = "en-US-Standard-F",
         -- googleTTS = true
         -- provider = "piper",
     }
     local red_atis_args = {
         freq = 251.600,
+        gender = "male",
         NATO = false,
-
     }
 
     local red_notifier_args = {
@@ -103,10 +102,8 @@ do
     end
 
     Elint_red = HoundElint:create(coalition.side.RED)
-    Elint_red:systemOn()
     
     Elint_red:addPlatform("RED_ELINT_1_1")
-
     Elint_red:configureController(red_tts_args)
     Elint_red:configureAtis(red_atis_args)
     Elint_red:configureNotifier(red_notifier_args)
@@ -114,6 +111,9 @@ do
     Elint_red:enableText()
     Elint_red:enableAtis()
     Elint_red:enableNotifier()
+    Elint_red:setCallsign("default","MARCO")
+    Elint_red:systemOn()
+
 end
 
 do

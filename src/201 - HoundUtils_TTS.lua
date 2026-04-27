@@ -51,7 +51,7 @@ do
     --- returns configured transmitter position
     -- @local
     -- @param dcsObject DCS object (unit or static object)
-    -- @return DCS position of transmitter or nil if none set
+    -- @return DCS position of transmitter, nil if invalid object or false if object is valid but destroyed
     function HOUND.Utils.TTS.getTransmitterPos(dcsObject)
         if dcsObject == nil then return nil end
         if HOUND.Utils.Dcs.isPoint(dcsObject) then return dcsObject end
@@ -74,7 +74,7 @@ do
     -- @param msg The message to transmit
     -- @param coalitionID Coalition to recive transmission
     -- @param args STTS settings in hash table (minimum required is {freq=})
-    -- @param[opt] transmitterPos DCS Position point or unit name for transmitter
+    -- @param[opt] transmitterPos DCS Position point or dcs Object (unit or static object) for transmitter
     -- @return STTS.TextToSpeech return value recived from STTS, currently estimated speechTime
 
     function HOUND.Utils.TTS.Transmit(msg,coalitionID,args,transmitterPos)
@@ -92,7 +92,7 @@ do
                     args.tts_engine = engine
                     break
                 end
-                if engine == "STTS" and l_stts ~= nil then
+                if engine == "STTS" and (l_stts ~= nil and type(l_stts.TextToSpeech) == "function") then
                     args.tts_engine = engine
                     break
                 end
@@ -101,16 +101,16 @@ do
         -- normlize transmitter
         local dcsObject = nil
         if type(transmitterPos) == "string" then
-            dcsObject = HOUND.Utils.Dcs.getUnitPos(transmitterPos)
+            dcsObject = Unit.getByName(transmitterPos) or StaticObject.getByName(transmitterPos)
             transmitterPos = nil
         end
-        if HOUND.Utils.Dcs.isUnit(dcsObject) or HOUND.Utils.Dcs.isStaticObject(dcsObject) then
+        if HOUND.Utils.Dcs.isUnit(transmitterPos) or HOUND.Utils.Dcs.isStaticObject(transmitterPos) then
+            dcsObject = transmitterPos
             transmitterPos = HOUND.Utils.TTS.getTransmitterPos(dcsObject)
-            if transmitterPos == false then return end
-        else
-            dcsObject = nil
         end
-
+        if transmitterPos == false then
+            return
+        end
         if args.tts_engine == "STTS" then
             return HOUND.Utils.TTS.TransmitSTTS(msg,coalitionID,args,transmitterPos)
         end
