@@ -2,7 +2,7 @@
 
 This document provides public API documentation for the HOUND ELINT system, focusing on functions and classes intended for external use.
 
-*Generated on: 2026-04-27 10:40:53*
+*Generated on: 2026-04-29 13:28:09*
 
 ## Overview
 

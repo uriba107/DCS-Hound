@@ -2,7 +2,7 @@
 
 Everything needed to integrate the Hound ELINT radar detection system into a DCS World mission. This document is self-contained — no other files required.
 
-*Generated on: 2026-04-27 10:42:16*
+*Generated on: 2026-04-29 13:29:12*
 
 ---
 
@@ -221,7 +221,7 @@ Place at least 2 ELINT platform units (for triangulation):
 ```lua
 do
   -- Create Hound instance for Blue coalition
-  local HoundBlue = HoundElint:create(coalition.side.BLUE)
+  HoundBlue = HoundElint:create(coalition.side.BLUE)
 
   -- Add ELINT platforms by unit name
   HoundBlue:addPlatform("ELINT_Unit_1")
@@ -243,18 +243,20 @@ end
 ```lua
 do
   -- Create Hound instance for Blue coalition
-  local HoundBlue = HoundElint:create(coalition.side.BLUE)
+  HoundBlue = HoundElint:create(coalition.side.BLUE)
 
   -- Add 3 ELINT platforms
-  HoundBlue:addPlatform("ELINT_Platform_1")
-  HoundBlue:addPlatform("ELINT_Platform_2")
-  HoundBlue:addPlatform("ELINT_Platform_3")
+  HoundBlue:addPlatform("ELINT_C130_1")
+  HoundBlue:addPlatform("ELINT_C130_2")
+  HoundBlue:addPlatform("ELINT_Tower")
 
-  -- Enable Controller on 251.000 AM and enable text notifications
+  -- Enable Controller on 251.000 AM
   HoundBlue:enableController({
     freq = "251.000",
     modulation = "AM"
   })
+
+  -- Enable text notifications for the controller
   HoundBlue:enableText()
 
   -- Enable ATIS on 253.000 AM
@@ -268,8 +270,8 @@ do
   HoundBlue:setAlertOnLaunch(true)
 
   -- Pre-brief 2 known SAM sites with custom code names
-  HoundBlue:preBriefedContact("SAM_Site_Alpha", "VULCAN")
-  HoundBlue:preBriefedContact("SAM_Site_Bravo", "TITAN")
+  HoundBlue:preBriefedContact("SAM_Site_Alpha", "ANVIL")
+  HoundBlue:preBriefedContact("SAM_Site_Bravo", "HAMMER")
 
   -- Configure map markers to use circles
   HoundBlue:setMarkerType(HOUND.MARKER.CIRCLE)
@@ -287,13 +289,13 @@ end
 ```lua
 do
   -- Create Hound instance for Blue coalition
-  local HoundBlue = HoundElint:create(coalition.side.BLUE)
+  HoundBlue = HoundElint:create(coalition.side.BLUE)
 
   -- Add 4 ELINT platforms
-  HoundBlue:addPlatform("ELINT_1")
-  HoundBlue:addPlatform("ELINT_2")
-  HoundBlue:addPlatform("ELINT_3")
-  HoundBlue:addPlatform("ELINT_4")
+  HoundBlue:addPlatform("ELINT_North_1")
+  HoundBlue:addPlatform("ELINT_North_2")
+  HoundBlue:addPlatform("ELINT_South_1")
+  HoundBlue:addPlatform("ELINT_South_2")
 
   -- Create named sectors
   HoundBlue:addSector("North")
@@ -304,8 +306,8 @@ do
   HoundBlue:setZone("South", "Zone_South")
 
   -- Set custom callsigns per sector
-  HoundBlue:setCallsign("North", "NORTHERN_WATCH")
-  HoundBlue:setCallsign("South", "SOUTHERN_WATCH")
+  HoundBlue:setCallsign("North", "NORTHSTAR")
+  HoundBlue:setCallsign("South", "SOUTHSTAR")
 
   -- Configure North Sector: Controller (Male) and ATIS (Female)
   HoundBlue:enableController("North", {
@@ -331,15 +333,15 @@ do
     gender = "female"
   })
 
+  -- Enable text notifications for all sectors
+  HoundBlue:enableText("all")
+
   -- Add a global Notifier on guard frequency 243.000 AM
   HoundBlue:enableNotifier({
     freq = "243.000",
     modulation = "AM",
     gender = "male"
   })
-
-  -- Enable text notifications for all sectors
-  HoundBlue:enableText("all")
 
   -- Activate the system
   HoundBlue:systemOn()
@@ -352,53 +354,54 @@ end
 
 ```lua
 do
-  -- Create basic Hound instance for Blue coalition
-  local HoundBlue = HoundElint:create(coalition.side.BLUE)
-  HoundBlue:addPlatform("ELINT_Platform_1")
+  -- Create Hound instance for Blue coalition
+  HoundBlue = HoundElint:create(coalition.side.BLUE)
+  HoundBlue:addPlatform("ELINT_C130")
   HoundBlue:systemOn()
 
-  -- Define mission objectives for SITE_REMOVED tracking
-  local MissionObjectives = {
-    targetSites = {"SAM_Site_1", "SAM_Site_2"},
+  -- Mission Objectives configuration
+  MissionObjectives = {
+    targetSites = {"SA_10_Site_1", "SA_6_Site_2"},
     destroyedCount = 0,
-    completed = false
+    kills = 0
   }
 
-  -- Create the event handler TABLE with an onHoundEvent METHOD
+  -- Event handler TABLE with onHoundEvent METHOD
   function MissionObjectives:onHoundEvent(event)
-    -- Always filter by event coalition to ensure we only process Blue events
-    if event.coalition ~= coalition.side.BLUE then 
-      return 
-    end
+    -- Always filter by coalition to ensure we only process Blue's detections
+    if event.coalition ~= coalition.side.BLUE then return end
 
-    -- Handle RADAR_NEW: Announce new threat via outText
+    -- Handle RADAR_NEW: Announce new threat
     if event.id == HOUND.EVENTS.RADAR_NEW then
       local contact = event.initiator
-      trigger.action.outText("ELINT Alert: New radar contact detected: " .. tostring(contact:getName()), 10)
+      trigger.action.outText("ELINT Alert: New radar emission detected from " .. contact:getName(), 10)
     end
 
-    -- Handle RADAR_DESTROYED: Count kills
+    -- Handle RADAR_DESTROYED: Count total radar kills
     if event.id == HOUND.EVENTS.RADAR_DESTROYED then
-      self.destroyedCount = self.destroyedCount + 1
-      trigger.action.outText("ELINT Update: Radar destroyed. Total kills: " .. self.destroyedCount, 10)
+      self.kills = self.kills + 1
+      trigger.action.outText("Radar neutralized! Total kills: " .. self.kills, 10)
     end
 
-    -- Handle SITE_REMOVED: Check mission objectives
+    -- Handle SITE_REMOVED: Check against mission objective list
     if event.id == HOUND.EVENTS.SITE_REMOVED then
       local site = event.initiator
       -- Check if the removed site is one of our target sites
       for _, targetName in ipairs(self.targetSites) do
         if site.DcsGroupName == targetName then
-          trigger.action.outText("Objective Complete: Target site " .. targetName .. " is offline!", 15)
-          
-          -- Simple logic to check if all targets are gone (simplified for this example)
-          -- In a real scenario, you would track which specific sites were removed
+          self.destroyedCount = self.destroyedCount + 1
+          trigger.action.outText("Objective Complete: Target " .. targetName .. " destroyed!", 15)
+
+          -- Check if all objectives are complete
+          if self.destroyedCount >= #self.targetSites then
+            trigger.action.outText("All primary SAM sites neutralized. Mission Success!", 30)
+          end
         end
       end
     end
   end
 
-  -- Register the handler table with the global HOUND event system
+  -- Register the handler table with the global HOUND system
   HOUND.addEventHandler(MissionObjectives)
 end
 ```
@@ -410,59 +413,58 @@ end
 ```lua
 do
   -- Create Hound instance for Blue coalition
-  local HoundBlue = HoundElint:create(coalition.side.BLUE)
-  HoundBlue:addPlatform("ELINT_Platform_1")
+  HoundBlue = HoundElint:create(coalition.side.BLUE)
+  HoundBlue:addPlatform("ELINT_C130")
   HoundBlue:systemOn()
 
-  -- Function to iterate through sites and print detailed emitter data
-  local function exportSiteData()
-    -- getSites() returns a table: {sam={count=N, sites={...}}, ewr={count=N, sites={...}}}
+  -- Function to process and print site data
+  local function processIntel()
+    -- (1) Call getSites() which returns a table with sam and ewr categories
     local data = HoundBlue:getSites()
 
-    -- Iterate through SAM sites
     if data and data.sam and data.sam.sites then
+      trigger.action.outText("--- Processing SAM Intel ---", 5)
+      
+      -- Iterate through the SAM sites list
       for _, site in ipairs(data.sam.sites) do
-        local siteName = site.name or "Unknown Site"
-        local siteType = site.Type or "Unknown Type"
+        local siteInfo = "Site: " .. (site.name or "Unknown") .. " Type: " .. (site.Type or "Unknown")
         
-        -- Iterate through emitters within the site
+        -- Iterate through emitters associated with the site
         if site.emitters then
           for _, emitter in ipairs(site.emitters) do
-            local typeName = emitter.typeName or "Unknown Emitter"
-            local accuracy = emitter.accuracy or 0
+            local emitterInfo = " | Emitter: " .. (emitter.typeName or "Unknown")
             
-            -- IMPORTANT: Check if emitter.pos exists before accessing LL (lat/lon)
+            -- IMPORTANT: check if emitter.pos exists before accessing LL (Latitude/Longitude)
             if emitter.pos then
-              local lat = emitter.LL.lat
-              local lon = emitter.LL.lon
-              trigger.action.outText(string.format("Site: %s [%s] | Emitter: %s | Pos: %f, %f | Acc: %f", 
-                siteName, siteType, typeName, lat, lon, accuracy), 10)
-            else
-              trigger.action.outText(string.format("Site: %s [%s] | Emitter: %s | Pos: N/A", 
-                siteName, siteType, typeName), 10)
+              emitterInfo = emitterInfo .. " Pos: " .. emitter.LL.lat .. ", " .. emitter.LL.lon 
+              emitterInfo = emitterInfo .. " Acc: " .. (emitter.accuracy or "N/A")
             end
+            siteInfo = siteInfo .. emitterInfo
           end
         end
+        
+        trigger.action.outText(siteInfo, 10)
       end
     end
   end
 
-  -- Function to handle periodic CSV export and site data printing
-  local function periodicIntelUpdate()
-    -- (1) Iterate and print site data
-    exportSiteData()
+  -- (2) Call dumpIntelBrief() for CSV export to saved games folder
+  HoundBlue:dumpIntelBrief("Mission_Intel_Export.csv")
 
-    -- (2) Call dumpIntelBrief() for CSV export to saved games folder
-    HoundBlue:dumpIntelBrief("Mission_Intel_Export.csv")
+  -- (3) Set up periodic export using DCS timer
+  -- Detection takes time, so we schedule the first run for 120 seconds from now
+  local interval = 300 -- Run every 5 minutes
+  local startTime = timer.getTime() + 120
 
-    -- (3) Reschedule the function to run again in 300 seconds (5 minutes)
-    -- timer.scheduleFunction(function, argument, absoluteTime)
-    timer.scheduleFunction(periodicIntelUpdate, nil, timer.getTime() + 300)
+  -- Define a wrapper to reschedule the function
+  local function scheduledIntel()
+    processIntel()
+    -- Schedule the next execution
+    timer.scheduleFunction(scheduledIntel, nil, timer.getTime() + interval)
   end
 
-  -- Schedule the first run to occur after 120 seconds (2 minutes) 
-  -- to allow the system time to detect radars
-  timer.scheduleFunction(periodicIntelUpdate, nil, timer.getTime() + 120)
+  -- Initial schedule call: timer.scheduleFunction(function, argument, absoluteTime)
+  timer.scheduleFunction(scheduledIntel, nil, startTime)
 end
 ```
 

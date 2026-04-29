@@ -2,7 +2,7 @@
 
 This document provides comprehensive API documentation for the HOUND ELINT system, automatically generated from LDOC comments in the source code.
 
-*Generated on: 2026-04-27 10:40:54*
+*Generated on: 2026-04-29 13:28:09*
 
 ## Overview
 
@@ -1154,7 +1154,7 @@ returns configured transmitter position
 - `DCS` (dcsObject): object (unit or static object)
 
 **Returns:**
-- (DCS): position of transmitter or nil if none set
+- (DCS): position of transmitter, nil if invalid object or false if object is valid but destroyed
 
 *Note: This is a local function*
 
@@ -1166,7 +1166,7 @@ Transmit message using STTS (private)
 - `The` (msg): message to transmit
 - `Coalition` (coalitionID): to recive transmission
 - `STTS` (args): settings in hash table (minimum required is {freq=})
-- `transmitterPos` (opt): DCS Position point or unit name for transmitter
+- `transmitterPos` (opt): DCS Position point or dcs Object (unit or static object) for transmitter
 
 **Returns:**
 - (STTS.TextToSpeech): return value recived from STTS, currently estimated speechTime
