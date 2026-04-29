@@ -761,8 +761,8 @@ do
             ['Assigned'] = { "Naval" },
             ['Role'] = { HOUND.DB.RadarType.NAVAL },
             ['Band'] = {
-                [true] = { 31757675.635593, 203140.782317 },
-                [false] = { 31757675.635593, 203140.782317 }
+                [true] = HOUND.DB.Bands.H,
+                [false] = HOUND.DB.Bands.F
             },
             ['Primary'] = true,
             ['numDistinctFreqs'] = 0
@@ -1028,6 +1028,7 @@ do
             ['S-3B'] = { antenna = { size = 18, factor = 0.8 }, ins_error = 0 },
             ['E-3A'] = { antenna = { size = 9, factor = 0.5 }, ins_error = 0 },
             ['E-2C'] = { antenna = { size = 7, factor = 0.5 }, ins_error = 0 },
+            ['E-2D'] = { antenna = { size = 7, factor = 0.5 }, ins_error = 0 },
             ['Tu-95MS'] = { antenna = { size = 50, factor = 1 }, ins_error = 50 },
             ['Tu-142'] = { antenna = { size = 50, factor = 1 }, ins_error = 0 },
             ['IL-76MD'] = { antenna = { size = 48, factor = 0.8 }, ins_error = 50 },

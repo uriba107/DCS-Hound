@@ -1,6 +1,7 @@
 do
     if HoundWorkDir == nil then
-        HoundWorkDir = "E:\\Dropbox\\uri\\Dropbox\\DCS\\Mission Building\\HoundElint\\"
+        -- HoundWorkDir = "E:\\Dropbox\\uri\\Dropbox\\DCS\\Mission Building\\HoundElint\\"
+        HoundWorkDir = "C:\\Users\\me\\Dropbox\\DCS\\Mission Building\\HoundElint\\"
     end
     -- assert(loadfile(HoundWorkDir..'include\\DCS-SimpleTextToSpeech.lua'))()
     -- HOUND.TTS_ENGINE = {'STTS'}
@@ -20,10 +21,10 @@ do
         local tests = {
             {name = "module", func = self.moduleTesting, next_test_delay = 10},
             {name = "hound init", func = self.initTesting, next_test_delay = 15},
-            {name = "hound base", func = self.baseTesting, next_test_delay = 1*60},
-            {name = "hound functional 1 min", func = self.delayedTesting1m, next_test_delay = 2*60},
+            {name = "hound base", func = self.baseTesting, next_test_delay = 2*60},
+            {name = "hound functional 2 min", func = self.delayedTesting2m, next_test_delay = 2*60},
             {name = "hound functional UI", func = self.testUI, next_test_delay = 2*60},
-            {name = "hound functional 5 min", func = self.delayedTesting5m, next_test_delay = 0}
+            {name = "hound functional 6 min", func = self.delayedTesting6m, next_test_delay = 0}
 
         }
 
@@ -55,9 +56,9 @@ do
         lu.LuaUnit.run('--pattern', '02_base')
     end
 
-    function runTest.delayedTesting1m()
+    function runTest.delayedTesting2m()
         assert(loadfile(HoundWorkDir..'demo_mission\\hound_unit_test\\extras\\test-hound-delayed.lua'))()
-        lu.LuaUnit.run('--pattern', '1mDelay')
+        lu.LuaUnit.run('--pattern', '2mDelay')
     end
 
     function runTest.delayedTestingUi(self)
@@ -82,8 +83,8 @@ do
         UserSpaceLogging("Please switch to Aircraft slot to initilize testing")
     end
 
-    function runTest.delayedTesting5m()
-        lu.LuaUnit.run('--pattern', '5mDelay')
+    function runTest.delayedTesting6m()
+        lu.LuaUnit.run('--pattern', '6mDelay')
     end
 
 

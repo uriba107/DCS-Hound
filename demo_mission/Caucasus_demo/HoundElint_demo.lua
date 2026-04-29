@@ -5,11 +5,49 @@ do
         l_stts.GOOGLE_CREDENTIALS = "E:\\Dropbox\\uri\\Dropbox\\DCS\\Mission Building\\googletts.json"
     end
     HOUND.USE_LEGACY_MARKS = false
-    -- HOUND.TTS_ENGINE = {'STTS','GRPC'}
-    -- HOUND.ENABLE_KALMAN = true
 end
 
 do
+    local blue_tts_args = {
+        freq = "251.000,127.500,35.000",
+        modulation = "AM,AM,FM",
+        gender = "female"
+        -- voice = "en-US-Standard-F",
+        -- googleTTS = true
+        -- provider = "piper",
+    }
+    local blue_atis_args = {
+        freq = 251.500,
+        NATO = true,
+    }
+
+    local blue_notifier_args = {
+        freq = "305.000,127.000",
+        modulation = "AM,AM",
+        provider = "piper",
+        voice = "en_US-ryan-low",
+    }
+
+    local red_tts_args = {
+        freq = "251.100,127.600,35.100",
+        modulation = "AM,AM,FM",
+        gender = "male"
+        -- voice = "en-US-Standard-F",
+        -- googleTTS = true
+        -- provider = "piper",
+    }
+    local red_atis_args = {
+        freq = 251.600,
+        gender = "male",
+        NATO = false,
+    }
+
+    local red_notifier_args = {
+        freq = "305.100,127.100",
+        modulation = "AM,AM",
+        provider = "piper",
+        voice = "en_US-ryan-low",
+    }
     Elint_blue = HoundElint:create(coalition.side.BLUE)
 
     Elint_blue:preBriefedContact('PB-test-1')
@@ -24,29 +62,10 @@ do
     -- Elint_blue:addPlatform("ELINT_CR")
 
 
-    tts_args = {
-        freq = "251.000,127.500,35.000",
-        modulation = "AM,AM,FM",
-        gender = "female"
-        -- voice = "en-US-Standard-F",
-        -- googleTTS = true
-        -- provider = "piper",
-    }
-    atis_args = {
-        freq = 251.500,
-        NATO = false,
 
-    }
-
-    notifier_args = {
-        freq = "305.000,127.000",
-        modulation = "AM,AM",
-        provider = "piper",
-        voice = "en_US-ryan-low",
-    }
-    Elint_blue:configureController(tts_args)
-    Elint_blue:configureAtis(atis_args)
-    Elint_blue:configureNotifier(notifier_args)
+    Elint_blue:configureController(blue_tts_args)
+    Elint_blue:configureAtis(blue_atis_args)
+    Elint_blue:configureNotifier(blue_notifier_args)
 
     Elint_blue:enableController()
     Elint_blue:enableText()
@@ -64,6 +83,7 @@ do
     Elint_blue:addSector("Fake")
     Elint_blue:setZone("Fake")
     Elint_blue:setAlertOnLaunch(true)
+    Elint_blue:setTransmitter("all","ELINT_C130")
     -- Elint_blue:onScreenDebug(true)
     -- Elint_blue:enablePlatformPosErrors()
 
@@ -80,6 +100,20 @@ do
             HOUND.Logger.debug("Event triggered! " .. HOUND.reverseLookup(HOUND.EVENTS,event.id) .. " for " .. event.initiator:getName())
         end
     end
+
+    Elint_red = HoundElint:create(coalition.side.RED)
+    
+    Elint_red:addPlatform("RED_ELINT_1_1")
+    Elint_red:configureController(red_tts_args)
+    Elint_red:configureAtis(red_atis_args)
+    Elint_red:configureNotifier(red_notifier_args)
+    Elint_red:enableController()
+    Elint_red:enableText()
+    Elint_red:enableAtis()
+    Elint_red:enableNotifier()
+    Elint_red:setCallsign("default","MARCO")
+    Elint_red:systemOn()
+
 end
 
 do
@@ -328,7 +362,7 @@ do
 
     -- local invalidController = Unit.getByName('KC135_tanker'):getController()
     -- env.info(mist.utils.tableShow(invalidController))
-    HOUND.Logger.debug("Weapon.Category: " .. HOUND.Mist.utils.tableShow(Weapon.Category))
+    -- HOUND.Logger.debug("Weapon.Category: " .. HOUND.Mist.utils.tableShow(Weapon.Category))
 
 
 end

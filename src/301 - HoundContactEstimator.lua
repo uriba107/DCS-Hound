@@ -470,7 +470,6 @@ do
 
         local y_k = z_k - H_k * x_hat
 
-        -- HOUND.Logger.debug("beta_measured: " .. beta_measured .. " m_k: " .. m_k .. " y_k: " .. y_k[1][1])
         -- update globals
         self.state = x_hat + (K_k * y_k)
         self.P = (matrix(4, "I") - K_k * H_k) * P_k

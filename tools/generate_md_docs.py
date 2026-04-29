@@ -9,7 +9,6 @@ Requirements: pip3 install -r requirements.txt
 import os
 import re
 import sys
-import json
 import argparse
 import requests
 from datetime import datetime
@@ -290,7 +289,7 @@ class MarkdownGenerator:
     """Generates Markdown documentation from parsed LDOC data"""
     
     def __init__(self, verbose: bool = False, num_ctx: Optional[int] = None,
-                 llm_timeout: int = 300, llm_host: Optional[str] = None):
+                 llm_timeout: int = 600, llm_host: Optional[str] = None):
         self.verbose = verbose
         self.num_ctx = num_ctx
         self.llm_timeout = llm_timeout
@@ -313,15 +312,20 @@ class MarkdownGenerator:
                 env_host = f"http://{env_host}"
             return env_host.rstrip('/')
         
-        # 2. Auto-detect WSL
+        # 2. Auto-detect WSL — use default gateway as Windows host IP
         try:
             with open('/proc/version', 'r') as f:
                 if 'microsoft' in f.read().lower():
-                    print("is windows")
-                    # WSL detected — read Windows host IP from resolv.conf
-                    import socket
-                    return f"http://{socket.gethostname()}.local:11434"
-        except (FileNotFoundError, IndexError, PermissionError):
+                    import subprocess
+                    result = subprocess.run(
+                        ['ip', 'route', 'show', 'default'],
+                        capture_output=True, text=True, timeout=5
+                    )
+                    for token in result.stdout.split():
+                        if re.match(r'\d+\.\d+\.\d+\.\d+', token):
+                            return f"http://{token}:11434"
+                    return "http://localhost:11434"
+        except (FileNotFoundError, PermissionError, subprocess.TimeoutExpired):
             pass
         
         # 3. Default
@@ -340,51 +344,76 @@ class MarkdownGenerator:
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
             return False
     
-    def call_local_llm(self, prompt: str, model: str = "qwen3:4b") -> Optional[str]:
-        """Call local Ollama LLM for text generation"""
+    @staticmethod
+    def _strip_think_tags(text: str) -> str:
+        """Strip qwen3/reasoning model <think>...</think> blocks from output"""
+        return re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL).strip()
+
+    def _build_llm_options(self) -> dict:
+        """Build shared options dict for Ollama API calls"""
+        options = {"temperature": 0.3}
+        if self.num_ctx is not None:
+            options["num_ctx"] = self.num_ctx
+        return options
+
+    def call_local_llm_chat(self, messages: List[Dict[str, str]],
+                            model: str = "gemma4:31b-cloud",
+                            keep_alive: str = "30m") -> Optional[str]:
+        """Call Ollama /api/chat with conversation history for KV cache reuse.
+
+        Caller manages the messages list — append user/assistant turns to build
+        multi-turn conversations that reuse cached context across turns.
+        """
         try:
-            self.log(f"Calling Ollama model: {model}")
-            
-            timeout = self.llm_timeout
-            llm_hostname = f"{self.llm_host}/api/generate"
-            options = {
-                "temperature": 0.3  # Lower temperature for more consistent output
+            total_chars = sum(len(m.get("content", "")) for m in messages)
+            self.log(f"Chat request to {model} ({len(messages)} msgs, {total_chars} chars)")
+
+            body = {
+                "model": model,
+                "messages": messages,
+                "stream": False,
+                "keep_alive": keep_alive,
+                "options": self._build_llm_options()
             }
-            if self.num_ctx is not None:
-                options["num_ctx"] = self.num_ctx
-            llm_body = {
-                    "model": model,
-                    "prompt": prompt,
-                    "stream": False,
-                    "options": options
-                }
-            self.log(f"LLM request to {model} ({len(prompt)} chars)")
             response = requests.post(
-                llm_hostname,
-                json=llm_body,
-                timeout=timeout
+                f"{self.llm_host}/api/chat",
+                json=body,
+                timeout=self.llm_timeout
             )
             response.raise_for_status()
-            result = response.json()["response"]
-            self.log("LLM call successful")
+            result = self._strip_think_tags(response.json()["message"]["content"])
+            self.log("Chat call successful")
             return result
         except requests.exceptions.ConnectionError:
             print("[ERROR] Cannot connect to Ollama. Is it running? (ollama serve)")
-            print("[ERROR] Start Ollama with: ollama serve")
             return None
         except requests.exceptions.Timeout:
-            print(f"[ERROR] LLM request timed out. Model {model} may be too large or slow.")
+            print(f"[ERROR] Chat request timed out. Model {model} may be too large or slow.")
             return None
         except Exception as e:
-            print(f"[ERROR] LLM call failed: {e}")
+            print(f"[ERROR] Chat call failed: {e}")
             return None
+
+    def _preload_model(self, model: str, keep_alive: str = "30m") -> None:
+        """Preload model into GPU memory before timed generation loop"""
+        try:
+            self.log(f"Preloading model {model} with keep_alive={keep_alive}")
+            resp = requests.post(
+                f"{self.llm_host}/api/chat",
+                json={"model": model, "messages": [], "keep_alive": keep_alive},
+                timeout=120
+            )
+            resp.raise_for_status()
+            self.log("Model preloaded")
+        except Exception as e:
+            print(f"[WARN] Model preload failed (non-fatal): {e}")
     
     def read_docs_context(self, docs_dir: str) -> Dict[str, str]:
         """Read hand-written documentation files as ground truth context"""
         docs = {}
-        readme_path = Path(docs_dir) / "README"
+        readme_path = Path(docs_dir)
         if not readme_path.exists():
-            self.log(f"README docs directory not found: {readme_path}")
+            self.log(f"Guides directory not found: {readme_path}")
             return docs
         
         key_docs = [
@@ -1059,414 +1088,6 @@ class MarkdownGenerator:
         
         return '\n'.join(lines)
     
-    def _legacy_generate_api_index_with_llm(self, parsed_files, model="llama3.2", docs_dir=None):
-        """REMOVED — functionality merged into generate_llm_integration_guide via
-        build_categorized_api_reference (deterministic, no LLM needed).
-        Kept as stub for reference. Use --generate-integration-guide instead.
-        """
-        raise NotImplementedError("Use --generate-integration-guide instead of --generate-api-index")
-
-    def _legacy_generate_api_index_skeleton(self, parsed_files):
-        """REMOVED — see build_categorized_api_reference"""
-        raise NotImplementedError("Use build_categorized_api_reference instead")
-
-    def _original_generate_api_index_with_llm(self, parsed_files: List[FileData], model: str = "llama3.2",
-                                     docs_dir: str = None) -> str:
-        """DEPRECATED: Generate one-page API index using local LLM for organization and summarization
-        
-        Replaced by build_categorized_api_reference() which is deterministic and does not need LLM.
-        """
-        self.log("Starting API index generation with LLM assistance")
-        
-        # Load hand-written docs as ground truth for example generation
-        self._docs_context = {}
-        if docs_dir:
-            self._docs_context = self.read_docs_context(docs_dir)
-        self._valid_methods = self.extract_valid_methods(parsed_files)
-        
-        # Public HOUND.* functions that mission builders use (not internal/developer API)
-        PUBLIC_HOUND_FUNCTIONS = {
-            'HOUND.getInstance',
-            'HOUND.setMgrsPresicion',
-            'HOUND.showExtendedInfo',
-            'HOUND.addEventHandler',
-            'HOUND.removeEventHandler'
-        }
-        
-        # Step 1: Extract public methods from HoundElint (mission builder API only)
-        methods = []
-        
-        for file_data in parsed_files:
-            filename = file_data.filename
-            
-            # Include HoundElint files (800, 801) and global files (000)
-            if filename.startswith('800 -') or filename.startswith('801 -') or filename.startswith('000 -'):
-                for func in file_data.functions:
-                    if func.signature:
-                        func_name = func.signature['name']
-                        
-                        # Include HoundElint methods (public API)
-                        if func_name.startswith('HoundElint'):
-                            methods.append({
-                                "name": func_name,
-                                "params": [{"name": p["name"], "type": p.get("type", "any")} 
-                                          for p in func.params],
-                                "returns": [{"type": r.get("type", "any")} for r in func.returns],
-                                "description": " ".join(func.description) if func.description else "",
-                                "is_local": func.is_local
-                            })
-                        
-                        # Include only whitelisted HOUND.* functions (public utilities)
-                        elif func_name in PUBLIC_HOUND_FUNCTIONS and not func.is_local:
-                            methods.append({
-                                "name": func_name,
-                                "params": [{"name": p["name"], "type": p.get("type", "any")} 
-                                          for p in func.params],
-                                "returns": [{"type": r.get("type", "any")} for r in func.returns],
-                                "description": " ".join(func.description) if func.description else "",
-                                "is_local": func.is_local
-                            })
-        
-        self.log(f"Extracted {len(methods)} public methods")
-        
-        if not methods:
-            return "# API Index\n\nNo public methods found."
-        
-        # Step 2: Ask LLM to categorize methods
-        self.log("Asking LLM to categorize methods...")
-        
-        method_names = [m["name"] for m in methods]
-        
-        categorization_prompt = f"""You are analyzing the Hound ELINT PUBLIC API for DCS World mission builders.
-
-These are PUBLIC methods for everyday mission builders (NOT internal/developer functions).
-
-Here are all the public method names:
-{json.dumps(method_names, indent=2)}
-
-Organize these methods into logical functional categories. Use these categories:
-- Instance Management (create, destroy, systemOn, systemOff, etc.)
-- Platform Management (add/remove ELINT platforms)
-- Detection & Contacts (radar contacts, sites, pre-briefed contacts)
-- Sector Management (geographic organization)
-- Controller (interactive radio menu system)
-- ATIS (automated broadcasts)
-- Notifier (alert system)
-- Map Markers (F10 visual feedback)
-- Settings & Configuration (timers, text/TTS, callsigns, etc.)
-- Event System (custom script hooks)
-- Data Export (getContacts, getSites, CSV export)
-- Global Utilities (HOUND.getInstance, HOUND.addEventHandler, etc.)
-
-Return ONLY valid JSON in this exact format (no markdown formatting, no explanations):
-{{
-  "Instance Management": ["HoundElint:create", "HoundElint:destroy", ...],
-  "Platform Management": ["HoundElint:addPlatform", ...],
-  ...
-}}
-"""
-        
-        categories_response = self.call_local_llm(categorization_prompt, model)
-        
-        if not categories_response:
-            print("[ERROR] Failed to get categorization from LLM")
-            return self.generate_api_index_skeleton(parsed_files)
-        
-        # Try to parse JSON from response (handle if LLM adds markdown formatting)
-        try:
-            # Remove potential markdown code blocks
-            json_str = categories_response.strip()
-            if json_str.startswith("```"):
-                json_str = re.sub(r'^```[a-z]*\n', '', json_str)
-                json_str = re.sub(r'\n```$', '', json_str)
-            
-            categories = json.loads(json_str)
-            self.log(f"Successfully categorized methods into {len(categories)} categories")
-        except json.JSONDecodeError as e:
-            print(f"[ERROR] Failed to parse LLM JSON response: {e}")
-            print(f"Response was: {categories_response[:200]}...")
-            return self.generate_api_index_skeleton(parsed_files)
-        
-        # Step 3: Generate documentation sections
-        lines = [
-            "# API Index - Quick Reference",
-            "",
-            "Complete listing of all **public Hound methods** for mission builders, organized by category.",
-            "",
-            "This is the **Public API** for everyday mission builders. For internal/developer functions, see [Developer API](../dev/).",
-            "",
-            "*Generated with LLM assistance*",
-            "",
-            "---",
-            "",
-            "## Table of Contents",
-            ""
-        ]
-        
-        # Add TOC
-        for category in categories.keys():
-            anchor = re.sub(r'[^a-zA-Z0-9]+', '-', category.lower()).strip('-')
-            lines.append(f"- [{category}](#{anchor})")
-        
-        lines.append("")
-        lines.append("---")
-        lines.append("")
-        
-        # Step 4: Generate each category section
-        for category, method_names_in_category in categories.items():
-            self.log(f"Generating section: {category}")
-            
-            # Get full method data for this category
-            category_methods = [m for m in methods if m["name"] in method_names_in_category]
-            
-            if not category_methods:
-                continue
-            
-            lines.append(f"## {category}")
-            lines.append("")
-            
-            # Generate table with proper formatting (skip LLM for tables - it hallucinates)
-            lines.append("| Method | Parameters | Returns | Description |")
-            lines.append("|--------|------------|---------|-------------|")
-            
-            for method in category_methods:
-                # Clean up types
-                def clean_type(t):
-                    # Remove LDOC type markers and clean up
-                    t = str(t).replace("type=", "").replace("?", "").strip()
-                    # Map common types to clean names
-                    type_map = {
-                        "tab": "table",
-                        "int": "int",
-                        "bool": "bool",
-                        "Bool": "bool",
-                        "Int": "int",
-                        "string": "string",
-                        "number": "number"
-                    }
-                    return type_map.get(t, t) if t else "-"
-                
-                # Format parameters with optional markers
-                if method["params"]:
-                    param_strs = []
-                    for p in method["params"]:
-                        param_name = p['name']
-                        param_type = clean_type(p['type'])
-                        # Check if parameter name suggests it's optional
-                        is_opt = 'opt' in str(p.get('description', '')).lower() or param_name == 'opt'
-                        if is_opt or param_type == "-":
-                            param_strs.append(f"`{param_name}` ({param_type}, opt)")
-                        else:
-                            param_strs.append(f"`{param_name}` ({param_type})")
-                    params_str = ", ".join(param_strs)
-                else:
-                    params_str = "-"
-                
-                # Format returns
-                if method["returns"]:
-                    returns_str = clean_type(method["returns"][0]["type"])
-                else:
-                    returns_str = "-"
-                
-                # Clean description
-                desc = method["description"].strip()
-                if desc:
-                    # Capitalize first letter
-                    desc = desc[0].upper() + desc[1:] if desc else desc
-                    # Add period if missing
-                    if desc and not desc.endswith('.') and not desc.endswith('...'):
-                        desc += '.'
-                else:
-                    desc = "No description available."
-                
-                # Truncate if too long
-                if len(desc) > 80:
-                    desc = desc[:77] + "..."
-                
-                # Escape pipes in description
-                desc = desc.replace("|", "\\|")
-                
-                lines.append(f"| `{method['name']}()` | {params_str} | {returns_str} | {desc} |")
-            
-            lines.append("")
-            
-            # Ask LLM for example code for this category
-            # Build detailed method info including types and descriptions
-            method_details = []
-            for m in category_methods[:8]:
-                sig_parts = []
-                if m["params"]:
-                    for p in m["params"]:
-                        ptype = p.get('type', 'any').replace('type=', '').replace('?', '')
-                        sig_parts.append(f"{p['name']}:{ptype}")
-                sig = f"  {m['name']}({', '.join(sig_parts)})"
-                desc = m.get('description', '').strip()
-                if desc:
-                    sig += f"  -- {desc}"
-                method_details.append(sig)
-            
-            # Find ground truth example from hand-written docs for this category
-            category_doc_map = {
-                'Instance Management': 'basic-configuration.md',
-                'Platform Management': 'basic-configuration.md',
-                'Detection & Contacts': 'basic-configuration.md',
-                'Sector Management': 'sectors.md',
-                'Controller': 'controller.md',
-                'ATIS': 'atis.md',
-                'Notifier': 'notifier.md',
-                'Map Markers': 'basic-configuration.md',
-                'Settings & Configuration': 'advanced-configuration.md',
-                'Event System': 'event-handlers.md',
-                'Data Export': 'exports.md',
-                'Global Utilities': 'advanced-configuration.md',
-            }
-            ground_truth_section = ""
-            doc_file = category_doc_map.get(category, '')
-            if doc_file and doc_file in self._docs_context:
-                code_blocks = re.findall(r'```lua\n(.*?)```',
-                                        self._docs_context[doc_file], re.DOTALL)
-                # Find a code block that uses methods from this category
-                for block in code_blocks[:5]:
-                    block = block.strip()
-                    if any(m['name'].split(':')[-1] in block or
-                           m['name'].split('.')[-1] in block
-                           for m in category_methods[:3]):
-                        ground_truth_section = f"""
-CORRECT example from official documentation (follow this pattern exactly):
-```lua
-{block}
-```"""
-                        break
-                if not ground_truth_section and code_blocks:
-                    ground_truth_section = f"""
-CORRECT example from official documentation (follow this pattern exactly):
-```lua
-{code_blocks[0].strip()}
-```"""
-            
-            example_prompt = f"""Generate a practical Lua code example for the "{category}" category of Hound ELINT (DCS World radar detection).
-
-Methods available (use ONLY these, with their parameter types):
-{chr(10).join(method_details)}
-{ground_truth_section}
-
-STRICT RULES - violations will make the example WRONG:
-- HoundElint:create() takes coalition.side.BLUE or coalition.side.RED (or a unit name string)
-- addPlatform() takes ONE argument: a DCS unit name string like "ELINT_C130"
-- enableController/enableAtis take optional sectorName string, then settings table: {{freq="251.000", modulation="AM"}}
-- Marker types are enums: HOUND.MARKER.CIRCLE, HOUND.MARKER.POLYGON, HOUND.MARKER.POINT, HOUND.MARKER.NONE
-- Event handlers are objects with onHoundEvent(event) method, registered via HOUND.addEventHandler(handler)
-- HOUND.getInstance() takes a number (instance ID), not a string
-- preBriefedContact() takes a SAM unit/group name, NOT an ELINT platform name
-- Do NOT invent methods or parameters not listed above
-
-Show 2-4 methods. Keep concise (5-10 lines). Return ONLY lua code in a markdown code block."""
-            
-            example_response = self.call_local_llm(example_prompt, model)
-            
-            if example_response:
-                # Clean up response - extract code block
-                example_code = example_response.strip()
-                code_match = re.search(r'```lua\n(.*?)```', example_code, re.DOTALL)
-                if code_match:
-                    example_code = code_match.group(1).strip()
-                elif example_code.startswith("```"):
-                    example_code = re.sub(r'^```\w*\n?', '', example_code)
-                    example_code = re.sub(r'\n?```$', '', example_code)
-                
-                # Validate generated code against real API
-                is_valid, issues = self.validate_generated_code(example_code, self._valid_methods)
-                if not is_valid:
-                    self.log(f"Example validation issues for '{category}': {issues}")
-                
-                lines.append("**Example:**")
-                lines.append("")
-                lines.append(f"```lua\n{example_code}\n```")
-                lines.append("")
-            
-            lines.append("---")
-            lines.append("")
-        
-        # Add footer
-        lines.extend([
-            "## See Also",
-            "",
-            "- **[System Architecture](architecture.md)** - How components work together",
-            "- **[Quick Start](quick-start.md)** - Get started with Hound",
-            "- **[Full API Documentation](../HOUND_API_REFERENCE.md)** - Complete public API reference",
-            "- **[Developer API](../dev/)** - Internal functions for advanced users",
-            ""
-        ])
-        
-        return '\n'.join(lines)
-    
-    def generate_api_index_skeleton(self, parsed_files: List[FileData]) -> str:
-        """Generate basic API index skeleton without LLM (fallback)
-        
-        Focuses on PUBLIC API for mission builders, excludes internal developer functions.
-        """
-        # Public HOUND.* functions that mission builders use
-        PUBLIC_HOUND_FUNCTIONS = {
-            'HOUND.getInstance',
-            'HOUND.setMgrsPresicion',
-            'HOUND.showExtendedInfo',
-            'HOUND.addEventHandler',
-            'HOUND.removeEventHandler'
-        }
-        
-        lines = [
-            "# API Index - Quick Reference",
-            "",
-            "Complete listing of all public Hound methods.",
-            "",
-            "*Note: LLM generation failed, showing basic skeleton*",
-            "",
-            "---",
-            "",
-        ]
-        
-        # List HoundElint methods
-        lines.append("## HoundElint Methods (Public API)")
-        lines.append("")
-        
-        for file_data in parsed_files:
-            filename = file_data.filename
-            
-            if filename.startswith('800 -') or filename.startswith('801 -'):
-                for func in file_data.functions:
-                    if func.signature and not func.is_local:
-                        func_name = func.signature['name']
-                        if func_name.startswith('HoundElint'):
-                            params = ', '.join(func.signature.get('params', []))
-                            lines.append(f"- `{func_name}({params})`")
-        
-        lines.append("")
-        
-        # List public HOUND.* utility functions
-        lines.append("## HOUND Global Functions (Public Utilities)")
-        lines.append("")
-        
-        for file_data in parsed_files:
-            filename = file_data.filename
-            
-            if filename.startswith('000 -'):
-                for func in file_data.functions:
-                    if func.signature and not func.is_local:
-                        func_name = func.signature['name']
-                        if func_name in PUBLIC_HOUND_FUNCTIONS:
-                            params = ', '.join(func.signature.get('params', []))
-                            lines.append(f"- `{func_name}({params})`")
-        
-        lines.append("")
-        lines.append("---")
-        lines.append("")
-        lines.append("## See Also")
-        lines.append("")
-        lines.append("- **[Full API Documentation](../HOUND_API_REFERENCE.md)** - Complete reference")
-        lines.append("- **[Developer API](../dev/)** - Internal functions for advanced users")
-        lines.append("")
-        
-        return '\n'.join(lines)
     
     def generate_llm_integration_guide(self, parsed_files: List[FileData],
                                         docs_dir: str, model: str,
@@ -1547,28 +1168,17 @@ Show 2-4 methods. Keep concise (5-10 lines). Return ONLY lua code in a markdown 
             },
         ]
         
-        # Step 3: Generate each scenario
-        generated = []
-        for scenario in scenarios:
-            self.log(f"Generating scenario: {scenario['title']}")
-            
-            # Build the prompt with generated API doc as primary reference
-            api_context = ""
-            if generated_api_doc:
-                api_context = f"""PRIMARY API REFERENCE (generated from source code — this is the authoritative source):
-{generated_api_doc}
+        # Step 3: Build system message (sent once, cached across all turns)
+        # Use compact cheatsheet + ground truth examples only — the full generated_api_doc
+        # is ~22KB of verbose markdown that duplicates info already in the cheatsheet.
+        # Keeping the system message lean cuts first-turn processing time significantly.
+        system_content = f"""You are writing DCS World mission Lua scripts using the Hound ELINT radar detection system.
 
-"""
-            
-            prompt = f"""You are writing a DCS World mission Lua script using the Hound ELINT radar detection system.
-
-{api_context}API METHOD SIGNATURES (compact quick-reference):
+API METHOD SIGNATURES (use ONLY these methods):
 {api_cheatsheet}
 
 CORRECT USAGE PATTERNS FROM OFFICIAL DOCUMENTATION:
 {ground_truth}
-
-TASK: Write a complete, working Lua script for: {scenario['desc']}
 
 STRICT RULES:
 1. Use ONLY methods listed in the API reference above
@@ -1586,49 +1196,130 @@ STRICT RULES:
 13. Include clear inline comments
 14. Do NOT invent methods or parameters not in the API reference
 
-Return ONLY the Lua code in a markdown code block. No explanations outside the code."""
+For each task, return ONLY the Lua code in a markdown code block. No explanations outside the code."""
 
-            response = self.call_local_llm(prompt, model)
-            
+        # Preload model and start chat session
+        self._preload_model(model)
+        messages = [{"role": "system", "content": system_content}]
+        self.log(f"System message: {len(system_content)} chars (sent once, cached)")
+
+        # Context budget for turn trimming — assume ~4 chars per token.
+        # Use a more conservative budget (70% of limit) to account for tokenization variance
+        ctx_limit = (self.num_ctx or 24576)
+        char_budget = int(ctx_limit * 4 * 0.70)
+        self.log(f"Context budget: {char_budget} chars (~{ctx_limit} tokens, 70%)")
+
+
+        def _estimate_messages_len(msgs):
+            return sum(len(m.get("content", "")) for m in msgs)
+
+        def _extract_code_from_response(text):
+            text = text.strip()
+            code_match = re.search(r'```(?:\w*)\n(.*?)```', text, re.DOTALL)
+            if code_match:
+                return code_match.group(1).strip()
+            if text.startswith('```'):
+                text = re.sub(r'^```\w*\n?', '', text)
+                text = re.sub(r'\n?```$', '', text)
+            return text.strip()
+
+        # Step 4: Generate each scenario as a chat turn (KV cache reuse)
+        generated = []
+        turn_sizes = []  # track messages per scenario turn for clean trimming
+        for scenario in scenarios:
+            self.log(f"Generating scenario: {scenario['title']}")
+
+            # Context window safety valve — trim oldest complete scenario turns
+            while (_estimate_messages_len(messages) > char_budget
+                   and turn_sizes):
+                to_remove = turn_sizes.pop(0)
+                for _ in range(to_remove):
+                    if len(messages) > 1:
+                        messages.pop(1)
+                self.log("Trimmed oldest scenario turn to stay within context budget")
+
+            turn_msg_count = 0
+            user_msg = f"Write a complete, working Lua script for: {scenario['desc']}"
+            messages.append({"role": "user", "content": user_msg})
+            turn_msg_count += 1
+
+            response = self.call_local_llm_chat(messages, model)
+
             if not response:
                 self.log(f"LLM failed for scenario: {scenario['title']}")
+                messages.pop()  # remove unanswered user message
                 continue
-            
-            # Extract code
-            code = response.strip()
-            code_match = re.search(r'```lua\n(.*?)```', code, re.DOTALL)
-            if code_match:
-                code = code_match.group(1).strip()
-            elif code.startswith('```'):
-                code = re.sub(r'^```\w*\n?', '', code)
-                code = re.sub(r'\n?```$', '', code)
-            
-            # Validate
+
+            # Keep only code block in history to save context space
+            code = _extract_code_from_response(response)
+            history_content = f"```lua\n{code}\n```"
+            messages.append({"role": "assistant", "content": history_content})
+            turn_msg_count += 1
+
+            # Semantic self-review: ask LLM to verify code matches task requirements
+            self.log(f"Self-review for: {scenario['title']}")
+            review_msg = (
+                f"Review the code you just wrote against the original task:\n"
+                f"\"{scenario['desc']}\"\n\n"
+                f"Check:\n"
+                f"1. Does it implement ALL requirements from the task description?\n"
+                f"2. Are all method calls and parameters correct per the API reference?\n"
+                f"3. Is the code complete and runnable (no placeholders, no missing steps)?\n\n"
+                f"If anything is wrong or missing, output the CORRECTED complete Lua code "
+                f"in a markdown code block.\n"
+                f"If the code is already correct, reply with exactly: LGTM")
+            messages.append({"role": "user", "content": review_msg})
+            turn_msg_count += 1
+
+            review_response = self.call_local_llm_chat(messages, model)
+            if review_response:
+                review_text = review_response.strip()
+                if "LGTM" not in review_text and "```" in review_text:
+                    reviewed_code = _extract_code_from_response(review_text)
+                    if reviewed_code and len(reviewed_code) > 20:
+                        self.log("Self-review produced corrected code")
+                        code = reviewed_code
+                        messages.append({"role": "assistant",
+                                         "content": f"```lua\n{code}\n```"})
+                    else:
+                        messages.append({"role": "assistant", "content": "LGTM"})
+                else:
+                    self.log("Self-review: code passed")
+                    messages.append({"role": "assistant", "content": "LGTM"})
+                turn_msg_count += 1
+            else:
+                messages.pop()  # remove unanswered review message
+                turn_msg_count -= 1
+
+            # Validate method names exist in actual API
             is_valid, issues = self.validate_generated_code(code, valid_methods)
-            
+
             if not is_valid:
-                self.log(f"Validation issues in '{scenario['title']}': {issues}")
-                # Attempt fix
-                fix_prompt = f"""Fix this Lua code. These method calls do NOT exist: {', '.join(issues)}
+                self.log(f"Invalid methods in '{scenario['title']}': {issues}")
+                fix_msg = (f"Fix this code. These method calls do NOT exist: "
+                           f"{', '.join(issues)}\n"
+                           f"Return ONLY the corrected Lua code in a markdown code block.")
+                messages.append({"role": "user", "content": fix_msg})
+                turn_msg_count += 1
 
-```lua
-{code}
-```
-
-VALID METHODS (use ONLY these):
-{api_cheatsheet}
-
-Return ONLY the corrected Lua code in a markdown code block."""
-                
-                fix_response = self.call_local_llm(fix_prompt, model)
+                fix_response = self.call_local_llm_chat(messages, model)
                 if fix_response:
-                    fix_match = re.search(r'```lua\n(.*?)```', fix_response.strip(), re.DOTALL)
-                    if fix_match:
-                        code = fix_match.group(1).strip()
-                    is_valid, issues = self.validate_generated_code(code, valid_methods)
-                    if not is_valid:
+                    fixed_code = _extract_code_from_response(fix_response)
+                    messages.append({"role": "assistant",
+                                     "content": f"```lua\n{fixed_code}\n```"})
+                    turn_msg_count += 1
+                    is_valid, issues = self.validate_generated_code(fixed_code, valid_methods)
+                    if is_valid:
+                        code = fixed_code
+                    else:
                         self.log(f"Still invalid after fix: {issues}")
-            
+                        code = fixed_code
+                else:
+                    messages.pop()  # remove unanswered fix message
+                    turn_msg_count -= 1
+
+            turn_sizes.append(turn_msg_count)
+
             generated.append({
                 "title": scenario['title'],
                 "desc": scenario['desc'],
@@ -1636,37 +1327,32 @@ Return ONLY the corrected Lua code in a markdown code block."""
                 "valid": is_valid,
                 "issues": issues if not is_valid else []
             })
-        
-        # Step 4: Validation pass — ask LLM to integrate Hound using ONLY the generated content
-        self.log("Running documentation quality validation...")
-        
-        compact_guide = self._assemble_guide_body(api_cheatsheet, generated)
-        
-        validation_prompt = f"""You are a DCS World mission builder. Using ONLY the documentation below, write a Lua script that:
-1. Creates a Hound ELINT instance for Blue coalition
-2. Adds 3 ELINT platforms
-3. Enables a Controller with voice on 251.000 AM
-4. Enables map markers with CIRCLE type
-5. Adds a pre-briefed SAM site
-6. Activates the system
 
-DOCUMENTATION:
-{compact_guide[:6000]}
+        # Step 5: Validation pass — Use a FRESH session to truly test the guide's effectiveness
+        self.log("Running documentation quality validation with a fresh session...")
 
-Return ONLY the Lua code. No explanations."""
+        # Start a new conversation with only the system prompt to avoid context saturation
+        # and to verify the guide is self-contained for a "cold start" LLM.
+        validation_messages = [{"role": "system", "content": system_content}]
 
-        validation_response = self.call_local_llm(validation_prompt, model)
+        val_msg = ("Now test the documentation: using ONLY the API reference from the "
+                   "system message, write a Lua script that:\n"
+                   "1. Creates a Hound ELINT instance for Blue coalition\n"
+                   "2. Adds 3 ELINT platforms\n"
+                   "3. Enables a Controller with voice on 251.000 AM\n"
+                   "4. Enables map markers with CIRCLE type\n"
+                   "5. Adds a pre-briefed SAM site\n"
+                   "6. Activates the system\n\n"
+                   "Return ONLY the Lua code. No explanations.")
+        validation_messages.append({"role": "user", "content": val_msg})
+
+        validation_response = self.call_local_llm_chat(validation_messages, model)
         validation_result = ""
-        
+
+
         if validation_response:
-            val_code = validation_response.strip()
-            val_match = re.search(r'```lua\n(.*?)```', val_code, re.DOTALL)
-            if val_match:
-                val_code = val_match.group(1).strip()
-            elif val_code.startswith('```'):
-                val_code = re.sub(r'^```\w*\n?', '', val_code)
-                val_code = re.sub(r'\n?```$', '', val_code)
-            
+            val_code = _extract_code_from_response(validation_response)
+
             is_valid, issues = self.validate_generated_code(val_code, valid_methods)
             if is_valid:
                 validation_result = (
@@ -1683,23 +1369,10 @@ Return ONLY the Lua code. No explanations."""
                 self.log(f"Validation issues: {issues}")
         else:
             validation_result = "*Validation skipped: LLM call failed.*"
-        
-        # Step 5: Assemble final document
+
+        # Step 6: Assemble final document
         return self._assemble_integration_guide(categorized_api, generated,
                                                  validation_result)
-    
-    def _assemble_guide_body(self, api_cheatsheet: str, scenarios: list) -> str:
-        """Assemble guide body (for validation prompt context)"""
-        lines = [
-            "# Hound ELINT Integration Guide",
-            "",
-            "## API Reference",
-            api_cheatsheet,
-            "",
-        ]
-        for s in scenarios:
-            lines.extend([f"## {s['title']}", "", f"```lua\n{s['code']}\n```", ""])
-        return '\n'.join(lines)
     
     def _assemble_integration_guide(self, categorized_api: str, scenarios: list,
                                      validation_result: str) -> str:
@@ -1858,13 +1531,13 @@ Return ONLY the Lua code. No explanations."""
             "",
             "## Further Reading",
             "",
-            "- `docs/README/quick-start.md` — Step-by-step setup guide",
-            "- `docs/README/basic-configuration.md` — All basic options",
-            "- `docs/README/controller.md` — Controller details",
-            "- `docs/README/sectors.md` — Multi-sector setup",
-            "- `docs/README/event-handlers.md` — Event system details",
-            "- `docs/README/exports.md` — Data export formats",
-            "- `docs/HOUND_API_REFERENCE.md` — Complete public API reference",
+            "- `docs/quick-start.md` — Step-by-step setup guide",
+            "- `docs/basic-configuration.md` — All basic options",
+            "- `docs/controller.md` — Controller details",
+            "- `docs/sectors.md` — Multi-sector setup",
+            "- `docs/event-handlers.md` — Event system details",
+            "- `docs/exports.md` — Data export formats",
+            "- `HOUND_API_REFERENCE.md` — Complete public API reference",
             "- `demo_mission/` — Ready-to-fly demo missions",
             "",
         ]
@@ -1884,14 +1557,19 @@ def main():
         help="Source directory containing Lua files (default: ../src)"
     )
     parser.add_argument(
-        "--public-output-dir", 
-        default="../docs", 
-        help="Output directory for public API documentation (default: ../docs)"
+        "--public-output-dir",
+        default="..",
+        help="Output directory for public API documentation (default: ..)"
     )
     parser.add_argument(
-        "--dev-output-dir", 
-        default="../docs/dev", 
-        help="Output directory for developer documentation (default: ../docs/dev)"
+        "--dev-output-dir",
+        default="..",
+        help="Output directory for developer documentation (default: ..)"
+    )
+    parser.add_argument(
+        "--guides-dir",
+        default="../docs",
+        help="Directory containing hand-written markdown guides (default: ../docs)"
     )
     parser.add_argument(
         "--llm-host",
@@ -1900,8 +1578,8 @@ def main():
     )
     parser.add_argument(
         "--llm-model",
-        default="qwen3:4b",
-        help="Ollama model to use (default: qwen3:4b)"
+        default="gemma4:31b-cloud",
+        help="Ollama model to use (default: gemma4:31b-cloud)"
     )
     parser.add_argument(
         "--llm-context",
@@ -1912,13 +1590,13 @@ def main():
     parser.add_argument(
         "--llm-timeout",
         type=int,
-        default=300,
-        help="Timeout in seconds for each LLM call (default: 300)"
+        default=600,
+        help="Timeout in seconds for each LLM call (default: 600)"
     )
     parser.add_argument(
         "--use-large-model",
         action="store_true",
-        help="Use qwen3:14b instead of default qwen3:4b (better quality, slower)"
+        help="Use kimi-k2.6:cloud instead of default gemma4:31b-cloud (better quality, slower)"
     )
     parser.add_argument(
         "--skip-integration-guide",
@@ -2004,18 +1682,16 @@ def main():
             print("[WARN] Ollama not available — skipping integration guide generation")
         else:
             if args.use_large_model:
-                model = "qwen3:14b"
+                model = "kimi-k2.6:cloud"
             else:
                 model = args.llm_model
             
             print(f"Generating LLM integration guide with model: {model}")
             
             guide_doc = generator.generate_llm_integration_guide(
-                parsed_files, args.public_output_dir, model,
+                parsed_files, args.guides_dir, model,
                 generated_api_doc=public_doc)
-            guide_path = public_output_path / "README" / "llm-integration-guide.md"
-            
-            (public_output_path / "README").mkdir(parents=True, exist_ok=True)
+            guide_path = public_output_path / "llm-integration-guide.md"
             
             try:
                 with open(guide_path, 'w', encoding='utf-8') as f:

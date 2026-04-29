@@ -112,7 +112,7 @@ function build_docs {
     $LDOC -c config_general.ld -p "Hound<br> ELINT for DCS" --merge --multimodule  --style !fixed .
 
     highlight "Building Dev Docs"
-    $LDOC -c config_developer.ld -p "Hound<br> ELINT for DCS" -a -d docs/dev --merge --multimodule  --style !fixed src
+    $LDOC -c config_developer.ld -p "Hound<br> ELINT for DCS" -a -d docs/web/dev --merge --multimodule  --style !fixed src
 }
 
 # function build_markdown_docs {
@@ -122,7 +122,7 @@ function build_docs {
 
 function build_llm_docs {
     highlight "Building Markdown API Docs + LLM Integration Guide"
-    python3 tools/generate_md_docs.py --src-dir ./src --public-output-dir ./docs --dev-output-dir ./docs/dev -v
+    python3 tools/generate_md_docs.py --src-dir ./src --public-output-dir ./ --dev-output-dir ./ --guides-dir ./docs -v
 }
 
 function build_toc {
@@ -190,11 +190,6 @@ function minify_compiled {
     ${LUASRCDIET} --basic --opt-emptylines ${TARGET_FILE} -o ${MINIFIED_PATH}/${TARGET_BASENAME}_.lua
 
 }
-function fetch_mist {
-    MIST_BRANCH=${1:-development}
-    curl -L https://raw.githubusercontent.com/mrSkortch/MissionScriptingTools/${MIST_BRANCH}/mist.lua -o ${TARGET_PATH}/mist.lua
-    # ${LUASRCDIET} --basic --opt-emptylines ${TARGET_PATH}/mist.lua -o ${MINIFIED_PATH}/mist_.lua
-}
 
 function print_includes {
     for FILE in src/*.lua; do
@@ -254,18 +249,11 @@ do
             MINIFY=1
             shift
         ;;
-
-        --lib | -l )
-            FETCH_LIB=1
-            shift
-        ;;
         --missions | -m )
-            FETCH_LIB=1
             UPDATE_MISSIONS=1
             shift
         ;;
         --release )
-            FETCH_LIB=1
             RELEASE=1
             BUILD_DOCS=1
             COMPILE=1
@@ -277,7 +265,6 @@ do
             BUILD_DOCS=1
             COMPILE=1
             UPDATE_MISSIONS=1
-            FETCH_LIB=1
             break
         ;;
         * )
@@ -291,10 +278,6 @@ check_dependecies
 
 if [ $LINT_SRC -eq 1 ]; then
     lint_src
-fi
-
-if [ $FETCH_LIB -eq 1 ]; then
-    fetch_mist
 fi
 
 if [ $COMPILE -eq 1 ]; then

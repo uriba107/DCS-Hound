@@ -3,6 +3,7 @@
 .DS_Store
 .vscode
 .cursor
+.claude
 logo
 not_working
 test
@@ -13,3 +14,4 @@ mist*.lua
 Moos*.lua
 TODO
 scripts/testing
+*.pyc

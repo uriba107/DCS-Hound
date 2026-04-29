@@ -324,23 +324,6 @@ do
         end
     end
 
-    --- returns configured transmitter position
-    -- @local
-    -- @return DCS position of transmitter or nil if none set
-    function HOUND.Comms.Manager:getTransmitterPos()
-        if self.transmitter == nil then return nil end
-        if self.transmitter ~= nil and (self.transmitter:isExist() == false or self.transmitter:getLife() < 1) then
-            return false
-        end
-        local pos = self.transmitter:getPoint()
-        local transmitterObjectCat, transmitterSubCat = self.transmitter:getCategory()
-        if transmitterObjectCat == Object.Category.STATIC or (transmitterObjectCat == Object.Category.UNIT and transmitterSubCat == Unit.Category.GROUND_UNIT) then
-            local verticalOffset = (self.transmitter:getDesc()["box"]["max"]["y"] + 5) or 20
-            pos.y = pos.y + verticalOffset
-        end
-        return pos
-    end
-
     --- Trsnsmit next message from queue
     -- @local
     -- @param gSelf #Table pointer to self
@@ -350,7 +333,7 @@ do
         local readTime = gSelf.settings.interval
         if msgObj == nil then return timer.getTime() + readTime end
 
-        local transmitterPos = gSelf:getTransmitterPos()
+        local transmitterPos = HoundUtils.TTS.getTransmitterPos(gSelf.transmitter)
 
         if transmitterPos == false then
             env.info("[Hound] - Transmitter destroyed")
@@ -361,11 +344,12 @@ do
                     transmitter = gSelf.transmitter
                 })
 
+            gSelf.transmitter = nil
             return timer.getTime() + 10
         end
 
         if gSelf.enabled and HoundUtils.TTS.isAvailable() and msgObj.tts ~= nil and gSelf.preferences.enabletts then
-            HoundUtils.TTS.Transmit(msgObj.tts,msgObj.coalition,gSelf.settings,transmitterPos)
+            HoundUtils.TTS.Transmit(msgObj.tts,msgObj.coalition,gSelf.settings,gSelf.transmitter)
             readTime = HoundUtils.TTS.getReadTime(msgObj.tts,gSelf.settings.speed,gSelf.settings.googletts)
             -- env.info("TTS msg: " .. msgObj.tts)
 

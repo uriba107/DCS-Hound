@@ -53,17 +53,18 @@ python3 generate_md_docs.py --skip-integration-guide
 
 ### Output
 
-- `docs/HOUND_API_REFERENCE.md` - Public API documentation
-- `docs/dev/DEVELOPER_API_REFERENCE.md` - Full developer documentation
-- `docs/README/llm-integration-guide.md` - Self-contained LLM integration guide with categorized API reference and validated examples
+- `HOUND_API_REFERENCE.md` - Public API documentation (at repo root)
+- `DEVELOPER_API_REFERENCE.md` - Full developer documentation (at repo root)
+- `llm-integration-guide.md` - Self-contained LLM integration guide with categorized API reference and validated examples (at repo root)
 
 ### Options
 
 | Option                     | Description                                             |
 | -------------------------- | ------------------------------------------------------- |
 | `--src-dir PATH`           | Source directory (default: `../src`)                    |
-| `--public-output-dir PATH` | Public docs output (default: `../docs`)                 |
-| `--dev-output-dir PATH`    | Developer docs output (default: `../docs/dev`)          |
+| `--public-output-dir PATH` | Public docs output (default: `..`)                      |
+| `--dev-output-dir PATH`    | Developer docs output (default: `..`)                   |
+| `--guides-dir PATH`        | Hand-written markdown guides directory (default: `../docs`) |
 | `--skip-integration-guide` | Skip LLM integration guide (only API reference files)   |
 | `--llm-model MODEL`        | Ollama model to use (default: `qwen3:4b`)               |
 | `--llm-context N`          | Context window size for Ollama (default: model default) |
@@ -76,5 +77,5 @@ python3 generate_md_docs.py --skip-integration-guide
 - By default the script generates all docs including the LLM integration guide
 - Use `--skip-integration-guide` if Ollama is not available
 - The guide uses freshly-generated API docs (in-memory) as primary context for accuracy
-- Developer/internal functions are documented separately in `docs/dev/`
+- Developer/internal functions are documented separately in `DEVELOPER_API_REFERENCE.md` (repo root) and `docs/web/dev/` (HTML)
 - LLM timeout: 300s default, configurable via `--llm-timeout`

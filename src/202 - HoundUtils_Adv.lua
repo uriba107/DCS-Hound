@@ -19,7 +19,7 @@ do
     -- @return[type=Bool] True if point is in polygon
     -- @return[type=Bool] True if radius around point intersects polygon
     function HOUND.Utils.Polygon.threatOnSector(polygon,point, radius)
-        if type(polygon) ~= "table" or HOUND.Length(polygon) < 3 or not HOUND.Utils.Dcs.isPoint(l_mist.utils.makeVec3(polygon[1])) then
+        if type(polygon) ~= "table" or #polygon < 3 or not HOUND.Utils.Dcs.isPoint(l_mist.utils.makeVec3(polygon[1])) then
             return
         end
         if not HOUND.Utils.Dcs.isPoint(point) then
@@ -44,7 +44,7 @@ do
     -- @return minAz (rad)
     -- @return maxAz (rad)
     function HOUND.Utils.Polygon.azMinMax(poly,refPos)
-        if not HOUND.Utils.Dcs.isPoint(refPos) or type(poly) ~= "table" or HOUND.Length(poly) < 2 or l_mist.pointInPolygon(refPos,poly) then
+        if not HOUND.Utils.Dcs.isPoint(refPos) or type(poly) ~= "table" or #poly < 2 or l_mist.pointInPolygon(refPos,poly) then
             return
         end
 
@@ -75,9 +75,15 @@ do
     -- @param returnRelative If true returning array will contain relative positions to referencePos
     -- @return List
     function HOUND.Utils.Cluster.getDeltaSubsetPercent(Table,referencePos,NthPercentile,returnRelative)
-        local t = l_mist.utils.deepCopy(Table)
-        local len_t = HOUND.Length(t)
-        t = HOUND.Utils.Geo.setHeight(t)
+        -- local t = l_mist.utils.deepCopy(Table)
+        -- t = HOUND.Utils.Geo.setHeight(t)
+        -- shallow copy to reduce overhead
+        local t = {}
+        for _,pt in ipairs(Table) do
+            table.insert(t, { x = pt.x, y = pt.y or 0, z = pt.z, dist = 0, score = pt.score})
+        end
+        local len_t = #t
+
         if not referencePos then
             referencePos = l_mist.getAvgPoint(t)
         end

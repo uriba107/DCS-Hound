@@ -4,7 +4,6 @@
 do
     local l_mist = HOUND.Mist
     local l_math = math
-    local l_grpc = GRPC
     local l_stts = HoundTTS or STTS
     local l_houndTTS = HoundTTS
     local PI_2 = 2*l_math.pi
@@ -18,7 +17,6 @@ do
     function HOUND.Utils.TTS.isAvailable()
         for _,engine in ipairs(HOUND.TTS_ENGINE) do
             if engine == "HOUND" and l_houndTTS ~= nil then return true end
-            if engine == "GRPC" and (l_grpc ~= nil and type(l_grpc.tts) == "function") then return true end
             if engine == "STTS" and l_stts ~= nil then return true end
         end
         return false
@@ -49,11 +47,34 @@ do
         end
         return "AM"
     end
+
+    --- returns configured transmitter position
+    -- @local
+    -- @param dcsObject DCS object (unit or static object)
+    -- @return DCS position of transmitter, nil if invalid object or false if object is valid but destroyed
+    function HOUND.Utils.TTS.getTransmitterPos(dcsObject)
+        if dcsObject == nil then return nil end
+        if HOUND.Utils.Dcs.isPoint(dcsObject) then return dcsObject end
+        if not HOUND.Utils.Dcs.isUnit(dcsObject) and not HOUND.Utils.Dcs.isStaticObject(dcsObject) then
+            return nil
+        end
+        if (dcsObject:isExist() == false or dcsObject:getLife() < 1) then
+            return false
+        end
+        local pos = dcsObject:getPoint()
+        local transmitterObjectCat, transmitterSubCat = dcsObject:getCategory()
+        if transmitterObjectCat == Object.Category.STATIC or (transmitterObjectCat == Object.Category.UNIT and transmitterSubCat == Unit.Category.GROUND_UNIT) then
+            local verticalOffset = (dcsObject:getDesc()["box"]["max"]["y"] + 5) or 20
+            pos.y = pos.y + verticalOffset
+        end
+        return pos
+    end
+
     --- Transmit message using STTS (private)
     -- @param msg The message to transmit
     -- @param coalitionID Coalition to recive transmission
     -- @param args STTS settings in hash table (minimum required is {freq=})
-    -- @param[opt] transmitterPos DCS Position point for transmitter
+    -- @param[opt] transmitterPos DCS Position point or dcs Object (unit or static object) for transmitter
     -- @return STTS.TextToSpeech return value recived from STTS, currently estimated speechTime
 
     function HOUND.Utils.TTS.Transmit(msg,coalitionID,args,transmitterPos)
@@ -71,25 +92,30 @@ do
                     args.tts_engine = engine
                     break
                 end
-                if engine == "GRPC" and (l_grpc ~= nil and type(l_grpc.tts) == "function") then
-                    -- HOUND.Logger.debug("gRPC TTS message: "..msg)
-                    args.tts_engine = engine
-                    break
-                end
-                if engine == "STTS" and l_stts ~= nil then
+                if engine == "STTS" and (l_stts ~= nil and type(l_stts.TextToSpeech) == "function") then
                     args.tts_engine = engine
                     break
                 end
             end
         end
+        -- normlize transmitter
+        local dcsObject = nil
+        if type(transmitterPos) == "string" then
+            dcsObject = Unit.getByName(transmitterPos) or StaticObject.getByName(transmitterPos)
+            transmitterPos = nil
+        end
+        if HOUND.Utils.Dcs.isUnit(transmitterPos) or HOUND.Utils.Dcs.isStaticObject(transmitterPos) then
+            dcsObject = transmitterPos
+            transmitterPos = HOUND.Utils.TTS.getTransmitterPos(dcsObject)
+        end
+        if transmitterPos == false then
+            return
+        end
         if args.tts_engine == "STTS" then
             return HOUND.Utils.TTS.TransmitSTTS(msg,coalitionID,args,transmitterPos)
         end
-        if args.tts_engine == "GRPC" then
-            return HOUND.Utils.TTS.TransmitGRPC(msg,coalitionID,args,transmitterPos)
-        end
         if args.tts_engine == "HOUND" then
-            return HOUND.Utils.TTS.TransmitHound(msg,coalitionID,args,transmitterPos)
+            return HOUND.Utils.TTS.TransmitHound(msg,coalitionID,args,transmitterPos,dcsObject)
         end
     end
 
@@ -98,7 +124,7 @@ do
     -- @param msg The message to transmit
     -- @param coalitionID Coalition to recive transmission
     -- @param args STTS settings in hash table (minimum required is {freq=})
-    -- @param[opt] transmitterPos DCS Position point for transmitter
+    -- @param[opt] transmitterPos DCS Position point or unit name for transmitter
     -- @return currently estimated speechTime
     function HOUND.Utils.TTS.TransmitSTTS(msg,coalitionID,args,transmitterPos)
         args.modulation = args.modulation or HOUND.Utils.TTS.getdefaultModulation(args.freq)
@@ -108,11 +134,18 @@ do
 
     --- Transmit message using HoundTTS
     -- @local
-    function HOUND.Utils.TTS.TransmitHound(msg,coalitionID,args,transmitterPos)
+    -- @param msg The message to transmit
+    -- @param coalitionID Coalition to recive transmission
+    -- @param args STTS settings in hash table (minimum required is {freq=})
+    -- @param[opt] transmitterPos DCS Position point or unit name for transmitter
+    -- @param[opt] dcsObject DCS Object for transmitter
+    -- @return currently estimated speechTime
+    function HOUND.Utils.TTS.TransmitHound(msg,coalitionID,args,transmitterPos,dcsObject)
         local transmitter_params = {
             name = args.name,
             freq = args.freq,
             modulation = args.modulation or HOUND.Utils.TTS.getdefaultModulation(args.freq),
+            dcsObject = dcsObject,
             point = transmitterPos,
             coalition = coalitionID,
             transmitter = args.transmitter or "srs"
@@ -146,100 +179,6 @@ do
         end
 
         return l_houndTTS.Transmit(msg,transmitter_params,provider_params)
-    end
-
-    --- Transmit message using gRPC.tts
-    -- @local
-    -- @param msg The message to transmit
-    -- @param coalitionID Coalition to recive transmission
-    -- @param args STTS settings in hash table (minimum required is {freq=})
-    -- @param[opt] transmitterPos DCS Position point for transmitter
-    -- @return currently estimated speechTime
-    function HOUND.Utils.TTS.TransmitGRPC(msg,coalitionID,args,transmitterPos)
-        local VOLUME = {"default","x-slow", "slow", "medium", "fast", "x-fast"}
-        local ssml_msg = msg
-
-        local grpc_ttsArgs = {
-            srsClientName = args.name,
-            coalition = HOUND.Utils.getCoalitionString(coalitionID):lower(),
-        }
-        if type(transmitterPos) == "table" then
-            grpc_ttsArgs.position = {}
-            grpc_ttsArgs.position.lat, grpc_ttsArgs.position.lon, grpc_ttsArgs.position.alt = coord.LOtoLL( transmitterPos )
-        end
-        if type(args.provider) == "table" then
-            grpc_ttsArgs.provider = args.provider
-        end
-
-        local readSpeed = 1.0
-        if args.speed ~= 0 then
-            if args.speed > 10 then
-                readSpeed = HOUND.Utils.Mapping.linear(args.speed,50,250,0.5,2.5,true)
-            else
-                if args.speed > 0 then
-                    -- 250% = 10
-                    readSpeed = HOUND.Utils.Mapping.linear(args.speed,0,10,1.0,2.5,true)
-                else
-                    -- 50% = -10
-                    readSpeed = HOUND.Utils.Mapping.linear(args.speed,-10,0,0.5,1.0,true)
-                end
-            end
-        end
-
-        local ssml_prosody = ""
-        if readSpeed ~= 1.0  then
-            ssml_prosody = ssml_prosody .. " rate='"..readSpeed.."'"
-        end
-
-        if args.volume ~= 1.0 then
-            local volume = ""
-
-            if HOUND.setContainsValue(VOLUME,args.volume) then
-                volume = args.volume
-            end
-
-            if type(args.volume)=="number" then
-                if args.volume ~= 0 then
-                    volume = (args.volume*100)-100 .. "%"
-                    if args.volume > 1 then
-                        volume = "+" .. volume
-                    end
-                else
-                    volume = "slient"
-                end
-            end
-
-            if string.len(volume) > 0 then
-                ssml_prosody = ssml_prosody .. " volume='"..volume.."'"
-            end
-        end
-        if string.len(ssml_prosody) > 0 then
-            ssml_msg = table.concat({"<prosody",ssml_prosody,">",ssml_msg,"</prosody>"},"")
-        end
-
-        local ssml_voice = ""
-        if args.voice then
-            ssml_voice = ssml_voice.." name='"..args.voice.."'"
-        else
-            if args.gender then
-                ssml_voice = ssml_voice.." gender='"..args.gender.."'"
-            end
-            if args.culture then
-                ssml_voice = ssml_voice.." language='"..args.culture.."'"
-            end
-        end
-
-        if string.len(ssml_voice) > 0 then
-            ssml_msg = table.concat({"<voice",ssml_voice,">",ssml_msg,"</voice>"},"")
-        end
-
-        local freqs = string.split(args.freq,",")
-
-        for _,freq in ipairs(freqs) do
-            freq = math.ceil(freq * 1000000)
-            l_grpc.tts(ssml_msg, freq, grpc_ttsArgs)
-        end
-        return HOUND.Utils.TTS.getReadTime(msg) / readSpeed -- read speed > 1.0 is fast
     end
 
     --- returns current DCS time in military time string for TTS
@@ -416,11 +355,11 @@ do
     -- below 1km function will return number in meters
     -- eg. 140m => 150m, 520m => 500m, 4539m => 4.5km
 
-    function HOUND.Utils.TTS.simplfyDistance(distanceM)
+    function HOUND.Utils.TTS.simplifyDistance(distanceM)
         local distanceUnit = "meters"
         local distance = HOUND.Utils.roundToNearest(distanceM,50) or 0
         if distance >= 1000 then
-            distance = string.format("%.1f",tostring(HOUND.Utils.roundToNearest(distanceM,100)/1000))
+            distance = string.format("%.1f",HOUND.Utils.roundToNearest(distanceM,100)/1000)
             distanceUnit = "kilometers"
         end
         return distance .. " " .. distanceUnit

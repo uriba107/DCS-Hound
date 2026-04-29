@@ -183,21 +183,21 @@ do
         lu.assertEquals(HOUND.Utils.TTS.getVerbalLL(-35.443,37.5543,false),"South, 35 degrees, 26 minutes, 34 seconds, East, 037 degrees, 33 minutes, 15 seconds")
         lu.assertEquals(HOUND.Utils.TTS.getVerbalLL(-35.443,37.5543,true),"South, 35 degrees, 26, Decimal Five Eight Zero minutes, East, 037 degrees, 33, Decimal Two Five Eight minutes")
 
-        -- HOUND.Utils.TTS.simplfyDistance
-        lu.assertEquals(HOUND.Utils.TTS.simplfyDistance(150),"150 meters")
-        lu.assertEquals(HOUND.Utils.TTS.simplfyDistance(499),"500 meters")
-        lu.assertEquals(HOUND.Utils.TTS.simplfyDistance(501),"500 meters")
-        lu.assertEquals(HOUND.Utils.TTS.simplfyDistance(970),"950 meters")
-        lu.assertEquals(HOUND.Utils.TTS.simplfyDistance(976),"1.0 kilometers")
-        lu.assertEquals(HOUND.Utils.TTS.simplfyDistance(1070),"1.1 kilometers")
-        lu.assertEquals(HOUND.Utils.TTS.simplfyDistance(1080),"1.1 kilometers")
-        lu.assertEquals(HOUND.Utils.TTS.simplfyDistance(5300),"5.3 kilometers")
+        -- HOUND.Utils.TTS.simplifyDistance
+        lu.assertEquals(HOUND.Utils.TTS.simplifyDistance(150),"150 meters")
+        lu.assertEquals(HOUND.Utils.TTS.simplifyDistance(499),"500 meters")
+        lu.assertEquals(HOUND.Utils.TTS.simplifyDistance(501),"500 meters")
+        lu.assertEquals(HOUND.Utils.TTS.simplifyDistance(970),"950 meters")
+        lu.assertEquals(HOUND.Utils.TTS.simplifyDistance(976),"1.0 kilometers")
+        lu.assertEquals(HOUND.Utils.TTS.simplifyDistance(1070),"1.1 kilometers")
+        lu.assertEquals(HOUND.Utils.TTS.simplifyDistance(1080),"1.1 kilometers")
+        lu.assertEquals(HOUND.Utils.TTS.simplifyDistance(5300),"5.3 kilometers")
     end
 
     function TestHoundUtils:TestText()
         -- HOUND.Utils.Text.getLL
-        lu.assertEquals(HOUND.Utils.Text.getLL(33.2533333,42.1792),"N33°15'11\" E42°10'45\"")
-        lu.assertEquals(HOUND.Utils.Text.getLL(33.2533333,42.1791666,true),"N33°15.200' E42°10.750'")
+        lu.assertEquals(HOUND.Utils.Text.getLL(33.2533333,42.1792),"N33°15'11\" E042°10'45\"")
+        lu.assertEquals(HOUND.Utils.Text.getLL(33.2533333,42.1791666,true),"N33°15.200' E042°10.750'")
         lu.assertEquals(HOUND.Utils.Text.getLL(-35.443,-124.5543),"S35°26'34\" W124°33'15\"")
         lu.assertEquals(HOUND.Utils.Text.getLL(-35.443,-124.5543,true),"S35°26.580' W124°33.258'")
 

@@ -62,7 +62,6 @@ do
             instance.isPrimary = contactData.isPrimary
             instance.radarRoles = contactData.Role
             instance.frequency = contactData.Freqency
-            -- HOUND.Logger.debug(instance.DcsObjectName .. " | " ..mist.utils.tableShow(instance.frequency))
         else
             instance.band = {
                 [false] = HOUND.DB.Bands.E,
@@ -124,7 +123,7 @@ do
     --- get current extimted position
     -- @return DCS point - estimated position
     function HOUND.Contact.Emitter:getPos()
-        return self.pos.p
+        return HoundUtils.Dcs.copyPoint(self.pos.p)
     end
 
     --- get radar transmission wavelength
@@ -225,7 +224,6 @@ do
     function HOUND.Contact.Emitter:KalmanPredict(timestamp)
         timestamp = timestamp or timer.getAbsTime()
         if HOUND.ENABLE_KALMAN and self.Kalman then
-            -- HOUND.Logger.debug(self:getName() .. " is KalmanPredict")
             self.Kalman:predict(timestamp)
         end
 
@@ -422,8 +420,6 @@ do
                 then
                     local unitPos = self.DcsObject:getPosition()
                     if HoundUtils.Geo.get2DDistance(unitPos.p,self.pos.p) < 0.25 then return end
-                    -- HOUND.Logger.debug(self:getName().. " has moved")
-                    -- HOUND.Logger.debug("3D: ".. HoundUtils.Geo.get3DDistance(unitPos.p,self.pos.p) .. " | 2D: "..HoundUtils.Geo.get2DDistance(unitPos.p,self.pos.p))
                     if self:isActive() then
                         HOUND.Logger.debug(self:getName().. " is active and moved.. not longer PB")
                         self:setPreBriefed(false)
@@ -482,7 +478,7 @@ do
 
 
         for _,platformDatapoints in pairs(self._dataPoints) do
-            if HOUND.Length(platformDatapoints) > 0 then
+            if #platformDatapoints > 0 then
                 for _,datapoint in pairs(platformDatapoints) do
                     if datapoint:isStatic() then
                         table.insert(staticDataPoints,datapoint)
@@ -493,12 +489,12 @@ do
                 end
             end
         end
-        local numMobilepoints = HOUND.Length(mobileDataPoints)
-        local numStaticPoints = HOUND.Length(staticDataPoints)
+        local numMobilepoints = #mobileDataPoints
+        local numStaticPoints = #staticDataPoints
         table.sort(mobileDataPoints, function(a,b) return a.signalStrength < b.signalStrength end)
         table.sort(staticDataPoints, function(a,b) return a.signalStrength < b.signalStrength end)
 
-        if numMobilepoints+numStaticPoints < 2 and HOUND.Length(estimatePositions) == 0 then return end
+        if numMobilepoints+numStaticPoints < 2 and #estimatePositions == 0 then return end
         -- Static against all statics
         if numStaticPoints > 1 then
             for i=1,numStaticPoints-1 do
@@ -529,7 +525,7 @@ do
             end
         end
 
-        if HOUND.Length(estimatePositions) > 2 or (HOUND.Length(estimatePositions) > 0 and staticPlatformsOnly) then
+        if #estimatePositions > 2 or (#estimatePositions > 0 and staticPlatformsOnly) then
             self.pos.p = HoundUtils.Cluster.WeightedCentroid(estimatePositions)
                -- Use Kalman filter uncertainty if available, otherwise use point cluster
             self.uncertenty_data = self.calculateEllipse(estimatePositions,self.pos.p)
@@ -667,17 +663,14 @@ do
             markerArgs.text = markerArgs.text .. " (" .. self.uncertenty_data.major .. "/" .. self.uncertenty_data.minor .. "@" .. self.uncertenty_data.az .. ")"
         end
         if MarkerType >= HOUND.MARKER.POINT then
-            -- HOUND.Logger.debug("skip update markpoint")
             self._markpoints.pos:update(markerArgs)
         end
 
         if  MarkerType < HOUND.MARKER.POINT or self:isAccurate() then
-            -- if self._markpoints.area:isDrawn() then
                 self._markpoints.area:remove()
                 if MarkerType < HOUND.MARKER.POINT then
                     self._markpoints.pos:remove()
                 end
-            -- end
             return
         end
 
@@ -715,7 +708,7 @@ do
         local unitPos = self.DcsObject:getPosition()
         self:setPreBriefed(true)
 
-        self.pos.p = l_mist.utils.deepCopy(unitPos.p)
+        self.pos.p = HoundUtils.Dcs.copyPoint(unitPos.p)
         self:calculateExtrasPosData(self.pos)
 
         self.uncertenty_data = {}
@@ -737,7 +730,7 @@ do
         contact.uid = self.uid % 100
         contact.DcsObjectName = self.DcsObject:getName()
         if self.pos.p ~= nil and self.uncertenty_data ~= nil then
-            contact.pos = self.pos.p
+            contact.pos = HoundUtils.Dcs.copyPoint(self.pos.p)
             contact.LL = self.pos.LL
 
             contact.accuracy = HoundUtils.TTS.getVerbalConfidenceLevel( self.uncertenty_data.r )
@@ -749,7 +742,7 @@ do
         end
         contact.maxWeaponsRange = self.maxWeaponsRange
         contact.last_seen = self.last_seen
-        contact.detected_by = self.detected_by
-        return l_mist.utils.deepCopy(contact)
+        contact.detected_by = HOUND.shallowCopy(self.detected_by)
+        return contact
     end
 end

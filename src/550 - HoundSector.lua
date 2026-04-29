@@ -53,7 +53,6 @@ do
         if instance.name ~= "default" then
             instance:setCallsign(instance._hSettings:getUseNATOCallsigns())
         end
-        -- instance:defaultEventHandler()
         return instance
     end
 
@@ -97,7 +96,6 @@ do
     -- @return nil is returned
     function HOUND.Sector:destroy()
         self:removeRadioMenu()
-        -- self:defaultEventHandler(true)
         for _,contact in pairs(self._contacts:listAllContacts()) do
             contact:removeSector(self.name)
         end
@@ -1053,7 +1051,6 @@ function HOUND.Sector:notifySiteLaunching(site)
         end
 
         if gSelf.comms.controller:isEnabled() then
-            HOUND.Logger.debug(args["contact"].. ":\n" .. HOUND.Mist.utils.tableShow(contact))
 
             msgObj.contactId = contact:getId()
             msgObj.tts = contact:generateTtsReport(useDMM,preferMGRS)
@@ -1063,7 +1060,6 @@ function HOUND.Sector:notifySiteLaunching(site)
             if gSelf.comms.controller:getSettings("enableText") == true then
                 msgObj.txt = contact:generateTextReport(useDMM)
             end
-            HOUND.Logger.debug("msg: \n"..HOUND.Mist.utils.tableShow(msgObj))
             gSelf.comms.controller:addMessageObj(msgObj)
         end
     end

@@ -15,10 +15,10 @@ local EWRpc = 75
 
 --Editable part ^
 
-SA6sam=SET_GROUP:New():FilterPrefixes("SAM-SA6"):FilterActive(true):FilterOnce()
-SA2sam=SET_GROUP:New():FilterPrefixes("SAM-SA2"):FilterActive(true):FilterOnce()
-SA3sam=SET_GROUP:New():FilterPrefixes("SAM-SA3"):FilterActive(true):FilterOnce()
-SA10sam=SET_GROUP:New():FilterPrefixes("SAM-SA10"):FilterActive(true):FilterOnce()
+SA6sam=SET_GROUP:New():FilterPrefixes("SAM SA-6"):FilterActive(true):FilterOnce()
+SA2sam=SET_GROUP:New():FilterPrefixes("SAM SA-2"):FilterActive(true):FilterOnce()
+SA3sam=SET_GROUP:New():FilterPrefixes("SAM SA-3"):FilterActive(true):FilterOnce()
+SA10sam=SET_GROUP:New():FilterPrefixes("SAM SA-10"):FilterActive(true):FilterOnce()
 EWR=SET_GROUP:New():FilterPrefixes("EWR"):FilterActive(true):FilterStart()
 --All=SET_GROUP:New():FilterActive(true):FilterStart()
 
@@ -92,72 +92,55 @@ local EWRtoDestroy = EWRcount - EWRtoKeep
   end
 --end 
 
-redIADS = SkynetIADS:create('SYRIA')
-redIADS:setUpdateInterval(15)
-redIADS:addEarlyWarningRadarsByPrefix('EWR')
-redIADS:addSAMSitesByPrefix('SAM')
-redIADS:getSAMSitesByNatoName('SA-2'):setGoLiveRangeInPercent(80)
-redIADS:getSAMSitesByNatoName('SA-3'):setGoLiveRangeInPercent(80)
-redIADS:getSAMSitesByNatoName('SA-10'):setGoLiveRangeInPercent(80)
-redIADS:activate()
--- redIADS = MANTIS:New('SYRIA','SAM','EWR',nil,"red",false,nil,true)
--- redIADS:Start()
--- local iadsDebug = redIADS:getDebugSettings()
--- iadsDebug.IADSStatus = true
--- iadsDebug.radarWentDark = true
--- iadsDebug.contacts = true
--- iadsDebug.radarWentLive = true
--- iadsDebug.noWorkingCommmandCenter = true
--- iadsDebug.samNoConnection = true
--- iadsDebug.jammerProbability = true
--- iadsDebug.addedEWRadar = true
--- iadsDebug.harmDefence = true
+local redIADS = MANTIS:New('SYRIA','SAM','EWR',nil,"red",false,nil,true)
+redIADS:SetDetectInterval(15)
+redIADS:SetSAMRange(80)
+redIADS:Start()
 
--- Define a SET_GROUP object that builds a collection of groups that define the EWR network.
-DetectionSetGroup = SET_GROUP:New()
-DetectionSetGroup:FilterPrefixes("EWR")
-DetectionSetGroup:FilterStart()
--- Setup the detection and group targets to a 30km range!
-Detection = DETECTION_AREAS:New( DetectionSetGroup, 10000 )
--- Setup the A2A dispatcher, and initialize it.
-A2ADispatcher = AI_A2A_DISPATCHER:New( Detection )
--- Set 100km as the radius to engage any target by airborne friendlies.
-A2ADispatcher:SetEngageRadius(180000) -- 100000 is the default value.
--- Set 200km as the radius to ground control intercept.
-A2ADispatcher:SetGciRadius(100000) -- 200000 is the default value.
-A2ADispatcher:SetDefaultTakeoffFromParkingCold()
-A2ADispatcher:SetDefaultLandingAtEngineShutdown()
-BorderZone = ZONE_POLYGON:New( "RED-BORDER", GROUP:FindByName( "SyAF-GCI" ) )
-A2ADispatcher:SetBorderZone( BorderZone )
---SQNs
-A2ADispatcher:SetSquadron( "54 Squadron", "Marj Ruhayyil", { "54 Squadron" }, 2 ) --mig23
-A2ADispatcher:SetSquadronGrouping( "54 Squadron", 2 )
-A2ADispatcher:SetSquadronGci( "54 Squadron", 900, 1200 )
+-- GCI/CAP system (replaces legacy AI_A2A_DISPATCHER with EASYGCICAP)
+-- ME REQUIREMENTS:
+--   1. Place a STATIC WAREHOUSE on each airbase, unit name must match the airbase name
+--   2. Squadron templates ("54 Squadron", "698 Squadron", etc.) must be late-activated groups in ME
+--   3. Create trigger zones named "CAP-Marj Ruhayyil", "CAP-Al-Dumayr", etc. for CAP patrol points
+--   4. "SyAF-GCI" group with waypoints defining the RED-BORDER polygon must exist in ME
 
-A2ADispatcher:SetSquadron( "698 Squadron", "Al-Dumayr", { "698 Squadron" }, 2 ) --mig29a
-A2ADispatcher:SetSquadronGrouping( "698 Squadron", 2 )
-A2ADispatcher:SetSquadronGci( "698 Squadron", 900, 1200 )
+local redGCI = EASYGCICAP:New("SyAF-GCI", "Marj Ruhayyil", "red", "EWR")
 
-A2ADispatcher:SetSquadron( "695 Squadron", "An Nasiriyah", { "695 Squadron" }, 2 ) --mig23
-A2ADispatcher:SetSquadronGrouping( "695 Squadron", 2 )
-A2ADispatcher:SetSquadronGci( "695 Squadron", 900, 1200 )
+-- Additional airwings (one per airbase)
+redGCI:AddAirwing("Al-Dumayr")
+redGCI:AddAirwing("An Nasiriyah")
+redGCI:AddAirwing("Bassel Al-Assad")
 
-A2ADispatcher:SetSquadron( "Russia GCI", "Bassel Al-Assad", { "Russia GCI" }, 2 ) --su30
-A2ADispatcher:SetSquadronGrouping( "Russia GCI", 2 )
-A2ADispatcher:SetSquadronGci( "Russia GCI", 900, 1200 )
+-- Squadrons (TemplateName, SquadName, AirbaseName, AirFrames, Skill)
+redGCI:AddSquadron("54 Squadron", "54 Sqn", "Marj Ruhayyil", 2, AI.Skill.GOOD)       --mig23
+redGCI:AddSquadron("698 Squadron", "698 Sqn", "Al-Dumayr", 2, AI.Skill.GOOD)          --mig29a
+redGCI:AddSquadron("695 Squadron", "695 Sqn", "An Nasiriyah", 2, AI.Skill.GOOD)        --mig23
+redGCI:AddSquadron("Russia GCI", "Russian Sqn", "Bassel Al-Assad", 2, AI.Skill.HIGH)   --su30
 
---A2ADispatcher:SetTacticalDisplay(true)
-A2ADispatcher:Start()
+-- CAP patrol points (AirbaseName, Coordinate, Altitude ft, Speed kn, Heading deg, Leg NM)
+-- TODO: adjust CAP zone names/coordinates to match your ME trigger zones
+redGCI:AddPatrolPointCAP("Marj Ruhayyil", ZONE:FindByName("CAP-Marj Ruhayyil"):GetCoordinate(), 25000, 450, 270, 20)
+redGCI:AddPatrolPointCAP("Al-Dumayr", ZONE:FindByName("CAP-Al-Dumayr"):GetCoordinate(), 25000, 450, 270, 20)
+redGCI:AddPatrolPointCAP("An Nasiriyah", ZONE:FindByName("CAP-An Nasiriyah"):GetCoordinate(), 25000, 450, 270, 20)
+redGCI:AddPatrolPointCAP("Bassel Al-Assad", ZONE:FindByName("CAP-Bassel Al-Assad"):GetCoordinate(), 25000, 450, 270, 20)
 
+-- Border zone
+redGCI:AddAcceptZone(ZONE_POLYGON:New("RED-BORDER", GROUP:FindByName("SyAF-GCI")))
 
--- add the MOOSE SET_GROUP to the IADS
---redIADS:addMooseSetGroup(DetectionSetGroup)
+-- Defaults
+redGCI:SetDefaultCAPGrouping(2)
+redGCI:SetDefaultEngageRange(97)    -- 97 NM (~180 km)
+redGCI:SetDefaultMissionRange(54)   -- 54 NM (~100 km)
+redGCI:SetDefaultDespawnAfterLanding(true)
+
+redGCI:Start()
 
 local Zone={}
 Zone.Alpha   = ZONE:New("Aleppo")   --Core.Zone#ZONE
 Zone.Bravo   = ZONE:New("Golan")   --Core.Zone#ZONE
 --Zone.Charlie = ZONE:New("Zone Charlie") --Core.Zone#ZONE
 --Zone.Delta   = ZONE:New("Zone Delta")   --Core.Zone#ZONE
+
 -- Set of all zones defined in the ME
 local AllZones=SET_ZONE:New():FilterOnce()
 
@@ -182,7 +165,7 @@ SCHEDULER:New( nil, function()
  
   local mission=AUFTRAG:NewCAS(Zone.Alpha)
   local fg=FLIGHTGROUP:New("Warthog-6")
-  fg:AddMission(mission) 
+  fg:AddMission(mission)  
   
   local mission=AUFTRAG:NewCAS(Zone.Bravo)
   local fg=FLIGHTGROUP:New("767 Squadron")

@@ -41,7 +41,7 @@ do
     -- @field ENABLE_KALMAN If true, will use Kalman filter for contact scoring (currently not implemented, default is false)
     -- @field AUTO_ADD_PLATFORM_BY_PAYLOAD If true, will automatically add platforms that have ELINT payloads (currently, due to DCS limits, only works for units spawning with the required pods)
     HOUND = {
-        VERSION = "0.5.0-TRUNK",
+        VERSION = "0.5.1-TRUNK",
         DEBUG = true,
         ELLIPSE_PERCENTILE = 0.6,
         DATAPOINTS_NUM = 30,
@@ -253,6 +253,19 @@ do
         local count = 0
         if T ~= nil then for _ in pairs(T) do count = count + 1 end end
         return count
+    end
+
+    --- Shallow Copy a table
+    -- @local
+    -- @param T table to copy (must be flat table)
+    -- @return copied table
+    function HOUND.shallowCopy(T)
+        if type(T) ~= "table" then return {} end
+        local newTable = {}
+        for k,v in pairs(T) do
+            newTable[k] = v
+        end
+        return newTable
     end
 
     --- check if set contains a provided key (case sensitive)

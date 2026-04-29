@@ -115,14 +115,14 @@ do
         local sitesData = self:getRadioItemsText()
         local typesSpotted = {}
 
-        if HOUND.setContains(sitesData.noData) and
+        if HOUND.setContains(sitesData, "noData") and
             not self.comms.menu.noData then
                 self.comms.menu.noData = missionCommands.addCommandForCoalition(self._hSettings:getCoalition(),
                             sitesData.noData,
                             self.comms.menu.root, timer.getAbsTime)
         end
 
-        if not HOUND.setContains(sitesData.noData) then
+        if not HOUND.setContains(sitesData, "noData") then
             if self.comms.menu.noData ~= nil then
                 self.comms.menu.noData = missionCommands.removeItemForCoalition(self._hSettings:getCoalition(),
                 self.comms.menu.noData)
@@ -131,7 +131,7 @@ do
 
         local grpMenuDone = {}
         if HOUND.Length(self.comms.enrolled) > 0 then
-            if HOUND.Length(sitesData) and not HOUND.setContains(sitesData.noData) then
+            if HOUND.Length(sitesData) > 0 and not HOUND.setContains(sitesData, "noData") then
                 -- do all the caching needed
                 for _,siteData in ipairs(sitesData) do
                     if not HOUND.setContainsValue(typesSpotted,siteData.typeAssigned) then
@@ -276,12 +276,12 @@ do
 
         local siteObj = typeMenu.objs[siteData.dcsName]
         if HOUND.setContains(siteObj,'items') then
-            for emitterName,emitter in (siteObj.items) do
+            for emitterName,emitter in pairs(siteObj.items) do
                 siteObj.items[emitterName] = missionCommands.removeItemForGroup(playerGid,emitter)
             end
         end
 
-        if HOUND.setContains(typeMenu.items[siteData.dcsName]) then
+        if HOUND.setContains(typeMenu.items, siteData.dcsName) then
             typeMenu.items[siteData.dcsName] = missionCommands.removeItemForGroup(playerGid,typeMenu.items[siteData.dcsName] )
         end
     end
