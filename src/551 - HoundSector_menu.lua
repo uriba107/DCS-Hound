@@ -31,15 +31,7 @@ do
     --- create check menu items for players
     -- @local
     function HOUND.Sector:createCheckIn()
-        -- unsubscribe disconnected users
-        for _,player in pairs(self.comms.enrolled) do
-            local playerUnit = Unit.getByName(player.unitName)
-            if not HOUND.Utils.Dcs.isHuman(playerUnit) then
-                    self.comms.enrolled[player.unitName] = nil
-            end
-        end
-        -- now do work
-        grpMenuDone = {}
+        local grpMenuDone = {}
         -- for _,player in pairs(l_mist.DBs.humansByName) do
         for _,player in pairs(HOUND.DB.HumanUnits.byName[self._hSettings:getCoalition()]) do
             local grpId = player.groupId
@@ -56,6 +48,7 @@ do
                 local grpPage = self:getMenuPage(grpMenu,grpId,self.comms.menu.root)
                 if grpMenu.items.check_in ~= nil then
                     grpMenu.items.check_in = missionCommands.removeItemForGroup(grpId,grpMenu.items.check_in)
+                    grpMenu.itemCount = (grpMenu.itemCount or 0) - 1
                 end
 
                 if HOUND.setContainsValue(self.comms.enrolled, player) then
@@ -68,6 +61,7 @@ do
                                                 self = self,
                                                 player = player
                                             })
+                    grpMenu.itemCount = (grpMenu.itemCount or 0) + 1
                 else
                     grpMenu.items.check_in =
                         missionCommands.addCommandForGroup(grpId,
@@ -80,6 +74,7 @@ do
                             self = self,
                             player = player
                         })
+                    grpMenu.itemCount = (grpMenu.itemCount or 0) + 1
                 end
             end
         end
@@ -88,27 +83,27 @@ do
     --- Populate sector radio menu
     function HOUND.Sector:populateRadioMenu()
         if self.comms.menu.root ~= nil then
-            self.comms.menu.root =
-                missionCommands.removeItemForCoalition(self._hSettings:getCoalition(),self.comms.menu.root)
-                self.comms.menu.root = nil
+            missionCommands.removeItemForCoalition(self._hSettings:getCoalition(), self.comms.menu.root)
+            self.comms.menu.root = nil
         end
 
         if not self.comms.controller or not self.comms.controller:isEnabled() then return end
-        -- local players = HOUND.DB.HumanUnits.byName[self._hSettings:getCoalition()]
 
-        if HOUND.Length(self.comms.menu) > 0 then
-            for player,grpMenu in pairs(self.comms.menu) do
-                -- do cleanup for pages
-                -- local player = players[playerName]
-                self:removeMenuItems(grpMenu,player.groupId)
-            end
+        -- removeItemForCoalition above already wiped every per-group sub-tree on the DCS side.
+        -- Discard Lua-side bookkeeping; createCheckIn / the type loop will repopulate fresh.
+        local keysToDelete = {}
+        for k in pairs(self.comms.menu) do
+            if k ~= "root" then table.insert(keysToDelete, k) end
+        end
+        for _, k in ipairs(keysToDelete) do
+            self.comms.menu[k] = nil
         end
 
         if not self.comms.menu.root then
+            local page = self._hSettings:getSectorMenuPage()
             self.comms.menu.root =
-            missionCommands.addSubMenuForCoalition(self._hSettings:getCoalition(),
-                                               self.name,
-                                               self._hSettings:getRadioMenu())
+                missionCommands.addSubMenuForCoalition(self._hSettings:getCoalition(),
+                                               self.name, page)
         end
         self:validateEnrolled()
         self:createCheckIn()
@@ -129,6 +124,8 @@ do
             end
         end
 
+        -- Build per-sector type buckets once (avoids re-compiling site text per group)
+        local sitesByType = {}
         local grpMenuDone = {}
         if HOUND.Length(self.comms.enrolled) > 0 then
             if HOUND.Length(sitesData) > 0 and not HOUND.setContains(sitesData, "noData") then
@@ -137,8 +134,30 @@ do
                     if not HOUND.setContainsValue(typesSpotted,siteData.typeAssigned) then
                         table.insert(typesSpotted,siteData.typeAssigned)
                     end
+                    -- bucket by type for distance-sorted per-group insertion
+                    if siteData.dcsName then
+                        local bucket = sitesByType[siteData.typeAssigned]
+                        if not bucket then
+                            bucket = {}
+                            sitesByType[siteData.typeAssigned] = bucket
+                        end
+                        table.insert(bucket, siteData)
+                    end
                 end
             end
+
+            -- Resolve one reference position per groupId (one DCS call per group, done once)
+            local groupRefPos = {}
+            for _, player in pairs(self.comms.enrolled) do
+                local gid = player.groupId
+                if not groupRefPos[gid] then
+                    local u = Unit.getByName(player.unitName)
+                    if u and u:isExist() then
+                        groupRefPos[gid] = u:getPoint()
+                    end
+                end
+            end
+
             -- start building menues
             for _, player in pairs(self.comms.enrolled) do
                 local grpId = player.groupId
@@ -162,21 +181,43 @@ do
                         local newObj = self:getMenuObj()
                         local grpPage = self:getMenuPage(grpMenu,grpId,self.comms.menu.root)
                         grpMenu.items[typeAssigned] = missionCommands.addSubMenuForGroup(grpId,typeAssigned,grpPage)
+                        grpMenu.itemCount = (grpMenu.itemCount or 0) + 1
                         self:getMenuPage(newObj,grpId,grpMenu.items[typeAssigned])
                         grpMenu.objs[typeAssigned] = newObj
                     end
 
-                    -- local dataMenu = grpMenu.data
-                    for _, siteData in ipairs(sitesData) do
-                        local typeMenu = grpMenu.objs[siteData.typeAssigned]
-                        self:removeSiteRadioItems(typeMenu,player,siteData)
-                        self:addSiteRadioItems(typeMenu,player,siteData)
+                    -- Insert sites in distance-closest-first order within each type.
+                    -- sitesByType buckets are re-sorted per group; bucket tables are shared
+                    -- Lua objects so each group's sort re-orders it for the next - that's fine
+                    -- because we always sort before iterating.
+                    local refPos = groupRefPos[grpId]
+                    for _, typeAssigned in ipairs(typesSpotted) do
+                        local bucket = sitesByType[typeAssigned]
+                        if bucket then
+                            if refPos and #bucket > 1 then
+                                table.sort(bucket, function(a, b)
+                                    local da = HOUND.Utils.Geo.sqDist2D(a.pos, refPos)
+                                    local db = HOUND.Utils.Geo.sqDist2D(b.pos, refPos)
+                                    if da ~= db then return da < db end
+                                    if (a.last_seen or 0) ~= (b.last_seen or 0) then
+                                        return (a.last_seen or 0) > (b.last_seen or 0)
+                                    end
+                                    return (a.dcsName or "") < (b.dcsName or "")
+                                end)
+                            end
+                            local typeMenu = grpMenu.objs[typeAssigned]
+                            for _, siteData in ipairs(bucket) do
+                                self:addSiteRadioItems(typeMenu, player, siteData)
+                            end
+                        end
                     end
                 end
             end
         end
     end
 
+    -- ORPHANED after RADIO_MENU_FLOW.md Chapter 8 (f.1). Kept for post-verification cleanup.
+    --[[
     --- recursivly clean out a menu
     -- @param menu
     -- @param grpId GroupId to remove from
@@ -200,6 +241,7 @@ do
         end
         return nil
     end
+    --]]
 
     --- Handle menu pagination
     -- @local
@@ -223,8 +265,9 @@ do
             table.insert(menu.pages,parent)
         end
 
-        local totalItems = (HOUND.Length(menu.items) + #menu.pages)-1
-        if (totalItems == HOUND.MENU_PAGE_LENGTH) or (totalItems % #menu.pages) == HOUND.MENU_PAGE_LENGTH then
+        menu.itemCount = menu.itemCount or 0
+        local totalItems = (menu.itemCount + #menu.pages) - 1
+        if totalItems > 0 and (totalItems % HOUND.MENU_PAGE_LENGTH) == 0 then
             -- menu.items['page_'..#menu.pages+1] = missionCommands.addSubMenuForGroup(grpId,"More (Page " .. #menu.pages+1 .. ")", menu.pages['page_'..#menu.pages])
             -- table.insert(menu.pages,menu.items['page_'..#menu.pages+1])
             table.insert(menu.pages,missionCommands.addSubMenuForGroup(grpId,"More (Page " .. #menu.pages+1 .. ")", menu.pages[#menu.pages]))
@@ -239,7 +282,8 @@ do
         return {
             objs = {},
             pages = {},
-            items = {}
+            items = {},
+            itemCount = 0,
         }
     end
 
@@ -254,14 +298,18 @@ do
         local siteObj = self:getMenuObj()
 
         typeMenu.items[siteData.dcsName] = missionCommands.addSubMenuForGroup(playerGid, siteData.txt, typePage)
+        typeMenu.itemCount = (typeMenu.itemCount or 0) + 1
         typeMenu.objs[siteData.dcsName] = siteObj
 
         for _,emitterData in ipairs(siteData.emitters) do
             local sitePage = self:getMenuPage(typeMenu.objs[siteData.dcsName],playerGid,typeMenu.items[siteData.dcsName])
             siteObj.items[emitterData.dcsName] = missionCommands.addCommandForGroup(playerGid, emitterData.txt, sitePage, self.TransmitSamReport,{self=self,contact=emitterData.dcsName,requester=requester})
+            siteObj.itemCount = (siteObj.itemCount or 0) + 1
         end
     end
 
+    -- ORPHANED after RADIO_MENU_FLOW.md Chapter 8 (f.2). Kept for post-verification cleanup.
+    --[[
     --- remove radar menu items
     -- @local
     -- @param typeMenu table contaning a menu structure for the group
@@ -285,4 +333,5 @@ do
             typeMenu.items[siteData.dcsName] = missionCommands.removeItemForGroup(playerGid,typeMenu.items[siteData.dcsName] )
         end
     end
+    --]]
 end

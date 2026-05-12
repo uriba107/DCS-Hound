@@ -223,7 +223,7 @@ do
 
     function HOUND.Contact.Emitter:KalmanPredict(timestamp)
         timestamp = timestamp or timer.getAbsTime()
-        if HOUND.ENABLE_KALMAN and self.Kalman then
+        if self.Kalman then
             self.Kalman:predict(timestamp)
         end
 
@@ -231,19 +231,18 @@ do
     --- Add Datapoint to content
     -- @param datapoint @{HOUND.Contact.Datapoint}
     function HOUND.Contact.Emitter:AddPoint(datapoint)
-        if HOUND.ENABLE_KALMAN and not self.Kalman and HoundUtils.Dcs.isPoint(self.pos.p) then
+        if not self.Kalman and HoundUtils.Dcs.isPoint(self.pos.p) then
             if self.uncertenty_data.r < 15000 then
                 self.Kalman = HOUND.Contact.Estimator.UPLKF(self.pos.p,{x=0,z=0},self.last_seen,self.uncertenty_data.major)
             end
         end
         self.last_seen = datapoint.t
-        if HOUND.ENABLE_KALMAN and self.Kalman then
-            -- HOUND.Logger.debug(self:getName() .. " is KalmanUpdate")
+        if self.Kalman then
             self.Kalman:update(datapoint.platformPos,datapoint.az,datapoint.t,datapoint.platformPrecision)
         end
         self._platforms = self._platforms or {}
         self._platforms[datapoint.platformName] = datapoint.t
-        if HOUND.ENABLE_KALMAN and self.Kalman then
+        if self.Kalman then
             return
         end
         --- this is only needed if not in "kalman mode"
@@ -435,7 +434,7 @@ do
         end
 
         -- Kalman fast-path: skip expensive intersection calculations
-        if HOUND.ENABLE_KALMAN and self.Kalman then
+        if self.Kalman then
             local newContact = (self.state == HOUND.EVENTS.RADAR_NEW)
 
             self.pos.p = self.Kalman:getEstimatedPos()

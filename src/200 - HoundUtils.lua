@@ -918,6 +918,18 @@ do
 
     end
 
+    --- Squared 2D distance between two points (ground plane, ignores altitude).
+    -- Use for ordering/comparisons where only relative magnitude matters - skips sqrt for speed.
+    -- In DCS world coordinates, X/Z is the ground plane and Y is altitude.
+    -- @param src dcs point (vec3)
+    -- @param dst dcs point (vec3)
+    -- @return squared distance in m^2 on the X/Z plane, or 0 if either point is invalid
+    function HOUND.Utils.Geo.sqDist2D(src, dst)
+        if not (HOUND.Utils.Dcs.isPoint(src) and HOUND.Utils.Dcs.isPoint(dst)) then return 0 end
+        local dx, dz = src.x - dst.x, src.z - dst.z
+        return dx*dx + dz*dz
+    end
+
 
     --- Marker Functions
     -- @section Markers
@@ -1286,6 +1298,53 @@ do
             end
         end
         return Radars
+    end
+
+    --- Coroutine-friendly variant of getActiveRadars.
+    -- Yields every BATCH groups to avoid blocking the sim frame.
+    -- Returns (Radars, nil) when finished with the full accumulated list.
+    -- Must be called only from inside a coroutine scheduled by HOUND.Coroutine.
+    -- @param instanceCoalition coalitionID for the current Hound instance
+    -- @return table of radar unit names (same shape as getActiveRadars)
+    function HOUND.Utils.Elint.getActiveRadarsYielding(instanceCoalition)
+        local Radars = {}
+        if instanceCoalition == nil then return Radars end
+        local BATCH = 128
+        for _, coalitionName in pairs(coalition.side) do
+            if coalitionName ~= instanceCoalition then
+                for _, CategoryId in pairs({Group.Category.GROUND,
+                                            Group.Category.SHIP}) do
+                    local groups = coalition.getGroups(coalitionName, CategoryId)
+                    local processed = 0
+                    local batch = {}
+                    for _, group in pairs(groups) do
+                        for _, unit in pairs(group:getUnits()) do
+                            if unit:isExist() and unit:isActive()
+                               and unit:getRadar() then
+                                local name = unit:getName()
+                                table.insert(Radars, name)
+                                table.insert(batch, name)
+                            end
+                        end
+                        processed = processed + 1
+                        if processed % BATCH == 0 then
+                            if #batch > 0 then
+                                coroutine.yield(nil, batch)
+                                batch = {}
+                            else
+                                coroutine.yield()
+                            end
+                        end
+                    end
+                    if #batch > 0 then
+                        coroutine.yield(nil, batch)
+                        batch = {}
+                    end
+                end
+                coroutine.yield()
+            end
+        end
+        return Radars, nil
     end
 
     --- Get currently transmitting units in a given groupName

@@ -2,7 +2,7 @@ env.info("Loading Hound Scripts dynamicly")
 
     if HoundWorkDir == nil then
         HoundWorkDir = "E:\\Dropbox\\DCS\\Mission Building\\HoundElint\\"
-        -- HoundWorkDir = "E:\\Dropbox\\uri\\Dropbox\\DCS\\Mission Building\\DCS-Hound\\"
+        -- HoundWorkDir = "C:\\Users\\me\\Dropbox\\DCS\\Mission Building\\HoundElint\\"
     end
 
     assert(loadfile(HoundWorkDir..'tools\\testing\\StopWatch.lua'))()
@@ -12,6 +12,7 @@ env.info("Loading Hound Scripts dynamicly")
 
     assert(loadfile(HoundWorkDir..'src\\000 - HoundGlobals.lua'))()
     assert(loadfile(HoundWorkDir..'src\\010 - HoundLogger.lua'))()
+    assert(loadfile(HoundWorkDir..'src\\011 - HoundCoroutine.lua'))()
     assert(loadfile(HoundWorkDir..'src\\020 - HoundMist.lua'))()
     assert(loadfile(HoundWorkDir..'src\\021 - HoundMatrix.lua'))()
     assert(loadfile(HoundWorkDir..'src\\100 - HoundDBs.lua'))()
@@ -40,7 +41,10 @@ env.info("Loading Hound Scripts dynamicly")
     assert(loadfile(HoundWorkDir..'src\\550 - HoundSector.lua'))()
     assert(loadfile(HoundWorkDir..'src\\551 - HoundSector_menu.lua'))()
     assert(loadfile(HoundWorkDir..'src\\800 - HoundElint.lua'))()
-    assert(loadfile(HoundWorkDir..'src\\801 - HoundElintEvents.lua'))()
+    assert(loadfile(HoundWorkDir..'src\\801 - HoundElint_properties.lua'))()
+    assert(loadfile(HoundWorkDir..'src\\802 - HoundElint_sector_mgmt.lua'))()
+    assert(loadfile(HoundWorkDir..'src\\803 - HoundElint_comms.lua'))()
+    assert(loadfile(HoundWorkDir..'src\\804 - HoundElintEvents.lua'))()
     assert(loadfile(HoundWorkDir..'src\\999 - Hound_footer.lua'))()
 
 env.info("Loading Done")

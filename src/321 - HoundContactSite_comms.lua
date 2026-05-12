@@ -45,6 +45,8 @@ do
             ['dcsName'] = self:getDcsName(),
             ['txt'] = self:getRadioItemText(),
             ['typeAssigned'] = self:getTypeAssigned(),
+            ['pos'] = self:getPos(),
+            ['last_seen'] = self.last_seen,
             ['emitters'] = {}
         }
         for _,emitter in ipairs(self.emitters) do
@@ -54,7 +56,7 @@ do
                     ['txt'] = emitter:getRadioItemText()
                 }
                 if emitter == self.primaryEmitter then
-                    emitterEntry.txt = "(*) " .. emitterEntry.txt
+                    emitterEntry.txt = "★ " .. emitterEntry.txt
                 end
                 table.insert(items['emitters'],emitterEntry)
             end

@@ -48,19 +48,65 @@ do
         end
     end
 
-    -- register using on pattern
-    -- @param eventType event to register
-    -- @param handler handler to register
-    function HOUND.EventHandler.on(eventType,handler)
-        if type(handler) == "function" then
-            if not HOUND.EventHandler.subscribeOn[eventType] then
-                HOUND.EventHandler.subscribeOn[eventType] = {}
+    -- -- register using on pattern
+    -- -- @param eventType event to register
+    -- -- @param handler handler to register
+    -- function HOUND.EventHandler.on(eventType,handler)
+    --     if type(handler) == "function" then
+    --         if not HOUND.EventHandler.subscribeOn[eventType] then
+    --             HOUND.EventHandler.subscribeOn[eventType] = {}
+    --         end
+    --         HOUND.EventHandler.subscribeOn[eventType][handler] = handler
+    --     end
+    -- end
+
+    --- Events that must reach external subscribers synchronously.
+    -- Destruction events: internal handler may invalidate event.initiator
+    -- before a deferred coroutine runs, causing CTD on stale DCS objects.
+    -- SITE_LAUNCH: time-sensitive — handlers need it on the same frame.
+    -- @local
+    local SYNC_EVENTS = {
+        [HOUND.EVENTS.RADAR_DESTROYED] = true,
+        [HOUND.EVENTS.SITE_REMOVED]    = true,
+        [HOUND.EVENTS.SITE_ASLEEP]     = true,
+        [HOUND.EVENTS.SITE_LAUNCH]     = true,
+    }
+
+    --- Dispatch event to external subscribers synchronously.
+    -- @local
+    local function dispatchExternalSync(event)
+        for _, handler in pairs(HOUND.EventHandler.subscribers) do
+            if handler.onHoundEvent and type(handler.onHoundEvent) == "function" then
+                handler:onHoundEvent(event)
             end
-            HOUND.EventHandler.subscribeOn[eventType][handler] = handler
         end
     end
 
+    --- Dispatch event to external subscribers asynchronously.
+    -- Snapshots the subscriber table at call time, then schedules a coroutine
+    -- that yields between handlers so a slow or buggy server-owner callback
+    -- cannot hitch the sim frame.
+    -- @local
+    local function dispatchExternalAsync(event)
+        if next(HOUND.EventHandler.subscribers) == nil then return end
+        local snapshot = {}
+        for k, v in pairs(HOUND.EventHandler.subscribers) do
+            snapshot[k] = v
+        end
+        local guardName = "HoundEventHandler_on_" .. (event.houndId or "unknown")
+        HOUND.Coroutine.add(function()
+            for _, handler in pairs(snapshot) do
+                if handler.onHoundEvent and type(handler.onHoundEvent) == "function" then
+                    handler:onHoundEvent(event)
+                end
+                coroutine.yield()
+            end
+        end,{name = guardName})
+    end
+
     --- Execute event on all registeres subscribers
+    -- @param event event to execute
+    -- @local
     function HOUND.EventHandler.onHoundEvent(event)
         for _, handler in pairs(HOUND.EventHandler._internalSubscribers) do
             if handler and getmetatable(handler) == HoundElint and handler:getId() == event.houndId then
@@ -72,11 +118,13 @@ do
                 end
             end
         end
-        for _, handler in pairs(HOUND.EventHandler.subscribers) do
-            if handler.onHoundEvent and type(handler.onHoundEvent) == "function" then
-                handler:onHoundEvent(event)
-            end
-        end
+        dispatchExternalSync(event)
+        -- if SYNC_EVENTS[event.id] then
+        --     HOUND.Logger.debug("EventHandler: dispatching SYNC for event " .. tostring(event.id))
+        --     dispatchExternalSync(event)
+        -- else
+        --     dispatchExternalAsync(event)
+        -- end
     end
 
     --- publish event to subscribers

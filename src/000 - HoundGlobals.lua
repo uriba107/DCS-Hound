@@ -36,12 +36,13 @@ do
     -- @field MARKER_LINE_OPACITY Opacity of the line around the area markers
     -- @field MARKER_TEXT_POINTER Char/string used as pointer on text markers
     -- @field TTS_ENGINE Hound will use the table to determin TTS engine priority
+    -- @field TTS_TRANSLATE_SETTINGS table that will be passed to HoundTTS if used, to allow inline translation
     -- @field MENU_PAGE_LENGTH Number of Items Hound will put in a menu before starting a new menu page
     -- @field REF_DIST Reference distance for contact scoring. Used to calculate the weight of datap
-    -- @field ENABLE_KALMAN If true, will use Kalman filter for contact scoring (currently not implemented, default is false)
+    -- @field KALMAN_DEBUG If true, will print kalman filter debug info (currently not implemented, default is false)
     -- @field AUTO_ADD_PLATFORM_BY_PAYLOAD If true, will automatically add platforms that have ELINT payloads (currently, due to DCS limits, only works for units spawning with the required pods)
     HOUND = {
-        VERSION = "0.5.1-TRUNK",
+        VERSION = "0.5.2-TRUNK",
         DEBUG = true,
         ELLIPSE_PERCENTILE = 0.6,
         DATAPOINTS_NUM = 30,
@@ -58,9 +59,9 @@ do
         MARKER_LINE_OPACITY = 0.3,
         MARKER_TEXT_POINTER = "⇙ ", -- "¤ « "
         TTS_ENGINE = {'HOUND','STTS'},
+        TTS_TRANSLATE_SETTINGS = {}, -- HoundTTS translation settings, use HoundTTS syntax. e.g { provider = "google", language  = "fr" }
         MENU_PAGE_LENGTH = 9,
         REF_DIST = 75000, -- Do not change, used for datapoint weighting
-        ENABLE_KALMAN = true,
         KALMAN_DEBUG = false,
         AUTO_ADD_PLATFORM_BY_PAYLOAD = true, -- if true, will automatically add platforms that have ELINT payloads (currently, due to DCS limits, only works for units spawning with the required pods)
     }
