@@ -18,6 +18,32 @@ A sector groups communication elements (Controller, ATIS, Notifier) with optiona
 **Use multiple sectors for:** Large missions, multiple regions, 30+ radars, different frequencies per area  
 **Use single sector for:** Small missions, single AO, <20 radars
 
+### Sector Organization
+
+```mermaid
+graph TD
+    A["HoundElint Instance"] --> B["Sectors"]
+    B --> C["default Sector<br/>No zone = all radars"]
+    B --> D["Named Sector 1<br/>Zone_North"]
+    B --> E["Named Sector 2<br/>Zone_South"]
+
+    C --> F["Controller<br/>Freq: 251.000"]
+    C --> G["ATIS<br/>Freq: 253.000"]
+    C --> H["Notifier<br/>Freq: 243.000"]
+
+    D --> I["Controller<br/>Freq: 255.000"]
+    D --> J["ATIS<br/>Freq: 257.000"]
+    D --> K["Transmitter<br/>AWACS_Unit"]
+
+    E --> L["Controller<br/>Freq: 259.000"]
+    E --> M["ATIS<br/>Freq: 261.000"]
+    E --> N["Transmitter<br/>GCI_Bunker"]
+
+    C --> O["Contacts<br/>All detected radars"]
+    D --> P["Contacts<br/>Inside Zone_North<br/>+ threat range overlap"]
+    E --> Q["Contacts<br/>Inside Zone_South<br/>+ threat range overlap"]
+```
+
 ---
 
 ## Default Sector

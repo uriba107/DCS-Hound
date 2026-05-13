@@ -4,6 +4,7 @@ dir='docs/web'
 file = {'src'}
 file.exclude = {
 'src/010 - HoundLogger.lua',
+'src/011 - HoundCoroutine.lua',
 'src/020 - HoundMist.lua',
 'src/021 - HoundMatrix.lua',
 'src/100 - HoundDBs.lua',
