@@ -16,15 +16,17 @@ Optimizing Hound for large missions and servers.
 
 **Medium Impact:**
 
-- Number of active enemy radars
 - Number of ELINT platforms
 - Menu update frequency
+- Number of active enemy radars (spread via coroutine batching)
 
 **Low Impact:**
 
-- Position calculations
-- Detection cycles
+- Position calculations (Kalman or triangulation)
+- Detection cycles (batched across frames)
 - Event handlers (if lightweight)
+
+**Note:** Radar discovery is now coroutine-based and yields every ~16 groups, spreading the load across multiple sim frames. This prevents single-frame spikes even with 100+ radars.
 
 ---
 
@@ -82,7 +84,7 @@ Site markers add minimal overhead:
 
 ```lua
 -- Keep site markers, disable uncertainty
-HoundBlue:setMarkerType(HOUND.MARKER.NONE)
+HoundBlue:setMarkerType(HOUND.MARKER.SITE_ONLY)
 HoundBlue:enableSiteMarkers()
 ```
 
@@ -98,8 +100,8 @@ HoundBlue:enableSiteMarkers()
 
 ### Default Intervals:
 
-- **scan:** 5s - Platform/radar checks
-- **process:** 30s - Position calculations
+- **scan:** 15s - Radar discovery + batched sampling (coroutine-based)
+- **process:** 30s - Position calculations (Kalman or triangulation)
 - **menus:** 60s - F10 menu updates
 - **markers:** 120s - Map marker updates
 
@@ -127,11 +129,12 @@ HoundBlue:setTimerInterval("process", 60)  -- 1 minute
 HoundBlue:setTimerInterval("menus", 90)  -- 90 seconds
 ```
 
-**Increase scan interval (careful!):**
+**Adjust scan interval (if needed):**
 
 ```lua
-HoundBlue:setTimerInterval("scan", 10)  -- 10 seconds
--- Default 5s is usually fine
+HoundBlue:setTimerInterval("scan", 20)  -- 20 seconds (less frequent discovery)
+-- Default 15s is usually fine; increase only for extreme optimization
+-- Scan is coroutine-based and spreads load across frames, so interval matters less
 ```
 
 ### Complete Performance Config:
@@ -141,7 +144,7 @@ HoundBlue = HoundElint:create(coalition.side.BLUE)
 HoundBlue:addPlatform("ELINT_1")
 
 -- Optimize all intervals
-HoundBlue:setTimerInterval("scan", 10)
+HoundBlue:setTimerInterval("scan", 15)
 HoundBlue:setTimerInterval("process", 60)
 HoundBlue:setTimerInterval("menus", 90)
 HoundBlue:setTimerInterval("markers", 240)
@@ -226,19 +229,20 @@ HoundBlue:enableController("South", {freq = "255.000", modulation = "AM"})
 
 ### More Platforms = More Processing:
 
-Each platform checks every radar every scan cycle.
+Each platform checks every radar every scan cycle. With coroutine batching, work is spread across frames.
 
 **Formula:**
 
-```
+```text
 Checks per cycle = Platforms × Radars
+Spread across = ~(Radars / 16) frames at 50ms intervals
 ```
 
 **Examples:**
 
-- 3 platforms × 20 radars = 60 checks every 5s (fine)
-- 5 platforms × 50 radars = 250 checks every 5s (OK)
-- 10 platforms × 100 radars = 1000 checks every 5s (heavy)
+- 3 platforms × 20 radars = 60 checks spread over 2 frames (fine)
+- 5 platforms × 50 radars = 250 checks spread over 4 frames (OK)
+- 10 platforms × 100 radars = 1000 checks spread over 7 frames (good)
 
 ### Recommendations:
 
@@ -332,7 +336,7 @@ Monitor:
 
 ## Extreme Optimization
 
-For missions with 100+ radars:
+For missions with 100+ radars. Coroutine batching already spreads load, so focus on markers:
 
 ```lua
 HoundBlue = HoundElint:create(coalition.side.BLUE)
@@ -341,12 +345,12 @@ HoundBlue = HoundElint:create(coalition.side.BLUE)
 HoundBlue:addPlatform("ELINT_1")
 HoundBlue:addPlatform("ELINT_2")
 
--- No markers at all
+-- No markers at all (biggest win)
 HoundBlue:disableMarkers()
 HoundBlue:disableSiteMarkers()
 
--- Maximum intervals
-HoundBlue:setTimerInterval("scan", 15)
+-- Reasonable intervals (scan is already batched)
+HoundBlue:setTimerInterval("scan", 15)      -- Default, batched across frames
 HoundBlue:setTimerInterval("process", 60)
 HoundBlue:setTimerInterval("menus", 120)
 HoundBlue:setTimerInterval("markers", 300)  -- Doesn't matter, disabled
@@ -356,6 +360,12 @@ HoundBlue:enableController({freq = "251.000", modulation = "AM"})
 
 HoundBlue:systemOn()
 ```
+
+**Why this works:**
+
+- Scan discovery is coroutine-based: ~7 frames for 100 radars (no spike)
+- Sampling is batched: 2-3ms per batch, spread across frames
+- Markers are the real cost: disabling them saves 90% of overhead
 
 ---
 

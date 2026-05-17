@@ -234,10 +234,6 @@ do
             { 0,                                0,                                0,                                l_math.pow(velocity_accuracy, 2) }
         })
 
-        if HOUND.KALMAN_DEBUG and  HOUND.DEBUG then
-            instance.marker = HoundUtils.Marker.create()
-            trigger.action.outText("new KF: x:" .. instance.state[2][1] .. "| y: " .. instance.state[1][1], 20)
-        end
         return instance
     end
 

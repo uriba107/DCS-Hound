@@ -6,10 +6,10 @@ Guide to configuring voice communications. **TTS is optional** - Hound works wit
 
 ## TTS Providers
 
-| Provider     | Setup    | Voices                                                          | Best For                                       |
-| ------------ | -------- | --------------------------------------------------------------- | ---------------------------------------------- |
-| **HoundTTS** | Easy     | Piper (offline), SAPI (Windows), Google, Azure, AWS, ElevenLabs, OpenAI (and compatible) | **All users (default)**                        |
-| **STTS**     | Easy     | Windows TTS, Google Cloud (opt.)                                | Legacy — HoundTTS supersedes it                |
+| Provider     | Setup | Voices                                                                                   | Best For                        |
+| ------------ | ----- | ---------------------------------------------------------------------------------------- | ------------------------------- |
+| **HoundTTS** | Easy  | Piper (offline), SAPI (Windows), Google, Azure, AWS, ElevenLabs, OpenAI (and compatible) | **All users (default)**         |
+| **STTS**     | Easy  | Windows TTS, Google Cloud (opt.)                                                         | Legacy — HoundTTS supersedes it |
 
 HoundTTS is a native C++ DLL that connects directly to SRS — no PowerShell, no focus stealing, fully parallel. If HoundTTS is installed, it automatically takes over from STTS transparently.
 
@@ -235,6 +235,43 @@ volume = "0.5"  -- 50% volume
 volume = "1.0"  -- 100% volume (default)
 ```
 
+### Inline Translation (HoundTTS)
+
+HoundTTS supports inline translation of Hound messages. Pass a `translate` table with HoundTTS translation parameters in the TTS config. Translation is applied on the HoundTTS side before synthesis.
+
+**Supported parameters:**
+
+- `provider` — Translation service (`"google"`, `"azure"`, `"openai"`, etc.)
+- `language` — Target language code (`"fr"`, `"de"`, `"es"`, `"ru"`, etc.)
+- Other provider-specific options (API keys, model, etc.)
+
+**Example:**
+
+```lua
+-- Translate all Controller messages to French
+HoundBlue:enableController({
+    freq = "251.000",
+    modulation = "AM",
+    provider = "sapi",
+    translate = {
+        provider = "google",
+        language = "fr"
+    }
+})
+
+-- Different languages per system
+HoundBlue:enableController({freq = "251.000", modulation = "AM", translate = {provider = "google", language = "fr"}})
+HoundBlue:enableAtis({freq = "253.000", modulation = "AM", translate = {provider = "google", language = "de"}})
+HoundBlue:enableNotifier({freq = "243.000", modulation = "AM"})  -- No translation
+```
+
+**Notes:**
+
+- Translation requires internet (cloud provider)
+- Credentials for translation provider must be in `HoundTTS-credentials.ini`
+- Translation adds latency before synthesis
+- Omit `translate` table to disable translation
+
 ### Credentials Configuration
 
 API keys for cloud providers are stored in `HoundTTS-credentials.ini` (in `Saved Games\DCS\Config\`), **never** in mission scripts or DCS logs.
@@ -391,9 +428,11 @@ See [troubleshooting.md](troubleshooting.md) for detailed diagnostics.
 
 ## Quick Reference
 
-| Provider | freq        | modulation | speed          | voice param          | provider param           |
-| -------- | ----------- | ---------- | -------------- | -------------------- | ------------------------ |
-| HoundTTS | `"251.000"` | `"AM"`     | `0.5` to `2.0` | `voice = "name"`     | `provider = "sapi"`      |
-| STTS     | `"251.000"` | `"AM"`     | `-10` to `+10` | `voice = "David"`    | N/A                      |
+| Provider | freq        | modulation | speed          | voice param       | provider param      | translate param                                      |
+| -------- | ----------- | ---------- | -------------- | ----------------- | ------------------- | ---------------------------------------------------- |
+| HoundTTS | `"251.000"` | `"AM"`     | `0.5` to `2.0` | `voice = "name"`  | `provider = "sapi"` | `translate = {provider = "google", language = "fr"}` |
+| STTS     | `"251.000"` | `"AM"`     | `-10` to `+10` | `voice = "David"` | N/A                 | N/A (not supported)                                  |
 
 All use `volume = "1.0"` (string), `gender = "male"/"female"`, `culture = "en-US"`
+
+**Translate:** HoundTTS only, optional. Translates messages before synthesis using specified provider.

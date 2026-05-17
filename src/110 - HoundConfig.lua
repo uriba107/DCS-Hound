@@ -39,7 +39,7 @@ do
             NatoBrevity = false,
             platformPosErr = false,
             useNatoCallsigns = false,
-            AtisUpdateInterval = 300,
+            AtisUpdateInterval = 180,
             AlertOnLaunch = false,
             AlertOnLaunchCooldown = 30
 
@@ -50,7 +50,9 @@ do
         instance.callsignOverride = {}
         instance.radioMenu = {
             root = nil,
-            parent = nil
+            parent = nil,
+            sectorPages = {},
+            sectorCount = 0
         }
         instance.onScreenDebug = false
 
@@ -390,10 +392,47 @@ do
             if self.radioMenu.root ~= nil then
                 missionCommands.removeItemForCoalition(self:getCoalition(),self.radioMenu.root)
                 self.radioMenu.root = nil
+                self:resetSectorPages()
                 return true
             end
             return false
         end
+
+        --- reset sector pagination state before a full menu rebuild
+        -- @within HOUND.Config.instance
+        -- @param self config instance
+        instance.resetSectorPages = function(self)
+            self.radioMenu.sectorPages = {}
+            self.radioMenu.sectorCount = 0
+        end
+
+        --- return the correct coalition-level page for the next sector menu
+        -- paginates at MENU_PAGE_LENGTH sectors per page
+        -- @within HOUND.Config.instance
+        -- @param self config instance
+        -- @return menu page reference for the next sector
+        instance.getSectorMenuPage = function(self)
+            local pages = self.radioMenu.sectorPages
+            local count = self.radioMenu.sectorCount
+            local root = self:getRadioMenu()
+            if #pages == 0 then
+                table.insert(pages, root)
+            end
+
+            local totalItems = count + #pages - 1
+            if totalItems > 0 and (totalItems % HOUND.MENU_PAGE_LENGTH) == 0 then
+                table.insert(pages, missionCommands.addSubMenuForCoalition(
+                    self:getCoalition(),
+                    "More sectors (Page " .. (#pages + 1) .. ")",
+                    pages[#pages]
+                ))
+            end
+
+            self.radioMenu.sectorCount = count + 1
+            local result = pages[#pages]
+            return result
+        end
+
 
         --- return parent for the root menu
         -- @within HOUND.Config.instance

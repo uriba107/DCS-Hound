@@ -107,7 +107,6 @@ do
             if event.id == HOUND.EVENTS.SITE_CREATED then
                 local site = event.initiator
                 if site.isEWR then return end
-                trigger.action.outTextForCoalition(event.coalition,"Fragging a SEAD flight to strike " .. site:getName() .. "(".. site:getNatoDesignation()..")",10)
                 local grp = site:getDcsObject()
                 if not grp then return end
                 -- select SEAD flight
@@ -129,27 +128,27 @@ do
                                 return posCoord:Get2DDistance(c1) < posCoord:Get2DDistance(c2)
                             end)
                 -- initilize mission
-                local mooseGroup = GROUP:FindByName(site:getDcsName())
-                local mission = AUFTRAG:NewSEAD(mooseGroup, 20000)
+                local siteMGroup = GROUP:FindByName(site:getDcsName())
+                local mission = AUFTRAG:NewSEAD(siteMGroup, 20000)
                 local sector = Elint_blue:getSector(site:getPrimarySector())
-                env.info(tostring(sector:hasController()))
+                -- env.info(tostring(sector:hasController()))
                 local controllerFreq = nil
                 if sector:hasController() then
                     controllerFreq = UTILS.Split(sector:getControllerFreq()[1]," ")
                     if controllerFreq[2] == "FM" then controllerFreq[3] = 1 else controllerFreq[3] = 0 end
                     mission:SetRadio(tonumber(controllerFreq[1]),controllerFreq[3])
                 end
-                local seadStrike = SPAWN:NewWithAlias(seadFlights[1],"SEAD ".. site:getName()):OnSpawnGroup( 
-                    function( SeadGroup )
-                        local fg=FLIGHTGROUP:New(SeadGroup)
-                        fg:AddMission(mission)
-                    end
-                  )
+                local seadStrike = SPAWN:NewWithAlias(seadFlights[1],"SEAD ".. site:getName())
                 if controllerFreq then
                     seadStrike:InitRadioFrequency(controllerFreq[1])
                     seadStrike:InitRadioModulation(controllerFreq[2])
                 end
-                seadStrike:Spawn()
+                local SeadGroup = seadStrike:Spawn()
+                local fg=FLIGHTGROUP:New(SeadGroup)
+                fg:AddMission(mission)
+                trigger.action.outTextForCoalition(event.coalition,string.format("Fragging a SEAD flight (%s) to strike %s (%s)", SeadGroup:GetName(), site:getName(),site:getNatoDesignation()),10)
+
+
             end
         end
     end

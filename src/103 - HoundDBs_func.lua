@@ -185,7 +185,7 @@ do
     -- @param[type=?number] coalitionId if provided, DB will be updated to specificd coalition only
     function HOUND.DB.updateHumanDb(coalitionId)
         local coalitions = coalition.side
-        if type(coalitionId == "number") and (coalitionId >= 0 and coalitionId <= 2) then
+        if type(coalitionId) == "number" and (coalitionId >= 0 and coalitionId <= 2) then
             coalitions = { coalitionId }
         end
         for _,coa in pairs(coalitions) do
@@ -211,7 +211,7 @@ do
     -- @param[type=?number] coalitionId if provided, DB will be updated to specificd coalition only
     function HOUND.DB.cleanHumanDb(coalitionId)
         local coalitions = coalition.side
-        if type(coalitionId == "number") and (coalitionId >= 0 and coalitionId <= 2) then
+        if type(coalitionId) == "number" and (coalitionId >= 0 and coalitionId <= 2) then
             coalitions = { coalitionId }
         end
         for _,coa in pairs(coalitions) do
@@ -220,7 +220,7 @@ do
                     local gid = player.groupId
                     HOUND.DB.HumanUnits.byName[coa][unitName] = nil
                     HOUND.DB.HumanUnits.byGid[coa][gid][unitName] = nil
-                    if length(HOUND.DB.HumanUnits.byGid[coa][gid]) == 0 then
+                    if HOUND.Length(HOUND.DB.HumanUnits.byGid[coa][gid]) == 0 then
                         HOUND.DB.HumanUnits.byGid[coa][gid] = nil
                     end
                 end

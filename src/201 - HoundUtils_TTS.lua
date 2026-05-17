@@ -151,9 +151,9 @@ do
             transmitter = args.transmitter or "srs"
         }
         local provider_params = {
-            provider = args.provider or "sapi",
-            culture = args.culture or "en-US",
-            gender = args.gender or "female",
+            provider = args.provider or l_houndTTS.DEFAULT_PROVIDER or "sapi",
+            culture = args.culture or l_houndTTS.DEFAULT_CULTURE or "en-US",
+            gender = args.gender or l_houndTTS.DEFAULT_GENDER or "female",
             voice = args.voice,
             speed = args.speed,
             volume = args.volume or "1.0"
@@ -178,7 +178,7 @@ do
             provider_params.voice = args.voice or "pNInz6obpgDQGcFmaJgB" -- Default to "Adam"
         end
 
-        return l_houndTTS.Transmit(msg,transmitter_params,provider_params)
+        return l_houndTTS.Transmit(msg,transmitter_params,provider_params,HOUND.TTS_TRANSLATE_SETTINGS)
     end
 
     --- returns current DCS time in military time string for TTS

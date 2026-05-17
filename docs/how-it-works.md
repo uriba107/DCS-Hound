@@ -109,23 +109,32 @@ Example:
 
 ### What Happens Each Cycle:
 
-```
-Every 5 seconds (default):
-├─ Check all platforms
-├─ Check all enemy radars
-├─ Test line of sight
-├─ Calculate bearing
-├─ Check angular resolution
-└─ Store datapoint (if valid)
+```mermaid
+graph TD
+    A["Every 10 seconds<br/>Scan Cycle"] --> A1["platformRefresh:<br/>Validate all platforms<br/>alive & exist"]
+    A1 --> A2{Platforms<br/>valid?}
+    A2 -->|No| A3["Remove dead platforms<br/>Queue PLATFORM_DESTROYED"]
+    A2 -->|Yes| B["Discover active radars<br/>in batches"]
+    A3 --> B
+    B --> C["removeDeadPlatforms:<br/>Check isActive for non-static"]
+    C --> D["For each batch:<br/>Sample all platforms"]
+    D --> E["Calculate bearing<br/>& angular resolution"]
+    E --> F["Store datapoint<br/>if valid"]
+    F --> G{More radars?}
+    G -->|Yes| D
+    G -->|No| H["Every 30 seconds<br/>Process Cycle"]
 
-Every 30 seconds (default):
-├─ Collect all datapoints
-├─ Calculate position (triangulation)
-├─ Compute uncertainty ellipse
-└─ Update contact information
+    H --> I["Collect all datapoints<br/>per contact"]
+    I --> J["Triangulate position<br/>from bearings"]
+    J --> K["Compute uncertainty<br/>ellipse"]
+    K --> L["Update contact state<br/>& fire events"]
+    L --> M["Every 60 seconds<br/>Menu Update"]
 
-Every 2 minutes (default):
-└─ Update F10 map markers
+    M --> N["Rebuild F10 radio<br/>menu"]
+    N --> O["Every 120 seconds<br/>Marker Update"]
+    O --> P["Update map markers<br/>on F10"]
+    P --> Q["Every 180 seconds<br/>ATIS Update"]
+    Q --> R["Refresh broadcast<br/>message"]
 ```
 
 ### Initial Detection

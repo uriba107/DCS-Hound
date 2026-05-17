@@ -10,9 +10,53 @@ Three systems deliver intelligence: ATIS (continuous broadcast), Controller (on-
 | ------------ | ------------- | -------------------- | ------------ |
 | **Type**     | Voice loop    | Voice/Text on-demand | Voice alerts |
 | **F10 Menu** | No            | Yes                  | No           |
-| **Updates**  | Every 5 min   | Real-time            | On events    |
+| **Updates**  | Every 3 min   | Real-time            | On events    |
 | **Detail**   | Summary       | Full                 | Brief        |
 | **Best for** | SA monitoring | Targeting            | Awareness    |
+
+### Timing & Interaction
+
+```mermaid
+sequenceDiagram
+    participant Player
+    participant Controller
+    participant ATIS
+    participant Notifier
+    participant Hound as Hound System
+
+    rect rgb(200, 220, 255)
+    Note over Hound: Every 10 sec - Scan
+    Hound->>Hound: Discover & sample radars
+    end
+
+    rect rgb(200, 220, 255)
+    Note over Hound: Every 30 sec - Process
+    Hound->>Hound: Triangulate positions
+    Hound->>Hound: Update contact states
+    Hound->>Notifier: Queue event alerts
+    end
+
+    rect rgb(220, 255, 220)
+    Note over Hound: Every 60 sec - Menu
+    Hound->>Controller: Rebuild F10 menu
+    end
+
+    rect rgb(255, 240, 200)
+    Note over Hound: Every 120 sec - Markers
+    Hound->>Player: Update F10 map markers
+    end
+
+    rect rgb(255, 220, 220)
+    Note over Hound: Every 180 sec - ATIS
+    Hound->>ATIS: Update broadcast message
+    ATIS->>Player: Transmit threat summary
+    end
+
+    Player->>Controller: Request via F10 menu
+    Controller->>Player: Voice + Text response
+
+    Notifier->>Player: Real-time alerts<br/>SAM launch, BDA, new threats
+```
 
 ---
 

@@ -14,6 +14,44 @@ Script custom behavior using Hound events (detections, destructions, launches, p
 | **Radar**       | `RADAR_NEW/DETECTED/UPDATED/DESTROYED/ALIVE/ASLEEP`               | 9-14  | Radar tracking     |
 | **Site**        | `SITE_NEW/CREATED/UPDATED/CLASSIFIED/REMOVED/ALIVE/ASLEEP/LAUNCH` | 15-22 | SAM site tracking  |
 
+### Event Timeline
+
+```mermaid
+timeline
+    title Typical Radar Detection Event Sequence
+
+    section Scan Cycle (10s)
+        Radar transmits : Hound discovers active radars
+        Sample platforms : Calculate bearings & datapoints
+
+    section Process Cycle (30s)
+        Triangulate position : From accumulated datapoints
+        Update state : NEW → DETECTED → UPDATED
+        Queue events : RADAR_NEW, RADAR_DETECTED, RADAR_UPDATED
+
+    section Site Processing
+        First radar in group : SITE_NEW event
+        Additional radars : SITE_UPDATED event
+        Type refinement : Intersection of radar types
+        SITE_CLASSIFIED : When type is certain
+
+    section Ongoing (Every 30s)
+        Position refinement : RADAR_UPDATED fires
+        Marker updates : Every 120s
+        Menu updates : Every 60s
+
+    section Radar Lifecycle
+        No detection 15min : RADAR_ASLEEP event
+        Radar detected again : SITE_ALIVE event
+        Unit destroyed : RADAR_DESTROYED event
+        Site destroyed : SITE_REMOVED event
+
+    section Event Alerts
+        SAM launch detected : SITE_LAUNCH event
+        Radar destroyed : RADAR_DESTROYED event
+        BDA confirmation : Via Notifier
+```
+
 ---
 
 ## Event Structure

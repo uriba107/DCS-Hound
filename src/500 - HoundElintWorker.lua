@@ -37,6 +37,12 @@ do
         return self.settings:getCoalition()
     end
 
+    --- get worker instance ID
+    -- @return Hound instance Id
+    function HOUND.ElintWorker:getId()
+        return self.settings:getId()
+    end
+
     --- get the next track number
     -- @return UID for the contact
     function HOUND.ElintWorker:getNewTrackId()
@@ -378,11 +384,62 @@ do
     --- update markers to all contacts
     -- update all emitters
     function HOUND.ElintWorker:UpdateMarkers()
-        if self.settings:getUseMarkers() then
-            local drawSites = self.settings:getMarkSites()
-            local emitterMarker = self.settings:getMarkerType()
-            for _,site in pairs(self.sites) do
-                site:updateMarkers(emitterMarker,drawSites)
+        if not self.settings:getUseMarkers() then return end
+        local guardName = "markers-" .. self:getId()
+        if HOUND.Coroutine.isRunning(guardName) then
+            HOUND.Logger.debug("marker refresh still running for instance "
+                .. self:getId() .. "; skipping")
+            return
+        end
+        local drawSites = self.settings:getMarkSites()
+        local emitterMarker = self.settings:getMarkerType()
+        local sites = self.sites
+        HOUND.Coroutine.add(function()
+            for _, site in pairs(sites) do
+                site:updateMarkers(emitterMarker, drawSites)
+                coroutine.yield()
+            end
+        end, { name = guardName })
+    end
+
+    --- internal: atomic sampler. Runs on the snapshot produced by
+    -- discovery. All per-sample math happens on the same tick for
+    -- coherence.
+    -- @local
+    function HOUND.ElintWorker:_sampleRadars(Radars)
+        if HOUND.Length(Radars) == 0 then return end
+        for _,RadarName in ipairs(Radars) do
+            local radar = Unit.getByName(RadarName)
+            if radar and radar:isExist() then
+                local radarPos = radar:getPosition().p
+                radarPos.y = radarPos.y + radar:getDesc()["box"]["max"]["y"] -- use vehicle bounting box for height
+                local _,isRadarTracking = radar:getRadar()
+
+                isRadarTracking = HoundUtils.Dcs.isUnit(isRadarTracking)
+
+                for _,platform in ipairs(self.platforms) do
+                    local platformData = HOUND.DB.getPlatformData(platform)
+
+                    if HoundUtils.Geo.checkLOS(platformData.pos, radarPos) then
+                        local contact = self:getContact(radar)
+                        local sampleAngularResolution = HOUND.DB.getSensorPrecision(platform,contact:getWavelenght(isRadarTracking))
+                        if sampleAngularResolution < l_math.rad(10.0) then
+                            local az,el = HoundUtils.Elint.getAzimuth( platformData.pos, radarPos, sampleAngularResolution )
+                            if not platformData.isAerial then
+                                el = nil
+                            end
+
+                            if not platformData.isStatic and self.settings:getPosErr() then
+                                for axis,value in pairs(platformData.pos) do
+                                    platformData.pos[axis] = value + platformData.posErr[axis]
+                                end
+                            end
+                            local signalStrength = HoundUtils.Elint.getSignalStrength(platformData.pos,radarPos,contact.detectionRange)
+                            local datapoint = HOUND.Contact.Datapoint.New(platform,platformData.pos, az, el, signalStrength, timer.getAbsTime(),sampleAngularResolution,platformData.isStatic)
+                            contact:AddPoint(datapoint)
+                        end
+                    end
+                end
             end
         end
     end
@@ -396,45 +453,31 @@ do
             contact:KalmanPredict()
         end
         if #self.platforms == 0 then return end
-        local Radars = {}
+
+        -- GroupName path stays atomic; the enumeration cost there is tiny.
         if GroupName then
-            Radars = HoundUtils.Elint.getActiveRadarsInGroup(GroupName)
-        else
-            Radars = HoundUtils.Elint.getActiveRadars(self:getCoalition())
+            self:_sampleRadars(HoundUtils.Elint.getActiveRadarsInGroup(GroupName))
+            return
         end
-        if HOUND.Length(Radars) == 0 then return end
-        for _,RadarName in ipairs(Radars) do
-            local radar = Unit.getByName(RadarName)
-            local radarPos = radar:getPosition().p
-            radarPos.y = radarPos.y + radar:getDesc()["box"]["max"]["y"] -- use vehicle bounting box for height
-            local _,isRadarTracking = radar:getRadar()
 
-            isRadarTracking = HoundUtils.Dcs.isUnit(isRadarTracking)
-
-            for _,platform in ipairs(self.platforms) do
-                local platformData = HOUND.DB.getPlatformData(platform)
-
-                if HoundUtils.Geo.checkLOS(platformData.pos, radarPos) then
-                    local contact = self:getContact(radar)
-                    local sampleAngularResolution = HOUND.DB.getSensorPrecision(platform,contact:getWavelenght(isRadarTracking))
-                    if sampleAngularResolution < l_math.rad(10.0) then
-                        local az,el = HoundUtils.Elint.getAzimuth( platformData.pos, radarPos, sampleAngularResolution )
-                        if not platformData.isAerial then
-                            el = nil
-                        end
-
-                        if not platform.isStatic and self.settings:getPosErr() then
-                            for axis,value in pairs(platformData.pos) do
-                                platformData.pos[axis] = value + platformData.posErr[axis]
-                            end
-                        end
-                        local signalStrength = HoundUtils.Elint.getSignalStrength(platformData.pos,radarPos,contact.detectionRange)
-                        local datapoint = HOUND.Contact.Datapoint.New(platform,platformData.pos, az, el, signalStrength, timer.getAbsTime(),sampleAngularResolution,platformData.isStatic)
-                        contact:AddPoint(datapoint)
-                    end
+        local guardName = "sniff-discover-" .. self:getId()
+        if HOUND.Coroutine.isRunning(guardName) then
+            HOUND.Logger.debug("sniff discovery still running for instance "
+                .. self:getId() .. "; skipping")
+            return
+        end
+        local instanceCoalition = self:getCoalition()
+        local worker = self
+        HOUND.Coroutine.add(function()
+            HoundUtils.Elint.getActiveRadarsYielding(instanceCoalition)
+        end, {
+            name = guardName,
+            onYield = function(_, batch)
+                if batch then
+                    worker:_sampleRadars(batch)
                 end
-            end
-        end
+            end,
+        })
     end
 
 
