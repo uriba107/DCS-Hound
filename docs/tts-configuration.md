@@ -8,7 +8,7 @@ Guide to configuring voice communications. **TTS is optional** - Hound works wit
 
 | Provider     | Setup | Voices                                                                                   | Best For                        |
 | ------------ | ----- | ---------------------------------------------------------------------------------------- | ------------------------------- |
-| **HoundTTS** | Easy  | Piper (offline), SAPI (Windows), Google, Azure, AWS, ElevenLabs, OpenAI (and compatible) | **All users (default)**         |
+| **HoundTTS** | Easy  | SAPI (Windows built-in), Piper (local), Supertonic (local), Google, Azure, AWS, ElevenLabs, OpenAI (and compatible) | **All users (default)**         |
 | **STTS**     | Easy  | Windows TTS, Google Cloud (opt.)                                                         | Legacy — HoundTTS supersedes it |
 
 HoundTTS is a native C++ DLL that connects directly to SRS — no PowerShell, no focus stealing, fully parallel. If HoundTTS is installed, it automatically takes over from STTS transparently.
@@ -61,8 +61,9 @@ HoundTTS supports multiple TTS providers per-call via the `provider` parameter:
 
 | Provider       | Aliases                | Requires API Key | Offline | Notes                                 |
 | -------------- | ---------------------- | ---------------- | ------- | ------------------------------------- |
-| **Piper**      | `"piper"`              | No               | Yes     | Bundled voices, fastest for long text |
 | **SAPI**       | `"sapi"`, `"win"`      | No               | Yes     | Windows system voices                 |
+| **Piper**      | `"piper"`              | No               | Yes     | Bundled voices, fastest for long text |
+| **Supertonic** | `"supertonic"`         | No               | Yes     | 10 bundled voices (5 male + 5 female), multilingual (31 languages) |
 | **Google**     | `"google"`, `"gcloud"` | Yes              | No      | Google Cloud TTS                      |
 | **AWS Polly**  | `"aws"`, `"polly"`     | Yes              | No      | Amazon Polly                          |
 | **Azure**      | `"azure"`              | Yes              | No      | Azure Cognitive Services              |
@@ -89,7 +90,26 @@ local tts_config = {
 
 ### Provider-Specific Options
 
-#### Piper (offline, bundled)
+#### SAPI (Windows system voices)
+
+Uses Windows Speech API 5.4 — the same engine as Windows Narrator. No internet required.
+
+```lua
+local tts_config = {
+    freq = "251.000",
+    modulation = "AM",
+    provider = "sapi",              -- or "win"
+    gender = "female",              -- "male" or "female"
+    culture = "en-US",              -- Voice culture
+    voice = "David",                -- Specific voice name (overrides gender/culture)
+}
+```
+
+Voice selection priority: `voice` name match → `culture` + `gender` query → system default.
+
+Additional voices can be installed via **Windows Settings → Time & Language → Speech → Add voices**.
+
+#### Piper (offline, HoundTTS add-on)
 
 No internet or API key required. Bundled voices included.
 
@@ -112,24 +132,41 @@ local tts_config = {
 
 Browse all voices at [rhasspy.github.io/piper-samples](https://rhasspy.github.io/piper-samples/). Download additional models from [HuggingFace](https://huggingface.co/rhasspy/piper-voices) and place them in the `voices\` folder.
 
-#### SAPI (Windows system voices)
-
-Uses Windows Speech API 5.4 — the same engine as Windows Narrator. No internet required.
+#### Supertonic 3 (Offline, HoundTTS add-on)
+No internet or API key required. Bundled voices included.
 
 ```lua
 local tts_config = {
     freq = "251.000",
     modulation = "AM",
-    provider = "sapi",              -- or "win"
-    gender = "female",              -- "male" or "female"
-    culture = "en-US",              -- Voice culture
-    voice = "David",                -- Specific voice name (overrides gender/culture)
+    provider = "supertonic",
+    colture = "en", -- language of message (optional - also accepts "en_US" or "en-US")
+    -- Specify voice literraly (also supports non-free custom voices)
+    voice = "F3",     -- supertonic voice name (optional)
+    -- select voice by specifying gender and speaker ID 
+    gender = "female", -- Speaker gender (male/female - optional)
+    speaker = 3,    -- speaker ID (optional)
 }
 ```
 
-Voice selection priority: `voice` name match → `culture` + `gender` query → system default.
+supertonic is multi-lingual by default (supports 31 languages) - best when using inline translation
 
-Additional voices can be installed via **Windows Settings → Time & Language → Speech → Add voices**.
+```lua
+local de_tts_config = {
+    freq = "251.000",
+    modulation = "AM",
+    provider = "supertonic",
+    colture = "de", -- language of message (optional - also accepts "en_US" or "en-US")
+    -- select voice by specifying gender and speaker ID 
+    gender = "female", -- Speaker gender (male/female - optional)
+    speaker = 4,    -- speaker ID (optional)
+    translate = {
+        provider = "libre", 
+        language = "de"
+    }
+}
+
+```
 
 #### Google Cloud TTS
 
@@ -224,9 +261,9 @@ speed = 2.0   -- Double speed
 
 **Recommendations:**
 
-- **Controller:** 1.0 (clear, understandable)
+- **Controller:** 1.0 to 1.05 (clear, understandable)
 - **ATIS:** 1.1 to 1.3 (slightly faster, less boring)
-- **Notifier:** 0.9 to 1.0 (clear alerts)
+- **Notifier:** 0.9 to 1.05 (clear alerts)
 
 ### Volume
 

@@ -22,10 +22,16 @@ do
         instance.settings.speed = 1
 
         instance.preferences.alerts = true
+        instance.preferences.namedChannel = nil
 
         if settings and type(settings) == "table" then
             instance:updateSettings(settings)
         end
         return instance
+    end
+    function HOUND.Comms.Notifier:setNamedChannel(channel)
+        if type(channel) == "string" then
+            self:setSettings("namedChannel",channel)
+        end
     end
 end

@@ -382,7 +382,7 @@ do
             self:setPreBriefed(isPB)
         end
         if self.state ~=  HOUND.EVENTS.SITE_ASLEEP then
-            if (self:isTimedout() and not self:isAccurate()) or #self.emitters == 0 then
+            if ((self:isTimedout() and not self:isAccurate()) or #self.emitters == 0) and self:hasRadarUnits() then
                 self.state = HOUND.EVENTS.SITE_ASLEEP
                 self:queueEvent(self.state)
             end

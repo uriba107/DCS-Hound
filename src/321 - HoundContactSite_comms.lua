@@ -69,7 +69,7 @@ do
     -- @param[type=string] sectorName Name of primary sector if present function will only return sector data
     -- @return string. compiled message
     function HOUND.Contact.Site:generatePopUpReport(isTTS,sectorName)
-        local msg = self:getName() .. ", identified as " .. self:getDesignation(true) .. ", is active"
+        local msg = self:getName() .. ", " .. self:getDesignation(true) .. ", is active"
 
         if sectorName then
             msg = msg .. " in " .. sectorName
@@ -94,7 +94,7 @@ do
     -- @param[type=string] sectorName Name of primary sector if present function will only return sector data
     -- @return string. compiled message
     function HOUND.Contact.Site:generateDeathReport(isTTS,sectorName)
-        local msg = self:getName() ..  ", identified as " .. self:getDesignation(true) .. " is down"
+        local msg = self:getName() ..  ", " .. self:getDesignation(true) .. " is down"
         if sectorName then
             msg = msg .. " in " .. sectorName
         else
@@ -117,7 +117,7 @@ do
     -- @param[type=string] sectorName Name of primary sector if present function will only return sector data
     -- @return string. compiled message
     function HOUND.Contact.Site:generateAsleepReport(isTTS,sectorName)
-        local msg = self:getName() ..  ", identified as " .. self:getDesignation(true) .. " is asleep"
+        local msg = self:getName() ..  ", " .. self:getDesignation(true) .. " is asleep"
         if sectorName then
             msg = msg .. " in " .. sectorName
         else
@@ -167,9 +167,9 @@ do
 
         if sectorName then
             msg = msg .. " in " .. sectorName
-            msg = msg .. ", has been reclassified as " .. self:getDesignation(true)
+            msg = msg .. ", reclassified as " .. self:getDesignation(true)
         else
-            msg = msg .. ", has been reclassified as " .. self:getDesignation(true)
+            msg = msg .. ", reclassified as " .. self:getDesignation(true)
             local primary = self:getPrimary()
             if primary:hasPos() then
                 local GridPos,BePos
