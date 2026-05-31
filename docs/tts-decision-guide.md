@@ -14,7 +14,7 @@ Do you need voice communications?
 └─ YES → Use HoundTTS (default, recommended)
     │
     ├─ Want offline, zero-config voices?
-    │   └─ Piper (bundled) or SAPI (Windows system voices)
+    │   └─ SAPI (Windows system voices) or Piper (add-on) or Supertonic (add-on)
     │
     ├─ Want premium cloud voices?
     │   └─ Google, Azure, AWS Polly, or ElevenLabs
@@ -55,11 +55,12 @@ Do you need voice communications?
 - **Default for Hound** — automatically detected and used when installed
 - **Native C++ DLL** — no PowerShell overhead, no focus stealing, no visible windows
 - **Fully parallel** — every TTS request is fire-and-forget in background threads
-- **6 TTS providers** — Piper (offline, bundled), SAPI (Windows), Google Cloud, Azure, AWS Polly, ElevenLabs
+- **7 TTS providers** — SAPI (Windows), Piper (offline, bundled), Supertonic (offline, bundled add-on), Google Cloud, Azure, AWS Polly, ElevenLabs
 - **Offline voices included** — Piper voices bundled, SAPI uses Windows system voices, no API key needed
 - **Secure credentials** — API keys stored in INI file, never exposed in mission scripts or DCS logs
 - **Auto-detects SRS** — reads SRS path from Windows registry, no manual configuration
 - **Drop-in STTS replacement** — transparently takes over if STTS is also loaded
+- **Supports inline translation** - want hound in Danish? just add translation params
 
 **❌ Cons:**
 
@@ -71,10 +72,10 @@ Do you need voice communications?
 - **All Hound users** — this is the default and recommended choice
 - New users getting started
 - Users who want multiple voice provider options
-- Offline/LAN missions (Piper or SAPI)
+- Offline/LAN missions (SAPI or Piper or Supertonic)
 - Production missions needing reliable, parallel voice
 
-**Setup Time:** ~10 minutes  
+**Setup Time:** ~5 minutes  
 **Links:** [HoundTTS README](https://github.com/uriba107/HoundTTS)
 
 ---
@@ -100,12 +101,14 @@ Do you need voice communications?
 - **Legacy missions** that haven't installed HoundTTS yet
 - Fallback if HoundTTS is not installed
 
-**Setup Time:** ~10-15 minutes  
+**Setup Time:** ~5 minutes  
 **Links:** https://github.com/ciribob/DCS-SimpleTextToSpeech
 
 ---
 
 ### gRPC (DCS-gRPC) ⚠️ **NOT RECOMMENDED FOR HOUND**
+
+**DCS-gRPC is no longer maintained**
 
 **⚠️ Known Issues:**
 
@@ -118,7 +121,6 @@ Do you need voice communications?
 - **Multi-tool integration** — works with Tacview, external apps
 
 **❌ Cons:**
-
 - **Parallel transmission issues** — main reason to avoid for Hound
 - **Complex setup** — requires more technical knowledge
 
@@ -163,13 +165,14 @@ Since HoundTTS supports 6 providers, here's a quick guide to choosing one:
 | Provider       | Quality          | Latency    | Cost               | Best For                                                        |
 | -------------- | ---------------- | ---------- | ------------------ | --------------------------------------------------------------- |
 | **Piper**      | ⭐⭐⭐ Good      | ⚡ Instant | Free               | Offline, long ATIS reports                                      |
+| **Supertonic**      | ⭐⭐⭐ Good      | ⚡ Instant | Free               | Offline, long ATIS reports, multi-lingual                                      |
 | **SAPI**       | ⭐⭐ Robotic     | ⚡ Instant | Free               | Offline, Windows default                                        |
 | **Google**     | ⭐⭐⭐⭐ Natural | 🌐 Network | ~$4/1M chars       | Natural cloud voices                                            |
 | **AWS Polly**  | ⭐⭐⭐⭐⭐ Pro   | 🌐 Network | $4-16/1M chars     | Professional grade                                              |
 | **Azure**      | ⭐⭐⭐⭐⭐ Top   | 🌐 Network | ~$4/1M chars       | Neural voices                                                   |
 | **ElevenLabs** | ⭐⭐⭐⭐⭐ AI    | 🌐 Network | Paid plan required | Highest quality AI voices (⚠️ free tier not suitable for Hound) |
 
-**Tip:** For long transmissions (ATIS), use **Piper** or **SAPI** — they start speaking immediately with no network latency.
+**Tip:** For long transmissions (ATIS), use local providers (**Piper**, **Supertonic** or **SAPI**) — save your money to where it really counts.
 
 ---
 
@@ -179,42 +182,42 @@ Since HoundTTS supports 6 providers, here's a quick guide to choosing one:
 
 **Piper (HoundTTS, offline):**
 
-> "Contact Alpha. S-A dash six. Grid Bravo Tango one two three four five six. Threat is active."
+> "Contact Alpha. SA six. Grid Bravo Tango one two three four five six. Threat is active."
 
 - **Quality:** ⭐⭐⭐ Clear and natural-sounding
 - **Cost:** Free (bundled)
 
 **SAPI / Windows TTS (HoundTTS or STTS):**
 
-> "Contact Alpha. S-A dash six. Grid Bravo Tango one two three four five six. Threat is active."
+> "Contact Alpha. SA six. Grid Bravo Tango one two three four five six. Threat is active."
 
 - **Quality:** ⭐⭐ Robotic but clear
 - **Cost:** Free (included with Windows)
 
 **Google Cloud (HoundTTS or STTS):**
 
-> "Contact Alpha. S-A dash six. Grid Bravo Tango one two three four five six. Threat is active."
+> "Contact Alpha. SA six. Grid Bravo Tango one two three four five six. Threat is active."
 
 - **Quality:** ⭐⭐⭐⭐ Natural and clear
 - **Cost:** ~$4 per 1M characters
 
 **AWS Polly (HoundTTS):**
 
-> "Contact Alpha. S-A dash six. Grid Bravo Tango one two three four five six. Threat is active."
+> "Contact Alpha. SA six. Grid Bravo Tango one two three four five six. Threat is active."
 
 - **Quality:** ⭐⭐⭐⭐⭐ Professional grade
 - **Cost:** ~$4-16 per 1M characters
 
 **Azure Neural (HoundTTS):**
 
-> "Contact Alpha. S-A dash six. Grid Bravo Tango one two three four five six. Threat is active."
+> "Contact Alpha. SA six. Grid Bravo Tango one two three four five six. Threat is active."
 
 - **Quality:** ⭐⭐⭐⭐⭐ Top tier
 - **Cost:** ~$4 per 1M characters
 
 **ElevenLabs (HoundTTS only):**
 
-> "Contact Alpha. S-A dash six. Grid Bravo Tango one two three four five six. Threat is active."
+> "Contact Alpha. SA six. Grid Bravo Tango one two three four five six. Threat is active."
 
 - **Quality:** ⭐⭐⭐⭐⭐ AI-generated, most natural
 - **Cost:** Paid plan required (free tier only allows one concurrent request — not suitable for Hound)
@@ -271,6 +274,7 @@ Since HoundTTS supports 6 providers, here's a quick guide to choosing one:
 | -------------------- | --------------------------------------------------------------------------------- |
 | **Software**         | Free (open source)                                                                |
 | **Piper**            | Free (bundled offline voices)                                                     |
+| **Supertonic**            | Free (bundled offline voices)                                                     |
 | **SAPI**             | Free (included with Windows)                                                      |
 | **Google Cloud TTS** | ~$4 per 1 million characters                                                      |
 | **AWS Polly**        | $4 per 1 million characters (standard), $16 (neural)                              |
@@ -478,8 +482,8 @@ We recommend eventually adopting the new `provider`-based configuration to acces
 
 It depends on the HoundTTS backend you choose:
 
-- **ElevenLabs** > **Azure/AWS Polly** > **Google Cloud** > **Piper** > **SAPI (Windows TTS)**
-- Cloud voices cost money; Piper and SAPI are free and offline
+- **ElevenLabs** > **Azure/AWS Polly/Google Cloud** > **Piper/Supertonic** > **SAPI (Windows TTS)**
+- Cloud voices cost money; Piper, Supertonic and SAPI are free and offline
 
 ### "Which is easiest to set up?"
 
@@ -487,7 +491,7 @@ It depends on the HoundTTS backend you choose:
 
 ### "Which should I use for Hound?"
 
-**HoundTTS** — it's the default. Native C++ DLL, fully parallel, 6 TTS providers, no PowerShell.
+**HoundTTS** — it's the default. Written to directly address Hound needs, native C++ DLL, fully parallel, 7 TTS providers, no PowerShell.
 
 ### "Why not gRPC?"
 
@@ -520,15 +524,15 @@ No, TTS provider is determined at mission start. You can change frequencies or d
 
 | Your Situation           | Recommended Provider                              |
 | ------------------------ | ------------------------------------------------- |
-| **New to Hound**         | **HoundTTS** with Piper or SAPI                   |
+| **New to Hound**         | **HoundTTS** with Piper, Supertonic or SAPI                   |
 | **New to DCS scripting** | No TTS first, add HoundTTS later                  |
 | **Want best quality**    | **HoundTTS** with Azure, AWS Polly, or ElevenLabs |
 | **Multiplayer mission**  | **HoundTTS** with Piper or SAPI                   |
 | **Quick testing**        | No TTS                                            |
 | **Already use STTS**     | Install HoundTTS — takes over automatically       |
 | **Already use gRPC**     | **Switch to HoundTTS**                            |
-| **Limited time**         | **HoundTTS** with Piper (zero-config voice)       |
-| **Budget conscious**     | **HoundTTS** with Piper or SAPI (free)            |
+| **Limited time**         | **HoundTTS** with local provider (zero-config voice)       |
+| **Budget conscious**     | **HoundTTS** with Piper, Supertonic or SAPI (free)            |
 | **Professional mission** | **HoundTTS** with AWS/Azure/ElevenLabs            |
 | **Any Hound mission**    | **HoundTTS (always recommended)**                 |
 

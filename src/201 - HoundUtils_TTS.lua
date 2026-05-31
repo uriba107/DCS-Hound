@@ -163,10 +163,12 @@ do
             provider_params.provider = "google"
         end
 
-
         if provider_params.provider == "piper" then
             provider_params.voice = args.voice or "en_US-lessac-low"
             provider_params.speaker = args.speaker
+        elseif provider_params.provider == "supertonic" then
+            provider_params.voice = provider_params.voice or "F1"
+            provider_params.culture = provider_params.culture or "en"
         elseif provider_params.provider == "google" or provider_params.provider == "gcloud" then
             provider_params.voice = args.voice or "google-auto"
         elseif provider_params.provider == "aws" or provider_params.provider == "polly" then
