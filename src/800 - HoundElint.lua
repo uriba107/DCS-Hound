@@ -306,20 +306,51 @@ do
         return contacts
     end
 
-    --- dump Intel Brief to csv
-    -- will dump intel summery to CSV in the DCS saved games folder
+    --- dump Intel Brief to CSV or JSON
+    -- will dump intel summary to the DCS saved games folder
     -- requires desanitization of lfs and io modules
     -- @param[opt] filename target filename. (default: hound_contacts_%d.csv)
-    function HoundElint:dumpIntelBrief(filename)
+    -- @param[opt] format target format "csv" or "json" (default: csv)
+    function HoundElint:dumpIntelBrief(filename, format)
         if lfs == nil or io == nil then
-            HOUND.Logger.info("cannot write CSV. please desanitize lfs and io")
+            HOUND.Logger.info("cannot write export file. please desanitize lfs and io")
             return
         end
+        format = format or "csv"
+        if format ~= "csv" and format ~= "json" then
+            HOUND.Logger.warn("invalid format provided for dumpIntelBrief. defaulting to csv")
+            format = "csv"
+        end
         if not filename then
-            filename = string.format("hound_contacts_%d.csv",self:getId())
+            filename = string.format("hound_contacts_%d.%s",self:getId(), format)
+        end
+        if format == "json" then
+            local report = {
+                ReportGenerated = HoundUtils.Text.getTime(),
+                ReportData = {}
+            }
+            for _,site in pairs(self.contacts:listAllSitesByRange()) do
+                local siteItems = site:generateIntelBrief()
+                if #siteItems > 0 then
+                    report.ReportData[site:getId()] = siteItems
+                end
+            end
+            local jsonFile, err = io.open(lfs.writedir() .. filename, "w+")
+            if not jsonFile then
+                HOUND.Logger.warn("Failed to open file for JSON export: " .. tostring(err))
+                return
+            end
+            jsonFile:write(net.lua2json(report))
+            jsonFile:flush()
+            jsonFile:close()
+            return
         end
         local currentGameTime = HoundUtils.Text.getTime()
-        local csvFile = io.open(lfs.writedir() .. filename, "w+")
+        local csvFile, csvErr = io.open(lfs.writedir() .. filename, "w+")
+        if not csvFile then
+            HOUND.Logger.warn("Failed to open file for CSV export: " .. tostring(csvErr))
+            return
+        end
         csvFile:write("SiteId,SiteNatoDesignation,TrackId,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accuracy,lastSeen,DcsType,DcsUnit,DcsGroup,ReportGenerated\n")
         csvFile:flush()
         for _,site in pairs(self.contacts:listAllSitesByRange()) do

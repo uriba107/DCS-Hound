@@ -21,6 +21,10 @@ do
             HOUND.Logger.info(sectorName.. " is a reserved sector name")
             return false
         end
+        if type(sectorSettings) == "number" and priority == nil then
+            priority = sectorSettings
+            sectorSettings = nil
+        end
         priority = priority or 50
         if not self.sectors[sectorName] then
             self.sectors[sectorName] = HOUND.Sector.create(self.settings:getId(),sectorName,sectorSettings,priority)
@@ -347,6 +351,24 @@ do
             self.sectors[sectorName]:removeZone()
         end
         self:updateSectorMembership()
+    end
+
+    --- add a child sector to a meta-sector
+    -- @param[type=string] metaSectorName name of the meta-sector
+    -- @param[type=string] childSectorName name of the child sector to add
+    function HoundElint:addChildSector(metaSectorName, childSectorName)
+        if self.sectors[metaSectorName] then
+            self.sectors[metaSectorName]:addChildSector(childSectorName)
+        end
+    end
+
+    --- remove a child sector from a meta-sector
+    -- @param[type=string] metaSectorName name of the meta-sector
+    -- @param[type=string] childSectorName name of the child sector to remove
+    function HoundElint:removeChildSector(metaSectorName, childSectorName)
+        if self.sectors[metaSectorName] then
+            self.sectors[metaSectorName]:removeChildSector(childSectorName)
+        end
     end
 
     --- update sector membership for all contacts

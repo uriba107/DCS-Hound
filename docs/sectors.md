@@ -183,11 +183,161 @@ HoundInstance:reportEWR("North", true)
 
 ---
 
+## Meta-Sectors
+
+A meta-sector aggregates multiple child sectors without a zone of its own. Attach a Controller, ATIS, or Notifier to a meta-sector and it will report on contacts from all its children. Child sectors only need a zone — no comms required on them.
+
+```mermaid
+graph TD
+    H["HoundElint Instance"] --> S["Sectors"]
+
+    S --> S1["S1<br/>Zone_S1"]
+    S --> S2["S2<br/>Zone_S2"]
+    S --> S3["S3<br/>Zone_S3"]
+    S --> S4["S4<br/>Zone_S4"]
+    S --> NE["NorthEast<br/>(meta-sector, no zone)"]
+
+    NE -- "child" --> S1
+    NE -- "child" --> S2
+    NE -- "child" --> S3
+    NE -- "child" --> S4
+
+    NE --> C["Controller<br/>Freq: 265.000"]
+    NE --> A["ATIS<br/>Freq: 266.000"]
+    NE --> N["Notifier<br/>Freq: 251.000"]
+
+    style NE fill:#2d6a4f,stroke:#1b4332,color:#d8f3dc
+    style S1 fill:#264653,stroke:#2a9d8f,color:#e9f5db
+    style S2 fill:#264653,stroke:#2a9d8f,color:#e9f5db
+    style S3 fill:#264653,stroke:#2a9d8f,color:#e9f5db
+    style S4 fill:#264653,stroke:#2a9d8f,color:#e9f5db
+```
+
+### How it works
+
+```mermaid
+flowchart LR
+    subgraph Children
+        S1["S1 zone"]
+        S2["S2 zone"]
+    end
+
+    subgraph Membership
+        R1["SA-6 in S1"]
+        R2["SA-10 in S2"]
+        R3["EWR in S1"]
+    end
+
+    subgraph Meta["NorthEast meta-sector"]
+        ATIS["ATIS lists:<br/>SA-6, SA-10, EWR"]
+        Menu["F10 menu:<br/>all 3 sites"]
+        Notify["Notifier:<br/>'SA-6 identified in S1'"]
+    end
+
+    S1 --> R1 & R3
+    S2 --> R2
+    R1 & R2 & R3 --> ATIS & Menu
+    R1 --> Notify
+```
+
+- **Notifications** include the child sector name: _"SA-6 identified in S1"_
+- **ATIS** aggregates all sites from all children (deduplicated)
+- **F10 menus** show all sites from all children
+- **Controller alerts** also include the child sector name
+- The meta-sector itself has **no zone** — it never claims ownership of contacts
+
+### Creating meta-sectors
+
+```lua
+-- Create child sectors (zone only, no comms needed)
+HoundBlue:addSector("Beslan")
+HoundBlue:setZone("Beslan", "Zone_Beslan")
+
+HoundBlue:addSector("Vladikavkaz")
+HoundBlue:setZone("Vladikavkaz", "Zone_Vlad")
+
+-- Create meta-sector and assign children
+HoundBlue:addSector("Northern Front")
+HoundBlue:addChildSector("Northern Front", "Beslan")
+HoundBlue:addChildSector("Northern Front", "Vladikavkaz")
+
+-- Attach comms to the meta-sector
+HoundBlue:enableController("Northern Front", {freq = "265.000", modulation = "AM"})
+HoundBlue:enableAtis("Northern Front", {freq = "266.000", modulation = "AM"})
+HoundBlue:enableNotifier("Northern Front", {freq = "251.000", modulation = "AM"})
+
+-- Remove a child
+HoundBlue:removeChildSector("Northern Front", "Vladikavkaz")
+```
+
+### Overlapping meta-sectors
+
+A child sector can belong to multiple meta-sectors. When a contact is detected in a shared child, all meta-sectors containing that child fire independently.
+
+```mermaid
+graph TD
+    subgraph Grid["3x3 Sector Grid"]
+        S1["S1"] --- S2["S2"] --- S3["S3"]
+        S4["S4"] --- S5["S5"] --- S6["S6"]
+        S7["S7"] --- S8["S8"] --- S9["S9"]
+    end
+
+    NE["NorthEast<br/>S1, S2, S4, S5"]
+    NW["NorthWest<br/>S2, S3, S5, S6"]
+    SE["SouthEast<br/>S4, S5, S7, S8"]
+    SW["SouthWest<br/>S5, S6, S8, S9"]
+
+    NE -. "children" .-> S1 & S2 & S4 & S5
+    NW -. "children" .-> S2 & S3 & S5 & S6
+    SE -. "children" .-> S4 & S5 & S7 & S8
+    SW -. "children" .-> S5 & S6 & S8 & S9
+
+    style NE fill:#2d6a4f,stroke:#1b4332,color:#d8f3dc
+    style NW fill:#2d6a4f,stroke:#1b4332,color:#d8f3dc
+    style SE fill:#2d6a4f,stroke:#1b4332,color:#d8f3dc
+    style SW fill:#2d6a4f,stroke:#1b4332,color:#d8f3dc
+```
+
+In this example, S5 is a child of all four meta-sectors. A contact in S5 triggers notifications on NE, NW, SE, and SW. Each meta-sector deduplicates contacts — a contact in both S2 and S5 appears once in NorthEast's ATIS, not twice.
+
+```lua
+-- Grid setup
+for i = 1, 9 do
+    HoundBlue:addSector("S"..i, { zone = "Zone_S"..i })
+end
+
+-- Overlapping meta-sectors
+HoundBlue:addSector("NorthEast")
+HoundBlue:addChildSector("NorthEast", "S1")
+HoundBlue:addChildSector("NorthEast", "S2")
+HoundBlue:addChildSector("NorthEast", "S4")
+HoundBlue:addChildSector("NorthEast", "S5")
+
+HoundBlue:addSector("NorthWest")
+HoundBlue:addChildSector("NorthWest", "S2")
+HoundBlue:addChildSector("NorthWest", "S3")
+HoundBlue:addChildSector("NorthWest", "S5")
+HoundBlue:addChildSector("NorthWest", "S6")
+
+HoundBlue:enableNotifier("NorthEast", {freq = "251.000", modulation = "AM"})
+HoundBlue:enableNotifier("NorthWest", {freq = "252.000", modulation = "AM"})
+```
+
+### Restrictions
+
+- Reserved sectors (`"default"`, `"all"`) cannot have child sectors
+- A meta-sector should not have its own zone — it purely aggregates children
+- Child sectors only need a zone; no controller/ATIS/notifier required on them
+
+---
+
 ## Troubleshooting
 
 **Radar not in expected sector:** Verify zone name/boundaries with `getZone()`, check weapon range overlap
 
 **Sector menu missing:** Verify sector created, Controller enabled for sector, system activated
+
+**Meta-sector showing no contacts:** Verify child sectors have zones and are created before contacts are detected. Use `getSector()` to retrieve the meta-sector and call `hasChildSector("childName")` on it to verify children are assigned without mutating runtime state.
 
 ---
 

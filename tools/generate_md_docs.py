@@ -540,7 +540,7 @@ class MarkdownGenerator:
             ('Sector Management', {
                 'addSector', 'removeSector', 'updateSectorSettings', 'listSectors',
                 'getSectors', 'countSectors', 'getSector', 'getZone', 'setZone',
-                'removeZone', 'updateSectorMembership',
+                'removeZone', 'updateSectorMembership', 'addChildSector', 'removeChildSector',
             }),
             ('Controller', {
                 'enableController', 'disableController', 'removeController',
@@ -907,7 +907,7 @@ class MarkdownGenerator:
             "- **Advanced triangulation**: Uses multiple platform bearings for accurate position estimation", 
             "- **Automatic classification**: Identifies radar types and associated weapon systems",
             "- **Multi-platform support**: Works with various ELINT-capable aircraft",
-            "- **Sector management**: Organizes contacts by geographical sectors",
+            "- **Sector management**: Organizes contacts by geographical sectors, supporting meta-sector hierarchies",
             "- **Communication integration**: Provides automated reports via radio and text-to-speech",
             "- **Marker system**: Places visual markers on the F10 map",
             "",
@@ -1134,12 +1134,12 @@ class MarkdownGenerator:
                         "Use HOUND.MARKER.CIRCLE for markers. Wrap in do...end block.",
             },
             {
-                "title": "Multi-Sector Mission with Zones",
-                "desc": "Blue coalition with 4 platforms. Create 2 named sectors: 'North' and "
-                        "'South'. Set geographic zones for each using setZone(). Each sector "
-                        "gets its own Controller and ATIS on different frequencies with male/"
-                        "female voices. Set custom callsigns per sector. Add a global Notifier "
-                        "on guard freq 243.000 AM. Enable text for all sectors. Wrap in do...end.",
+                "title": "Multi-Sector Mission with Meta-Sectors and Zones",
+                "desc": "Blue coalition with 4 platforms. Create two child sectors: 'Beslan' and 'Vladikavkaz', "
+                        "each with its own zone using setZone(). Create a meta-sector 'Northern Front' and "
+                        "add both children to it using addChildSector(). Configure a Controller, ATIS, "
+                        "and Notifier on 'Northern Front' with distinct frequencies. Add a global "
+                        "Notifier on guard freq 243.000 AM. Enable text for all sectors. Wrap in do...end.",
             },
             {
                 "title": "Event Handlers — Custom Mission Logic",
@@ -1406,7 +1406,7 @@ For each task, return ONLY the Lua code in a markdown code block. No explanation
             "| **Platform** | DCS unit that collects radar signals (C-130, tower, etc.) |",
             "| **Contact** | Detected radar emitter with estimated position |",
             "| **Site** | Group of related radars (e.g., SA-6 with TR + SR) |",
-            "| **Sector** | Geographic region with separate comms channels |",
+            "| **Sector** | Geographic region with separate comms channels; can be nested as meta-sectors |",
             "| **Controller** | Interactive F10 radio menu for on-demand intel |",
             "| **ATIS** | Automated periodic threat broadcast |",
             "| **Notifier** | Alert broadcasts (new threats, launches, BDA) |",
