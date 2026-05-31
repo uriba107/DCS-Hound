@@ -45,6 +45,7 @@ do
                 root = nil ,noData = nil
             }
         }
+        instance.childSectors = {}
         instance.priority = priority or 10
 
         if settings ~= nil and type(settings) == "table" and HOUND.Length(settings) > 0 then
@@ -227,11 +228,55 @@ do
         end
         if zone then
             self.settings.zone = zone
+            self.zoneCenter = HOUND.Mist.getAvgPoint(zone)
         end
     end
 
     --- Remove Zone settings from sector
     function HOUND.Sector:removeZone() self.settings.zone = nil end
+
+    --- get Sector zone center
+    -- @return DCS point or nil
+    function HOUND.Sector:getCenter()
+        return self.zoneCenter
+    end
+
+    --- Child Sector Functions
+    -- @section ChildSectors
+
+    --- Add a child sector to this meta-sector
+    -- @string sectorName name of child sector
+    function HOUND.Sector:addChildSector(sectorName)
+        if self.name == "default" or self.name == "all" then
+            HOUND.Logger.warn("[Hound] - cannot add child sectors to reserved sector '" .. self.name .. "'")
+            return
+        end
+        self.childSectors[sectorName] = true
+    end
+
+    --- Remove a child sector from this meta-sector
+    -- @string sectorName name of child sector
+    function HOUND.Sector:removeChildSector(sectorName)
+        self.childSectors[sectorName] = nil
+    end
+
+    --- Get child sectors table
+    -- @return table of child sector names (keys) with true values
+    function HOUND.Sector:getChildSectors()
+        return self.childSectors
+    end
+
+    --- Check if sector has child sectors
+    -- @return[type=bool] True if sector has child sectors
+    function HOUND.Sector:hasChildSectors()
+        return next(self.childSectors) ~= nil
+    end
+
+    --- check if sector has specific child sector
+    -- @string sectorName name of child sector
+    function HOUND.Sector:hasChildSector(sectorName)
+        return self.childSectors[sectorName] == true
+    end
 
     --- sets transmitter to sector
     -- @param userTransmitter (String) Name of the Unit that would be transmitting
@@ -487,22 +532,61 @@ do
     --- Contact Functions
     -- @section contacs
 
+    --- Get effective sector names for querying contacts/sites
+    -- @return table list of sector name strings
+    function HOUND.Sector:getEffectiveSectorNames()
+        if next(self.childSectors) then
+            local names = {}
+            for name, _ in pairs(self.childSectors) do
+                table.insert(names, name)
+            end
+            return names
+        end
+        if self:getZone() then
+            return {self.name}
+        end
+        return {"default"}
+    end
+
     --- return a sorted list of all contacts for the sector
     function HOUND.Sector:getContacts()
-        local effectiveSectorName = self.name
-        if not self:getZone() then
-            effectiveSectorName = "default"
+        local sectorNames = self:getEffectiveSectorNames()
+        if #sectorNames == 1 then
+            return self._contacts:listAllContactsByRange(sectorNames[1])
         end
-        return self._contacts:listAllContactsByRange(effectiveSectorName)
+        local seen = {}
+        local merged = {}
+        for _, name in ipairs(sectorNames) do
+            for _, contact in ipairs(self._contacts:listAllContacts(name)) do
+                local id = contact:getId()
+                if not seen[id] then
+                    seen[id] = true
+                    table.insert(merged, contact)
+                end
+            end
+        end
+        table.sort(merged, HoundUtils.Sort.ContactsByRange)
+        return merged
     end
 
     --- count the number of contacts for the sector
     function HOUND.Sector:countContacts()
-        local effectiveSectorName = self.name
-        if not self:getZone() then
-            effectiveSectorName = "default"
+        local sectorNames = self:getEffectiveSectorNames()
+        if #sectorNames == 1 then
+            return self._contacts:countContacts(sectorNames[1])
         end
-        return self._contacts:countContacts(effectiveSectorName)
+        local seen = {}
+        local count = 0
+        for _, name in ipairs(sectorNames) do
+            for _, contact in ipairs(self._contacts:listAllContacts(name)) do
+                local id = contact:getId()
+                if not seen[id] then
+                    seen[id] = true
+                    count = count + 1
+                end
+            end
+        end
+        return count
     end
 
     --- update contact for zone memberships
@@ -513,23 +597,46 @@ do
         self._contacts:getSite(contact):updateSector()
     end
 
-    --- return a sorted list of all contacts for the sector
+    --- return a sorted list of all sites for the sector
     function HOUND.Sector:getSites()
-        local effectiveSectorName = self.name
-        if not self:getZone() then
-            effectiveSectorName = "default"
+        local sectorNames = self:getEffectiveSectorNames()
+        if #sectorNames == 1 then
+            return self._contacts:listAllSitesByRange(sectorNames[1])
         end
-        return self._contacts:listAllSitesByRange(effectiveSectorName)
+        local seen = {}
+        local merged = {}
+        for _, name in ipairs(sectorNames) do
+            for _, site in ipairs(self._contacts:listAllSites(name)) do
+                local id = site:getId()
+                if not seen[id] then
+                    seen[id] = true
+                    table.insert(merged, site)
+                end
+            end
+        end
+        table.sort(merged, HoundUtils.Sort.ContactsByRange)
+        return merged
     end
 
-    --- count the number of contacts for the sector
-    -- @return[type=int] Number of contacts
+    --- count the number of sites for the sector
+    -- @return[type=int] Number of sites
     function HOUND.Sector:countSites()
-        local effectiveSectorName = self.name
-        if not self:getZone() then
-            effectiveSectorName = "default"
+        local sectorNames = self:getEffectiveSectorNames()
+        if #sectorNames == 1 then
+            return self._contacts:countSites(sectorNames[1])
         end
-        return self._contacts:countSites(effectiveSectorName)
+        local seen = {}
+        local count = 0
+        for _, name in ipairs(sectorNames) do
+            for _, site in ipairs(self._contacts:listAllSites(name)) do
+                local id = site:getId()
+                if not seen[id] then
+                    seen[id] = true
+                    count = count + 1
+                end
+            end
+        end
+        return count
     end
 
     -------------- Radio Menu stuff -----------------------------
@@ -649,6 +756,22 @@ do
     --- Message generation
     -- @section messages
 
+    --- Determine if this sector should notify for a contact in the given primary sector
+    -- @string primarySector the contact's primary sector name
+    -- @return bool shouldNotify, string|nil sectorLabel
+    function HOUND.Sector:shouldNotifyFor(primarySector)
+        if self.name == "default" then
+            return true, (primarySector ~= "default") and primarySector or nil
+        end
+        if self.name == primarySector then
+            return true, nil
+        end
+        if self.childSectors[primarySector] then
+            return true, primarySector
+        end
+        return false, nil
+    end
+
     --- Check if sector can notify
     function HOUND.Sector:isNotifiying()
         local controller = self.comms.controller
@@ -663,9 +786,10 @@ do
     -- @return string Announcement
     function HOUND.Sector:getTransmissionAnnounce(index)
         local messages = {
-            "Attention All Aircraft! This is " .. self.callsign .. ". ",
-            "All Aircraft, " .. self.callsign .. ". ",
-            "This is " .. self.callsign .. ". "
+            "All Stations, " .. self.callsign .. ", ",
+            "All Aircraft, " .. self.callsign .. ", ",
+            "All Stations, this is " .. self.callsign .. ", ",
+            "All Aircraft, this is " .. self.callsign .. ", ",
         }
         local retIndex = l_math.random(1,#messages)
         if type(index) == "number" then
@@ -682,12 +806,8 @@ do
         local controller = self.comms.controller
         local notifier = self.comms.notifier
 
-        local contactPrimarySector = contact:getPrimarySector()
-        if self.name ~= "default" and self.name ~= contactPrimarySector then return end
-
-        if self.name == contactPrimarySector then
-            contactPrimarySector = nil
-        end
+        local shouldNotify, sectorLabel = self:shouldNotifyFor(contact:getPrimarySector())
+        if not shouldNotify then return end
 
         local announce = self:getTransmissionAnnounce()
         local enrolledGid = self:getSubscribedGroups()
@@ -695,10 +815,10 @@ do
         local msg = {coalition =  self._hSettings:getCoalition(), priority = 3, gid=enrolledGid}
         msg.contactId = contact:getId()
         -- if (controller and controller:getSettings("enableText")) or (notifier and notifier:getSettings("enableText"))  then
-            msg.txt = contact:generateDeathReport(false,contactPrimarySector)
+            msg.txt = contact:generateDeathReport(false,sectorLabel)
         -- end
         -- if (controller and controller:getSettings("enableTTS")) or (notifier and notifier:getSettings("enableTTS")) then
-            msg.tts = announce .. contact:generateDeathReport(true,contactPrimarySector)
+            msg.tts = announce .. contact:generateDeathReport(true,sectorLabel)
         -- end
         if controller and controller:isEnabled() and controller:getSettings("alerts") then
             controller:addMessageObj(msg)
@@ -716,12 +836,8 @@ do
         local controller = self.comms.controller
         local notifier = self.comms.notifier
 
-        local contactPrimarySector = contact:getPrimarySector()
-        if self.name ~= "default" and self.name ~= contactPrimarySector then return end
-
-        if self.name == contactPrimarySector then
-            contactPrimarySector = nil
-        end
+        local shouldNotify, sectorLabel = self:shouldNotifyFor(contact:getPrimarySector())
+        if not shouldNotify then return end
 
         local announce = self:getTransmissionAnnounce()
         local enrolledGid = self:getSubscribedGroups()
@@ -730,10 +846,10 @@ do
         msg.contactId = contact:getId()
 
         -- if (controller and controller:getSettings("enableText")) or (notifier and notifier:getSettings("enableText"))  then
-            msg.txt = self.callsign .. " Reports " .. contact:generatePopUpReport(false,contactPrimarySector)
+            msg.txt = self.callsign .. " Reports " .. contact:generatePopUpReport(false,sectorLabel)
         -- end
         -- if (controller and controller:getSettings("enableTTS")) or (notifier and notifier:getSettings("enableTTS")) then
-            msg.tts = announce .. contact:generatePopUpReport(true,contactPrimarySector)
+            msg.tts = announce .. contact:generatePopUpReport(true,sectorLabel)
         -- end
 
         if controller and controller:isEnabled() and controller:getSettings("alerts") then
@@ -753,12 +869,8 @@ do
         local controller = self.comms.controller
         local notifier = self.comms.notifier
 
-        local sitePrimarySector = site:getPrimarySector()
-        if self.name ~= "default" and self.name ~= sitePrimarySector then return end
-
-        if self.name == sitePrimarySector then
-            sitePrimarySector = nil
-        end
+        local shouldNotify, sectorLabel = self:shouldNotifyFor(site:getPrimarySector())
+        if not shouldNotify then return end
 
         local announce = self:getTransmissionAnnounce()
         local enrolledGid = self:getSubscribedGroups()
@@ -766,10 +878,10 @@ do
         local msg = {coalition = self._hSettings:getCoalition(), priority = 2 , gid=enrolledGid}
 
         -- if (controller and controller:getSettings("enableText")) or (notifier and notifier:getSettings("enableText"))  then
-            msg.txt = self.callsign .. " Reports " .. site:generateIdentReport(false,sitePrimarySector)
+            msg.txt = self.callsign .. " Reports " .. site:generateIdentReport(false,sectorLabel)
         -- end
         -- if (controller and controller:getSettings("enableTTS")) or (notifier and notifier:getSettings("enableTTS")) then
-            msg.tts = announce .. site:generateIdentReport(true,sitePrimarySector)
+            msg.tts = announce .. site:generateIdentReport(true,sectorLabel)
         -- end
 
         if controller and controller:isEnabled() and controller:getSettings("alerts") then
@@ -788,12 +900,8 @@ do
         local controller = self.comms.controller
         local notifier = self.comms.notifier
 
-        local sitePrimarySector = site:getPrimarySector()
-        if self.name ~= "default" and self.name ~= sitePrimarySector then return end
-
-        if self.name == sitePrimarySector then
-            sitePrimarySector = nil
-        end
+        local shouldNotify, sectorLabel = self:shouldNotifyFor(site:getPrimarySector())
+        if not shouldNotify then return end
 
         local announce = self:getTransmissionAnnounce()
         local enrolledGid = self:getSubscribedGroups()
@@ -801,10 +909,10 @@ do
         local msg = {coalition = self._hSettings:getCoalition(), priority = 2 , gid=enrolledGid}
         msg.contactId = site:getId()
         -- if (controller and controller:getSettings("enableText")) or (notifier and notifier:getSettings("enableText"))  then
-            msg.txt = self.callsign .. " Reports " .. site:generatePopUpReport(false,sitePrimarySector)
+            msg.txt = self.callsign .. " Reports " .. site:generatePopUpReport(false,sectorLabel)
         -- end
         -- if (controller and controller:getSettings("enableTTS")) or (notifier and notifier:getSettings("enableTTS")) then
-            msg.tts = announce .. site:generatePopUpReport(true,sitePrimarySector)
+            msg.tts = announce .. site:generatePopUpReport(true,sectorLabel)
         -- end
         if controller and controller:isEnabled() and controller:getSettings("alerts") then
             controller:addMessageObj(msg)
@@ -824,12 +932,8 @@ do
         local controller = self.comms.controller
         local notifier = self.comms.notifier
 
-        local sitePrimarySector = site:getPrimarySector()
-        if self.name ~= "default" and self.name ~= sitePrimarySector then return end
-
-        if self.name == sitePrimarySector then
-            sitePrimarySector = nil
-        end
+        local shouldNotify, sectorLabel = self:shouldNotifyFor(site:getPrimarySector())
+        if not shouldNotify then return end
 
         local announce = self:getTransmissionAnnounce()
         local enrolledGid = self:getSubscribedGroups()
@@ -838,11 +942,11 @@ do
         msg.contactId = site:getId()
         local body = {}
         if isDead then
-            body.txt = site:generateDeathReport(false,sitePrimarySector)
-            body.tts = site:generateDeathReport(true,sitePrimarySector)
+            body.txt = site:generateDeathReport(false,sectorLabel)
+            body.tts = site:generateDeathReport(true,sectorLabel)
         else
-            body.txt = site:generateAsleepReport(false,sitePrimarySector)
-            body.tts = site:generateAsleepReport(true,sitePrimarySector)
+            body.txt = site:generateAsleepReport(false,sectorLabel)
+            body.tts = site:generateAsleepReport(true,sectorLabel)
         end
         msg.txt = self.callsign .. " Reports " .. body.txt
         msg.tts = announce .. body.tts
@@ -865,20 +969,16 @@ function HOUND.Sector:notifySiteLaunching(site)
         if not self._hSettings:getAlertOnLaunch() or not self:isNotifiying() then return end
         local controller = self.comms.controller
         local notifier = self.comms.notifier
-        local sitePrimarySector = site:getPrimarySector()
-        if self.name ~= "default" and self.name ~= sitePrimarySector then return end
-
-        if self.name == sitePrimarySector then
-            sitePrimarySector = nil
-        end
+        local shouldNotify, sectorLabel = self:shouldNotifyFor(site:getPrimarySector())
+        if not shouldNotify then return end
 
         -- local announce = self:getTransmissionAnnounce()
         local enrolledGid = self:getSubscribedGroups()
 
         local msg = {coalition = self._hSettings:getCoalition(), priority = 1 , gid=enrolledGid}
         msg.contactId = site:getId()
-        msg.txt = site:generateLaunchAlert(false,sitePrimarySector)
-        msg.tts = site:generateLaunchAlert(true,sitePrimarySector)
+        msg.txt = site:generateLaunchAlert(false,sectorLabel)
+        msg.tts = site:generateLaunchAlert(true,sectorLabel)
 
         if controller and controller:isEnabled() and controller:getSettings("alerts") then
             controller:addMessageObj(msg)
@@ -889,72 +989,6 @@ function HOUND.Sector:notifySiteLaunching(site)
         end
 
     end
-
-    -- -- --- Generate Atis message for sector (legacy)
-    -- -- -- @local
-    -- -- -- @param loopData HoundInfomationSystem loop table
-    -- -- -- @param AtisPreferences HoundInfomationSystem settings table
-    -- function HOUND.Sector:generateAtisLegacy(loopData,AtisPreferences)
-    --     local body = ""
-    --     local numberEWR = 0
-    --     local contactCount = self:countContacts()
-    --     if contactCount > 0 then
-    --         local sortedContacts = self:getContacts()
-
-    --         for _, emitter in pairs(sortedContacts) do
-    --             if emitter.pos.p ~= nil then
-    --                 if not emitter.isEWR or
-    --                     (AtisPreferences.reportewr and emitter.isEWR) then
-    --                     body = body ..
-    --                                 emitter:generateTtsBrief(
-    --                                     self._hSettings:getNATO()) .. " "
-    --                 end
-    --                 if (not AtisPreferences.reportewr and emitter.isEWR) then
-    --                     numberEWR = numberEWR + 1
-    --                 end
-    --             end
-    --         end
-    --         if numberEWR > 0 then
-    --             body = body .. numberEWR .. " EWRs are tracked. "
-    --         end
-    --     end
-
-    --     if body == "" then
-    --         if self._hSettings:getNATO() then
-    --             body = ". EMPTY. "
-    --         else
-    --             body = "No threats had been detected "
-    --         end
-    --     end
-
-    --     if loopData.body == body then return end
-    --     loopData.body = body
-
-    --     local reportId
-    --     reportId, loopData.reportIdx =
-    --         HoundUtils.getReportId(loopData.reportIdx)
-
-    --     local header = self.callsign
-    --     local footer = reportId .. "."
-
-    --     if self._hSettings:getNATO() then
-    --         header = header .. " Lowdown "
-    --         footer = "Lowdown " .. footer
-    --     else
-    --         header = header .. " SAM information "
-    --         footer = "you have " .. footer
-    --     end
-    --     header = header .. reportId .. " " ..
-    --                                 HoundUtils.TTS.getTtsTime() .. ". "
-
-    --     local msgObj = {
-    --         coalition = self._hSettings:getCoalition(),
-    --         priority = "loop",
-    --         updateTime = timer.getAbsTime(),
-    --         tts = header .. loopData.body .. footer
-    --     }
-    --     loopData.msg = msgObj
-    -- end
 
     --- Generate Atis message for sector
     -- @local

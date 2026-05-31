@@ -366,4 +366,14 @@ do
         end
         return distance .. " " .. distanceUnit
     end
+
+    --- Get cardinal direction from azimuth
+    -- @local
+    -- @param azimuth in degrees
+    -- @return cardinal direction e.g. "North", "North East"...
+    function HOUND.Utils.TTS.getCardinalDirection(azimuth)
+        local directions = {"North","North East","East","South East","South","South West","West","North West"}
+        local index = l_math.floor(((azimuth + 22.5) % 360) / 45) + 1
+        return directions[index]
+    end
 end

@@ -395,9 +395,13 @@ do
         local emitterMarker = self.settings:getMarkerType()
         local sites = self.sites
         HOUND.Coroutine.add(function()
+            local count = 0
             for _, site in pairs(sites) do
                 site:updateMarkers(emitterMarker, drawSites)
-                coroutine.yield()
+                count = count + 1
+                if count % 3 == 0 then
+                    coroutine.yield()
+                end
             end
         end, { name = guardName })
     end

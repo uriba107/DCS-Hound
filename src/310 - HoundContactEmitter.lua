@@ -245,7 +245,7 @@ do
         if self.Kalman then
             return
         end
-        --- this is only needed if not in "kalman mode"
+        -- this is only needed if not in "kalman mode"
         if HOUND.Length(self._dataPoints[datapoint.platformId]) == 0 then
             self._dataPoints[datapoint.platformId] = {}
         end

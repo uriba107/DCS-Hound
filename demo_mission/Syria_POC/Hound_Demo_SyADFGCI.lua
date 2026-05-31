@@ -5,6 +5,23 @@ do
 end
 
 do
+    local getVoice = function(provider)
+        local supertonicVoices = {
+            "F1",
+            "F2",
+            "F3",
+            "F4",
+            "F5",
+            "M1",
+            "M2",
+            "M3",
+            "M4",
+            "M5"
+        } 
+        if provider == "supertonic" then
+            return supertonicVoices[math.random(#supertonicVoices)]
+        end
+    end
     env.info("configuring Hound")
     HOUND.FORCE_MANAGE_MARKERS = true
     Elint_blue = HoundElint:create(coalition.side.BLUE)
@@ -18,71 +35,105 @@ do
 
     -- sectors
     Elint_blue:addSector("Damascus",10)
-    Elint_blue:addSector("South Syria")
-    Elint_blue:addSector("Homs")
-    Elint_blue:addSector("Latakya")
-
-    Elint_blue:addSector("Palmyra")
-    Elint_blue:addSector("Saykal")
-    Elint_blue:addSector("Haleb")
-    Elint_blue:addSector("Tabqua")
-
-    Elint_blue:addSector("Lebanon")
-
-    -- Assets
-    Elint_blue:enableNotifier("default",{freq = "251.000,35.000", modulation = "AM,FM", speed=1})
-    
-    Elint_blue:enableController("Damascus",{freq="306.000", modulation = "AM"})
-    Elint_blue:enableAtis("Damascus",{freq="306.250", modulation = "AM", provider="piper", voice = "en_US-libritts-high", speaker=math.random(200),speed = 1.15})
-    Elint_blue:setCallsign("Damascus","OPTIMUS")
     Elint_blue:setZone("Damascus","Damascus")
 
-    Elint_blue:enableController("South Syria",{freq="306.500", modulation = "AM"})
-    Elint_blue:enableAtis("South Syria",{freq="306.750", modulation = "AM", provider="piper", voice = "en_US-libritts-high", speaker=math.random(200),speed = 1.15})
-    Elint_blue:setCallsign("South Syria","JAZZ")
+    Elint_blue:addSector("South Syria")
     Elint_blue:setZone("South Syria","South Syria")
-
-    Elint_blue:enableController("Homs",{freq="307.000", modulation = "AM"})
-    Elint_blue:setCallsign("Homs","BUMBLEBEE")
+    
+    Elint_blue:addSector("Homs")
     Elint_blue:setZone("Homs","Homs")
-
-    Elint_blue:enableController("Latakya",{freq="307.500", modulation = "AM"})
-    Elint_blue:enableAtis("Latakya",{freq="307.750", modulation = "AM", provider="piper", voice = "en_US-libritts-high", speaker=math.random(200),speed = 1.15})
-    Elint_blue:setCallsign("Latakya","WHEELJACK")
+    
+    Elint_blue:addSector("Latakya")
     Elint_blue:setZone("Latakya","Latakya")
 
-    Elint_blue:enableController("Lebanon",{freq="308.000", modulation = "AM"})
-    Elint_blue:setCallsign("Lebanon","GRIMLOK")
+    Elint_blue:addSector("Palmyra")
+    Elint_blue:setZone("Palmyra","Palmyra")
+    
+    Elint_blue:addSector("Sayqal")
+    Elint_blue:setZone("Sayqal","Sayqal")
+    
+    Elint_blue:addSector("Haleb")
+    Elint_blue:setZone("Haleb","Haleb")
+    
+    Elint_blue:addSector("Tabqa")
+    Elint_blue:setZone("Tabqa","Tabqa")
+
+    Elint_blue:addSector("Lebanon")
     Elint_blue:setZone("Lebanon","Lebanon")
 
-    Elint_blue:enableController("Palmyra",{freq="308.500", modulation = "AM"})
-    Elint_blue:setCallsign("Palmyra","SWOOP")
-    Elint_blue:setZone("Palmyra","Palmyra")
+    -- Meta-sectors
+    local metaSectors = {
+        ["South AO"] = { "Lebanon", "South Syria", "Damascus", "Sayqal" },
+        ["North AO"] = { "Latakya", "Homs", "Haleb" },
+        ["East AO"]  = { "Tabqa", "Palmyra", "Sayqal" },
+    }
+    for metaName, children in pairs(metaSectors) do
+        Elint_blue:addSector(metaName)
+        for _, child in ipairs(children) do
+            Elint_blue:addChildSector(metaName, child)
+        end
+    end
+    Elint_blue:setCallsign("South AO","OPTIMUS")
+    Elint_blue:setCallsign("North AO","JAZZ")
+    Elint_blue:setCallsign("East AO","BUMBLEBEE")
+    Elint_blue:enableController("South AO",{freq="306.000", modulation = "AM", provider="supertonic", voice = getVoice("supertonic"),speed = 1.05})
+    Elint_blue:enableController("North AO",{freq="306.500", modulation = "AM", voice = "en_US-libritts-high", speaker=math.random(200),speed = 1.05})
+    Elint_blue:enableController("East AO",{freq="307.000", modulation = "AM", provider="supertonic", voice = getVoice("supertonic"),speed = 1.05})
 
-    Elint_blue:enableController("Saykal",{freq="309.000", modulation = "AM"})
-    Elint_blue:setCallsign("Saykal","RATCHET")
-    Elint_blue:setZone("Saykal","Saykal")
+    -- -- Assets
+    -- Elint_blue:enableNotifier("default",{freq = "251.000,35.000", modulation = "AM,FM", speed=1})
+    
+    -- Elint_blue:enableController("Damascus",{freq="306.000", modulation = "AM"})
+    Elint_blue:enableAtis("Damascus",{freq="306.250", modulation = "AM", provider="piper", voice = "en_US-libritts-high", speaker=math.random(200),speed = 1.15})
+    -- Elint_blue:setCallsign("Damascus","OPTIMUS")
+    -- Elint_blue:setZone("Damascus","Damascus")
 
-    Elint_blue:enableController("Haleb",{freq="309.500", modulation = "AM"})
+    -- Elint_blue:enableController("South Syria",{freq="306.500", modulation = "AM"})
+    Elint_blue:enableAtis("South Syria",{freq="306.750", modulation = "AM", provider="piper", voice = "en_US-libritts-high", speaker=math.random(200),speed = 1.15})
+    -- Elint_blue:setCallsign("South Syria","JAZZ")
+    -- Elint_blue:setZone("South Syria","South Syria")
+
+    -- Elint_blue:enableController("Homs",{freq="307.000", modulation = "AM"})
+    -- Elint_blue:setCallsign("Homs","BUMBLEBEE")
+    -- Elint_blue:setZone("Homs","Homs")
+
+    -- Elint_blue:enableController("Latakya",{freq="307.500", modulation = "AM"})
+    Elint_blue:enableAtis("Latakya",{freq="307.750", modulation = "AM", provider="piper", voice = "en_US-libritts-high", speaker=math.random(200),speed = 1.15})
+    -- Elint_blue:setCallsign("Latakya","WHEELJACK")
+    -- Elint_blue:setZone("Latakya","Latakya")
+
+    -- Elint_blue:enableController("Lebanon",{freq="308.000", modulation = "AM"})
+    -- Elint_blue:setCallsign("Lebanon","GRIMLOK")
+    -- Elint_blue:setZone("Lebanon","Lebanon")
+
+    -- Elint_blue:enableController("Palmyra",{freq="308.500", modulation = "AM"})
+    -- Elint_blue:setCallsign("Palmyra","SWOOP")
+    -- Elint_blue:setZone("Palmyra","Palmyra")
+
+    -- Elint_blue:enableController("Sayqal",{freq="309.000", modulation = "AM"})
+    -- Elint_blue:setCallsign("Sayqal","RATCHET")
+    -- Elint_blue:setZone("Sayqal","Sayqal")
+
+    -- Elint_blue:enableController("Haleb",{freq="309.500", modulation = "AM"})
     Elint_blue:enableAtis("Haleb",{freq="309.750", modulation = "AM", provider="piper", voice = "en_US-libritts-high", speaker=math.random(200),speed = 1.15})
-    Elint_blue:setCallsign("Haleb","SLAG")
-    Elint_blue:setZone("Haleb","Haleb")
+    -- Elint_blue:setCallsign("Haleb","SLAG")
+    -- Elint_blue:setZone("Haleb","Haleb")
 
-    Elint_blue:enableController("Tabqa",{freq="310.000", modulation = "AM"})
-    Elint_blue:setCallsign("Tabqa","IRONHIDE")
-    Elint_blue:setZone("Tabqa","Tabqa")
+    -- Elint_blue:enableController("Tabqa",{freq="310.000", modulation = "AM"})
+    -- Elint_blue:setCallsign("Tabqa","IRONHIDE")
+    -- Elint_blue:setZone("Tabqa","Tabqa")
 
     Elint_blue:enableAtis("Homs",{freq="307.250", modulation = "AM", provider="piper", voice = "en_US-libritts-high", speaker=math.random(200),speed = 1.15})
     Elint_blue:enableAtis("Lebanon",{freq="308.250", modulation = "AM", provider="piper", voice = "en_US-libritts-high", speaker=math.random(200),speed = 1.15})
     Elint_blue:enableAtis("Palmyra",{freq="308.750", modulation = "AM", provider="piper", voice = "en_US-libritts-high", speaker=math.random(200),speed = 1.15})
-    Elint_blue:enableAtis("Saykal",{freq="309.250", modulation = "AM", provider = "piper", voice = "en_US-libritts-high", speaker=math.random(200),speed = 1.15})
+    Elint_blue:enableAtis("Sayqal",{freq="309.250", modulation = "AM", provider = "piper", voice = "en_US-libritts-high", speaker=math.random(200),speed = 1.15})
     Elint_blue:enableAtis("Tabqa",{freq="310.250", modulation = "AM", provider = "piper", voice = "en_US-libritts-high", speaker=math.random(200),speed = 1.15})
     
     
     Elint_blue:enableText("all")
+    Elint_blue:enableAlerts("all")
 
     Elint_blue:setTransmitter("all","Mt_Meron_ELINT")
-    Elint_blue:systemOn()
 
     -- faking Satellite intel, add all enemy IADS EW radars as prebriefed.
     env.info("importing Skynet IADS EWRs")
@@ -96,6 +147,7 @@ do
             Elint_blue:preBriefedContact(ewRadarName)
         end
     end
+    Elint_blue:systemOn()
 
     env.info("Hound - End of config")
 end

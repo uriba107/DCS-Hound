@@ -131,8 +131,8 @@ end
 
 For experienced users and developers:
 
-- **[Main Script Documentation](https://uriba107.github.io/DCS-Hound/web/)** - All available functions
-- **[Developer Documentation](https://uriba107.github.io/DCS-Hound/web/dev/)** - Internal API and architecture
+- **[Main Script Documentation](https://uriba107.github.io/DCS-Hound/)** - All available functions
+- **[Developer Documentation](https://uriba107.github.io/DCS-Hound/dev/)** - Internal API and architecture
 - **[Scripting Ideas](docs/scripting-ideas.md)** - Community examples and creative uses
 
 ---
@@ -195,8 +195,6 @@ HoundBlue:systemOn()
 ---
 
 ## 📋 Version Information
-
-Current documentation is for **Hound ELINT v0.4.x**
 
 - [Breaking Changes Between Versions](docs/breaking-changes.md)
 - [Known Issues](docs/known-issues.md)

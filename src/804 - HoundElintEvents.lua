@@ -42,7 +42,9 @@ do
                 --     sector:notifyEmitterNew(houndEvent.initiator)
                 -- end
                 if houndEvent.id == HOUND.EVENTS.RADAR_DESTROYED then
-                    sector:notifyEmitterDead(houndEvent.initiator)
+                    if houndEvent.initiator.isEWR or HOUND.setContainsValue(houndEvent.initiator.typeAssigned, "Naval") then
+                        sector:notifyEmitterDead(houndEvent.initiator)
+                    end
                 end
                 if houndEvent.id == HOUND.EVENTS.SITE_CREATED then
                     if not houndEvent.initiator.isEWR then

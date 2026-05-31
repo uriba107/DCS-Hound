@@ -311,6 +311,7 @@ do
     -- @return frequncies table for sector's Notifier
     function HoundElint:getNotifierFreq(sectorName)
         sectorName = sectorName or "default"
+        if not self.sectors[sectorName] then return {} end
         return self.sectors[sectorName]:getNotifierFreq() or {}
     end
 
