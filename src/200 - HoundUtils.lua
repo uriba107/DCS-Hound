@@ -654,6 +654,23 @@ do
         return HOUND.Utils.Dcs.isUnit(isTracking)
     end
 
+    --- return maximum weapon range of DCS Unit
+    -- @param DcsUnit DCS unit - in Hound context unit with emitting radar
+    -- @return maximum weapon range in meters of the DCS Unit
+
+    function HOUND.Utils.Dcs.getSamRange(DcsUnit)
+        local maxRng = 0
+        if not HOUND.Utils.Dcs.isUnit(DcsUnit) then return maxRng end
+        local weapons = DcsUnit:getAmmo()
+        if weapons == nil then return maxRng end
+        for _, ammo in ipairs(weapons) do
+            if ammo.desc.category == Weapon.Category.MISSILE and ammo.desc.missileCategory == Weapon.MissileCategory.SAM then
+                maxRng = l_math.max(l_math.max(ammo.desc.rangeMaxAltMax,ammo.desc.rangeMaxAltMin),maxRng)
+            end
+        end
+        return maxRng
+    end
+
     --- return maximum weapon range in the group of DCS Unit
     -- @param DcsUnit DCS unit - in Hound context unit with emitting radar
     -- @return maximum weapon range in meters of the DCS Group the emitter is part of
@@ -663,14 +680,7 @@ do
         if DcsUnit ~= nil then
             local units = DcsUnit:getGroup():getUnits()
             for _, unit in ipairs(units) do
-                local weapons = unit:getAmmo()
-                if weapons ~= nil then
-                    for _, ammo in ipairs(weapons) do
-                        if ammo.desc.category == Weapon.Category.MISSILE and ammo.desc.missileCategory == Weapon.MissileCategory.SAM then
-                            maxRng = l_math.max(l_math.max(ammo.desc.rangeMaxAltMax,ammo.desc.rangeMaxAltMin),maxRng)
-                        end
-                    end
-                end
+                maxRng = l_math.max(HOUND.Utils.Dcs.getSamRange(unit),maxRng)
             end
         end
         return maxRng
@@ -1583,8 +1593,8 @@ do
         if a.isPrimary ~= b.isPrimary then
             return a.isPrimary and not b.isPrimary
         end
-        local aRange = a.maxWeaponsRange > 0 and a.maxWeaponsRange or (a.detectionRange or 0)
-        local bRange = b.maxWeaponsRange > 0 and b.maxWeaponsRange or (b.detectionRange or 0)
+        local aRange = a.unitWeaponRange > 0 and a.unitWeaponRange or (a.detectionRange or 0)
+        local bRange = b.unitWeaponRange > 0 and b.unitWeaponRange or (b.detectionRange or 0)
         if aRange ~= bRange then
             return aRange > bRange
         end
