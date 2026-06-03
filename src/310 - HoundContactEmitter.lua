@@ -71,6 +71,7 @@ do
         end
 
         instance.uncertenty_data = nil
+        instance.unitWeaponRange = HoundUtils.Dcs.getSamRange(DcsObject)
         instance.maxWeaponsRange = HoundUtils.Dcs.getSamMaxRange(DcsObject)
         instance.detectionRange = HoundUtils.Dcs.getRadarDetectionRange(DcsObject)
         instance._dataPoints = {}
