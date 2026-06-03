@@ -1583,6 +1583,11 @@ do
         if a.isPrimary ~= b.isPrimary then
             return a.isPrimary and not b.isPrimary
         end
+        local aRange = a.maxWeaponsRange > 0 and a.maxWeaponsRange or (a.detectionRange or 0)
+        local bRange = b.maxWeaponsRange > 0 and b.maxWeaponsRange or (b.detectionRange or 0)
+        if aRange ~= bRange then
+            return aRange > bRange
+        end
         if a.radarRoles ~= b.radarRoles then
             local aRoles,bRoles = 0,0
             for _,role in pairs(a.radarRoles) do
