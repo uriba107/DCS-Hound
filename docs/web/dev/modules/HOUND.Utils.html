@@ -253,6 +253,10 @@
 	<td class="summary">check if Unit is tracking anything with it's radar</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Dcs.getSamRange">HOUND.Utils.Dcs.getSamRange (DcsUnit)</a></td>
+	<td class="summary">return maximum weapon range of DCS Unit</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#HOUND.Utils.Dcs.getSamMaxRange">HOUND.Utils.Dcs.getSamMaxRange (DcsUnit)</a></td>
 	<td class="summary">return maximum weapon range in the group of DCS Unit</td>
 	</tr>
@@ -310,6 +314,10 @@
 	<td class="name" nowrap><a href="#HOUND.Utils.Geo.get3DDistance">HOUND.Utils.Geo.get3DDistance (src, dst)</a></td>
 	<td class="summary">Get 3D distance between two points
  wrapper for mist.utils.get3DDist</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Geo.sqDist2D">HOUND.Utils.Geo.sqDist2D (src, dst)</a></td>
+	<td class="summary">Squared 2D distance between two points (ground plane, ignores altitude).</td>
 	</tr>
 </table>
 <h2><a href="#Marker_Functions">Marker Functions </a></h2>
@@ -402,6 +410,10 @@
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Utils.Elint.getActiveRadars">HOUND.Utils.Elint.getActiveRadars (instanceCoalition)</a></td>
 	<td class="summary">Get currently transmitting Ground and Ship radars that are not in the Hound Instance coalition</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.Elint.getActiveRadarsYielding">HOUND.Utils.Elint.getActiveRadarsYielding (instanceCoalition)</a></td>
+	<td class="summary">Coroutine-friendly variant of getActiveRadars.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Utils.Elint.getActiveRadarsInGroup">HOUND.Utils.Elint.getActiveRadarsInGroup (GroupName)</a></td>
@@ -541,6 +553,10 @@
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Utils.TTS.simplifyDistance">HOUND.Utils.TTS.simplifyDistance (distanceM)</a></td>
 	<td class="summary">simplify distance</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Utils.TTS.getCardinalDirection">HOUND.Utils.TTS.getCardinalDirection (azimuth)</a></td>
+	<td class="summary">Get cardinal direction from azimuth</td>
 	</tr>
 </table>
 <h2><a href="#Polygon_functions">Polygon functions </a></h2>
@@ -1648,6 +1664,31 @@
 
 </dd>
     <dt>
+    <a name = "HOUND.Utils.Dcs.getSamRange"></a>
+    <strong>HOUND.Utils.Dcs.getSamRange (DcsUnit)</strong>
+    </dt>
+    <dd>
+    return maximum weapon range of DCS Unit
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">DcsUnit</span>
+         DCS unit - in Hound context unit with emitting radar
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        maximum weapon range in meters of the DCS Unit
+    </ol>
+
+
+
+
+</dd>
+    <dt>
     <a name = "HOUND.Utils.Dcs.getSamMaxRange"></a>
     <strong>HOUND.Utils.Dcs.getSamMaxRange (DcsUnit)</strong>
     </dt>
@@ -2004,6 +2045,36 @@
     <ol>
 
         distance in meters
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.Geo.sqDist2D"></a>
+    <strong>HOUND.Utils.Geo.sqDist2D (src, dst)</strong>
+    </dt>
+    <dd>
+    Squared 2D distance between two points (ground plane, ignores altitude).
+ Use for ordering/comparisons where only relative magnitude matters - skips sqrt for speed.
+ In DCS world coordinates, X/Z is the ground plane and Y is altitude.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">src</span>
+         dcs point (vec3)
+        </li>
+        <li><span class="parameter">dst</span>
+         dcs point (vec3)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        squared distance in m^2 on the X/Z plane, or 0 if either point is invalid
     </ol>
 
 
@@ -2523,6 +2594,34 @@
     <ol>
 
         Table of all currently transmitting Ground and Ship radars that are not in the Hound Instance coalition
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Utils.Elint.getActiveRadarsYielding"></a>
+    <strong>HOUND.Utils.Elint.getActiveRadarsYielding (instanceCoalition)</strong>
+    </dt>
+    <dd>
+    Coroutine-friendly variant of getActiveRadars.
+ Yields every BATCH groups to avoid blocking the sim frame.
+ Returns (Radars, nil) when finished with the full accumulated list.
+ Must be called only from inside a coroutine scheduled by HOUND.Coroutine.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">instanceCoalition</span>
+         coalitionID for the current Hound instance
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table of radar unit names (same shape as getActiveRadars)
     </ol>
 
 
@@ -3381,6 +3480,31 @@
 
 
 </dd>
+    <dt>
+    <a name = "HOUND.Utils.TTS.getCardinalDirection"></a>
+    <strong>HOUND.Utils.TTS.getCardinalDirection (azimuth)</strong>
+    </dt>
+    <dd>
+    Get cardinal direction from azimuth
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">azimuth</span>
+         in degrees
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        cardinal direction e.g. "North", "North East"...
+    </ol>
+
+
+
+
+</dd>
 </dl>
     <h2 class="section-header "><a name="Polygon_functions"></a>Polygon functions </h2>
 
@@ -3545,7 +3669,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/lunarmodules/LDoc">LDoc 1.5.0</a></i>
-<i style="float:right;">Last updated 2026-04-29 13:28:08 </i>
+<i style="float:right;">Last updated 2026-06-04 15:07:35 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

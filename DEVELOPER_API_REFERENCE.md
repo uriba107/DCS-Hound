@@ -2,7 +2,7 @@
 
 This document provides comprehensive API documentation for the HOUND ELINT system, automatically generated from LDOC comments in the source code.
 
-*Generated on: 2026-04-29 13:28:09*
+*Generated on: 2026-06-04 15:07:36*
 
 ## Overview
 
@@ -14,7 +14,7 @@ The HOUND ELINT (Electronic Intelligence) system is a comprehensive radar detect
 - **Advanced triangulation**: Uses multiple platform bearings for accurate position estimation
 - **Automatic classification**: Identifies radar types and associated weapon systems
 - **Multi-platform support**: Works with various ELINT-capable aircraft
-- **Sector management**: Organizes contacts by geographical sectors
+- **Sector management**: Organizes contacts by geographical sectors, supporting meta-sector hierarchies
 - **Communication integration**: Provides automated reports via radio and text-to-speech
 - **Marker system**: Places visual markers on the F10 map
 
@@ -22,6 +22,7 @@ The HOUND ELINT (Electronic Intelligence) system is a comprehensive radar detect
 
 - [HOUND](#hound)
 - [HOUND.Logger](#hound-logger)
+- [HOUND.Coroutine](#hound-coroutine)
 - [HOUND.Mist](#hound-mist)
 - [HOUND.Matrix](#hound-matrix)
 - [HOUND.DB](#hound-db)
@@ -49,6 +50,9 @@ The HOUND ELINT (Electronic Intelligence) system is a comprehensive radar detect
 - [HOUND.ContactManager](#hound-contactmanager)
 - [HOUND.Sector](#hound-sector)
 - [HOUND.Sector](#hound-sector)
+- [HoundElint](#houndelint)
+- [HoundElint](#houndelint)
+- [HoundElint](#houndelint)
 - [HoundElint](#houndelint)
 - [HoundElint](#houndelint)
 - [HOUND](#hound)
@@ -94,9 +98,10 @@ Global settings and paramters
 - `MARKER_LINE_OPACITY`: Opacity of the line around the area markers
 - `MARKER_TEXT_POINTER`: Char/string used as pointer on text markers
 - `TTS_ENGINE`: Hound will use the table to determin TTS engine priority
+- `TTS_TRANSLATE_SETTINGS`: table that will be passed to HoundTTS if used, to allow inline translation
 - `MENU_PAGE_LENGTH`: Number of Items Hound will put in a menu before starting a new menu page
 - `REF_DIST`: Reference distance for contact scoring. Used to calculate the weight of datap
-- `ENABLE_KALMAN`: If true, will use Kalman filter for contact scoring (currently not implemented, default is false)
+- `KALMAN_DEBUG`: If true, will print kalman filter debug info (currently not implemented, default is false)
 - `AUTO_ADD_PLATFORM_BY_PAYLOAD`: If true, will automatically add platforms that have ELINT payloads (currently, due to DCS limits, only works for units spawning with the required pods)
 
 ### `HOUND.MARKER`
@@ -371,6 +376,94 @@ Hound Logger decleration
 ### `HOUND.Logger.setBaseLevel(level)`
 
 function HOUND.Logger.StopWatch:Stop() if not HOUND.DEBUG then return nil end if os == nil then return nil end local stoptime = os.clock() local str = "[ StopWatch ] " if self.name ~= nil then str = str .. self.name .. " - " end str = str .. stoptime - self.starttime .." ms" HOUND.Logger.debug(str) end
+
+---
+
+## HOUND.Coroutine
+
+HOUND.Coroutine Collaborative scheduler for long-running Hound work. Lets pipelines (Sniff discovery, UpdateMarkers, sector membership) yield across sim ticks so a single expensive call can't hitch DCS. In Lua 5.1 (DCS), pcall/xpcall are C functions — you cannot coroutine.yield() across them. Coroutine bodies must be plain Lua. Errors are caught via coroutine.resume's return values (it returns false, error_string on error — it never throws).
+
+**File:** `011 - HoundCoroutine.lua`
+
+### Tables
+
+### `_list`
+
+internal: active coroutine records
+
+### Functions
+
+### `pump()`
+
+internal pump — advances one tick's worth of coroutines. coroutine.resume returns (false, err) on error — never throws.
+
+*Note: This is a local function*
+
+### `ensurePump()`
+
+start pump if idle
+
+*Note: This is a local function*
+
+### `HOUND.Coroutine.add(func, opts, ...)`
+
+schedule a coroutine Body is plain Lua (no pcall/xpcall wrapper) so coroutine.yield works in Lua 5.1. Errors surface via coroutine.resume's return.
+
+**Parameters:**
+- `function` (func): body to run
+- `opts` (opt): table { name=string, interval=number, onError=function, onYield=function }
+- `extra` (...): args passed to func
+
+**Returns:**
+- (id): (opaque handle) or nil on error
+
+### `HOUND.Coroutine.cancel(id)`
+
+cancel a coroutine by handle
+
+**Parameters:**
+- `handle` (id): returned from add
+
+**Returns:**
+- (true): if found and removed
+
+### `HOUND.Coroutine.cancelByName(name)`
+
+cancel all coroutines matching a name
+
+**Parameters:**
+- `e` (nam): string
+
+**Returns:**
+- (number): removed
+
+### `HOUND.Coroutine.isRunning(name)`
+
+check whether a coroutine with the given name is active used by re-entry guards
+
+**Parameters:**
+- `e` (nam): string
+
+**Returns:**
+- (boo): l
+
+### `HOUND.Coroutine.count()`
+
+total active coroutine count
+
+### `HOUND.Coroutine.hasWork()`
+
+predicate: any active coroutines?
+
+### `HOUND.Coroutine.yield()`
+
+convenience alias for coroutine.yield
+
+*Note: This is a local function*
+
+### `HOUND.Coroutine.shutdown()`
+
+cancel everything; used by HoundElint:destroy and :systemOff
 
 ---
 
@@ -1295,6 +1388,18 @@ simplify distance below 1km function will return number in meters eg. 140m => 15
 **Returns:**
 - (Simplified): distance
 
+### `HOUND.Utils.TTS.getCardinalDirection(azimuth)`
+
+Get cardinal direction from azimuth
+
+**Parameters:**
+- `in` (azimuth): degrees
+
+**Returns:**
+- (cardinal): direction e.g. "North", "North East"...
+
+*Note: This is a local function*
+
 ---
 
 ## HOUND.Utils
@@ -1420,17 +1525,26 @@ deregister internal event handler
 
 *Note: This is a local function*
 
-### `HOUND.EventHandler.on(eventType, handler)`
+### `dispatchExternalSync(event)`
 
-register using on pattern
+Dispatch event to external subscribers synchronously.
 
-**Parameters:**
-- `event` (eventType): to register
-- `handler` (handler): to register
+*Note: This is a local function*
+
+### `dispatchExternalAsync(event)`
+
+Dispatch event to external subscribers asynchronously. Snapshots the subscriber table at call time, then schedules a coroutine that yields between handlers so a slow or buggy server-owner callback cannot hitch the sim frame.
+
+*Note: This is a local function*
 
 ### `HOUND.EventHandler.onHoundEvent(event)`
 
 Execute event on all registeres subscribers
+
+**Parameters:**
+- `event` (event): to execute
+
+*Note: This is a local function*
 
 ### `HOUND.EventHandler.publishEvent(event)`
 
@@ -3085,6 +3199,13 @@ get worker coalition
 **Returns:**
 - (coalitionI): d
 
+### `HOUND.ElintWorker:getId()`
+
+get worker instance ID
+
+**Returns:**
+- (Hound): instance Id
+
 ### `HOUND.ElintWorker:getNewTrackId()`
 
 get the next track number
@@ -3239,6 +3360,12 @@ remove Site from tracking
 
 update markers to all contacts update all emitters
 
+### `HOUND.ElintWorker:_sampleRadars(Radars)`
+
+internal: atomic sampler. Runs on the snapshot produced by discovery. All per-sample math happens on the same tick for coherence.
+
+*Note: This is a local function*
+
 ### `HOUND.ElintWorker:Sniff(GroupName)`
 
 Perform a sample of all emitting radars against all platforms generates and stores datapoints as required
@@ -3388,6 +3515,10 @@ HOUND.Sector
 
 getters and setters
 
+### ChildSectors
+
+Child Sector Functions
+
 ### Controller
 
 Controller Functions
@@ -3499,6 +3630,39 @@ Set zone in sector
 ### `HOUND.Sector:removeZone()`
 
 Remove Zone settings from sector
+
+### `HOUND.Sector:getCenter()`
+
+get Sector zone center
+
+**Returns:**
+- (DCS): point or nil
+
+### `HOUND.Sector:addChildSector(sectorName)`
+
+Add a child sector to this meta-sector
+
+### `HOUND.Sector:removeChildSector(sectorName)`
+
+Remove a child sector from this meta-sector
+
+### `HOUND.Sector:getChildSectors()`
+
+Get child sectors table
+
+**Returns:**
+- (table): of child sector names (keys) with true values
+
+### `HOUND.Sector:hasChildSectors()`
+
+Check if sector has child sectors
+
+**Returns:**
+- (type=bool): True if sector has child sectors
+
+### `HOUND.Sector:hasChildSector(sectorName)`
+
+check if sector has specific child sector
 
 ### `HOUND.Sector:setTransmitter(userTransmitter)`
 
@@ -3672,6 +3836,13 @@ Transmit custom TTS message on Notifier
 - `msg` (type=string): string to broadcast
 - `priority` (type=number): message priority, default is 1 (high priority)
 
+### `HOUND.Sector:getEffectiveSectorNames()`
+
+Get effective sector names for querying contacts/sites
+
+**Returns:**
+- (table): list of sector name strings
+
 ### `HOUND.Sector:getContacts()`
 
 return a sorted list of all contacts for the sector
@@ -3689,14 +3860,14 @@ update contact for zone memberships
 
 ### `HOUND.Sector:getSites()`
 
-return a sorted list of all contacts for the sector
+return a sorted list of all sites for the sector
 
 ### `HOUND.Sector:countSites()`
 
-count the number of contacts for the sector
+count the number of sites for the sector
 
 **Returns:**
-- (type=int): Number of contacts
+- (type=int): Number of sites
 
 ### `HOUND.Sector.removeRadioMenu(self)`
 
@@ -3755,6 +3926,13 @@ check out player's group from controller
 - `onlyPlayer` (opt): Bool. if true, only the player and not his flight (eg. slot change for player)
 
 *Note: This is a local function*
+
+### `HOUND.Sector:shouldNotifyFor(primarySector)`
+
+Determine if this sector should notify for a contact in the given primary sector
+
+**Returns:**
+- (bool): shouldNotify, string|nil sectorLabel
 
 ### `HOUND.Sector:isNotifiying()`
 
@@ -3862,12 +4040,6 @@ HOUND.Sector
 
 Radio Menu stuff ----------------------------- Radio Menu
 
-### Tables
-
-### `grpMenuDone`
-
-now do work
-
 ### Functions
 
 ### `HOUND.Sector:getRadioItemsText()`
@@ -3889,58 +4061,6 @@ create check menu items for players
 
 Populate sector radio menu
 
-### `HOUND.Sector:removeMenuItems(menu, grpId)`
-
-recursivly clean out a menu
-
-**Parameters:**
-- `GroupId` (grpId): to remove from
-
-### `HOUND.Sector:getMenuPage(menu, grpId, parent)`
-
-Handle menu pagination
-
-**Parameters:**
-- `to` (menu): paginate
-- `group` (grpId): Id for menus
-- `root` (parent): menu if required
-
-**Returns:**
-- (reference): to the current page to use
-
-*Note: This is a local function*
-
-### `HOUND.Sector:getMenuObj()`
-
-get new menu object
-
-**Returns:**
-- (tabl): e
-
-*Note: This is a local function*
-
-### `HOUND.Sector:addSiteRadioItems(typeMenu, requester, siteData)`
-
-create site menu item
-
-**Parameters:**
-- `table` (typeMenu): containg the assigned type menu
-- `MIST` (requester): player object
-- `#table` (siteData): of site from menu cache
-
-*Note: This is a local function*
-
-### `HOUND.Sector:removeSiteRadioItems(typeMenu, requester, siteData)`
-
-remove radar menu items
-
-**Parameters:**
-- `table` (typeMenu): contaning a menu structure for the group
-- `mist` (requester): human player object
-- `#table` (siteData): of site from menu cache
-
-*Note: This is a local function*
-
 ---
 
 ## HoundElint
@@ -3951,38 +4071,6 @@ Hound Main interface Elint system for DCS
 **Copyright:** uri_ba 2020-2021
 
 **File:** `800 - HoundElint.lua`
-
-### HoundElint
-
-Instance Setup
-
-### platforms
-
-Platforms managment
-
-### contacts
-
-Contact managment
-
-### sectors
-
-Sector managment
-
-### Controller
-
-Controller managment
-
-### ATIS
-
-ATIS managment
-
-### Notifier
-
-Notifier managment
-
-### sectors
-
-Sector managment
 
 ### HoundElint
 
@@ -4053,6 +4141,105 @@ set onScreenDebug
 
 **Returns:**
 - (type=Bool): True if chaned
+
+### `HoundElint.runCycle(self)`
+
+Scheduled function that runs the main Instance loop
+
+**Returns:**
+- (time): of next run
+
+*Note: This is a local function*
+
+### `HoundElint:purgeRadioMenu()`
+
+Purge the root radio menu
+
+*Note: This is a local function*
+
+### `HoundElint:populateRadioMenu()`
+
+Trigger building of radio menu in all sectors
+
+*Note: This is a local function*
+
+### `HoundElint.updateSystemState(params)`
+
+Update the system state (on/off) TODO: remove?
+
+**Parameters:**
+- `table` (params): {self=&ltHoundInstance&gt,state=&ltBool&gt}
+
+*Note: This is a local function*
+
+### `HoundElint:systemOn(notify)`
+
+Turn Hound system on
+
+### `HoundElint:systemOff(notify)`
+
+Turn Hound system off
+
+### `HoundElint:isRunning()`
+
+is Instance on
+
+**Returns:**
+- (type=bool): , True if system is running
+
+### `HoundElint:getContacts()`
+
+get an exported list of all contacts tracked by the instance
+
+**Returns:**
+- (table): of all contact tracked for integration with external tools
+
+### `HoundElint:getSites()`
+
+get an exported list of all sites tracked by the instance
+
+**Returns:**
+- (table): of all contact tracked for integration with external tools
+
+### `HoundElint:dumpIntelBrief(filename, format)`
+
+dump Intel Brief to CSV or JSON will dump intel summary to the DCS saved games folder requires desanitization of lfs and io modules
+
+**Parameters:**
+- `filename` (opt): target filename. (default: hound_contacts_%d.csv)
+- `format` (opt): target format "csv" or "json" (default: csv)
+
+### `HoundElint:printDebugging()`
+
+return Debugging information
+
+**Returns:**
+- (strin): g
+
+---
+
+## HoundElint
+
+Hound Main interface Elint system for DCS
+
+**Author:** uri_ba
+**Copyright:** uri_ba 2020-2021
+
+**File:** `801 - HoundElint_properties.lua`
+
+### platforms
+
+Platforms managment
+
+### contacts
+
+Contact managment
+
+### HoundElint
+
+Instance Setup
+
+### Functions
 
 ### `HoundElint:addPlatform(platformName)`
 
@@ -4143,347 +4330,6 @@ count sites
 
 **Returns:**
 - (type=int): number of contacts currently tracked
-
-### `HoundElint:addSector(sectorName, sectorSettings, priority)`
-
-Add named sector
-
-**Parameters:**
-- `sectorName` (type=string): name of sector to add
-- `sectorSettings` (opt): table of sector settings
-- `priority` (opt): Sector priority (lower is higher)
-
-**Returns:**
-- (type=bool): True if sector successfully added
-
-### `HoundElint:removeSector(sectorName)`
-
-Remove Named sector
-
-**Parameters:**
-- `sectorName` (type=string): name of sector to add
-
-**Returns:**
-- (type=bool): True if sector successfully added
-
-### `HoundElint:updateSectorSettings(sectorName, sectorSettings, subSettingName)`
-
-Update named sector settings
-
-**Parameters:**
-- `sectorName` (type=string|nil): name of sector (nil == "default")
-- `subSettingName` (type=?string): update specific setting ("controller", "atis", "notifier")
-
-**Returns:**
-- (type=bool): False if an error occurred, true otherwise
-
-### `HoundElint:listSectors(element)`
-
-list all sectors
-
-**Parameters:**
-- `element` (type=?string): list only sectors with specified element. Valid options are "controller", "atis", "notifier" and "zone"
-
-**Returns:**
-- (list): of sector names
-
-### `HoundElint:getSectors(element)`
-
-get all sectors
-
-**Parameters:**
-- `element` (type=?string): list only sectors with specified element. Valid options are "controller", "atis", "notifier" and "zone"
-
-**Returns:**
-- (list): of HOUND.Sector instances
-
-### `HoundElint:countSectors(element)`
-
-return number of sectors
-
-**Parameters:**
-- `element` (type=?string): count only sectors with specified element ("controller"/"atis"/"notifier"/"zone")
-
-**Returns:**
-- (type=int): . number of sectors
-
-### `HoundElint:getSector(sectorName)`
-
-return HOUND.Sector instance
-
-**Returns:**
-- (HOUND.Secto): r
-
-### `HoundElint:enableController(sectorName, settings)`
-
-enable controller in sector
-
-**Parameters:**
-- `sectorName` (type=?string): name of sector in which a controller is enabled (default is "default") - "all" enable controller on all sectors
-
-### `HoundElint:disableController(sectorName)`
-
-disable controller in sector
-
-**Parameters:**
-- `sectorName` (type=?string): Name of sector to act on. default is "default". all will disable all controllers
-
-### `HoundElint:removeController(sectorName)`
-
-remove controller in sector
-
-**Parameters:**
-- `sectorName` (type=?string): Name of sector to act on. default is "default". all will disable all controllers
-
-### `HoundElint:configureController(sectorName, settings)`
-
-configure controller in sector
-
-**Parameters:**
-- `sectorName` (type=?string): name of sector to configure
-
-### `HoundElint:getControllerFreq(sectorName)`
-
-get controller freq
-
-**Parameters:**
-- `sectorName` (type=?string): name of sector to configure
-
-**Returns:**
-- (frequncies): table for sector's controller
-
-### `HoundElint:getControllerState(sectorName)`
-
-get controller state
-
-**Parameters:**
-- `sectorName` (type=?string): name of sector to probe
-
-**Returns:**
-- (type=Bool): True = enabled. False is disable or not configured
-
-### `HoundElint:transmitOnController(sectorName, msg, priority)`
-
-Transmit custom TTS message on controller freqency
-
-**Parameters:**
-- `sectorName` (type=string): name of the sector to transmit on.
-- `msg` (type=string): message to broadcast
-- `priority` (type=?number): message priority
-
-### `HoundElint:enableAtis(sectorName, settings)`
-
-enable ATIS in sector
-
-**Parameters:**
-- `sectorName` (type=?string): name of sector in which a controller is enabled (default is "default") - "all" enable ATIS on all sectors
-
-### `HoundElint:disableAtis(sectorName)`
-
-disable ATIS in sector
-
-**Parameters:**
-- `sectorName` (type=?string): Name of sector to act on. default is "default". all will disable all ATIS
-
-### `HoundElint:removeAtis(sectorName)`
-
-remove ATIS in sector
-
-**Parameters:**
-- `sectorName` (type=?string): Name of sector to act on. default is "default". all will disable all ATIS
-
-### `HoundElint:configureAtis(sectorName, settings)`
-
-configure ATIS in sector
-
-**Parameters:**
-- `sectorName` (type=?string): name of sector to configure
-
-### `HoundElint:getAtisFreq(sectorName)`
-
-get ATIS freq
-
-**Parameters:**
-- `sectorName` (type=?string): name of sector to query
-
-**Returns:**
-- (frequncies): table for sector's controller
-
-### `HoundElint:reportEWR(name, state)`
-
-set ATIS EWR report state for sector
-
-**Parameters:**
-- `name` (type=?string): sector name. valid inputs are sector name, "all". nothing will default to "default"
-
-### `HoundElint:getAtisState(sectorName)`
-
-get ATIS state
-
-**Parameters:**
-- `sectorName` (type=?string): name of sector to probe
-
-**Returns:**
-- (type=Bool): True = enabled. False is disable or not configured
-
-### `HoundElint:enableNotifier(sectorName, settings)`
-
-enable Notifier in sector Only one notifier is required as it will broadcast on a global frequency (default is guard) controller will also handle alerts for per sector notifications
-
-**Parameters:**
-- `sectorName` (type=?string): name of sector in which a Notifier is enabled (default is "default")
-
-### `HoundElint:disableNotifier(sectorName)`
-
-disable Notifier in sector
-
-**Parameters:**
-- `sectorName` (type=?string): Name of sector to act on. default is "default". all will disable all Notifiers
-
-### `HoundElint:removeNotifier(sectorName)`
-
-remove controller in sector
-
-**Parameters:**
-- `sectorName` (type=?string): Name of sector to act on. default is "default". all will disable all Notifiers
-
-### `HoundElint:configureNotifier(sectorName, settings)`
-
-configure Notifier in sector
-
-**Parameters:**
-- `sectorName` (type=?string): name of sector to configure
-
-### `HoundElint:getNotifierFreq(sectorName)`
-
-get Notifier freq
-
-**Parameters:**
-- `sectorName` (type=?string): name of sector to query
-
-**Returns:**
-- (frequncies): table for sector's Notifier
-
-### `HoundElint:getNotifierState(sectorName)`
-
-get Notifier state
-
-**Parameters:**
-- `sectorName` (type=?string): name of sector to probe
-
-**Returns:**
-- (type=Bool): True = enabled. False is disable or not configured
-
-### `HoundElint:transmitOnNotifier(sectorName, msg, priority)`
-
-Transmit custom TTS message on Notifier freqency
-
-**Parameters:**
-- `sectorName` (type=string): name of the sector to transmit on.
-- `msg` (type=string): message to broadcast
-- `priority` (type=?number): message priority
-
-### `HoundElint:enableText(sectorName)`
-
-enable Text notification for controller
-
-**Parameters:**
-- `sectorName` (type=?string): name of sector to enable (default is "default", "all" will enable on all sectors)
-
-### `HoundElint:disableText(sectorName)`
-
-disable Text notification for controller
-
-**Parameters:**
-- `sectorName` (type=?string): name of sector to disable (default is "default", "all" will enable on all sectors)
-
-### `HoundElint:enableTTS(sectorName)`
-
-enable Text-To-Speach notification for controller
-
-**Parameters:**
-- `sectorName` (type=?string): name of sector to enable (default is "default", "all" will enable on all sectors)
-
-### `HoundElint:disableTTS(sectorName)`
-
-disable Text-to-speach notification for controller
-
-**Parameters:**
-- `sectorName` (type=?string): name of sector to disable (default is "default", "all" will enable on all sectors)
-
-### `HoundElint:enableAlerts(sectorName)`
-
-enable Alert notification for controller
-
-**Parameters:**
-- `sectorName` (type=?string): name of sector to enable (default is "default", "all" will enable on all sectors)
-
-### `HoundElint:disableAlerts(sectorName)`
-
-disable Alert notification for controller
-
-**Parameters:**
-- `sectorName` (type=?string): name of sector to disable (default is "default", "all" will enable on all sectors)
-
-### `HoundElint:setCallsign(sectorName, sectorCallsign)`
-
-Set sector callsign
-
-**Returns:**
-- (type=bool): True if callsign was changes. False otherwise
-
-### `HoundElint:getCallsign(sectorName)`
-
-get sector callsign
-
-**Returns:**
-- (String): - callsign for sector. will return empty string if err
-
-### `HoundElint:setTransmitter(sectorName, transmitter)`
-
-set transmitter to named sector valid values are name of sector, "all" or nil (will change default)
-
-**Parameters:**
-- `sectorName` (type=string): name of sector to apply to.
-- `DCS` (transmitter): unit name which will be the transmitter
-
-### `HoundElint:removeTransmitter(sectorName)`
-
-remove transmitter to named sector valid values are name of sector, "all" or nil (will change default)
-
-**Parameters:**
-- `sectorName` (type=string): name of sector to apply to.
-
-### `HoundElint:getZone(sectorName)`
-
-get zone of sector
-
-**Parameters:**
-- `sectorName` (type=string): to act on
-
-**Returns:**
-- (table): of points or nil if no sector set
-
-### `HoundElint:setZone(sectorName, zoneCandidate)`
-
-add zone to sector same as MOOSE. use late activation invisible helicopter group is recommended.
-
-**Parameters:**
-- `sectorName` (type=string): to act on
-- `DCS` (zoneCandidate): Group name. Group's waypoints will be used.
-
-### `HoundElint:removeZone(sectorName)`
-
-remove zone from sector
-
-**Parameters:**
-- `sectorName` (type=string): to act on
-
-### `HoundElint:updateSectorMembership()`
-
-update sector membership for all contacts
-
-*Note: This is a local function*
 
 ### `HoundElint:enableMarkers(markerType)`
 
@@ -4626,7 +4472,7 @@ set Alert on Launch for Hound instance
 **Returns:**
 - (type=Bool): True if setting has been updated
 
-### `HoundElint:useNATOCallsignes(value)`
+### `HoundElint:useNATOCallsigns(value)`
 
 set flag if callsignes for sectors under Callsignes would be from the NATO pool
 
@@ -4653,78 +4499,210 @@ Set Main parent menu for hound Instace must be set <b>BEFORE</b> calling <code>e
 **Returns:**
 - (type=Bool): True if no errors
 
-### `HoundElint.runCycle(self)`
+---
 
-Scheduled function that runs the main Instance loop
+## HoundElint
 
-**Returns:**
-- (time): of next run
+Hound Main interface Elint system for DCS
 
-*Note: This is a local function*
+**Author:** uri_ba
+**Copyright:** uri_ba 2020-2021
 
-### `HoundElint:purgeRadioMenu()`
+**File:** `802 - HoundElint_sector_mgmt.lua`
 
-Purge the root radio menu
+### sectors
 
-*Note: This is a local function*
+Sector managment
 
-### `HoundElint:populateRadioMenu()`
+### Functions
 
-Trigger building of radio menu in all sectors
+### `HoundElint:addSector(sectorName, sectorSettings, priority)`
 
-*Note: This is a local function*
-
-### `HoundElint.updateSystemState(params)`
-
-Update the system state (on/off) TODO: remove?
+Add named sector
 
 **Parameters:**
-- `table` (params): {self=&ltHoundInstance&gt,state=&ltBool&gt}
-
-*Note: This is a local function*
-
-### `HoundElint:systemOn(notify)`
-
-Turn Hound system on
-
-### `HoundElint:systemOff(notify)`
-
-Turn Hound system off
-
-### `HoundElint:isRunning()`
-
-is Instance on
+- `sectorName` (type=string): name of sector to add
+- `sectorSettings` (opt): table of sector settings
+- `priority` (opt): Sector priority (lower is higher)
 
 **Returns:**
-- (type=bool): , True if system is running
+- (type=bool): True if sector successfully added
 
-### `HoundElint:getContacts()`
+### `HoundElint:removeSector(sectorName)`
 
-get an exported list of all contacts tracked by the instance
-
-**Returns:**
-- (table): of all contact tracked for integration with external tools
-
-### `HoundElint:getSites()`
-
-get an exported list of all sites tracked by the instance
-
-**Returns:**
-- (table): of all contact tracked for integration with external tools
-
-### `HoundElint:dumpIntelBrief(filename)`
-
-dump Intel Brief to csv will dump intel summery to CSV in the DCS saved games folder requires desanitization of lfs and io modules
+Remove Named sector
 
 **Parameters:**
-- `filename` (opt): target filename. (default: hound_contacts_%d.csv)
-
-### `HoundElint:printDebugging()`
-
-return Debugging information
+- `sectorName` (type=string): name of sector to add
 
 **Returns:**
-- (strin): g
+- (type=bool): True if sector successfully removed
+
+### `HoundElint:updateSectorSettings(sectorName, sectorSettings, subSettingName)`
+
+Update named sector settings
+
+**Parameters:**
+- `sectorName` (type=string|nil): name of sector (nil == "default")
+- `subSettingName` (type=?string): update specific setting ("controller", "atis", "notifier")
+
+**Returns:**
+- (type=bool): False if an error occurred, true otherwise
+
+### `HoundElint:listSectors(element)`
+
+list all sectors
+
+**Parameters:**
+- `element` (type=?string): list only sectors with specified element. Valid options are "controller", "atis", "notifier" and "zone"
+
+**Returns:**
+- (list): of sector names
+
+### `HoundElint:getSectors(element)`
+
+get all sectors
+
+**Parameters:**
+- `element` (type=?string): list only sectors with specified element. Valid options are "controller", "atis", "notifier" and "zone"
+
+**Returns:**
+- (list): of HOUND.Sector instances
+
+### `HoundElint:countSectors(element)`
+
+return number of sectors
+
+**Parameters:**
+- `element` (type=?string): count only sectors with specified element ("controller"/"atis"/"notifier"/"zone")
+
+**Returns:**
+- (type=int): . number of sectors
+
+### `HoundElint:getSector(sectorName)`
+
+return HOUND.Sector instance
+
+**Returns:**
+- (HOUND.Secto): r
+
+### `HoundElint:enableText(sectorName)`
+
+enable Text notification for controller
+
+**Parameters:**
+- `sectorName` (type=?string): name of sector to enable (default is "default", "all" will enable on all sectors)
+
+### `HoundElint:disableText(sectorName)`
+
+disable Text notification for controller
+
+**Parameters:**
+- `sectorName` (type=?string): name of sector to disable (default is "default", "all" will enable on all sectors)
+
+### `HoundElint:enableTTS(sectorName)`
+
+enable Text-To-Speach notification for controller
+
+**Parameters:**
+- `sectorName` (type=?string): name of sector to enable (default is "default", "all" will enable on all sectors)
+
+### `HoundElint:disableTTS(sectorName)`
+
+disable Text-to-speach notification for controller
+
+**Parameters:**
+- `sectorName` (type=?string): name of sector to disable (default is "default", "all" will enable on all sectors)
+
+### `HoundElint:enableAlerts(sectorName)`
+
+enable Alert notification for controller
+
+**Parameters:**
+- `sectorName` (type=?string): name of sector to enable (default is "default", "all" will enable on all sectors)
+
+### `HoundElint:disableAlerts(sectorName)`
+
+disable Alert notification for controller
+
+**Parameters:**
+- `sectorName` (type=?string): name of sector to disable (default is "default", "all" will enable on all sectors)
+
+### `HoundElint:setCallsign(sectorName, sectorCallsign)`
+
+Set sector callsign
+
+**Returns:**
+- (type=bool): True if callsign was changes. False otherwise
+
+### `HoundElint:getCallsign(sectorName)`
+
+get sector callsign
+
+**Returns:**
+- (String): - callsign for sector. will return empty string if err
+
+### `HoundElint:setTransmitter(sectorName, transmitter)`
+
+set transmitter to named sector valid values are name of sector, "all" or nil (will change default)
+
+**Parameters:**
+- `sectorName` (type=string): name of sector to apply to.
+- `DCS` (transmitter): unit name which will be the transmitter
+
+### `HoundElint:removeTransmitter(sectorName)`
+
+remove transmitter to named sector valid values are name of sector, "all" or nil (will change default)
+
+**Parameters:**
+- `sectorName` (type=string): name of sector to apply to.
+
+### `HoundElint:getZone(sectorName)`
+
+get zone of sector
+
+**Parameters:**
+- `sectorName` (type=string): to act on
+
+**Returns:**
+- (table): of points or nil if no sector set
+
+### `HoundElint:setZone(sectorName, zoneCandidate)`
+
+add zone to sector same as MOOSE. use late activation invisible helicopter group is recommended.
+
+**Parameters:**
+- `sectorName` (type=string): to act on
+- `DCS` (zoneCandidate): Group name. Group's waypoints will be used.
+
+### `HoundElint:removeZone(sectorName)`
+
+remove zone from sector
+
+**Parameters:**
+- `sectorName` (type=string): to act on
+
+### `HoundElint:addChildSector(metaSectorName, childSectorName)`
+
+add a child sector to a meta-sector
+
+**Parameters:**
+- `metaSectorName` (type=string): name of the meta-sector
+- `childSectorName` (type=string): name of the child sector to add
+
+### `HoundElint:removeChildSector(metaSectorName, childSectorName)`
+
+remove a child sector from a meta-sector
+
+**Parameters:**
+- `metaSectorName` (type=string): name of the meta-sector
+- `childSectorName` (type=string): name of the child sector to remove
+
+### `HoundElint:updateSectorMembership()`
+
+update sector membership for all contacts
+
+*Note: This is a local function*
 
 ---
 
@@ -4735,7 +4713,201 @@ Hound Main interface Elint system for DCS
 **Author:** uri_ba
 **Copyright:** uri_ba 2020-2021
 
-**File:** `801 - HoundElintEvents.lua`
+**File:** `803 - HoundElint_comms.lua`
+
+### Controller
+
+Controller managment
+
+### ATIS
+
+ATIS managment
+
+### Notifier
+
+Notifier managment
+
+### Functions
+
+### `HoundElint:enableController(sectorName, settings)`
+
+enable controller in sector
+
+**Parameters:**
+- `sectorName` (type=?string): name of sector in which a controller is enabled (default is "default") - "all" enable controller on all sectors
+
+### `HoundElint:disableController(sectorName)`
+
+disable controller in sector
+
+**Parameters:**
+- `sectorName` (type=?string): Name of sector to act on. default is "default". all will disable all controllers
+
+### `HoundElint:removeController(sectorName)`
+
+remove controller in sector
+
+**Parameters:**
+- `sectorName` (type=?string): Name of sector to act on. default is "default". all will disable all controllers
+
+### `HoundElint:configureController(sectorName, settings)`
+
+configure controller in sector
+
+**Parameters:**
+- `sectorName` (type=?string): name of sector to configure
+
+### `HoundElint:getControllerFreq(sectorName)`
+
+get controller freq
+
+**Parameters:**
+- `sectorName` (type=?string): name of sector to configure
+
+**Returns:**
+- (frequncies): table for sector's controller
+
+### `HoundElint:getControllerState(sectorName)`
+
+get controller state
+
+**Parameters:**
+- `sectorName` (type=?string): name of sector to probe
+
+**Returns:**
+- (type=Bool): True = enabled. False is disable or not configured
+
+### `HoundElint:transmitOnController(sectorName, msg, priority)`
+
+Transmit custom TTS message on controller freqency
+
+**Parameters:**
+- `sectorName` (type=string): name of the sector to transmit on.
+- `msg` (type=string): message to broadcast
+- `priority` (type=?number): message priority
+
+### `HoundElint:enableAtis(sectorName, settings)`
+
+enable ATIS in sector
+
+**Parameters:**
+- `sectorName` (type=?string): name of sector in which a controller is enabled (default is "default") - "all" enable ATIS on all sectors
+
+### `HoundElint:disableAtis(sectorName)`
+
+disable ATIS in sector
+
+**Parameters:**
+- `sectorName` (type=?string): Name of sector to act on. default is "default". all will disable all ATIS
+
+### `HoundElint:removeAtis(sectorName)`
+
+remove ATIS in sector
+
+**Parameters:**
+- `sectorName` (type=?string): Name of sector to act on. default is "default". all will disable all ATIS
+
+### `HoundElint:configureAtis(sectorName, settings)`
+
+configure ATIS in sector
+
+**Parameters:**
+- `sectorName` (type=?string): name of sector to configure
+
+### `HoundElint:getAtisFreq(sectorName)`
+
+get ATIS freq
+
+**Parameters:**
+- `sectorName` (type=?string): name of sector to query
+
+**Returns:**
+- (frequncies): table for sector's controller
+
+### `HoundElint:reportEWR(name, state)`
+
+set ATIS EWR report state for sector
+
+**Parameters:**
+- `name` (type=?string): sector name. valid inputs are sector name, "all". nothing will default to "default"
+
+### `HoundElint:getAtisState(sectorName)`
+
+get ATIS state
+
+**Parameters:**
+- `sectorName` (type=?string): name of sector to probe
+
+**Returns:**
+- (type=Bool): True = enabled. False is disable or not configured
+
+### `HoundElint:enableNotifier(sectorName, settings)`
+
+enable Notifier in sector Only one notifier is required as it will broadcast on a global frequency (default is guard) controller will also handle alerts for per sector notifications
+
+**Parameters:**
+- `sectorName` (type=?string): name of sector in which a Notifier is enabled (default is "default")
+
+### `HoundElint:disableNotifier(sectorName)`
+
+disable Notifier in sector
+
+**Parameters:**
+- `sectorName` (type=?string): Name of sector to act on. default is "default". all will disable all Notifiers
+
+### `HoundElint:removeNotifier(sectorName)`
+
+remove Notifier in sector
+
+**Parameters:**
+- `sectorName` (type=?string): Name of sector to act on. default is "default". all will disable all Notifiers
+
+### `HoundElint:configureNotifier(sectorName, settings)`
+
+configure Notifier in sector
+
+**Parameters:**
+- `sectorName` (type=?string): name of sector to configure
+
+### `HoundElint:getNotifierFreq(sectorName)`
+
+get Notifier freq
+
+**Parameters:**
+- `sectorName` (type=?string): name of sector to query
+
+**Returns:**
+- (frequncies): table for sector's Notifier
+
+### `HoundElint:getNotifierState(sectorName)`
+
+get Notifier state
+
+**Parameters:**
+- `sectorName` (type=?string): name of sector to probe
+
+**Returns:**
+- (type=Bool): True = enabled. False is disable or not configured
+
+### `HoundElint:transmitOnNotifier(sectorName, msg, priority)`
+
+Transmit custom TTS message on Notifier freqency
+
+**Parameters:**
+- `sectorName` (type=string): name of the sector to transmit on.
+- `msg` (type=string): message to broadcast
+- `priority` (type=?number): message priority
+
+---
+
+## HoundElint
+
+Hound Main interface Elint system for DCS
+
+**Author:** uri_ba
+**Copyright:** uri_ba 2020-2021
+
+**File:** `804 - HoundElintEvents.lua`
 
 ### eventHandler
 

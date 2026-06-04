@@ -37,6 +37,7 @@
 <li><a href="#Local_Functions">Local Functions</a></li>
 <li><a href="#Class_HOUND_Sector">Class HOUND.Sector </a></li>
 <li><a href="#getters_and_setters">getters and setters </a></li>
+<li><a href="#Child_Sector_Functions">Child Sector Functions </a></li>
 <li><a href="#Controller_Functions">Controller Functions </a></li>
 <li><a href="#ATIS_Functions">ATIS Functions </a></li>
 <li><a href="#Notifier_Functions">Notifier Functions </a></li>
@@ -86,10 +87,6 @@
 	<td class="name" nowrap><a href="#HOUND.Sector:populateRadioMenu">HOUND.Sector:populateRadioMenu ()</a></td>
 	<td class="summary">Populate sector radio menu</td>
 	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Sector:removeMenuItems">HOUND.Sector:removeMenuItems (menu, grpId)</a></td>
-	<td class="summary">recursivly clean out a menu</td>
-	</tr>
 </table>
 <h2><a href="#Local_Functions">Local Functions</a></h2>
 <table class="function_list">
@@ -112,10 +109,6 @@
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Sector:addSiteRadioItems">HOUND.Sector:addSiteRadioItems (typeMenu, requester, siteData)</a></td>
 	<td class="summary">create site menu item</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#HOUND.Sector:removeSiteRadioItems">HOUND.Sector:removeSiteRadioItems (typeMenu, requester, siteData)</a></td>
-	<td class="summary">remove radar menu items</td>
 	</tr>
 </table>
 <h2><a href="#Class_HOUND_Sector">Class HOUND.Sector </a></h2>
@@ -171,6 +164,33 @@
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Sector:removeZone">HOUND.Sector:removeZone ()</a></td>
 	<td class="summary">Remove Zone settings from sector</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:getCenter">HOUND.Sector:getCenter ()</a></td>
+	<td class="summary">get Sector zone center</td>
+	</tr>
+</table>
+<h2><a href="#Child_Sector_Functions">Child Sector Functions </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:addChildSector">HOUND.Sector:addChildSector (sectorName)</a></td>
+	<td class="summary">Add a child sector to this meta-sector</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:removeChildSector">HOUND.Sector:removeChildSector (sectorName)</a></td>
+	<td class="summary">Remove a child sector from this meta-sector</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:getChildSectors">HOUND.Sector:getChildSectors ()</a></td>
+	<td class="summary">Get child sectors table</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:hasChildSectors">HOUND.Sector:hasChildSectors ()</a></td>
+	<td class="summary">Check if sector has child sectors</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:hasChildSector">HOUND.Sector:hasChildSector (sectorName)</a></td>
+	<td class="summary">check if sector has specific child sector</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Sector:setTransmitter">HOUND.Sector:setTransmitter (userTransmitter)</a></td>
@@ -313,6 +333,10 @@
 <h2><a href="#Contact_Functions">Contact Functions </a></h2>
 <table class="function_list">
 	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:getEffectiveSectorNames">HOUND.Sector:getEffectiveSectorNames ()</a></td>
+	<td class="summary">Get effective sector names for querying contacts/sites</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#HOUND.Sector:getContacts">HOUND.Sector:getContacts ()</a></td>
 	<td class="summary">return a sorted list of all contacts for the sector</td>
 	</tr>
@@ -326,11 +350,11 @@
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Sector:getSites">HOUND.Sector:getSites ()</a></td>
-	<td class="summary">return a sorted list of all contacts for the sector</td>
+	<td class="summary">return a sorted list of all sites for the sector</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Sector:countSites">HOUND.Sector:countSites ()</a></td>
-	<td class="summary">count the number of contacts for the sector</td>
+	<td class="summary">count the number of sites for the sector</td>
 	</tr>
 </table>
 <h2><a href="#Radio_Menu">Radio Menu </a></h2>
@@ -358,6 +382,10 @@
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Sector.checkOut">HOUND.Sector.checkOut (args[, skipAck[, onlyPlayer]])</a></td>
 	<td class="summary">check out player's group from controller</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HOUND.Sector:shouldNotifyFor">HOUND.Sector:shouldNotifyFor (primarySector)</a></td>
+	<td class="summary">Determine if this sector should notify for a contact in the given primary sector</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HOUND.Sector:isNotifiying">HOUND.Sector:isNotifiying ()</a></td>
@@ -424,29 +452,6 @@
     Populate sector radio menu
 
 
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Sector:removeMenuItems"></a>
-    <strong>HOUND.Sector:removeMenuItems (menu, grpId)</strong>
-    </dt>
-    <dd>
-    recursivly clean out a menu
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">menu</span>
-
-        </li>
-        <li><span class="parameter">grpId</span>
-         GroupId to remove from
-        </li>
-    </ul>
 
 
 
@@ -555,32 +560,6 @@
         </li>
         <li><span class="parameter">requester</span>
          MIST player object
-        </li>
-        <li><span class="parameter">siteData</span>
-         #table of site from menu cache
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "HOUND.Sector:removeSiteRadioItems"></a>
-    <strong>HOUND.Sector:removeSiteRadioItems (typeMenu, requester, siteData)</strong>
-    </dt>
-    <dd>
-    remove radar menu items
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">typeMenu</span>
-         table contaning a menu structure for the group
-        </li>
-        <li><span class="parameter">requester</span>
-         mist human player object
         </li>
         <li><span class="parameter">siteData</span>
          #table of site from menu cache
@@ -855,6 +834,131 @@
     Remove Zone settings from sector
 
 
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:getCenter"></a>
+    <strong>HOUND.Sector:getCenter ()</strong>
+    </dt>
+    <dd>
+    get Sector zone center
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        DCS point or nil
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Child_Sector_Functions"></a>Child Sector Functions </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "HOUND.Sector:addChildSector"></a>
+    <strong>HOUND.Sector:addChildSector (sectorName)</strong>
+    </dt>
+    <dd>
+    Add a child sector to this meta-sector
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">sectorName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         name of child sector
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:removeChildSector"></a>
+    <strong>HOUND.Sector:removeChildSector (sectorName)</strong>
+    </dt>
+    <dd>
+    Remove a child sector from this meta-sector
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">sectorName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         name of child sector
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:getChildSectors"></a>
+    <strong>HOUND.Sector:getChildSectors ()</strong>
+    </dt>
+    <dd>
+    Get child sectors table
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table of child sector names (keys) with true values
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:hasChildSectors"></a>
+    <strong>HOUND.Sector:hasChildSectors ()</strong>
+    </dt>
+    <dd>
+    Check if sector has child sectors
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">bool</span></span>
+        True if sector has child sectors
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:hasChildSector"></a>
+    <strong>HOUND.Sector:hasChildSector (sectorName)</strong>
+    </dt>
+    <dd>
+    check if sector has specific child sector
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">sectorName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         name of child sector
+        </li>
+    </ul>
 
 
 
@@ -1421,6 +1525,25 @@
 
     <dl class="function">
     <dt>
+    <a name = "HOUND.Sector:getEffectiveSectorNames"></a>
+    <strong>HOUND.Sector:getEffectiveSectorNames ()</strong>
+    </dt>
+    <dd>
+    Get effective sector names for querying contacts/sites
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table list of sector name strings
+    </ol>
+
+
+
+
+</dd>
+    <dt>
     <a name = "HOUND.Sector:getContacts"></a>
     <strong>HOUND.Sector:getContacts ()</strong>
     </dt>
@@ -1473,7 +1596,7 @@
     <strong>HOUND.Sector:getSites ()</strong>
     </dt>
     <dd>
-    return a sorted list of all contacts for the sector
+    return a sorted list of all sites for the sector
 
 
 
@@ -1487,7 +1610,7 @@
     <strong>HOUND.Sector:countSites ()</strong>
     </dt>
     <dd>
-    count the number of contacts for the sector
+    count the number of sites for the sector
 
 
 
@@ -1495,7 +1618,7 @@
     <ol>
 
            <span class="types"><span class="type">int</span></span>
-        Number of contacts
+        Number of sites
     </ol>
 
 
@@ -1635,6 +1758,32 @@
         </li>
     </ul>
 
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HOUND.Sector:shouldNotifyFor"></a>
+    <strong>HOUND.Sector:shouldNotifyFor (primarySector)</strong>
+    </dt>
+    <dd>
+    Determine if this sector should notify for a contact in the given primary sector
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">primarySector</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         the contact's primary sector name
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        bool shouldNotify, string|nil sectorLabel
+    </ol>
 
 
 
@@ -1896,7 +2045,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/lunarmodules/LDoc">LDoc 1.5.0</a></i>
-<i style="float:right;">Last updated 2026-04-29 13:28:08 </i>
+<i style="float:right;">Last updated 2026-06-04 15:07:35 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>
