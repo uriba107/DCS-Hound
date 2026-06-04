@@ -1,5 +1,5 @@
 ignore = {
-    "011", -- A syntax error.
+--    "011", -- A syntax error.
     "021", -- An invalid inline option.
     "022", -- An unpaired inline push directive.
     "023", -- An unpaired inline pop directive.
@@ -35,7 +35,7 @@ ignore = {
     "431", -- Shadowing an upvalue.
     "432", -- Shadowing an upvalue argument.
     "433", -- Shadowing an upvalue loop variable.
-    "511", -- Unreachable code.
+--    "511", -- Unreachable code.
     "512", -- Loop can be executed at most once.
     "521", -- Unused label.
     "531", -- Left-hand side of an assignment is too short.

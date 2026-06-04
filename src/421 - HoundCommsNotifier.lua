@@ -34,4 +34,7 @@ do
             self:setSettings("namedChannel",channel)
         end
     end
+    function HOUND.Comms.Notifier:getNamedChannel()
+        return self:getSettings("namedChannel")
+    end
 end

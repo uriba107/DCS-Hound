@@ -814,17 +814,21 @@ do
 
         local msg = {coalition =  self._hSettings:getCoalition(), priority = 3, gid=enrolledGid}
         msg.contactId = contact:getId()
-        -- if (controller and controller:getSettings("enableText")) or (notifier and notifier:getSettings("enableText"))  then
-            msg.txt = contact:generateDeathReport(false,sectorLabel)
-        -- end
-        -- if (controller and controller:getSettings("enableTTS")) or (notifier and notifier:getSettings("enableTTS")) then
-            msg.tts = announce .. contact:generateDeathReport(true,sectorLabel)
-        -- end
+        msg.txt = contact:generateDeathReport(false,sectorLabel)
+        local ttsMsg = contact:generateDeathReport(true,sectorLabel)
         if controller and controller:isEnabled() and controller:getSettings("alerts") then
+            msg.tts = announce .. ttsMsg
             controller:addMessageObj(msg)
         end
         if notifier and notifier:isEnabled() then
-            notifier:addMessageObj(msg)
+            local nMsg = HOUND.shallowCopy(msg)
+            local notifierAnnounce = announce
+            local notifierChannel = notifier:getNamedChannel()
+            if type(notifierChannel) == "string" and notifierChannel ~= "" then
+                notifierAnnounce = string.sub(announce, 1, -3) .. " on " .. notifierChannel .. ", "
+            end
+            nMsg.tts = notifierAnnounce .. ttsMsg
+            notifier:addMessageObj(nMsg)
         end
     end
 
@@ -845,19 +849,23 @@ do
         local msg = {coalition = self._hSettings:getCoalition(), priority = 2 , gid=enrolledGid}
         msg.contactId = contact:getId()
 
-        -- if (controller and controller:getSettings("enableText")) or (notifier and notifier:getSettings("enableText"))  then
-            msg.txt = self.callsign .. " Reports " .. contact:generatePopUpReport(false,sectorLabel)
-        -- end
-        -- if (controller and controller:getSettings("enableTTS")) or (notifier and notifier:getSettings("enableTTS")) then
-            msg.tts = announce .. contact:generatePopUpReport(true,sectorLabel)
-        -- end
+        msg.txt = self.callsign .. " Reports " .. contact:generatePopUpReport(false,sectorLabel)
+        local ttsMsg = contact:generatePopUpReport(true,sectorLabel)
 
         if controller and controller:isEnabled() and controller:getSettings("alerts") then
+            msg.tts = announce .. ttsMsg
             controller:addMessageObj(msg)
         end
 
         if notifier and notifier:isEnabled() then
-            notifier:addMessageObj(msg)
+            local nMsg = HOUND.shallowCopy(msg)
+            local notifierAnnounce = announce
+            local notifierChannel = notifier:getNamedChannel()
+            if type(notifierChannel) == "string" and notifierChannel ~= "" then
+                notifierAnnounce = string.sub(announce, 1, -3) .. " on " .. notifierChannel .. ", "
+            end
+            nMsg.tts = notifierAnnounce .. ttsMsg
+            notifier:addMessageObj(nMsg)
         end
     end
 
@@ -877,19 +885,23 @@ do
 
         local msg = {coalition = self._hSettings:getCoalition(), priority = 2 , gid=enrolledGid}
 
-        -- if (controller and controller:getSettings("enableText")) or (notifier and notifier:getSettings("enableText"))  then
-            msg.txt = self.callsign .. " Reports " .. site:generateIdentReport(false,sectorLabel)
-        -- end
-        -- if (controller and controller:getSettings("enableTTS")) or (notifier and notifier:getSettings("enableTTS")) then
-            msg.tts = announce .. site:generateIdentReport(true,sectorLabel)
-        -- end
+        msg.txt = self.callsign .. " Reports " .. site:generateIdentReport(false,sectorLabel)
+        local ttsMsg = site:generateIdentReport(true,sectorLabel)
 
         if controller and controller:isEnabled() and controller:getSettings("alerts") then
+            msg.tts = announce .. ttsMsg
             controller:addMessageObj(msg)
         end
 
         if notifier and notifier:isEnabled() then
-            notifier:addMessageObj(msg)
+            local nMsg = HOUND.shallowCopy(msg)
+            local notifierAnnounce = announce
+            local notifierChannel = notifier:getNamedChannel()
+            if type(notifierChannel) == "string" and notifierChannel ~= "" then
+                notifierAnnounce = string.sub(announce, 1, -3) .. " on " .. notifierChannel .. ", "
+            end
+            nMsg.tts = notifierAnnounce .. ttsMsg
+            notifier:addMessageObj(nMsg)
         end
     end
     --- Notify a site was created
@@ -908,18 +920,22 @@ do
 
         local msg = {coalition = self._hSettings:getCoalition(), priority = 2 , gid=enrolledGid}
         msg.contactId = site:getId()
-        -- if (controller and controller:getSettings("enableText")) or (notifier and notifier:getSettings("enableText"))  then
-            msg.txt = self.callsign .. " Reports " .. site:generatePopUpReport(false,sectorLabel)
-        -- end
-        -- if (controller and controller:getSettings("enableTTS")) or (notifier and notifier:getSettings("enableTTS")) then
-            msg.tts = announce .. site:generatePopUpReport(true,sectorLabel)
-        -- end
+        msg.txt = self.callsign .. " Reports " .. site:generatePopUpReport(false,sectorLabel)
+        local ttsMsg = site:generatePopUpReport(true,sectorLabel)
         if controller and controller:isEnabled() and controller:getSettings("alerts") then
+            msg.tts = announce .. ttsMsg
             controller:addMessageObj(msg)
         end
 
         if notifier and notifier:isEnabled() then
-            notifier:addMessageObj(msg)
+            local nMsg = HOUND.shallowCopy(msg)
+            local notifierAnnounce = announce
+            local notifierChannel = notifier:getNamedChannel()
+            if type(notifierChannel) == "string" and notifierChannel ~= "" then
+                notifierAnnounce = string.sub(announce, 1, -3) .. " on " .. notifierChannel .. ", "
+            end
+            nMsg.tts = notifierAnnounce .. ttsMsg
+            notifier:addMessageObj(nMsg)
         end
 
     end
@@ -949,16 +965,23 @@ do
             body.tts = site:generateAsleepReport(true,sectorLabel)
         end
         msg.txt = self.callsign .. " Reports " .. body.txt
-        msg.tts = announce .. body.tts
+        msg.tts = body.tts
         if controller and controller:isEnabled() and controller:getSettings("alerts") then
+            msg.tts = announce .. body.tts
             controller:addMessageObj(msg)
         end
 
         if notifier and notifier:isEnabled() then
-            notifier:addMessageObj(msg)
+            local nMsg = HOUND.shallowCopy(msg)
+            local notifierAnnounce = announce
+            local notifierChannel = notifier:getNamedChannel()
+            if type(notifierChannel) == "string" and notifierChannel ~= "" then
+                notifierAnnounce = string.sub(announce, 1, -3) .. " on " .. notifierChannel .. ", "
+            end
+            nMsg.tts = notifierAnnounce .. body.tts
+            notifier:addMessageObj(nMsg)
         end
     end
-
 
     --- Notify that a site is launching.
     -- This function sends a notification when a site is launching if alerts are enabled.
@@ -987,7 +1010,6 @@ function HOUND.Sector:notifySiteLaunching(site)
         if notifier and notifier:isEnabled() then
             notifier:addMessageObj(msg)
         end
-
     end
 
     --- Generate Atis message for sector
