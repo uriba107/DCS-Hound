@@ -77,7 +77,7 @@ do
     function HOUND.Comms.Manager:updateSettings(settings)
         for k,v in pairs(settings) do
             local k0 = tostring(k):lower()
-            if HOUND.setContainsValue({"enabletts","enabletext","alerts"},k0) then
+            if HOUND.setContainsValue({"enabletts","enabletext","alerts","namedchannel"},k0) then
                 self.preferences[k0] = v
             else
                 self.settings[k0] = v
@@ -117,7 +117,7 @@ do
     -- @return settings[key]
     function HOUND.Comms.Manager:getSettings(key)
         local k0 = tostring(key):lower()
-        if HOUND.setContainsValue({"enabletts","enabletext","alerts"},k0) then
+        if HOUND.setContainsValue({"enabletts","enabletext","alerts","namedchannel"},k0) then
             return self.preferences[tostring(key):lower()]
         else
             return self.settings[tostring(key):lower()]
@@ -129,7 +129,7 @@ do
     -- @param value desired value
     function HOUND.Comms.Manager:setSettings(key,value)
         local k0 = tostring(key):lower()
-        if HOUND.setContainsValue({"enabletts","enabletext","alerts"},k0) then
+        if HOUND.setContainsValue({"enabletts","enabletext","alerts","namedchannel"},k0) then
             self.preferences[k0] = value
         else
             self.settings[k0] = value
