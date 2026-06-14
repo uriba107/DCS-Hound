@@ -174,7 +174,7 @@ do
         elseif provider_params.provider == "aws" or provider_params.provider == "polly" then
             provider_params.voice = args.voice or "Joanna"
             provider_params.engine = provider_params.engine or "standard"
-        elseif provider_params.provider == "azure" then
+        elseif provider_params.provider == "azure" or (provider_params.provider == "edge" or provider_params.provider == "edgetts") then
             provider_params.voice = args.voice
         elseif provider_params.provider == "elevenlabs" then
             provider_params.voice = args.voice or "pNInz6obpgDQGcFmaJgB" -- Default to "Adam"
