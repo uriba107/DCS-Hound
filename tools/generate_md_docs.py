@@ -421,6 +421,8 @@ class MarkdownGenerator:
             'atis.md', 'sectors.md', 'event-handlers.md', 'exports.md',
             'advanced-configuration.md', 'map-markers.md', 'notifier.md',
             'platforms.md', 'installation.md',
+            'communication.md', 'performance.md', 'how-it-works.md',
+            'troubleshooting.md',
         ]
         
         for filename in key_docs:
@@ -434,6 +436,25 @@ class MarkdownGenerator:
                     self.log(f"Could not read {filepath}: {e}")
         return docs
     
+    def read_demo_scripts(self, mission_dir: str) -> Dict[str, str]:
+        """Read demo mission Lua scripts as ground truth examples"""
+        scripts = {}
+        demo_paths = [
+            "demo_mission/Caucasus_demo/HoundElint_demo.lua",
+            "demo_mission/Syria_HARM/Hound_Demo_syria.lua",
+        ]
+        for rel_path in demo_paths:
+            filepath = Path(mission_dir).parent / rel_path
+            if filepath.exists():
+                try:
+                    with open(filepath, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                    scripts[rel_path] = content
+                    self.log(f"Loaded demo script: {rel_path}")
+                except Exception as e:
+                    self.log(f"Could not read {filepath}: {e}")
+        return scripts
+
     def build_api_cheatsheet(self, parsed_files: List[FileData]) -> str:
         """Build compact API reference string from parsed method data"""
         PUBLIC_HOUND_FUNCTIONS = {
@@ -452,7 +473,7 @@ class MarkdownGenerator:
         lines = []
         for file_data in parsed_files:
             filename = file_data.filename
-            if not (filename.startswith('800 -') or filename.startswith('801 -') or filename.startswith('000 -')):
+            if not re.match(r'80[0-4] -', filename) and not filename.startswith('000 -'):
                 continue
             
             for func in file_data.functions:
@@ -583,7 +604,7 @@ class MarkdownGenerator:
         all_methods = []
         for file_data in parsed_files:
             filename = file_data.filename
-            if not (filename.startswith('800 -') or filename.startswith('801 -') or filename.startswith('000 -')):
+            if not re.match(r'80[0-4] -', filename) and not filename.startswith('000 -'):
                 continue
             for func in file_data.functions:
                 if not func.signature:
@@ -737,11 +758,11 @@ class MarkdownGenerator:
         blocks = []
         for filename, content in docs.items():
             code_blocks = re.findall(r'```lua\n(.*?)```', content, re.DOTALL)
-            for block in code_blocks[:3]:
+            for block in code_blocks[:5]:
                 block = block.strip()
                 if len(block) > 30 and ('HoundElint' in block or 'HOUND.' in block):
                     blocks.append(f"-- From {filename}:\n{block}")
-        return '\n\n'.join(blocks[:15])
+        return '\n\n'.join(blocks[:30])
     
     def escape_markdown(self, text: str) -> str:
         """Escape special Markdown characters"""
@@ -955,7 +976,7 @@ class MarkdownGenerator:
         
         for file_data in parsed_files:
             filename = file_data.filename
-            if filename.startswith('800 -') or filename.startswith('801 -'):
+            if re.match(r'80[0-4] -', filename):
                 hound_elint_files.append(file_data)
             elif filename.startswith('000 -'):
                 global_files.append(file_data)
@@ -1109,13 +1130,16 @@ class MarkdownGenerator:
         api_cheatsheet = self.build_api_cheatsheet(parsed_files)
         categorized_api = self.build_categorized_api_reference(parsed_files)
         docs = self.read_docs_context(docs_dir)
+        demo_scripts = self.read_demo_scripts(docs_dir)
+        docs.update(demo_scripts)
         valid_methods = self.extract_valid_methods(parsed_files)
         ground_truth = self._extract_code_blocks(docs)
-        
+
         self.log(f"API cheatsheet: {len(api_cheatsheet)} chars")
         self.log(f"Categorized API reference: {len(categorized_api)} chars")
         self.log(f"Generated API doc: {len(generated_api_doc)} chars")
         self.log(f"Ground truth examples: {len(ground_truth)} chars")
+        self.log(f"Demo scripts: {len(demo_scripts)} loaded")
         self.log(f"Valid methods: {len(valid_methods)}")
         
         # Step 2: Define integration scenarios
@@ -1128,18 +1152,24 @@ class MarkdownGenerator:
             },
             {
                 "title": "Basic Setup with Voice Communications",
-                "desc": "Blue coalition with 3 platforms. Enable Controller on 251.000 AM with "
-                        "text messages enabled. Enable ATIS on 253.000 AM. Enable BDA and "
-                        "launch alerts. Pre-brief 2 known SAM sites with custom code names. "
-                        "Use HOUND.MARKER.CIRCLE for markers. Wrap in do...end block.",
+                "desc": "Blue coalition with 3 platforms. Set HOUND.FORCE_MANAGE_MARKERS = true "
+                        "BEFORE creating the instance. Enable Controller with multi-frequency: "
+                        "freq='251.000,35.000' and modulation='AM,FM'. Enable text messages. "
+                        "Enable ATIS on 253.000 AM. Use setTransmitter('all', 'ELINT_C130_1'). "
+                        "Enable BDA and launch alerts. Pre-brief 2 known SAM sites with custom "
+                        "code names. Use HOUND.MARKER.CIRCLE for markers. Wrap in do...end block.",
             },
             {
                 "title": "Multi-Sector Mission with Meta-Sectors and Zones",
-                "desc": "Blue coalition with 4 platforms. Create two child sectors: 'Beslan' and 'Vladikavkaz', "
-                        "each with its own zone using setZone(). Create a meta-sector 'Northern Front' and "
-                        "add both children to it using addChildSector(). Configure a Controller, ATIS, "
-                        "and Notifier on 'Northern Front' with distinct frequencies. Add a global "
-                        "Notifier on guard freq 243.000 AM. Enable text for all sectors. Wrap in do...end.",
+                "desc": "Blue coalition with 4 platforms. Add child sectors with priority: "
+                        "addSector('Beslan', 10) and addSector('Vladikavkaz', 20), each with setZone(). "
+                        "Create a meta-sector 'Northern Front' (default priority) and add both children "
+                        "using addChildSector(). Use configureController + configureAtis on 'Northern Front' "
+                        "with settings tables, then enableController + enableAtis separately. "
+                        "Use enableNotifier with inline settings on 'Northern Front'. "
+                        "Add a global Notifier on guard freq 243.000 AM. "
+                        "Use setTransmitter('Northern Front', 'ELINT_C130_1'). Enable text for all sectors. "
+                        "Wrap in do...end block.",
             },
             {
                 "title": "Event Handlers — Custom Mission Logic",
@@ -1164,10 +1194,26 @@ class MarkdownGenerator:
                         "NOTE: timer.scheduleFunction takes (function, argument, absoluteTime). "
                         "Use timer.getTime() + seconds for the time parameter. "
                         "Put the getSites iteration in a scheduled function (not immediately after systemOn, "
-                        "since detection takes 1-2 minutes). Wrap in do...end block.",
+                        "since detection takes 1-2 minutes). Call onScreenDebug(true) for diagnostics. "
+                         "Wrap in do...end block.",
+            },
+            {
+                "title": "Advanced Configuration — Batch Discovery, Multi-Frequency, and Globals",
+                "desc": "Set HOUND.* globals (FORCE_MANAGE_MARKERS, USE_LEGACY_MARKERS, "
+                        "MARKER_TEXT_POINTER) BEFORE creating the instance. "
+                        "Discover all ELINT platforms using HOUND.Utils.Filter.unitsByPrefix('ELINT ') "
+                        "and loop with pairs(name, unit) calling addPlatform(name). "
+                        "Add a sector with priority: addSector('North', 10) and setZone('North', 'Zone_North'). "
+                        "Enable Controller with multi-frequency: freq='251.000,35.000' and modulation='AM,FM', "
+                        "provider='piper', voice='en_US-ryan-low'. "
+                        "Use setTransmitter('all', 'ELINT_Main'). Enable text and BDA. "
+                        "Add an event handler TABLE with onHoundEvent that checks event.initiator type: "
+                        "if event.id == HOUND.EVENTS.SITE_CREATED then check event.initiator.isEWR before "
+                        "processing. Filter by event.coalition. "
+                        "Call onScreenDebug(true) for diagnostics. Wrap in do...end block.",
             },
         ]
-        
+
         # Step 3: Build system message (sent once, cached across all turns)
         # Use compact cheatsheet + ground truth examples only — the full generated_api_doc
         # is ~22KB of verbose markdown that duplicates info already in the cheatsheet.
@@ -1195,6 +1241,24 @@ STRICT RULES:
 12. Wrap the main script in do...end block
 13. Include clear inline comments
 14. Do NOT invent methods or parameters not in the API reference
+15. configureController/configureAtis/configureNotifier(sector, settings) stores settings
+    but does NOT activate them; call enableController/enableAtis/enableNotifier(sector)
+    separately, or pass settings inline: enableController("sector", {{freq="251.000"}})
+16. addSector("name", priority) — if second arg is a number, it is the priority
+    (lower = higher), not a settings table. Default priority is 50.
+17. Set HOUND.* globals (FORCE_MANAGE_MARKERS, USE_LEGACY_MARKERS, MARKER_TEXT_POINTER,
+    TTS_ENGINE, etc.) BEFORE calling HoundElint:create()
+18. Sector names "default" and "all" are reserved. "default" exists automatically.
+    Pass "all" to apply an operation to every sector.
+19. HOUND.Utils.Filter.unitsByPrefix("ELINT ") returns {{[name]=unit}} for batch
+    platform discovery. Use pairs() and addPlatform(name) in a loop.
+20. event.initiator type varies by HOUND.EVENTS: RADAR_DESTROYED → Emitter
+    (getName, getDcsGroupName), SITE_CREATED → Site (getDcsObject, getNatoDesignation,
+    isEWR boolean field), SITE_REMOVED → Site (DcsGroupName string field).
+    Always check event.coalition and event.initiator type before accessing fields.
+21. Multi-channel frequencies use comma-separated strings:
+    freq = "251.000,35.000" with matching modulation = "AM,FM".
+    Settings fields: freq, modulation, volume, speed, provider, gender, voice.
 
 For each task, return ONLY the Lua code in a markdown code block. No explanations outside the code."""
 
@@ -1264,7 +1328,10 @@ For each task, return ONLY the Lua code in a markdown code block. No explanation
                 f"Check:\n"
                 f"1. Does it implement ALL requirements from the task description?\n"
                 f"2. Are all method calls and parameters correct per the API reference?\n"
-                f"3. Is the code complete and runnable (no placeholders, no missing steps)?\n\n"
+                f"3. Are any HOUND.* globals that should be set BEFORE HoundElint:create()?\n"
+                f"4. For multi-sector missions: are enable* calls using the two-arg form "
+                f"(sectorName, settings) rather than just (settings)?\n"
+                f"5. Is the code complete and runnable (no placeholders, no missing steps)?\n\n"
                 f"If anything is wrong or missing, output the CORRECTED complete Lua code "
                 f"in a markdown code block.\n"
                 f"If the code is already correct, reply with exactly: LGTM")

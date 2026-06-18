@@ -5,6 +5,7 @@ do
         l_stts.GOOGLE_CREDENTIALS = "E:\\Dropbox\\uri\\Dropbox\\DCS\\Mission Building\\googletts.json"
     end
     HOUND.USE_LEGACY_MARKS = false
+    HOUND.MARKER_TEXT_POINTER = "❖ « "
 end
 
 do
@@ -26,6 +27,7 @@ do
         modulation = "AM,AM",
         provider = "piper",
         voice = "en_US-ryan-low",
+        namedChannel = "STRIKE"
     }
 
     local red_tts_args = {
@@ -364,5 +366,13 @@ do
     -- env.info(mist.utils.tableShow(invalidController))
     -- HOUND.Logger.debug("Weapon.Category: " .. HOUND.Mist.utils.tableShow(Weapon.Category))
 
+    -- local chars = {
+    --     "✦","⚠","❖","☚","◄","⇙","¤","📡","🚀","⚡","⧓","⏳","▲"
+    -- }
+    -- local testStr = ""
+    -- for _,char in pairs(chars) do
+    --     testStr = testStr .. char .. " T066 (15)          " .. char .. " « T145 (NASAM)\n"
+    -- end
+    -- trigger.action.outText(testStr,120)
 
 end

@@ -150,7 +150,7 @@ function compile {
     # echo 'env.info("[Hound] - start loading (".. HOUND.VERSION..")")' >> ${TARGET_FILE}
 
     mkdir -p $TARGET_PATH
-    for FILE in src/*; do
+    for FILE in src/*.lua; do
         cat "${FILE}" >> ${TARGET_FILE}
     done
 
