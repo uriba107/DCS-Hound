@@ -87,6 +87,8 @@ Complete list of units capable of ELINT operations in Hound.
 | **Su-24M**         | 6.54° / 0.70°            | C         | Fantasmagoria             |
 | **Su-24MR**        | 5.09° / 0.55°            | C         | Tangazh system            |
 | **A-6E** (PlaceHolder for EA-6B) | 2.54° / 0.27°            | B         |  ALQ-167 ECM (ALQ-99 placeholder)           |
+| **F/A-18C** (Placeholder for EF-18G)        | 1.64° / 0.18°            | A         | AN/ASQ-T50 TCTS Pod - ACMI Pod (AN/ALQ-218 placeholder)  |
+
 
 
 **Note:** Tactical aircraft have smaller antennas = lower accuracy. Best used as gap-fillers or when precision platforms unavailable.

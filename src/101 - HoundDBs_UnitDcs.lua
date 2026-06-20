@@ -1044,6 +1044,7 @@ do
             ['Su-25T'] = { antenna = { size = 3.5, factor = 1 }, require = { Payload = { 'PHANTASM' } }, ins_error = 50 },
             ['AJS37'] = { antenna = { size = 4.5, factor = 1 }, require = { Payload = { 'U22/A Jammer Pod', 'U22 Jammer' } }, ins_error = 50 },
             ['F-16C_50'] = { antenna = { size = 1.45, factor = 1 }, require = { Payload = { 'f-16c_hts_pod' } }, ins_error = 0 },
+            ['FA-18C_hornet'] = { antenna = { size = 14, factor = 1 }, require = { Payload = { 'ais-pod-t50' } },ins_error = 0 }, -- FA-18C stand in for EA-18G, AIS-POD-T50 is standin for AN/ALQ-218
             ['JF-17'] = { antenna = { size = 3.25, factor = 1 }, require = { Payload = { 'KG-600' } }, ins_error = 0 },
             ['A6E'] = { antenna = { size = 9, factor = 1 }, require = { Payload = { 'AN/ALQ-99','HB_F14_EXT_AN_APQ-167','ALQ167' } }, ins_error = 0 }, -- A-6E stand in for EA-6B, ALQ167 is Standin for ALQ-99
             -- Mirage F1 placeholders. Thanks Viboa and Aerges for supplying the typeNames for the module's aircrafts.
