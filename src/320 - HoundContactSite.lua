@@ -153,12 +153,6 @@ do
         return self.state
     end
 
-    --- get current extimted position of primary
-    -- @return DCS point - estimated position
-    function HOUND.Contact.Site:getPos()
-        return self.pos.p or nil
-    end
-
     --- Does site have any living radars still (for DBA)
     -- @local
     -- @return[type=bool] true if any radars are alive in the group
@@ -257,8 +251,9 @@ do
         self:sortEmitters()
         if self.primaryEmitter ~= self.emitters[1] then
             self.primaryEmitter = self.emitters[1]
-            -- self.primaryEmitter:calculateExtrasPosData(self.primaryEmitter:getPos())
-            self.isEWR = self.primaryEmitter.isEWR
+            if self.primaryEmitter then
+                self.isEWR = self.primaryEmitter.isEWR
+            end
             self.state = HOUND.EVENTS.SITE_UPDATED
             return true
         end
@@ -268,6 +263,7 @@ do
     --- update site type
     -- @return[type=Bool] True if site type changed
     function HOUND.Contact.Site:updateTypeAssigned()
+        if not self.primaryEmitter then return false end
         local type = self.primaryEmitter.typeAssigned or {}
         if HOUND.Length(type) > 1 then
             for _,emitter in ipairs(self.emitters) do
@@ -287,10 +283,22 @@ do
     --- update stored site pos
     function HOUND.Contact.Site:updatePos()
         local noPos = (self.pos.p == nil)
-        self:ensurePrimaryHasPos()
         for _,emitter in ipairs(self.emitters) do
             if emitter:hasPos() then
                 self.pos.p = emitter:getPos()
+                if emitter.pos.grid then
+                    self.pos.grid = HOUND.shallowCopy(emitter.pos.grid)
+                end
+                if emitter.pos.be then
+                    self.pos.be = HOUND.shallowCopy(emitter.pos.be)
+                end
+                if emitter.pos.LL then
+                    self.pos.LL = HOUND.shallowCopy(emitter.pos.LL)
+                end
+                if emitter.pos.elev then
+                    self.pos.elev = emitter.pos.elev
+                end
+                self.uncertenty_data = HOUND.shallowCopy(emitter.uncertenty_data)
                 break
             end
         end
@@ -299,30 +307,32 @@ do
         end
     end
 
-    --- Ensure primay emitter has position
+    --- Ensure site has cached position (copies from emitter or uses fallback)
     -- @param[table] refPos DCS Point with adhock position if nothing else is available
     function HOUND.Contact.Site:ensurePrimaryHasPos(refPos)
-        local primary = self:getPrimary()
-        if ( not primary:hasPos() ) then
-            for _,emitter in ipairs(self.emitters) do
-                if ( emitter:hasPos() ) then
-                    primary.pos = HOUND.shallowCopy(emitter.pos)
-                    primary.pos.p = HoundUtils.Dcs.copyPoint(emitter.pos.p)
-                    primary.uncertenty_data = HOUND.shallowCopy(emitter.uncertenty_data)
-                    break
-                end
+        if self:hasPos() then return end
+        for _,emitter in ipairs(self.emitters) do
+            if emitter:hasPos() then
+                self.pos.p = HoundUtils.Dcs.copyPoint(emitter.pos.p)
+                if emitter.pos.grid then self.pos.grid = HOUND.shallowCopy(emitter.pos.grid) end
+                if emitter.pos.be then self.pos.be = HOUND.shallowCopy(emitter.pos.be) end
+                if emitter.pos.LL then self.pos.LL = HOUND.shallowCopy(emitter.pos.LL) end
+                self.pos.elev = emitter.pos.elev
+                self.uncertenty_data = HOUND.shallowCopy(emitter.uncertenty_data)
+                return
             end
-
-            if ( not primary:hasPos() and HoundUtils.Dcs.isPoint(refPos)) then
+        end
+        if HoundUtils.Dcs.isPoint(refPos) and #self.emitters > 0 then
+            local primary = self:getPrimary()
+            if primary then
                 local uncertenty = primary:getMaxWeaponsRange() * 0.75
-                primary.pos.p = HoundUtils.Dcs.copyPoint(refPos)
-                primary.pos = primary:calculateExtrasPosData(primary.pos)
-                primary.uncertenty_data = {}
-                primary.uncertenty_data.major = uncertenty
-                primary.uncertenty_data.minor = uncertenty
-                primary.uncertenty_data.theta = 0
-                primary.uncertenty_data.az = 0
-                primary.uncertenty_data.r  = uncertenty
+                self.pos.p = HoundUtils.Dcs.copyPoint(refPos)
+                self.uncertenty_data = {}
+                self.uncertenty_data.major = uncertenty
+                self.uncertenty_data.minor = uncertenty
+                self.uncertenty_data.theta = 0
+                self.uncertenty_data.az = 0
+                self.uncertenty_data.r  = uncertenty
             end
         end
     end
@@ -331,7 +341,7 @@ do
     function HOUND.Contact.Site:updateSector()
         for _,emitter in ipairs(self.emitters) do
             if emitter:hasPos() then
-                self.threatSectors = emitter.threatSectors
+                self.threatSectors = HOUND.shallowCopy(emitter.threatSectors)
                 self.primarySector = emitter.primarySector
                 break
             end

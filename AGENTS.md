@@ -92,11 +92,12 @@ When the user requests a durable behavior change, record it here or in the relev
 
 ### What stays owned by root
 
-- Build orchestration: `hound_builder.sh` (references `tools/` and `src/`)
+- Build orchestration: `hound_builder.sh` (concatenates `src/*.lua` → `include/HoundElint.lua`, strips debug, optional minify). Run `bash hound_builder.sh --compile` to rebuild.
+- **Generated file**: `include/HoundElint.lua` is built by `hound_builder.sh` from `src/*.lua` — do not edit directly.
 - LDoc configuration: `config_general.ld`, `config_developer.ld`
 - Development loader: `HoundElint_devel.lua` (sequential source loading). Dev loop: edit `HoundWorkDir` in both `hound_loader.lua` + `HoundElint_devel.lua`, then `loadfile hound_loader.lua` from DCS mission to load individual `src/*.lua` files preserving per-file stack frames.
 - Top-level API references: `HOUND_API_REFERENCE.md`, `DEVELOPER_API_REFERENCE.md`, `llm-integration-guide.md`, `llms.txt`
 - GitHub metadata: `LICENSE`
-- Project assets: `README.MD`, `images/`, `logo/` (gitignored), `include/` (build output + TTS lib)
+- Project assets: `README.MD`, `images/`, `logo/` (gitignored), `include/` (TTS audio lib — see generated file note above)
 - IDE config: `.vscode/`, `.cursor/` (both gitignored)
 - AI planning: `.claude/` (gitignored)
