@@ -121,12 +121,6 @@ do
         return string.format("%s-%d",trackType,self.uid)
     end
 
-    --- get current extimted position
-    -- @return DCS point - estimated position
-    function HOUND.Contact.Emitter:getPos()
-        return HoundUtils.Dcs.copyPoint(self.pos.p)
-    end
-
     --- get radar transmission wavelength
     -- @ param[type=bool] isTracking detemins which frequency range will be retunred
     function HOUND.Contact.Emitter:getWavelenght(isTracking)

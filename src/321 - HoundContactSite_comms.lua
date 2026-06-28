@@ -5,35 +5,12 @@ do
     local l_mist = HOUND.Mist
     local HoundUtils = HOUND.Utils
 
-    --- return Information used in Text messages primary emitter
-    -- @param utmZone (bool) True will add UTM zone to response
-    -- @param MGRSdigits (Number) number of digits in the MGRS part of the response (eg. 2 = 12, 5=12345)
-    -- @return GridPos (string) MGRS grid position (eg. "CY 564 123", "DN 2 4")
-    -- Return BE (string) Bullseye position string (eg. "035/15", "187/120")
-    function HOUND.Contact.Site:getTextData(utmZone,MGRSdigits)
-        local primary = self:getPrimary()
-        if not primary:hasPos() then return end
-        return primary:getTextData(utmZone,MGRSdigits)
-    end
-
-    --- return Information used in TTS messages info will be that of primary emitter
-    -- @param utmZone (bool) True will add UTM zone to response
-    -- @param MGRSdigits (Number) number of digits in the MGRS part of the response (eg. 2 = 12, 5=12345)
-    -- @return GridPos (string) MGRS grid position (eg. "Charlie Yankee one two   Three  four")
-    -- Return BE (string) Bullseye position string (eg. "Zero Three Five 15")
-    function HOUND.Contact.Site:getTtsData(utmZone,MGRSdigits)
-        local primary = self:getPrimary()
-        if not primary:hasPos() then return end
-        return primary:getTtsData(utmZone,MGRSdigits)
-    end
-
     --- generate Text for the Radio menu item
     -- @return string
     function HOUND.Contact.Site:getRadioItemText()
-        local primary = self:getPrimary()
-        if not primary:hasPos() then return self:getName() end
+        if not self:hasPos() then return self:getName() end
 
-        local GridPos,BePos = primary:getTextData(true,1)
+        local GridPos,BePos = self:getTextData(true,1)
         BePos = BePos:gsub(" for ","/")
         return self:getName() .. " - BE: " .. BePos .. " (".. GridPos ..")"
     end
@@ -74,14 +51,13 @@ do
         if sectorName then
             msg = msg .. " in " .. sectorName
         else
-            local primary = self:getPrimary()
-            if primary:hasPos() then
+            if self:hasPos() then
                 local GridPos,BePos
                 if isTTS then
-                    GridPos,BePos = primary:getTtsData(true,1)
+                    GridPos,BePos = self:getTtsData(true,1)
                     msg = msg .. ", bullseye " .. BePos .. ", grid ".. GridPos
                 else
-                    GridPos,BePos = primary:getTextData(true,1)
+                    GridPos,BePos = self:getTextData(true,1)
                     msg = msg .. " BE: " .. BePos .. " (grid ".. GridPos ..")"
                 end
             end
@@ -170,14 +146,13 @@ do
             msg = msg .. ", identified as " .. self:getDesignation(true)
         else
             msg = msg .. ", identified as " .. self:getDesignation(true)
-            local primary = self:getPrimary()
-            if primary:hasPos() then
+            if self:hasPos() then
                 local GridPos,BePos
                 if isTTS then
-                    GridPos,BePos = primary:getTtsData(true,1)
+                    GridPos,BePos = self:getTtsData(true,1)
                     msg = msg .. ", bullseye " .. BePos .. ", grid ".. GridPos
                 else
-                    GridPos,BePos = primary:getTextData(true,1)
+                    GridPos,BePos = self:getTextData(true,1)
                     msg = msg .. " BE: " .. BePos .. " (grid ".. GridPos ..")"
                 end
             end
@@ -197,16 +172,14 @@ do
             return table.concat(boatData," ")
         end
         local str = ""
-
-        local primary = self:getPrimary()
-        if getmetatable(primary) ~= HOUND.Contact.Emitter or primary.pos.p == nil or primary.uncertenty_data == nil then return str end
-        local phoneticGridPos,phoneticBulls = primary:getTtsData(false,1)
+        if not self:hasPos() or not self.uncertenty_data then return str end
+        local phoneticGridPos,phoneticBulls = self:getTtsData(false,1)
         local reportedName = self:getName() .. " "
         if NATO then
             reportedName = ""
         end
         str = reportedName .. self:getDesignation(NATO)
-        if primary:isAccurate() then
+        if self:isAccurate() then
             str = str .. ", reported"
         else
             str = str .. ", " .. HoundUtils.TTS.getVerbalContactAge(self.last_seen,true,NATO)
@@ -216,8 +189,8 @@ do
         else
             str = str .. " at " .. phoneticGridPos
         end
-        if not primary:isAccurate() then
-            str = str .. ", accuracy " .. HoundUtils.TTS.getVerbalConfidenceLevel( primary.uncertenty_data.r )
+        if not self:isAccurate() then
+            str = str .. ", accuracy " .. HoundUtils.TTS.getVerbalConfidenceLevel(self.uncertenty_data.r)
         end
         str = str .. "."
         return str

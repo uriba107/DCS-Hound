@@ -45,12 +45,16 @@ graph TD
     E --> N["Uncertainty Ellipse"]
     E --> O["State: NEW/DETECTED/UPDATED/ASLEEP"]
 
-    G --> P["Primary Emitter<br/>Best radar in group"]
+    G -->|copies pos + uncertainty| P["Site-owned copy<br/>grid, BE, LL, elev, uncertenty"]
     G --> Q["Type Refinement<br/>via intersection"]
+    G --> R["Primary Emitter<br/>Best radar in group"]
+
+    P --> S["Radio Comms<br/>(reads self, not primary)"]
 
     style E fill:#e1f5ff
     style F fill:#e1f5ff
     style G fill:#fff3e0
+    style P fill:#e8f5e9
 ```
 
 ---
@@ -266,6 +270,8 @@ Created when first Emitter from a DCS Group detected.
 
 **Management:** All sites stored in `ElintWorker.sites{[groupId] = Site}` (master list). Each site's `emitters[]` array contains **references** to emitters from `ElintWorker.contacts` that belong to the same DCS Group. This allows logical grouping without data duplication.
 
+Position and uncertainty data is **copied** from emitters into the site during `updatePos()` (grid, BE, LL, elev, uncertainty). Radio/comms methods (`generateTtsBrief`, `generateDeathReport`, etc.) read from the site's own copy, never from the primary emitter — so the site remains functional even after all emitters are destroyed.
+
 **Key Fields:**
 
 ```lua
@@ -287,10 +293,11 @@ last_seen            -- Max of emitters
 last_launch_notify   -- Launch alert cooldown
 preBriefed           -- Any emitter pre-briefed?
 
--- Position (from emitters)
-pos                  -- From available emitters
+-- Position (copied from emitter, independent)
+pos                  -- {p, grid, be, LL, elev} — owned by site
+uncertenty_data      -- {major, minor, theta, az, r} — owned by site
 
--- Capabilities (max from emitters)
+-- Capabilities (max from emitters, aggregated in update())
 maxWeaponsRange      -- Engagement range
 detectionRange       -- Detection range
 isEWR                -- From primary emitter
