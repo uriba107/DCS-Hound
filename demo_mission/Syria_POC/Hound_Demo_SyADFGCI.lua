@@ -135,8 +135,8 @@ do
 
     Elint_blue:setTransmitter("all","Mt_Meron_ELINT")
 
-    -- faking Satellite intel, add all enemy IADS EW radars as prebriefed.
-    env.info("importing Skynet IADS EWRs")
+    -- fake Satellite intel, add all EWRs as prebriefed contacts
+    env.info("importing EWRs as prebriefed contacts")
     for ewRadarName,ewRadar in pairs(HOUND.Utils.Filter.unitsByPrefix('EWR')) do
 
         -- local ewRadarName = nil
