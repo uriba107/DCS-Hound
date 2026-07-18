@@ -42,8 +42,18 @@ do
 
     function runTest.moduleTesting()
         assert(loadfile(HoundWorkDir..'demo_mission\\hound_unit_test\\extras\\test-houndUtils.lua'))()
-        assert(loadfile(HoundWorkDir..'demo_mission\\hound_unit_test\\extras\\test-houndContact.lua'))()
+        assert(loadfile(HoundWorkDir..'demo_mission\\hound_unit_test\\extras\\test-HoundContactEmitter.lua'))()
+        assert(loadfile(HoundWorkDir..'demo_mission\\hound_unit_test\\extras\\test-HoundContactSite.lua'))()
+        assert(loadfile(HoundWorkDir..'demo_mission\\hound_unit_test\\extras\\test-HoundSector.lua'))()
+        assert(loadfile(HoundWorkDir..'demo_mission\\hound_unit_test\\extras\\test-hound-worker.lua'))()
+        assert(loadfile(HoundWorkDir..'demo_mission\\hound_unit_test\\extras\\test-HoundCommsManager.lua'))()
+        assert(loadfile(HoundWorkDir..'demo_mission\\hound_unit_test\\extras\\test-HoundCoroutine.lua'))()
         lu.LuaUnit.run()
+        -- clean up config/contact state so subsequent batches start fresh
+        HOUND.Config.configMaps = {}
+        HOUND.ContactManager._workers = {}
+        HOUND.INSTANCES = {}
+        collectgarbage("collect")
     end
 
     function runTest.initTesting()
@@ -62,7 +72,7 @@ do
     end
 
     function runTest.delayedTestingUi(self)
-        assert(loadfile(HoundWorkDir..'demo_mission\\hound_unit_test\\extras\\test-hound-Comms.lua'))()
+        assert(loadfile(HoundWorkDir..'demo_mission\\hound_unit_test\\extras\\test-hound-comms.lua'))()
         lu.LuaUnit.run('--pattern', 'Comms')
         UserSpaceLogging(string.format("Finished UI Testing for %s. Please check logs\n Please switch to dynamic slot if possible to retest.",TestHoundFunctional.eventTriggerUnit:getName()))
     end
