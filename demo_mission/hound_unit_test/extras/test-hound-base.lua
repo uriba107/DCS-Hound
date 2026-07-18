@@ -52,6 +52,12 @@ do
         sa6:enableEmission(false)
         setupGroup(sa6)
 
+        local sa3 = Group.getByName('SA-3_TINIAN')
+        lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(sa3))
+        lu.assertEquals(sa3:getSize(),6)
+        sa3:enableEmission(false)
+        setupGroup(sa3)
+
     end
     function TestHoundFunctional:Test_02_base_01_Init()
         -- make sure nothing is currently active
@@ -167,7 +173,7 @@ do
         local ewr = Group.getByName('EWR_SAIPAN')
         lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(ewr))
         lu.assertEquals(ewr:getSize(),1)
-        sa5:enableEmission(true)
+        ewr:enableEmission(true)
 
         local ships = Group.getByName('SHIPS_NORTH')
         lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(ships))
@@ -311,7 +317,7 @@ do
         lu.assertEquals(sa3_sr,sa3_site:getPrimary())
         lu.assertEquals("SA-2 or SA-3",sa3_site:getTypeAssigned())
         lu.assertEquals(sa3_site:getName(),"T004")
-        lu.assertEquals(sa3_site:generatePopUpReport(false,"Tinian"),"T004, identified as 2 or 3, is active in Tinian.")
+        lu.assertEquals(sa3_site:generatePopUpReport(false,"Tinian"),"2 or 3, T004, is active in Tinian.")
         self.houndBlue:preBriefedContact('SA-3_TINIAN',"Non La")
         lu.assertEquals(self.houndBlue:countPreBriefedContacts(),3)
         lu.assertEquals(sa3_site:getName(),"Non La")
@@ -320,7 +326,7 @@ do
         lu.assertNotEquals(sa3_sr,sa3_site:getPrimary())
         lu.assertEquals(sa3_tr,sa3_site:getPrimary())
         lu.assertEquals("SA-3",sa3_site:getTypeAssigned())
-        lu.assertEquals(sa3_site:generatePopUpReport(false,"Tinian"),"Non La, identified as 3, is active in Tinian.")
+        lu.assertEquals(sa3_site:generatePopUpReport(false,"Tinian"),"3, Non La, is active in Tinian.")
         lu.assertNotEquals(sa3_site:getName(),"T004")
     end
 

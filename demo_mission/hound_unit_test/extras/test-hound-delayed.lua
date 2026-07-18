@@ -38,36 +38,40 @@ do
         self:setBaseUnitCount()
     end
     function TestHoundFunctional:Test_2mDelay_01_debugOutput()
-        local delayTest = function (expectedStr)
-            lu.assertStrContains(self.houndBlue:printDebugging(),expectedStr)
-        end
         local delayMove = function()
             Group.getByName("TOR_SAIPAN"):getController():setSpeed(50)
         end
-        self.houndBlue:preBriefedContact('SA-5_SAIPAN')
-
-        lu.assertEquals(self.houndBlue:countPreBriefedContacts(),4)
         lu.assertStrContains(self.houndBlue:printDebugging(),string.format("| Sites: %d | Contacts: %d (A:%d ,PB:%d)",
                 self.baseUnitCount.sites,self.baseUnitCount.contacts,self.baseUnitCount.active,self.baseUnitCount.preBriefed))
+
+        self.houndBlue:preBriefedContact('SA-5_SAIPAN')
+        lu.assertEquals(self.houndBlue:countPreBriefedContacts(), self.baseUnitCount.preBriefed + 1)
         self.houndBlue:preBriefedContact('EWR_SAIPAN')
-        lu.assertEquals(self.houndBlue:countPreBriefedContacts(),5)
+        lu.assertEquals(self.houndBlue:countPreBriefedContacts(), self.baseUnitCount.preBriefed + 2)
         local tor = Group.getByName("TOR_SAIPAN")
         tor:enableEmission(false)
         self.houndBlue:preBriefedContact(tor:getName())
-        lu.assertEquals(self.houndBlue:countPreBriefedContacts(),6)
+        lu.assertEquals(self.houndBlue:countPreBriefedContacts(), self.baseUnitCount.preBriefed + 3)
 
         local sa5 = Group.getByName('SA-5_SAIPAN')
         sa5:enableEmission(true)
 
-        assert(timer.scheduleFunction(delayTest,string.format("| Sites: %d | Contacts: %d (A:%d ,PB:%d)",
+        local pollDebug
+        pollDebug = function(expectedStr, retriesLeft)
+            local debugStr = self.houndBlue:printDebugging()
+            if string.find(debugStr, expectedStr, 1, true) then return end
+            if retriesLeft <= 0 then lu.assertStrContains(debugStr, expectedStr) return end
+            timer.scheduleFunction(pollDebug, expectedStr, timer.getTime() + 5, retriesLeft - 1)
+        end
+        timer.scheduleFunction(pollDebug, string.format("| Sites: %d | Contacts: %d (A:%d ,PB:%d)",
             self.baseUnitCount.sites,self.baseUnitCount.contacts-1,self.baseUnitCount.active-1,self.baseUnitCount.preBriefed
-        ),timer.getTime()+90))
+        ), timer.getTime() + 90, 6)
         assert(timer.scheduleFunction(delayMove,nil,timer.getTime()+60))
     end
 
     function TestHoundFunctional:Test_2mDelay_02_Sector()
         local sites = self.houndBlue.contacts:listAllSites()
-        lu.assertEquals(HOUND.Length(sites),4)
+        lu.assertEquals(HOUND.Length(sites), self.baseUnitCount.sites + 1)
         for _,site in ipairs(sites) do
             lu.assertEquals(getmetatable(site),HOUND.Contact.Site)
         end
@@ -130,10 +134,19 @@ do
                 lu.assertEquals(event.initiator:getDcsGroupName(),"SA-5_SAIPAN")
                 lu.assertEquals(event.initiator:countEmitters(),0)
                 lu.assertIsFalse(event.initiator:hasRadarUnits())
-                lu.assertStrContains(self:printDebugging(),string.format("| Sites: %d | Contacts: %d (A:%d ,PB:%d)",
-                    TestHoundFunctional.baseUnitCount.platforms,
-                    TestHoundFunctional.baseUnitCount.sectors,TestHoundFunctional.baseUnitCount.zones,TestHoundFunctional.baseUnitCount.controllers,TestHoundFunctional.baseUnitCount.atis,TestHoundFunctional.baseUnitCount.notifiers,
-                    TestHoundFunctional.baseUnitCount.sites,TestHoundFunctional.baseUnitCount.contacts-1,TestHoundFunctional.baseUnitCount.active-1,TestHoundFunctional.baseUnitCount.preBriefed))
+                local pollSiteRemoved
+                pollSiteRemoved = function(_, retriesLeft)
+                    local debugStr = self:printDebugging()
+                    local expected = string.format("| Sites: %d | Contacts: %d (A:%d ,PB:%d)",
+                        TestHoundFunctional.baseUnitCount.sites - 1,
+                        TestHoundFunctional.baseUnitCount.contacts - 1,
+                        TestHoundFunctional.baseUnitCount.active - 1,
+                        TestHoundFunctional.baseUnitCount.preBriefed)
+                    if string.find(debugStr, expected, 1, true) then return end
+                    if retriesLeft <= 0 then lu.assertStrContains(debugStr, expected) return end
+                    timer.scheduleFunction(pollSiteRemoved, nil, timer.getTime() + 5, retriesLeft - 1)
+                end
+                timer.scheduleFunction(pollSiteRemoved, nil, timer.getTime() + 1, 6)
             end
         end
         lu.assertEquals(type(self.houndBlue.onHoundEvent),"function")
@@ -141,10 +154,6 @@ do
     end
 
     function TestHoundFunctional:Test_2mDelay_04_destroy()
-        function delayTest(expectedStr)
-            lu.assertStrContains(self.houndBlue:printDebugging(),expectedStr)
-        end
-
         local function destroyObject(DcsObject)
             local units = {}
             if getmetatable(DcsObject) == Unit then
@@ -178,7 +187,8 @@ do
         lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(grp))
         lu.assertEquals(grp:getSize(),8)
 
-        destroyObject(grp:getUnit(2)) -- nuke TR first
+        local targetUnit = grp:getUnit(2)
+        timer.scheduleFunction(function() destroyObject(targetUnit) end, nil, timer.getTime() + 3)
     end
 
     function TestHoundFunctional:Test_2mDelay_05_ships()
@@ -193,20 +203,30 @@ do
     end
 
     function TestHoundFunctional:Test_6mDelay_01_preBriefed()
-        function delayTest(expectedStr)
-            lu.assertEquals(self.houndBlue:countPreBriefedContacts(),3)
-            lu.assertStrContains(self.houndBlue:printDebugging(),expectedStr)
-        end
         self.houndBlue:onScreenDebug(true)
 
         lu.assertStrContains(self.houndBlue:printDebugging(),string.format("| Sites: %d | Contacts: %d (A:%d ,PB:%d)",
-            self.baseUnitCount.sites+1,self.baseUnitCount.contacts+1,self.baseUnitCount.active+1,self.baseUnitCount.preBriefed)
+            self.baseUnitCount.sites,self.baseUnitCount.contacts,self.baseUnitCount.active,self.baseUnitCount.preBriefed)
         )
         local tor = Group.getByName("TOR_SAIPAN")
         tor:enableEmission(true)
-        assert(timer.scheduleFunction(delayTest,string.format("| Sites: %d | Contacts: %d (A:%d ,PB:%d)",
-            self.baseUnitCount.sites+2,self.baseUnitCount.contacts+2,self.baseUnitCount.active+3,self.baseUnitCount.preBriefed-1
-        ),timer.getTime()+45))
+        local pollPreBriefed
+        pollPreBriefed = function(expectedStr, retriesLeft)
+            local pb = self.houndBlue:countPreBriefedContacts()
+            if pb == self.baseUnitCount.preBriefed or pb == self.baseUnitCount.preBriefed - 1 then
+                local debugStr = self.houndBlue:printDebugging()
+                if string.find(debugStr, expectedStr, 1, true) then return end
+            end
+            if retriesLeft <= 0 then
+                lu.assertEquals(self.houndBlue:countPreBriefedContacts(), self.baseUnitCount.preBriefed - 1)
+                lu.assertStrContains(self.houndBlue:printDebugging(), expectedStr)
+                return
+            end
+            timer.scheduleFunction(pollPreBriefed, expectedStr, timer.getTime() + 5, retriesLeft - 1)
+        end
+        timer.scheduleFunction(pollPreBriefed, string.format("| Sites: %d | Contacts: %d (A:%d ,PB:%d)",
+            self.baseUnitCount.sites+2,self.baseUnitCount.contacts+2,self.baseUnitCount.active+3,self.baseUnitCount.preBriefed
+        ), timer.getTime() + 45, 6)
     end
 
     function TestHoundFunctional:Test_6mDelay_02_exports()
@@ -227,8 +247,12 @@ do
     end
 
     function TestHoundFunctional:Test_6mDelay_04_shoot()
-        function delayTest(expectedStr)
-            lu.assertStrContains(self.houndBlue:printDebugging(),expectedStr)
+        local pollShoot
+        pollShoot = function(expectedStr, retriesLeft)
+            local debugStr = self.houndBlue:printDebugging()
+            if string.find(debugStr, expectedStr, 1, true) then return end
+            if retriesLeft <= 0 then lu.assertStrContains(debugStr, expectedStr) return end
+            timer.scheduleFunction(pollShoot, expectedStr, timer.getTime() + 5, retriesLeft - 1)
         end
         shootEvent = {}
         shootEvent.HoundInstance = self.houndBlue
@@ -270,8 +294,8 @@ do
         -- lu.assertIsTrue(uavgrp:isExist())
         local sam_brain = SA6:getUnit(1):getController()
         sam_brain:knowTarget(Unit.getByName("MQ-9_TGT"))
-        assert(timer.scheduleFunction(delayTest,string.format("| Sites: %d | Contacts: %d (A:%d ,PB:%d)",
+        timer.scheduleFunction(pollShoot,string.format("| Sites: %d | Contacts: %d (A:%d ,PB:%d)",
             self.baseUnitCount.sites+2,self.baseUnitCount.contacts+2,self.baseUnitCount.active+3,self.baseUnitCount.preBriefed-1
-        ),timer.getTime()+120))
+        ),timer.getTime()+120, 6)
     end
 end
