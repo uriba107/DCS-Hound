@@ -57,10 +57,9 @@ Invincible MQ-9 in the Damascus area — intended to provoke RED SAM/EWR emissio
 ## Known Issues
 
 - Mission is labeled as "still suffering from some issues to be resolved." This is an integration POC, not a polished release.
-- SEAD spawning may be overly aggressive — no cooldown gate or per-ship counter exists in the current handler.
+- SEAD spawning has a 300-second cooldown gate to prevent unbounded task accumulation — ensure this interval suits your mission pacing.
 - `ELINT_TURKEY` platform is defined but its location and operational status in the miz are unverified.
 - Marker cleanup behavior (Hound-controlled via `HOUND.FORCE_MANAGE_MARKERS = true`) may interact unpredictably with SEAD RTB/deletion timing.
-- Script references `HOUND.EVENTS.SITE_CREATED` — verify this event type matches your Hound build.
 - SRS voice provider `supertonic` with random voice selection may produce inconsistent audio quality per session.
 
 ## Comparison with Syria_HARM

@@ -30,7 +30,7 @@ Scale proof-of-concept DCS World mission on the Syria map demonstrating Hound EL
 
 - **`HOUND.FORCE_MANAGE_MARKERS = true`** — Hound controls all marker creation/cleanup. Marker removal triggers SEAD flight RTB and deletion (60s/120s delays in Hound core).
 - **Platforms** (5): `Mt_Hermon_ELINT`, `Mt_Meron_ELINT`, `ELINT_C130_south`, `ELINT_C130_north`, `ELINT_TURKEY`. All transmitters route through `Mt_Meron_ELINT`.
-- **Sectors** (8 direct + 3 meta): Damascus, South Syria, Homs, Latakya, Palmyra, Sayqal, Haleb, Tabqa, Lebanon. Meta-sectors: South AO (OPTIMUS, 306.000 AM, supertonic), North AO (JAZZ, 306.500 AM, libritts), East AO (BUMBLEBEE, 307.000 AM, supertonic).
+- **Sectors** (9 direct + 3 meta): Damascus, South Syria, Homs, Latakya, Palmyra, Sayqal, Haleb, Tabqa, Lebanon. Meta-sectors: South AO (OPTIMUS, 306.000 AM, supertonic), North AO (JAZZ, 306.500 AM, libritts), East AO (BUMBLEBEE, 307.000 AM, supertonic).
 - **ATIS**: Enabled on 7 sectors with piper/libritts providers. No controllers enabled (all commented out).
 - **Prebriefed contacts**: All EWR groups matched by prefix `EWR` via `HOUND.Utils.Filter.unitsByPrefix` are imported as prebriefed.
 - **SRS**: `STTS.DIRECTORY` set to `C:\Program Files\DCS-SimpleRadio-Standalone\ExternalAudio`.
@@ -42,7 +42,7 @@ Scale proof-of-concept DCS World mission on the Syria map demonstrating Hound EL
 - **Mission**: `AUFTRAG:NewSEAD(siteMGroup, 20000)` — A-10C or F-16 (per miz template). Randomized loadout from template defaults.
 - **Radio**: If the contact's sector has a controller, the SEAD flight is given the controller's frequency/modulation.
 - **Output**: Coalition outText: `"Fragging a SEAD flight (%s) to strike %s (%s)"`.
-- **No cooldown or per-ship cap** in current script — every `SITE_CREATED` event spawns a flight.
+- **300-second cooldown** between SEAD spawns — `_lastSeadSpawn` timestamp prevents unbounded task accumulation.
 
 ### Third-Party Libraries
 

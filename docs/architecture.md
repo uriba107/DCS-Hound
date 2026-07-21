@@ -49,7 +49,8 @@ graph TD
     G --> Q["Type Refinement<br/>via intersection"]
     G --> R["Primary Emitter<br/>Best radar in group"]
 
-    P --> S["Radio Comms<br/>(reads self, not primary)"]
+    P -->|SAM/non-naval| S["Radio Comms<br/>(reads self, not primary)"]
+    G -->|Naval TTS| T["Primary Emitter data<br/>(delegates to emitter TTS brief)"]
 
     style E fill:#e1f5ff
     style F fill:#e1f5ff
@@ -270,7 +271,7 @@ Created when first Emitter from a DCS Group detected.
 
 **Management:** All sites stored in `ElintWorker.sites{[groupId] = Site}` (master list). Each site's `emitters[]` array contains **references** to emitters from `ElintWorker.contacts` that belong to the same DCS Group. This allows logical grouping without data duplication.
 
-Position and uncertainty data is **copied** from emitters into the site during `updatePos()` (grid, BE, LL, elev, uncertainty). Radio/comms methods (`generateTtsBrief`, `generateDeathReport`, etc.) read from the site's own copy, never from the primary emitter — so the site remains functional even after all emitters are destroyed.
+Position and uncertainty data is **copied** from emitters into the site during `updatePos()` (grid, BE, LL, elev, uncertainty). Radio/comms methods (`generateDeathReport`, `generatePopUpReport`, etc.) read from the site's own copy. However, `generateTtsBrief` for **naval** sites delegates to each emitter's `generateTtsBrief` rather than using the site-owned copy (see `HoundContactSite_comms`). For SAM/non-naval sites, comms read the site-owned copy — so the site remains functional even after all emitters are destroyed.
 
 **Key Fields:**
 

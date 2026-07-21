@@ -8,7 +8,7 @@ Validate Hound ELINT runtime behavior inside DCS World. Tests exercise Lua sourc
 
 - **`hound-unit-tests.lua`** — Batch orchestrator; schedules 6 test batches via `timer.scheduleFunction`
 - **`hound-unit-test-devel.miz`** + **`hound-unit-test-devel/`** — DCS mission files (Mariana Islands)
-- **`extras/test-hound-*.lua`** — Per-domain test files loaded via `loadfile`
+- **`extras/test-*.lua`** — Per-domain test files loaded via `loadfile`
 - **`extras/luaunit.lua`** — Test framework (vendored from `tools/testing/`, ~120KB, treat as read-only)
 - **`README.md`** — Primary reference: timeline, per-file method tables, mission layout, running instructions, discrepancies
 

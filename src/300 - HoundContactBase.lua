@@ -100,7 +100,7 @@ do
         return HoundUtils.Dcs.isPoint(self.pos.p)
     end
 
-    --- get current extimted position
+    --- get current estimated position
     -- @return DCS point - estimated position
     function HOUND.Contact.Base:getPos()
         return HoundUtils.Dcs.copyPoint(self.pos.p)
@@ -308,9 +308,9 @@ do
     -- @param utmZone (bool) True will add UTM zone to response
     -- @param MGRSdigits (Number) number of digits in the MGRS part of the response (eg. 2 = 12, 5=12345)
     -- @return GridPos (string) MGRS grid position (eg. "CY 564 123", "DN 2 4")
-    -- Return BE (string) Bullseye position string (eg. "035/15", "187/120")
+    -- @return BE (string) Bullseye position string (eg. "035/15", "187/120")
     function HOUND.Contact.Base:getTextData(utmZone,MGRSdigits)
-        if self:getPos() == nil then return end
+        if self:getPos() == nil or self.pos.grid == nil or self.pos.be == nil then return end
         local GridPos = ""
         if utmZone then
             GridPos = GridPos .. self.pos.grid.UTMZone .. " "
@@ -320,8 +320,8 @@ do
         if MGRSdigits == nil then
             return GridPos,BE
         end
-        local E = l_math.floor(self.pos.grid.Easting/(10^l_math.min(5,l_math.max(1,5-MGRSdigits))))
-        local N = l_math.floor(self.pos.grid.Northing/(10^l_math.min(5,l_math.max(1,5-MGRSdigits))))
+        local E = l_math.floor(self.pos.grid.Easting/(10^l_math.min(5,l_math.max(0,5-MGRSdigits))))
+        local N = l_math.floor(self.pos.grid.Northing/(10^l_math.min(5,l_math.max(0,5-MGRSdigits))))
         GridPos = GridPos .. " " .. E .. " " .. N
 
         return GridPos,BE
@@ -331,9 +331,9 @@ do
     -- @param utmZone (bool) True will add UTM zone to response
     -- @param MGRSdigits (Number) number of digits in the MGRS part of the response (eg. 2 = 12, 5=12345)
     -- @return GridPos (string) MGRS grid position (eg. "Charlie Yankee one two   Three  four")
-    -- Return BE (string) Bullseye position string (eg. "Zero Three Five 15")
+    -- @return BE (string) Bullseye position string (eg. "Zero Three Five 15")
     function HOUND.Contact.Base:getTtsData(utmZone,MGRSdigits)
-        if self:getPos() == nil then return end
+        if self:getPos() == nil or self.pos.grid == nil or self.pos.be == nil then return end
         local phoneticGridPos = ""
         if utmZone then
             phoneticGridPos =  phoneticGridPos .. HoundUtils.TTS.toPhonetic(self.pos.grid.UTMZone) .. " "
@@ -345,8 +345,8 @@ do
         if MGRSdigits==nil then
             return phoneticGridPos,phoneticBulls
         end
-        local E = l_math.floor(self.pos.grid.Easting/(10^l_math.min(5,l_math.max(1,5-MGRSdigits))))
-        local N = l_math.floor(self.pos.grid.Northing/(10^l_math.min(5,l_math.max(1,5-MGRSdigits))))
+        local E = l_math.floor(self.pos.grid.Easting/(10^l_math.min(5,l_math.max(0,5-MGRSdigits))))
+        local N = l_math.floor(self.pos.grid.Northing/(10^l_math.min(5,l_math.max(0,5-MGRSdigits))))
         phoneticGridPos = phoneticGridPos .. " " .. HoundUtils.TTS.toPhonetic(E) .. "   " .. HoundUtils.TTS.toPhonetic(N)
 
         return phoneticGridPos,phoneticBulls

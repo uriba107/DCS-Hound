@@ -20,7 +20,7 @@ This subtree owns all .miz demo missions, demo Lua scripts, unit test files, and
 ### Test Harness
 
 - `hound_unit_test/extras/luaunit.lua` -- Lua unit testing framework (upstream, ~120KB).
-- Test files are named `test-hound-*.lua` and loaded from `hound-unit-tests.lua`.
+- Test files match `test-*.lua` and are loaded from `hound-unit-tests.lua`.
 - Tests are run against source scripts loaded via `HoundElint_devel.lua` path conventions.
 - `hound-unit-test-devel.miz` -- DCS mission that loads and runs the test suite.
 

@@ -137,6 +137,12 @@ do
         self.torContact:useUnitPos(HOUND.MARKER.POINT)
         self.site:ensurePrimaryHasPos()
         lu.assertIsTrue(self.site:hasPos())
+        lu.assertIsTable(self.site.pos.grid)
+        lu.assertIsTable(self.site.pos.be)
+        lu.assertIsTable(self.site.uncertenty_data)
+        lu.assertIsString(self.site.pos.grid.MGRSDigraph)
+        lu.assertIsNumber(self.site.pos.be.brg)
+        lu.assertIsNumber(self.site.uncertenty_data.major)
     end
 
     function TestHoundContactSite:TestEnsurePrimaryHasPosRefPos()
@@ -146,6 +152,10 @@ do
         local pos = self.site:getPos()
         lu.assertEquals(pos.x,500000)
         lu.assertEquals(pos.z,1900000)
+        lu.assertIsTable(self.site.uncertenty_data)
+        lu.assertIsNumber(self.site.uncertenty_data.major)
+        lu.assertIsNumber(self.site.uncertenty_data.minor)
+        lu.assertIsNumber(self.site.uncertenty_data.theta)
     end
 
     function TestHoundContactSite:TestUpdate()
