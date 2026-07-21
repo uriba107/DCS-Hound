@@ -721,9 +721,9 @@ do
     function HOUND.Contact.Emitter:export()
         local contact = {}
         contact.typeName = self.typeName
-        contact.uid = self.uid % 100
-        contact.DcsObjectName = self.DcsObject:getName()
-        if self.pos.p ~= nil and self.uncertenty_data ~= nil then
+        contact.uid = self.uid and (self.uid % 100) or 0
+        contact.DcsObjectName = self.DcsObject and self.DcsObject:getName() or "unknown"
+        if self.pos and self.pos.p ~= nil and self.uncertenty_data ~= nil then
             contact.pos = HoundUtils.Dcs.copyPoint(self.pos.p)
             contact.LL = self.pos.LL
 

@@ -93,7 +93,7 @@ do
             self.callback.interval = self.houndConfig:getAtisUpdateInterval()
         end
         if self.callback.scheduler == nil and self.scheduler ~= nil then
-            self.startCallbackLoop()
+            self:startCallbackLoop()
         end
     end
 
