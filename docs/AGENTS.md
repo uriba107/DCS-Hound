@@ -24,7 +24,7 @@ This subtree owns all hand-written documentation (`.md` files), generated HTML d
 - Hand-written docs should be updated when public API changes.
 - Generated HTML docs are rebuilt via `tools/generate_docs.sh` (which calls `ldoc .`).
 - Use the `docs/` directory as the `--guides-dir` for `generate_md_docs.py`.
-- Markdown docs use GitHub-flavored markdown with fenced code blocks for examples.
+- Markdown docs use GitHub-flavored Markdown with fenced code blocks for examples.
 - Keep the `llms.txt` at repo root in sync with available docs.
 
 ## Verification

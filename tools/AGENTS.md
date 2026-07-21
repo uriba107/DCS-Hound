@@ -21,6 +21,7 @@ This subtree owns all developer tooling that processes source code into delivera
   | `-m` | Rebuild demo `.miz` files |
   | `--release` | Compile + docs + missions, strips `-TRUNK` version suffix |
   | `--all` | Lint + docs + compile + missions |
+
 - **`generate_md_docs.py`**: Generates `HOUND_API_REFERENCE.md`, `DEVELOPER_API_REFERENCE.md`, and `llm-integration-guide.md` from LDoc-annotated source. Requires Ollama for the LLM integration guide.
 - **`validate_db.lua` / `validate_db.sh`**: Validate DCS unit databases for correctness.
 - **`hound_json_export.lua`**: Export contact data to JSON.
@@ -50,7 +51,7 @@ Do not put logic on these lines — they are eliminated at compile.
 
 - Python doc generation scripts must remain compatible with Python 3.10+.
 - When adding new source files to `src/`, update doc generation file lists if needed.
-- Keep `requirements.txt` minimal and pinned.
+- Keep `requirements.txt` minimal.
 - Scripts should work on both macOS and Linux (see `hound_builder.sh` for platform detection patterns).
 
 ## Verification

@@ -690,7 +690,7 @@ Worker and query unit tests covering `HOUND.ElintWorker` (500) and `HOUND.ElintW
 
 | Method | What It Tests |
 |--------|--------------|
-| `TestCountContacts` | Total contact count via `#` operator |
+| `TestCountContacts` | Total contact count via `HOUND.Length` (pairs-based) |
 | `TestCountContactsWithSector` | Sector-filtered count |
 | `TestGetContacts` | `getContacts` returns unordered table |
 | `TestGetContactsEmpty` | Empty contacts → empty table |

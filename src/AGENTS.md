@@ -10,11 +10,11 @@ Runs in DCS sandbox (Lua 5.1): no `require`, no `io.*`/`os.*` (except `os.time`/
 
 ## Ownership
 
-This subtree owns all Lua source files that compose the HoundElint system. The single deliverable is `include/HoundElint.lua` (minified build), assembled from these sources by `hound_builder.sh`.
+This subtree owns all Lua source files that compose the HoundElint system. The normal build artifact is `include/HoundElint.lua`, assembled from these sources by `hound_builder.sh`. An optional minified build `include/minified/HoundElint_.lua` is produced with `hound_builder.sh --minify`.
 
 ## Local Contracts
 
-- **Numbered loading order**: 36 files prefixed `NNN - ` loaded sequentially by `HoundElint_devel.lua`. The numbering establishes dependency order (lower = loaded first).
+- **Numbered loading order**: 36 files prefixed `NNN -` loaded sequentially by `HoundElint_devel.lua`. The numbering establishes dependency order (lower = loaded first).
 - **File groups by number range**:
   - `000-099`: Globals, Logger, Coroutine, Mist shim, Matrix math
   - `100-199`: Databases (DCS units, mods, config)

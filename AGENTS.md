@@ -98,6 +98,6 @@ When the user requests a durable behavior change, record it here or in the relev
 - Development loader: `HoundElint_devel.lua` (sequential source loading). Dev loop: edit `HoundWorkDir` in both `hound_loader.lua` + `HoundElint_devel.lua`, then `loadfile hound_loader.lua` from DCS mission to load individual `src/*.lua` files preserving per-file stack frames.
 - Top-level API references: `HOUND_API_REFERENCE.md`, `DEVELOPER_API_REFERENCE.md`, `llm-integration-guide.md`, `llms.txt`
 - GitHub metadata: `LICENSE`
-- Project assets: `README.MD`, `images/`, `logo/` (gitignored), `include/` (TTS audio lib — see generated file note above)
+- Project assets: `README.MD`, `images/`, `logo/` (gitignored), `include/DCS-SimpleTextToSpeech.lua` (TTS audio lib)
 - IDE config: `.vscode/`, `.cursor/` (both gitignored)
 - AI planning: `.claude/` (gitignored)

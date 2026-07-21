@@ -20,7 +20,7 @@ do
 
         lu.assertIsTrue(HOUND.Utils.Dcs.isUnit(emitter))
         lu.assertIsTrue(HOUND.Utils.Dcs.isUnit(platform1))
-        lu.assertIsTrue(HOUND.Utils.Dcs.isUnit(platform1))
+        lu.assertIsTrue(HOUND.Utils.Dcs.isUnit(platform2))
 
         lu.assertNotNil(self.contact)
         lu.assertIsTable(self.contact)

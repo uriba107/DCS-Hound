@@ -29,7 +29,7 @@ Load `Hound_Demo_syria.miz` in DCS World (Syria map). Join a BLUE aircraft slot 
 - **SA-2 Site** (`SYR_SA-2`): Pre-briefed, Fan-song + Flat Face radars
 - **SA-6 Battery** (`SYR_SA6`): Mobile, spawns at North (zone `SA6_North`), South (zone `SA6_South`), and Joker (random template from SA-6/SA-11/SA-8) on 600s cycle
 - **SA-11 Site** (`SYRIA gnd 3`): Reported in CSV, Snow Drift + 4x Fire Dome
-- **EWRs**: 5 sites (EWR-SKYNET-0 through 5), all pre-briefed
+- **EWRs**: 5 sites (EWR-SKYNET-0 through 4), all pre-briefed
 - **SHORAD**: Groups prefixed `SHORAD-`, 30% random activation via Skynet
 - **MANPADS**: Groups prefixed `MANPAD-`, toggleable via F10 menu (50% activation chance)
 - **IADS**: Skynet instance `lebanonIADS`, EWRs added by prefix `EWR-SKYNET`
