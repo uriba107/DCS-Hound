@@ -27,7 +27,7 @@ do
         setmetatable(instance, HOUND.Contact.Site)
         self.__index = self
         instance.DcsObject = HoundContact:getDcsObject():getGroup()
-        instance.gid = SiteId or tonumber(instance.DcsObject:getId())
+        instance.gid = SiteId or tonumber(instance.DcsObject:getID())
         instance.DcsGroupName = instance.DcsObject:getName()
         instance.DcsObjectName = instance.DcsObject:getName()
         instance.typeAssigned = HoundContact.typeAssigned

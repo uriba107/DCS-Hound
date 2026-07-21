@@ -297,7 +297,7 @@ do
     function HOUND.Sector:removeTransmitter()
         self.settings.transmitter = nil
         for k, v in pairs(self.comms) do
-            if k ~= "menu" then v:removeTransmitter() end
+            if k ~= "menu" and v.removeTransmitter then v:removeTransmitter() end
         end
     end
 

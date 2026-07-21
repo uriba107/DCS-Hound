@@ -192,6 +192,7 @@ do
 
     function HOUND.Utils.getNormalAngularError(maxError)
         -- https://en.m.wikipedia.org/wiki/Box%E2%80%93Muller_transform
+        if not maxError then return {az = 0, el = 0} end
         local stddev = maxError / 2
         local Magnitude = l_math.sqrt(-2 * l_math.log(l_math.random())) * stddev
         local Theta = 2* math.pi * l_math.random()
@@ -329,8 +330,8 @@ do
     -- @return Formation callsign string
     function HOUND.Utils.getFormationCallsign(player,override,flightMember)
         local callsign = ""
+        if type(player) ~= "table" or type(player.unitName) ~= "string" then return callsign end
         local DcsUnit = Unit.getByName(player.unitName)
-        if type(player) ~= "table" then return callsign end
         if type(flightMember) == "table" and override == nil then
             override,flightMember = flightMember,override
         end
@@ -693,6 +694,7 @@ do
     function HOUND.Utils.Dcs.getRadarDetectionRange(DcsUnit)
         -- TODO: fix for ships
         local detectionRange = 0
+        if not DcsUnit then return detectionRange end
         local unit_sensors = DcsUnit:getSensors()
         if not unit_sensors then return detectionRange end
         if not HOUND.setContains(unit_sensors,Unit.SensorType.RADAR) then return detectionRange end
@@ -1569,6 +1571,9 @@ do
         if getmetatable(a) == HOUND.Contact.Site then
             return a.gid < b.gid
         end
+        if not a.uid and not b.uid then return false end
+        if not a.uid then return true end
+        if not b.uid then return false end
         return a.uid < b.uid
     end
 
@@ -1578,6 +1583,9 @@ do
     -- @return[type=bool]
     -- @usage table.sort(unSorted,HOUND.Utils.Sort.ContactsById)
     function HOUND.Utils.Sort.ContactsById(a,b)
+        if not a.uid and not b.uid then return false end
+        if not a.uid then return true end
+        if not b.uid then return false end
         if  a.uid ~= b.uid then
             return a.uid < b.uid
         end

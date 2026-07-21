@@ -71,12 +71,12 @@ do
     --- Get datapoint projected position
     -- @return[type=table] DCS point
     function HOUND.Contact.Datapoint.getPos(self)
-        if self.kalman then
+        if self.kalman and self.kalman.getValue then
             return self.kalman:getValue().pos or nil
         end
         if not self.az and not self.el then return end
         self.pos = HoundUtils.Geo.getProjectedIP(self.platformPos, self.az, self.el)
-        if not HountUtils.Dcs.isPoint(self.pos) then
+        if not HoundUtils.Dcs.isPoint(self.pos) then
             self.pos = HoundUtils.Geo.getProjectedIP(self.platformPos, self.az, (self.el - (self.platformPrecision/2)))
         end
         return self.pos
