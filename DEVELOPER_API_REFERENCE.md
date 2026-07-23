@@ -2,7 +2,7 @@
 
 This document provides comprehensive API documentation for the HOUND ELINT system, automatically generated from LDOC comments in the source code.
 
-*Generated on: 2026-04-29 13:28:09*
+*Generated on: 2026-07-23 22:37:14*
 
 ## Overview
 
@@ -14,7 +14,7 @@ The HOUND ELINT (Electronic Intelligence) system is a comprehensive radar detect
 - **Advanced triangulation**: Uses multiple platform bearings for accurate position estimation
 - **Automatic classification**: Identifies radar types and associated weapon systems
 - **Multi-platform support**: Works with various ELINT-capable aircraft
-- **Sector management**: Organizes contacts by geographical sectors
+- **Sector management**: Organizes contacts by geographical sectors, supporting meta-sector hierarchies
 - **Communication integration**: Provides automated reports via radio and text-to-speech
 - **Marker system**: Places visual markers on the F10 map
 
@@ -22,6 +22,7 @@ The HOUND ELINT (Electronic Intelligence) system is a comprehensive radar detect
 
 - [HOUND](#hound)
 - [HOUND.Logger](#hound-logger)
+- [HOUND.Coroutine](#hound-coroutine)
 - [HOUND.Mist](#hound-mist)
 - [HOUND.Matrix](#hound-matrix)
 - [HOUND.DB](#hound-db)
@@ -49,6 +50,9 @@ The HOUND ELINT (Electronic Intelligence) system is a comprehensive radar detect
 - [HOUND.ContactManager](#hound-contactmanager)
 - [HOUND.Sector](#hound-sector)
 - [HOUND.Sector](#hound-sector)
+- [HoundElint](#houndelint)
+- [HoundElint](#houndelint)
+- [HoundElint](#houndelint)
 - [HoundElint](#houndelint)
 - [HoundElint](#houndelint)
 - [HOUND](#hound)
@@ -94,9 +98,10 @@ Global settings and paramters
 - `MARKER_LINE_OPACITY`: Opacity of the line around the area markers
 - `MARKER_TEXT_POINTER`: Char/string used as pointer on text markers
 - `TTS_ENGINE`: Hound will use the table to determin TTS engine priority
+- `TTS_TRANSLATE_SETTINGS`: table that will be passed to HoundTTS if used, to allow inline translation
 - `MENU_PAGE_LENGTH`: Number of Items Hound will put in a menu before starting a new menu page
 - `REF_DIST`: Reference distance for contact scoring. Used to calculate the weight of datap
-- `ENABLE_KALMAN`: If true, will use Kalman filter for contact scoring (currently not implemented, default is false)
+- `KALMAN_DEBUG`: If true, will print kalman filter debug info (currently not implemented, default is false)
 - `AUTO_ADD_PLATFORM_BY_PAYLOAD`: If true, will automatically add platforms that have ELINT payloads (currently, due to DCS limits, only works for units spawning with the required pods)
 
 ### `HOUND.MARKER`
@@ -371,6 +376,94 @@ Hound Logger decleration
 ### `HOUND.Logger.setBaseLevel(level)`
 
 function HOUND.Logger.StopWatch:Stop() if not HOUND.DEBUG then return nil end if os == nil then return nil end local stoptime = os.clock() local str = "[ StopWatch ] " if self.name ~= nil then str = str .. self.name .. " - " end str = str .. stoptime - self.starttime .." ms" HOUND.Logger.debug(str) end
+
+---
+
+## HOUND.Coroutine
+
+HOUND.Coroutine Collaborative scheduler for long-running Hound work. Lets pipelines (Sniff discovery, UpdateMarkers, sector membership) yield across sim ticks so a single expensive call can't hitch DCS. In Lua 5.1 (DCS), pcall/xpcall are C functions — you cannot coroutine.yield() across them. Coroutine bodies must be plain Lua. Errors are caught via coroutine.resume's return values (it returns false, error_string on error — it never throws).
+
+**File:** `011 - HoundCoroutine.lua`
+
+### Tables
+
+### `_list`
+
+internal: active coroutine records
+
+### Functions
+
+### `pump()`
+
+internal pump — advances one tick's worth of coroutines. coroutine.resume returns (false, err) on error — never throws.
+
+*Note: This is a local function*
+
+### `ensurePump()`
+
+start pump if idle
+
+*Note: This is a local function*
+
+### `HOUND.Coroutine.add(func, opts, ...)`
+
+schedule a coroutine Body is plain Lua (no pcall/xpcall wrapper) so coroutine.yield works in Lua 5.1. Errors surface via coroutine.resume's return.
+
+**Parameters:**
+- `function` (func): body to run
+- `opts` (opt): table { name=string, interval=number, onError=function, onYield=function }
+- `extra` (...): args passed to func
+
+**Returns:**
+- (id): (opaque handle) or nil on error
+
+### `HOUND.Coroutine.cancel(id)`
+
+cancel a coroutine by handle
+
+**Parameters:**
+- `handle` (id): returned from add
+
+**Returns:**
+- (true): if found and removed
+
+### `HOUND.Coroutine.cancelByName(name)`
+
+cancel all coroutines matching a name
+
+**Parameters:**
+- `e` (nam): string
+
+**Returns:**
+- (number): removed
+
+### `HOUND.Coroutine.isRunning(name)`
+
+check whether a coroutine with the given name is active used by re-entry guards
+
+**Parameters:**
+- `e` (nam): string
+
+**Returns:**
+- (boo): l
+
+### `HOUND.Coroutine.count()`
+
+total active coroutine count
+
+### `HOUND.Coroutine.hasWork()`
+
+predicate: any active coroutines?
+
+### `HOUND.Coroutine.yield()`
+
+convenience alias for coroutine.yield
+
+*Note: This is a local function*
+
+### `HOUND.Coroutine.shutdown()`
+
+cancel everything; used by HoundElint:destroy and :systemOff
 
 ---
 
@@ -1064,6 +1157,46 @@ HOUND.Utils This class holds generic function used by all of Hound Components
 
 General functions
 
+### Mapping
+
+Value mapping Functions
+
+### Dcs
+
+DCS object functions
+
+### Geo
+
+Geo Function
+
+### Markers
+
+Marker Functions
+
+### Text
+
+Text Functions
+
+### elint
+
+Elint functions
+
+### Vectors
+
+Vector functions
+
+### Zone
+
+Zone functions
+
+### Sort
+
+Sort Functions
+
+### Filter
+
+Filter Functions
+
 ### Tables
 
 ### `HOUND.Utils`
@@ -1080,6 +1213,10 @@ HOUND.Utils decleration
 - `ReportId`: intrnal ATIS numerator
 - `_MarkId`: internal markId Counter
 - `_HoundId`: internal HoundId counter
+
+### `HOUND.Utils.Mapping.CURVES`
+
+Value mapping Functions
 
 ### Functions
 
@@ -1114,6 +1251,808 @@ Set New initial marker Id (DEPRICATED)
 **See also:** HOUND.Utils.Marker.setInitialId
 
 *Note: This is a local function*
+
+### `HOUND.Utils.absTimeDelta(t0, t1)`
+
+Get time delta between two timestemps
+
+**Parameters:**
+- `time` (t0): to test (in number of seconds)
+- `t1` (opt): time in number of seconds. if not provided, will use current DCS mission time
+
+**Returns:**
+- (time): delta between t0 and t1
+
+**Usage:**
+```lua
+HOUND.Utils.absTimeDelta(<10s ago>,now) ==> 10
+```
+
+### `HOUND.Utils.angleDeltaRad(rad1, rad2)`
+
+return difference in radias between two angles (bearings)
+
+**Parameters:**
+- `angle` (rad1): in radians
+- `angle` (rad2): in radians
+
+**Returns:**
+- (angle): difference between rad1 and rad2 (between pi and -pi)
+
+### `HOUND.Utils.normalizeAngle(rad)`
+
+normlize angle in radians
+
+**Parameters:**
+- `]` (type=number): rad
+
+**Returns:**
+- (normlized): angle in rad (0-2Pi)
+
+### `HOUND.Utils.AzimuthAverage(azimuths)`
+
+return avarage azimuth
+
+**Parameters:**
+- `a` (azimuths): list of azimuths in radians
+
+**Returns:**
+- (the): avarage azimuth of the list provided in radians (between 0 and 2*pi)
+
+### `HOUND.Utils.getMagVar(DCSpoint)`
+
+Return magnetic variation in point
+
+**Parameters:**
+- `t` (DCSpoin): point
+
+**Returns:**
+- (Magentic): variation in radians
+
+### `HOUND.Utils.PointClusterTilt(points, MagNorth, refPos)`
+
+return the tilt of a point cluster
+
+**Parameters:**
+- `a` (points): list of DCS points
+- `MagNorth` (opt): (Bool) if true value will include north var correction
+- `refPos` (opt): a DCS point that will be the reference for azimuth
+
+**Returns:**
+- (azimuth): in radians (between 0 and pi)
+
+### `HOUND.Utils.RandomAngle()`
+
+returns a random angle
+
+**Returns:**
+- (random): angle in radians between 0 and 2*pi
+
+### `HOUND.Utils.getRoundedElevationFt(elev, resolution)`
+
+return ground elevation rouded to 50 feet
+
+**Parameters:**
+- `Height` (elev): in meters
+- `resolution` (opt): round to the nerest increment. default is 50
+
+**Returns:**
+- (elevation): converted to feet, rounded to the nearest 50 ft
+
+### `HOUND.Utils.roundToNearest(input, nearest)`
+
+return rounted number nearest a set interval
+
+**Parameters:**
+- `numeric` (input): value to be rounded
+- `numeric` (nearest): value of the step to round input to (e.g 10,50,500)
+
+**Returns:**
+- (input): number rounded to the nearest interval provided.(e.g 3244 -> 3250)
+
+### `HOUND.Utils.getNormalAngularError(maxError)`
+
+get normal distribution angular error. will generate gaussian magnitude based on maxError and random angle
+
+**Parameters:**
+- `maximum` (maxError): expected error (~2σ bound) in radians
+
+**Returns:**
+- (table): {el,az}, contining error in Azimuth and elevation in radians
+
+### `HOUND.Utils.getControllerResponse()`
+
+get random controller snarky remark
+
+**Returns:**
+- (random): response string from pool
+
+### `HOUND.Utils.getCoalitionString(coalitionID)`
+
+get coalition string
+
+**Parameters:**
+- `integer` (coalitionID): of DCS coalition id
+
+**Returns:**
+- (string): name of coalition
+
+### `HOUND.Utils.getHemispheres(lat, lon, fullText)`
+
+returns hemisphere information for LatLon
+
+**Parameters:**
+- `(float)` (lat): latitude in decimal Degrees
+- `(float)` (lon): longitude in decimal Degrees
+- `(bool)` (fullText): determin if function should return "E" or "East"
+
+**Returns:**
+- ((table)): {NS=string,EW=string} return hemisphere strings
+
+### `HOUND.Utils.getReportId(ReportId)`
+
+get "ATIS" report ID returns next Phonetic report ID. Report ID loops around, i.e "Alpha" --> "Bravo" -> .. -> "Zulu" -> "Alpha"
+
+**Parameters:**
+- `ReportId` (opt): char, current report ID if not using global var
+
+**Returns:**
+- ((string)): phonetic ID ("Alpha","Bravo", "charlie"...)
+- ((Char)): letter of ReportId ('A','B','C','D')
+
+### `HOUND.Utils.DecToDMS(cood)`
+
+Convert Decimal Degrees to DMS (D.DD to DMS) { d=deg, m=minutes, s=sec, mDec = Decimal minutes }
+
+**Parameters:**
+- `(float)` (cood): lat or lon (e.g. 35.443, -124.5543)
+
+**Returns:**
+- (DMS): (table)
+
+### `HOUND.Utils.getBR(src, dst)`
+
+retrun Bearing (magnetic) and range between two points
+
+**Parameters:**
+- `(DCS` (src): pos) Position of source
+- `(DCS` (dst): pos) Position of destination
+
+**Returns:**
+- ((table)): {br = bearing(float), brStr=bearing(string, 3 chars rounded, e.g "044"), rng = Range in NM}
+
+### `HOUND.Utils.getFormationCallsign(player, override, flightMember)`
+
+Get group callsign from unit
+
+**Parameters:**
+- `mist.DB` (player): entry to get formation callsign for
+- `override` (opt): callsign substitution table
+- `flightMember` (opt): if True. value returned will be the full callsign (i.e "Uzi 1 1" rather then the default "Uzi 1")
+
+**Returns:**
+- (Formation): callsign string
+
+### `HOUND.Utils.getHoundCallsign(namePool)`
+
+get Callsign
+
+**Parameters:**
+- `namePool` (opt): string "GENERIC" or "NATO"
+
+**Returns:**
+- (string): random callsign from pool
+
+### `HOUND.Utils.useDMM(DcsUnit)`
+
+Unit use DMM
+
+**Parameters:**
+- `DCS` (DcsUnit): Unit or typeName string
+
+### `HOUND.Utils.useMGRS(DcsUnit)`
+
+Unit use MGRS
+
+**Parameters:**
+- `DCS` (DcsUnit): Unit or typeName string
+
+### `HOUND.Utils.hasPayload(DcsUnit, payloadName)`
+
+does unit has payload (placeholder)
+
+**Parameters:**
+- `DCS` (DcsUnit): unit
+- `Name` (payloadName): of payload
+
+**Returns:**
+- (type=bool): always true
+
+### `HOUND.Utils.hasTask(DcsUnit, taskName)`
+
+does unit has task (placeholder)
+
+**Parameters:**
+- `DCS` (DcsUnit): unit
+- `Name` (taskName): of task
+
+**Returns:**
+- (type=bool): always true
+
+### `HOUND.Utils.Mapping.clamp(input, out_min, out_max)`
+
+clamn values to range (minmax)
+
+**Parameters:**
+- `input` (type=number): value
+- `out_min` (type=number): Minimum output value
+- `out_max` (type=number): Maximum output value
+
+*Note: This is a local function*
+
+### `HOUND.Utils.Mapping.linear(input, in_min, in_max, out_min, out_max, clamp)`
+
+map input to range (Arduino implementation) HOUND.Utils.Mapping.linear(0.5,0,1,0,100) = 50
+
+**Parameters:**
+- `t` (inpu): value
+- `Minimum` (in_min): allowble input value
+- `Maximum` (in_max): allowable input value
+- `Minimum` (out_min): allowable output value
+- `Maximum` (out_max): allowable output value
+- `clamp` (opt): Bool if true values will be clipped at range specified
+
+**Returns:**
+- (calculated): mapped value
+
+**Usage:**
+```lua
+HOUND.Utils.Mapping.linear(10,0,10,0,100) = 100
+```
+
+*Note: This is a local function*
+
+### `HOUND.Utils.Mapping.nonLinear(value, in_min, in_max, out_min, out_max, sensitivity, curve_type)`
+
+Map values on a curve
+
+**Parameters:**
+- `original` (value): input
+- `Minimum` (in_min): input value
+- `Maximum` (in_max): input value
+- `out_min` (opt): Minimum output value (0 if not specified)
+- `out_max` (opt): Maximum output value (1 if not specified)
+- `sensitivity` (opt): requested sensitivity (0-9, default 9 is leased curved)
+- `curve_type` (opt): requested curve profile (0-6, 0 is default)
+
+### `HOUND.Utils.Dcs.isPoint(point)`
+
+check if point is DCS point
+
+**Parameters:**
+- `DCS` (point): point candidate
+
+**Returns:**
+- (type=Bool): True if is valid point
+
+### `HOUND.Utils.Dcs.copyPoint(point)`
+
+shallow copy DCS points
+
+**Parameters:**
+- `DCS` (point): point
+
+**Returns:**
+- (type=table): Shallow copy of point
+
+### `HOUND.Utils.Dcs.isUnit(obj)`
+
+check if object is DCS Unit
+
+**Parameters:**
+- `DCS` (obj): Object canidate
+
+**Returns:**
+- (type=Bool): True if object is unit
+
+### `HOUND.Utils.Dcs.isGroup(obj)`
+
+check if object is DCS Group
+
+**Parameters:**
+- `DCS` (obj): Object canidate
+
+**Returns:**
+- (type=Bool): True if object is Group
+
+### `HOUND.Utils.Dcs.isStaticObject(obj)`
+
+check if object is DCS static object
+
+**Parameters:**
+- `DCS` (obj): Object canidate
+
+**Returns:**
+- (type=Bool): True if object is static object
+
+### `HOUND.Utils.Dcs.isHuman(obj)`
+
+check if object is a human unit
+
+**Parameters:**
+- `DCS` (obj): Object canidate
+
+**Returns:**
+- (type=Bool): True if object is a Human unit
+
+### `HOUND.Utils.Dcs.getPlayers(coalitionId)`
+
+get list of human clinets for hound.
+
+**Returns:**
+- (list): of units
+
+### `HOUND.Utils.Dcs.getPlayersInGroup(DcsGroup)`
+
+get human players in group @param[type=tab] DcsGroup @return table of players in group
+
+### `HOUND.Utils.Dcs.isRadarTracking(DcsUnit)`
+
+check if Unit is tracking anything with it's radar
+
+**Returns:**
+- (type=bool): True if tracking
+
+### `HOUND.Utils.Dcs.getSamRange(DcsUnit)`
+
+return maximum weapon range of DCS Unit
+
+**Parameters:**
+- `DCS` (DcsUnit): unit - in Hound context unit with emitting radar
+
+**Returns:**
+- (maximum): weapon range in meters of the DCS Unit
+
+### `HOUND.Utils.Dcs.getSamMaxRange(DcsUnit)`
+
+return maximum weapon range in the group of DCS Unit
+
+**Parameters:**
+- `DCS` (DcsUnit): unit - in Hound context unit with emitting radar
+
+**Returns:**
+- (maximum): weapon range in meters of the DCS Group the emitter is part of
+
+### `HOUND.Utils.Dcs.getRadarDetectionRange(DcsUnit)`
+
+return Radar detection Range for provided unit
+
+**Parameters:**
+- `DCS` (DcsUnit): Unit with radars sensor
+
+**Returns:**
+- (Unit): radar detection range agains airborne targers in meters
+
+### `HOUND.Utils.Dcs.getRadarUnitsInGroup(DcsGroup)`
+
+return all radar units in group
+
+**Parameters:**
+- `DCS` (DcsGroup): Group
+
+**Returns:**
+- (type=table): Table of radar units in group
+
+### `HOUND.Utils.Dcs.getGroupNames(prefix)`
+
+get all current Groups, name only
+
+**Parameters:**
+- `prefix` (type=?string): return only groups starting with prefix
+
+**Returns:**
+- (table): of currently existing DCS group names
+
+### `HOUND.Utils.Dcs.getUnitNames(prefix)`
+
+get all current Groups, name only
+
+**Parameters:**
+- `prefix` (type=?string): return only groups starting with prefix
+
+**Returns:**
+- (table): of currently existing DCS group names
+
+### `HOUND.Utils.Dcs.getStaticObjectNames(prefix)`
+
+get all current static objects, name only
+
+**Returns:**
+- (table): of currently existing DCS static object names
+
+### `HOUND.Utils.Geo.checkLOS(pos0, pos1)`
+
+Return if the is LOS between two DCS points checks both radar horizon (round earth) and DCS terrain LOS
+
+**Parameters:**
+- `(DCS` (pos0): pos)
+- `(DCS` (pos1): pos)
+
+**Returns:**
+- ((bool)): true if both units have LOS between them
+
+### `HOUND.Utils.Geo.EarthLOS(h0, h1)`
+
+Returns maximum horizon distance given heigh above the earth of two points if only one observer hight is provided, result would be maximum view distance to Sea Level
+
+**Parameters:**
+- `height` (h0): of observer 1 in meters
+- `h1` (opt): height of observer 2 in meters
+
+**Returns:**
+- (distance): maximum LOS distance in meters
+
+### `HOUND.Utils.Geo.getProjectedIP(p0, az, el)`
+
+Returns Projected line impact point with Terrain
+
+**Parameters:**
+- `source` (p0): Postion
+- `Azimuth` (az): from Position (radians)
+- `Elevation` (el): angle from position (radians)
+
+**Returns:**
+- (DCS): point of intersection with ground
+
+### `HOUND.Utils.Geo.setPointHeight(point, offset)`
+
+Ensure Inpoint DCS point has Elevation
+
+**Parameters:**
+- `DCS` (point): point
+- `offset` (type=?number): offset in meters from actual height
+
+**Returns:**
+- (Point): but with elevation
+
+*Note: This is a local function*
+
+### `HOUND.Utils.Geo.setHeight(point, offset)`
+
+Ensure input point or point table all have valid Elevation
+
+**Parameters:**
+- `DCS` (point): point
+- `offset` (type=?number): offset in meters from actual height
+
+**Returns:**
+- (same): as input, but with elevation. will return original value if is not DCS point
+
+### `HOUND.Utils.Geo.get2DDistance(src, dst)`
+
+Get 2D distance between two points wrapper for mist.utils.get2DDist
+
+**Parameters:**
+- `dcs` (src): point
+- `dcs` (dst): point
+
+**Returns:**
+- (distance): in meters
+
+### `HOUND.Utils.Geo.get3DDistance(src, dst)`
+
+Get 3D distance between two points wrapper for mist.utils.get3DDist
+
+**Parameters:**
+- `dcs` (src): point
+- `dcs` (dst): point
+
+**Returns:**
+- (distance): in meters
+
+### `HOUND.Utils.Geo.sqDist2D(src, dst)`
+
+Squared 2D distance between two points (ground plane, ignores altitude). Use for ordering/comparisons where only relative magnitude matters - skips sqrt for speed. In DCS world coordinates, X/Z is the ground plane and Y is altitude.
+
+**Parameters:**
+- `dcs` (src): point (vec3)
+- `dcs` (dst): point (vec3)
+
+**Returns:**
+- (squared): distance in m^2 on the X/Z plane, or 0 if either point is invalid
+
+### `HOUND.Utils.Marker.getId()`
+
+Get next Markpoint Id return the next available MarkId
+
+**Returns:**
+- (Next): MarkId
+
+*Note: This is a local function*
+
+### `HOUND.Utils.Marker.setInitialId(startId)`
+
+Set New initial marker Id
+
+**Parameters:**
+- `Number` (startId): to start counting from
+
+**Returns:**
+- (type=Bool): True if initial ID was updated
+
+*Note: This is a local function*
+
+### `HOUND.Utils.Marker.create(args)`
+
+create Marker entity
+
+**Parameters:**
+- `args` (opt): parameters of markpoint
+
+**Returns:**
+- (Hound): Marker Instance
+
+*Note: This is a local function*
+
+### `HOUND.Utils.Text.getLL(lat, lon, minDec)`
+
+convert LL to displayable string eg. "N33°15'12" E042°10'45"" or "N33°15.200' E042°10.750'"
+
+**Parameters:**
+- `Latitude` (lat): in decimal degrees ("32.343","-14.44333")
+- `Longitude` (lon): in decimal degrees ("42.343","-144.432")
+- `minDec` (opt): (bool) if true, function will return LL in DM.M format
+
+**Returns:**
+- (LL): string.
+
+### `HOUND.Utils.Text.getTime(timestamp)`
+
+Text Function - returns current DCS time in military time format string
+
+**Parameters:**
+- `timestamp` (opt): DCS time in seconds (timer.getAbsTime()) - Optional, if not arg provided will return for current game time
+
+**Returns:**
+- (time): in human radable format e.g. "1430", "0812"
+
+### `HOUND.Utils.Elint.generateAngularError(maxError)`
+
+Elint Function - Generate angular error
+
+**Parameters:**
+- `maximum` (maxError): expected error (~2σ bound) in radians
+
+**Returns:**
+- (table): {az,el} error in radians per element
+
+### `HOUND.Utils.Elint.getAzimuth(src, dst, sensorPrecision)`
+
+Get Azimuth (and elevation) between two points
+
+**Parameters:**
+- `position` (src): of the source (i.e Hound platform)
+- `position` (dst): of the destination (i.e emitting radar)
+- `angular` (sensorPrecision): resolution (in rad) of platform against radar
+
+**Returns:**
+- (type=number): Azimuth from source to destination in radians (0 to 2*pi)
+- (type=number): Elevation angle from source to destination in radians (-pi to pi)
+- (type=table): the vector betweeb the points
+
+### `HOUND.Utils.Elint.getSignalStrength(src, dst, maxDetection)`
+
+Get Signal strength of point
+
+**Parameters:**
+- `position` (src): of the source (i.e Hound platform)
+- `position` (dst): of the destination (i.e emitting radar)
+- `Maximum` (maxDetection): detection range of radar in meters
+
+**Returns:**
+- (type=number): Signal strength
+
+### `HOUND.Utils.Elint.getActiveRadars(instanceCoalition)`
+
+Get currently transmitting Ground and Ship radars that are not in the Hound Instance coalition
+
+**Parameters:**
+- `CoalitionID` (instanceCoalition): for current Hound Instance
+
+**Returns:**
+- (Table): of all currently transmitting Ground and Ship radars that are not in the Hound Instance coalition
+
+### `HOUND.Utils.Elint.getActiveRadarsYielding(instanceCoalition)`
+
+Coroutine-friendly variant of getActiveRadars. Yields every BATCH groups to avoid blocking the sim frame. Returns (Radars, nil) when finished with the full accumulated list. Must be called only from inside a coroutine scheduled by HOUND.Coroutine.
+
+**Parameters:**
+- `coalitionID` (instanceCoalition): for the current Hound instance
+
+**Returns:**
+- (table): of radar unit names (same shape as getActiveRadars)
+
+### `HOUND.Utils.Elint.getActiveRadarsInGroup(GroupName)`
+
+Get currently transmitting units in a given groupName
+
+**Parameters:**
+- `groupName` (GroupName): for group
+
+**Returns:**
+- (Table): of all currently transmitting Ground and Ship radars that are not in the Hound Instance coalition
+
+### `HOUND.Utils.Elint.getRwrContacts(platform)`
+
+Get RWR contacts for platfom
+
+**Parameters:**
+- `DCS` (platform): Unit of platform
+
+**Returns:**
+- (Table): of all currently transmitting Ground and Ship radars that RWR detected by supplied platform
+
+### `HOUND.Utils.Vector.getUnitVector(Theta, Phi)`
+
+get UnitVector
+
+**Parameters:**
+- `azimuth` (Theta): in radians
+- `Phi` (opt): elevation in radians
+
+**Returns:**
+- (Unit): vector {x,y,z}
+
+### `HOUND.Utils.Vector.getRandomVec2(maxError)`
+
+Get random 2D vector use Box–Muller transform to randomize errors on 2D vector https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform}
+
+**Parameters:**
+- `maximum` (maxError): expected error (~2σ bound)
+
+**Returns:**
+- (DCS): standard {x,z,y} vector
+
+### `HOUND.Utils.Vector.getRandomVec3(maxError)`
+
+Get random 3d vector use Box–Muller transform to randomize errors on 3D vector https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform}
+
+**Parameters:**
+- `maximum` (maxError): expected error (~2σ bound)
+
+**Returns:**
+- (DCS): standard {x,z,y} vector
+
+### `HOUND.Utils.Zone.listDrawnZones()`
+
+List all Useable zones from drawings. (supported types are freeForm Polygon, rectangle and Oval)
+
+**Returns:**
+- (list): of strings
+
+### `HOUND.Utils.Zone.getDrawnZone(zoneName)`
+
+Get zone from drawing (supported types are freeForm Polygon, rectangle and Oval)
+
+**Returns:**
+- (table): of points
+
+### `HOUND.Utils.Zone.getGroupRoute(GroupName)`
+
+get polygon defined by group waypoints
+
+**Returns:**
+- (table): of points if group exists or nil
+
+### `HOUND.Utils.Sort.ContactsByRange(a, b)`
+
+Sort contacts by engament range
+
+**Parameters:**
+- `@{HOUND.Contact.Emitter}` (a): instance
+- `@{HOUND.Contact.Emitter}` (b): Instance
+
+**Returns:**
+- (type=bool): ]
+
+**Usage:**
+```lua
+table.sort(unSorted,HOUND.Utils.Sort.ContactsByRange)
+```
+
+### `HOUND.Utils.Sort.ContactsById(a, b)`
+
+Sort contacts by ID
+
+**Parameters:**
+- `@{HOUND.Contact.Emitter}` (a): instance
+- `@{HOUND.Contact.Emitter}` (b): Instance
+
+**Returns:**
+- (type=bool): ]
+
+**Usage:**
+```lua
+table.sort(unSorted,HOUND.Utils.Sort.ContactsById)
+```
+
+### `HOUND.Utils.Sort.ContactsByPrio(a, b)`
+
+sort contacts by Priority (primary first)
+
+**Parameters:**
+- `@{HOUND.Contact.Emitter}` (a): instance
+- `@{HOUND.Contact.Emitter}` (b): Instance
+
+**Returns:**
+- (type=bool): ]
+
+**Usage:**
+```lua
+table.sort(unSorted,HOUND.Utils.Sort.ContactsByPrio)
+```
+
+### `HOUND.Utils.Sort.sectorsByPriorityLowFirst(a, b)`
+
+sort sectors by priority (low first)
+
+**Parameters:**
+- `@{HOUND.Sector}` (a): instance
+- `@{HOUND.Sector}` (b): Instance
+
+**Returns:**
+- (type=bool): ]
+
+**Usage:**
+```lua
+table.sort(unSorted,HOUND.Utils.Sort.sectorsByPriorityLowFirst)
+```
+
+### `HOUND.Utils.Sort.sectorsByPriorityLowLast(a, b)`
+
+sort sectors by priority (Low last)
+
+**Parameters:**
+- `@{HOUND.Sector}` (a): instance
+- `@{HOUND.Sector}` (b): Instance
+
+**Returns:**
+- (type=bool): ]
+
+**Usage:**
+```lua
+table.sort(unSorted,HOUND.Utils.Sort.sectorsByPriorityLowLast)
+```
+
+### `HOUND.Utils.Filter.groupsByPrefix(prefix)`
+
+get Groups by prefix
+
+**Parameters:**
+- `x` (prefi): string
+
+**Returns:**
+- (table): of DCS groups indexed by group name
+
+### `HOUND.Utils.Filter.unitsByPrefix(prefix)`
+
+get Units by prefix
+
+**Parameters:**
+- `x` (prefi): string
+
+**Returns:**
+- (table): of DCS Units indexed by Unit name
+
+### `HOUND.Utils.Filter.staticObjectsByPrefix(prefix)`
+
+get StatcObjects by prefix
+
+**Parameters:**
+- `x` (prefi): string
+
+**Returns:**
+- (table): of DCS StaticObjects indexed by object name
 
 ---
 
@@ -1295,6 +2234,18 @@ simplify distance below 1km function will return number in meters eg. 140m => 15
 **Returns:**
 - (Simplified): distance
 
+### `HOUND.Utils.TTS.getCardinalDirection(azimuth)`
+
+Get cardinal direction from azimuth
+
+**Parameters:**
+- `in` (azimuth): degrees
+
+**Returns:**
+- (cardinal): direction e.g. "North", "North East"...
+
+*Note: This is a local function*
+
 ---
 
 ## HOUND.Utils
@@ -1420,17 +2371,26 @@ deregister internal event handler
 
 *Note: This is a local function*
 
-### `HOUND.EventHandler.on(eventType, handler)`
+### `dispatchExternalSync(event)`
 
-register using on pattern
+Dispatch event to external subscribers synchronously.
 
-**Parameters:**
-- `event` (eventType): to register
-- `handler` (handler): to register
+*Note: This is a local function*
+
+### `dispatchExternalAsync(event)`
+
+Dispatch event to external subscribers asynchronously. Snapshots the subscriber table at call time, then schedules a coroutine that yields between handlers so a slow or buggy server-owner callback cannot hitch the sim frame.
+
+*Note: This is a local function*
 
 ### `HOUND.EventHandler.onHoundEvent(event)`
 
 Execute event on all registeres subscribers
+
+**Parameters:**
+- `event` (event): to execute
+
+*Note: This is a local function*
 
 ### `HOUND.EventHandler.publishEvent(event)`
 
@@ -1459,6 +2419,10 @@ Sector Mangment
 ### markers
 
 Marker managment
+
+### comms
+
+Base comms functions
 
 ### Tables
 
@@ -1526,6 +2490,13 @@ check if contact has estimated position
 
 **Returns:**
 - (type=Bool): True if contact has estimated position
+
+### `HOUND.Contact.Base:getPos()`
+
+get current estimated position
+
+**Returns:**
+- (DCS): point - estimated position
 
 ### `HOUND.Contact.Base:getMaxWeaponsRange()`
 
@@ -1682,6 +2653,30 @@ check if contact in names sector
 Remove all contact's F10 map markers
 
 *Note: This is a local function*
+
+### `HOUND.Contact.Base:getTextData(utmZone, MGRSdigits)`
+
+return Information used in Text messages
+
+**Parameters:**
+- `(bool)` (utmZone): True will add UTM zone to response
+- `(Number)` (MGRSdigits): number of digits in the MGRS part of the response (eg. 2 = 12, 5=12345)
+
+**Returns:**
+- (GridPos): (string) MGRS grid position (eg. "CY 564 123", "DN 2 4")
+- (BE): (string) Bullseye position string (eg. "035/15", "187/120")
+
+### `HOUND.Contact.Base:getTtsData(utmZone, MGRSdigits)`
+
+return Information used in TTS messages
+
+**Parameters:**
+- `(bool)` (utmZone): True will add UTM zone to response
+- `(Number)` (MGRSdigits): number of digits in the MGRS part of the response (eg. 2 = 12, 5=12345)
+
+**Returns:**
+- (GridPos): (string) MGRS grid position (eg. "Charlie Yankee one two   Three  four")
+- (BE): (string) Bullseye position string (eg. "Zero Three Five 15")
 
 ---
 
@@ -2033,13 +3028,6 @@ get Contact Track ID
 **Returns:**
 - (strin): g
 
-### `HOUND.Contact.Emitter:getPos()`
-
-get current extimted position
-
-**Returns:**
-- (DCS): point - estimated position
-
 ### `HOUND.Contact.Emitter:getWavelenght(isTracking)`
 
 get radar transmission wavelength
@@ -2210,28 +3198,6 @@ HOUND.Contact.Emitter_comms
 Comms functions
 
 ### Functions
-
-### `HOUND.Contact.Emitter:getTextData(utmZone, MGRSdigits)`
-
-return Information used in Text messages Return BE (string) Bullseye position string (eg. "035/15", "187/120")
-
-**Parameters:**
-- `(bool)` (utmZone): True will add UTM zone to response
-- `(Number)` (MGRSdigits): number of digits in the MGRS part of the response (eg. 2 = 12, 5=12345)
-
-**Returns:**
-- (GridPos): (string) MGRS grid position (eg. "CY 564 123", "DN 2 4")
-
-### `HOUND.Contact.Emitter:getTtsData(utmZone, MGRSdigits)`
-
-return Information used in TTS messages Return BE (string) Bullseye position string (eg. "Zero Three Five 15")
-
-**Parameters:**
-- `(bool)` (utmZone): True will add UTM zone to response
-- `(Number)` (MGRSdigits): number of digits in the MGRS part of the response (eg. 2 = 12, 5=12345)
-
-**Returns:**
-- (GridPos): (string) MGRS grid position (eg. "Charlie Yankee one two   Three  four")
 
 ### `HOUND.Contact.Emitter:generateTtsBrief(NATO)`
 
@@ -2453,13 +3419,6 @@ Get current state
 **Returns:**
 - (site): state in @{HOUND.EVENTS}
 
-### `HOUND.Contact.Site:getPos()`
-
-get current extimted position of primary
-
-**Returns:**
-- (DCS): point - estimated position
-
 ### `HOUND.Contact.Site:hasRadarUnits()`
 
 Does site have any living radars still (for DBA)
@@ -2548,7 +3507,7 @@ update stored site pos
 
 ### `HOUND.Contact.Site:ensurePrimaryHasPos(refPos)`
 
-Ensure primay emitter has position
+Ensure site has cached position (copies from emitter or uses fallback)
 
 **Parameters:**
 - `refPos` (table): DCS Point with adhock position if nothing else is available
@@ -2602,28 +3561,6 @@ HOUND.Contact.Site_comms
 **File:** `321 - HoundContactSite_comms.lua`
 
 ### Functions
-
-### `HOUND.Contact.Site:getTextData(utmZone, MGRSdigits)`
-
-return Information used in Text messages primary emitter Return BE (string) Bullseye position string (eg. "035/15", "187/120")
-
-**Parameters:**
-- `(bool)` (utmZone): True will add UTM zone to response
-- `(Number)` (MGRSdigits): number of digits in the MGRS part of the response (eg. 2 = 12, 5=12345)
-
-**Returns:**
-- (GridPos): (string) MGRS grid position (eg. "CY 564 123", "DN 2 4")
-
-### `HOUND.Contact.Site:getTtsData(utmZone, MGRSdigits)`
-
-return Information used in TTS messages info will be that of primary emitter Return BE (string) Bullseye position string (eg. "Zero Three Five 15")
-
-**Parameters:**
-- `(bool)` (utmZone): True will add UTM zone to response
-- `(Number)` (MGRSdigits): number of digits in the MGRS part of the response (eg. 2 = 12, 5=12345)
-
-**Returns:**
-- (GridPos): (string) MGRS grid position (eg. "Charlie Yankee one two   Three  four")
 
 ### `HOUND.Contact.Site:getRadioItemText()`
 
@@ -3085,6 +4022,13 @@ get worker coalition
 **Returns:**
 - (coalitionI): d
 
+### `HOUND.ElintWorker:getId()`
+
+get worker instance ID
+
+**Returns:**
+- (Hound): instance Id
+
 ### `HOUND.ElintWorker:getNewTrackId()`
 
 get the next track number
@@ -3239,6 +4183,12 @@ remove Site from tracking
 
 update markers to all contacts update all emitters
 
+### `HOUND.ElintWorker:_sampleRadars(Radars)`
+
+internal: atomic sampler. Runs on the snapshot produced by discovery. All per-sample math happens on the same tick for coherence.
+
+*Note: This is a local function*
+
 ### `HOUND.ElintWorker:Sniff(GroupName)`
 
 Perform a sample of all emitting radars against all platforms generates and stores datapoints as required
@@ -3388,6 +4338,10 @@ HOUND.Sector
 
 getters and setters
 
+### ChildSectors
+
+Child Sector Functions
+
 ### Controller
 
 Controller Functions
@@ -3499,6 +4453,39 @@ Set zone in sector
 ### `HOUND.Sector:removeZone()`
 
 Remove Zone settings from sector
+
+### `HOUND.Sector:getCenter()`
+
+get Sector zone center
+
+**Returns:**
+- (DCS): point or nil
+
+### `HOUND.Sector:addChildSector(sectorName)`
+
+Add a child sector to this meta-sector
+
+### `HOUND.Sector:removeChildSector(sectorName)`
+
+Remove a child sector from this meta-sector
+
+### `HOUND.Sector:getChildSectors()`
+
+Get child sectors table
+
+**Returns:**
+- (table): of child sector names (keys) with true values
+
+### `HOUND.Sector:hasChildSectors()`
+
+Check if sector has child sectors
+
+**Returns:**
+- (type=bool): True if sector has child sectors
+
+### `HOUND.Sector:hasChildSector(sectorName)`
+
+check if sector has specific child sector
 
 ### `HOUND.Sector:setTransmitter(userTransmitter)`
 
@@ -3672,6 +4659,13 @@ Transmit custom TTS message on Notifier
 - `msg` (type=string): string to broadcast
 - `priority` (type=number): message priority, default is 1 (high priority)
 
+### `HOUND.Sector:getEffectiveSectorNames()`
+
+Get effective sector names for querying contacts/sites
+
+**Returns:**
+- (table): list of sector name strings
+
 ### `HOUND.Sector:getContacts()`
 
 return a sorted list of all contacts for the sector
@@ -3689,14 +4683,14 @@ update contact for zone memberships
 
 ### `HOUND.Sector:getSites()`
 
-return a sorted list of all contacts for the sector
+return a sorted list of all sites for the sector
 
 ### `HOUND.Sector:countSites()`
 
-count the number of contacts for the sector
+count the number of sites for the sector
 
 **Returns:**
-- (type=int): Number of contacts
+- (type=int): Number of sites
 
 ### `HOUND.Sector.removeRadioMenu(self)`
 
@@ -3755,6 +4749,13 @@ check out player's group from controller
 - `onlyPlayer` (opt): Bool. if true, only the player and not his flight (eg. slot change for player)
 
 *Note: This is a local function*
+
+### `HOUND.Sector:shouldNotifyFor(primarySector)`
+
+Determine if this sector should notify for a contact in the given primary sector
+
+**Returns:**
+- (bool): shouldNotify, string|nil sectorLabel
 
 ### `HOUND.Sector:isNotifiying()`
 
@@ -3862,12 +4863,6 @@ HOUND.Sector
 
 Radio Menu stuff ----------------------------- Radio Menu
 
-### Tables
-
-### `grpMenuDone`
-
-now do work
-
 ### Functions
 
 ### `HOUND.Sector:getRadioItemsText()`
@@ -3888,13 +4883,6 @@ create check menu items for players
 ### `HOUND.Sector:populateRadioMenu()`
 
 Populate sector radio menu
-
-### `HOUND.Sector:removeMenuItems(menu, grpId)`
-
-recursivly clean out a menu
-
-**Parameters:**
-- `GroupId` (grpId): to remove from
 
 ### `HOUND.Sector:getMenuPage(menu, grpId, parent)`
 
@@ -3930,17 +4918,6 @@ create site menu item
 
 *Note: This is a local function*
 
-### `HOUND.Sector:removeSiteRadioItems(typeMenu, requester, siteData)`
-
-remove radar menu items
-
-**Parameters:**
-- `table` (typeMenu): contaning a menu structure for the group
-- `mist` (requester): human player object
-- `#table` (siteData): of site from menu cache
-
-*Note: This is a local function*
-
 ---
 
 ## HoundElint
@@ -3951,38 +4928,6 @@ Hound Main interface Elint system for DCS
 **Copyright:** uri_ba 2020-2021
 
 **File:** `800 - HoundElint.lua`
-
-### HoundElint
-
-Instance Setup
-
-### platforms
-
-Platforms managment
-
-### contacts
-
-Contact managment
-
-### sectors
-
-Sector managment
-
-### Controller
-
-Controller managment
-
-### ATIS
-
-ATIS managment
-
-### Notifier
-
-Notifier managment
-
-### sectors
-
-Sector managment
 
 ### HoundElint
 
@@ -4053,6 +4998,105 @@ set onScreenDebug
 
 **Returns:**
 - (type=Bool): True if chaned
+
+### `HoundElint.runCycle(self)`
+
+Scheduled function that runs the main Instance loop
+
+**Returns:**
+- (time): of next run
+
+*Note: This is a local function*
+
+### `HoundElint:purgeRadioMenu()`
+
+Purge the root radio menu
+
+*Note: This is a local function*
+
+### `HoundElint:populateRadioMenu()`
+
+Trigger building of radio menu in all sectors
+
+*Note: This is a local function*
+
+### `HoundElint.updateSystemState(params)`
+
+Update the system state (on/off) TODO: remove?
+
+**Parameters:**
+- `table` (params): {self=&ltHoundInstance&gt,state=&ltBool&gt}
+
+*Note: This is a local function*
+
+### `HoundElint:systemOn(notify)`
+
+Turn Hound system on
+
+### `HoundElint:systemOff(notify)`
+
+Turn Hound system off
+
+### `HoundElint:isRunning()`
+
+is Instance on
+
+**Returns:**
+- (type=bool): , True if system is running
+
+### `HoundElint:getContacts()`
+
+get an exported list of all contacts tracked by the instance
+
+**Returns:**
+- (table): of all contact tracked for integration with external tools
+
+### `HoundElint:getSites()`
+
+get an exported list of all sites tracked by the instance
+
+**Returns:**
+- (table): of all contact tracked for integration with external tools
+
+### `HoundElint:dumpIntelBrief(filename, format)`
+
+dump Intel Brief to CSV or JSON will dump intel summary to the DCS saved games folder requires desanitization of lfs and io modules
+
+**Parameters:**
+- `filename` (opt): target filename. (default: hound_contacts_%d.csv)
+- `format` (opt): target format "csv" or "json" (default: csv)
+
+### `HoundElint:printDebugging()`
+
+return Debugging information
+
+**Returns:**
+- (strin): g
+
+---
+
+## HoundElint
+
+Hound Main interface Elint system for DCS
+
+**Author:** uri_ba
+**Copyright:** uri_ba 2020-2021
+
+**File:** `801 - HoundElint_properties.lua`
+
+### platforms
+
+Platforms managment
+
+### contacts
+
+Contact managment
+
+### HoundElint
+
+Instance Setup
+
+### Functions
 
 ### `HoundElint:addPlatform(platformName)`
 
@@ -4143,347 +5187,6 @@ count sites
 
 **Returns:**
 - (type=int): number of contacts currently tracked
-
-### `HoundElint:addSector(sectorName, sectorSettings, priority)`
-
-Add named sector
-
-**Parameters:**
-- `sectorName` (type=string): name of sector to add
-- `sectorSettings` (opt): table of sector settings
-- `priority` (opt): Sector priority (lower is higher)
-
-**Returns:**
-- (type=bool): True if sector successfully added
-
-### `HoundElint:removeSector(sectorName)`
-
-Remove Named sector
-
-**Parameters:**
-- `sectorName` (type=string): name of sector to add
-
-**Returns:**
-- (type=bool): True if sector successfully added
-
-### `HoundElint:updateSectorSettings(sectorName, sectorSettings, subSettingName)`
-
-Update named sector settings
-
-**Parameters:**
-- `sectorName` (type=string|nil): name of sector (nil == "default")
-- `subSettingName` (type=?string): update specific setting ("controller", "atis", "notifier")
-
-**Returns:**
-- (type=bool): False if an error occurred, true otherwise
-
-### `HoundElint:listSectors(element)`
-
-list all sectors
-
-**Parameters:**
-- `element` (type=?string): list only sectors with specified element. Valid options are "controller", "atis", "notifier" and "zone"
-
-**Returns:**
-- (list): of sector names
-
-### `HoundElint:getSectors(element)`
-
-get all sectors
-
-**Parameters:**
-- `element` (type=?string): list only sectors with specified element. Valid options are "controller", "atis", "notifier" and "zone"
-
-**Returns:**
-- (list): of HOUND.Sector instances
-
-### `HoundElint:countSectors(element)`
-
-return number of sectors
-
-**Parameters:**
-- `element` (type=?string): count only sectors with specified element ("controller"/"atis"/"notifier"/"zone")
-
-**Returns:**
-- (type=int): . number of sectors
-
-### `HoundElint:getSector(sectorName)`
-
-return HOUND.Sector instance
-
-**Returns:**
-- (HOUND.Secto): r
-
-### `HoundElint:enableController(sectorName, settings)`
-
-enable controller in sector
-
-**Parameters:**
-- `sectorName` (type=?string): name of sector in which a controller is enabled (default is "default") - "all" enable controller on all sectors
-
-### `HoundElint:disableController(sectorName)`
-
-disable controller in sector
-
-**Parameters:**
-- `sectorName` (type=?string): Name of sector to act on. default is "default". all will disable all controllers
-
-### `HoundElint:removeController(sectorName)`
-
-remove controller in sector
-
-**Parameters:**
-- `sectorName` (type=?string): Name of sector to act on. default is "default". all will disable all controllers
-
-### `HoundElint:configureController(sectorName, settings)`
-
-configure controller in sector
-
-**Parameters:**
-- `sectorName` (type=?string): name of sector to configure
-
-### `HoundElint:getControllerFreq(sectorName)`
-
-get controller freq
-
-**Parameters:**
-- `sectorName` (type=?string): name of sector to configure
-
-**Returns:**
-- (frequncies): table for sector's controller
-
-### `HoundElint:getControllerState(sectorName)`
-
-get controller state
-
-**Parameters:**
-- `sectorName` (type=?string): name of sector to probe
-
-**Returns:**
-- (type=Bool): True = enabled. False is disable or not configured
-
-### `HoundElint:transmitOnController(sectorName, msg, priority)`
-
-Transmit custom TTS message on controller freqency
-
-**Parameters:**
-- `sectorName` (type=string): name of the sector to transmit on.
-- `msg` (type=string): message to broadcast
-- `priority` (type=?number): message priority
-
-### `HoundElint:enableAtis(sectorName, settings)`
-
-enable ATIS in sector
-
-**Parameters:**
-- `sectorName` (type=?string): name of sector in which a controller is enabled (default is "default") - "all" enable ATIS on all sectors
-
-### `HoundElint:disableAtis(sectorName)`
-
-disable ATIS in sector
-
-**Parameters:**
-- `sectorName` (type=?string): Name of sector to act on. default is "default". all will disable all ATIS
-
-### `HoundElint:removeAtis(sectorName)`
-
-remove ATIS in sector
-
-**Parameters:**
-- `sectorName` (type=?string): Name of sector to act on. default is "default". all will disable all ATIS
-
-### `HoundElint:configureAtis(sectorName, settings)`
-
-configure ATIS in sector
-
-**Parameters:**
-- `sectorName` (type=?string): name of sector to configure
-
-### `HoundElint:getAtisFreq(sectorName)`
-
-get ATIS freq
-
-**Parameters:**
-- `sectorName` (type=?string): name of sector to query
-
-**Returns:**
-- (frequncies): table for sector's controller
-
-### `HoundElint:reportEWR(name, state)`
-
-set ATIS EWR report state for sector
-
-**Parameters:**
-- `name` (type=?string): sector name. valid inputs are sector name, "all". nothing will default to "default"
-
-### `HoundElint:getAtisState(sectorName)`
-
-get ATIS state
-
-**Parameters:**
-- `sectorName` (type=?string): name of sector to probe
-
-**Returns:**
-- (type=Bool): True = enabled. False is disable or not configured
-
-### `HoundElint:enableNotifier(sectorName, settings)`
-
-enable Notifier in sector Only one notifier is required as it will broadcast on a global frequency (default is guard) controller will also handle alerts for per sector notifications
-
-**Parameters:**
-- `sectorName` (type=?string): name of sector in which a Notifier is enabled (default is "default")
-
-### `HoundElint:disableNotifier(sectorName)`
-
-disable Notifier in sector
-
-**Parameters:**
-- `sectorName` (type=?string): Name of sector to act on. default is "default". all will disable all Notifiers
-
-### `HoundElint:removeNotifier(sectorName)`
-
-remove controller in sector
-
-**Parameters:**
-- `sectorName` (type=?string): Name of sector to act on. default is "default". all will disable all Notifiers
-
-### `HoundElint:configureNotifier(sectorName, settings)`
-
-configure Notifier in sector
-
-**Parameters:**
-- `sectorName` (type=?string): name of sector to configure
-
-### `HoundElint:getNotifierFreq(sectorName)`
-
-get Notifier freq
-
-**Parameters:**
-- `sectorName` (type=?string): name of sector to query
-
-**Returns:**
-- (frequncies): table for sector's Notifier
-
-### `HoundElint:getNotifierState(sectorName)`
-
-get Notifier state
-
-**Parameters:**
-- `sectorName` (type=?string): name of sector to probe
-
-**Returns:**
-- (type=Bool): True = enabled. False is disable or not configured
-
-### `HoundElint:transmitOnNotifier(sectorName, msg, priority)`
-
-Transmit custom TTS message on Notifier freqency
-
-**Parameters:**
-- `sectorName` (type=string): name of the sector to transmit on.
-- `msg` (type=string): message to broadcast
-- `priority` (type=?number): message priority
-
-### `HoundElint:enableText(sectorName)`
-
-enable Text notification for controller
-
-**Parameters:**
-- `sectorName` (type=?string): name of sector to enable (default is "default", "all" will enable on all sectors)
-
-### `HoundElint:disableText(sectorName)`
-
-disable Text notification for controller
-
-**Parameters:**
-- `sectorName` (type=?string): name of sector to disable (default is "default", "all" will enable on all sectors)
-
-### `HoundElint:enableTTS(sectorName)`
-
-enable Text-To-Speach notification for controller
-
-**Parameters:**
-- `sectorName` (type=?string): name of sector to enable (default is "default", "all" will enable on all sectors)
-
-### `HoundElint:disableTTS(sectorName)`
-
-disable Text-to-speach notification for controller
-
-**Parameters:**
-- `sectorName` (type=?string): name of sector to disable (default is "default", "all" will enable on all sectors)
-
-### `HoundElint:enableAlerts(sectorName)`
-
-enable Alert notification for controller
-
-**Parameters:**
-- `sectorName` (type=?string): name of sector to enable (default is "default", "all" will enable on all sectors)
-
-### `HoundElint:disableAlerts(sectorName)`
-
-disable Alert notification for controller
-
-**Parameters:**
-- `sectorName` (type=?string): name of sector to disable (default is "default", "all" will enable on all sectors)
-
-### `HoundElint:setCallsign(sectorName, sectorCallsign)`
-
-Set sector callsign
-
-**Returns:**
-- (type=bool): True if callsign was changes. False otherwise
-
-### `HoundElint:getCallsign(sectorName)`
-
-get sector callsign
-
-**Returns:**
-- (String): - callsign for sector. will return empty string if err
-
-### `HoundElint:setTransmitter(sectorName, transmitter)`
-
-set transmitter to named sector valid values are name of sector, "all" or nil (will change default)
-
-**Parameters:**
-- `sectorName` (type=string): name of sector to apply to.
-- `DCS` (transmitter): unit name which will be the transmitter
-
-### `HoundElint:removeTransmitter(sectorName)`
-
-remove transmitter to named sector valid values are name of sector, "all" or nil (will change default)
-
-**Parameters:**
-- `sectorName` (type=string): name of sector to apply to.
-
-### `HoundElint:getZone(sectorName)`
-
-get zone of sector
-
-**Parameters:**
-- `sectorName` (type=string): to act on
-
-**Returns:**
-- (table): of points or nil if no sector set
-
-### `HoundElint:setZone(sectorName, zoneCandidate)`
-
-add zone to sector same as MOOSE. use late activation invisible helicopter group is recommended.
-
-**Parameters:**
-- `sectorName` (type=string): to act on
-- `DCS` (zoneCandidate): Group name. Group's waypoints will be used.
-
-### `HoundElint:removeZone(sectorName)`
-
-remove zone from sector
-
-**Parameters:**
-- `sectorName` (type=string): to act on
-
-### `HoundElint:updateSectorMembership()`
-
-update sector membership for all contacts
-
-*Note: This is a local function*
 
 ### `HoundElint:enableMarkers(markerType)`
 
@@ -4626,7 +5329,7 @@ set Alert on Launch for Hound instance
 **Returns:**
 - (type=Bool): True if setting has been updated
 
-### `HoundElint:useNATOCallsignes(value)`
+### `HoundElint:useNATOCallsigns(value)`
 
 set flag if callsignes for sectors under Callsignes would be from the NATO pool
 
@@ -4653,78 +5356,210 @@ Set Main parent menu for hound Instace must be set <b>BEFORE</b> calling <code>e
 **Returns:**
 - (type=Bool): True if no errors
 
-### `HoundElint.runCycle(self)`
+---
 
-Scheduled function that runs the main Instance loop
+## HoundElint
 
-**Returns:**
-- (time): of next run
+Hound Main interface Elint system for DCS
 
-*Note: This is a local function*
+**Author:** uri_ba
+**Copyright:** uri_ba 2020-2021
 
-### `HoundElint:purgeRadioMenu()`
+**File:** `802 - HoundElint_sector_mgmt.lua`
 
-Purge the root radio menu
+### sectors
 
-*Note: This is a local function*
+Sector managment
 
-### `HoundElint:populateRadioMenu()`
+### Functions
 
-Trigger building of radio menu in all sectors
+### `HoundElint:addSector(sectorName, sectorSettings, priority)`
 
-*Note: This is a local function*
-
-### `HoundElint.updateSystemState(params)`
-
-Update the system state (on/off) TODO: remove?
+Add named sector
 
 **Parameters:**
-- `table` (params): {self=&ltHoundInstance&gt,state=&ltBool&gt}
-
-*Note: This is a local function*
-
-### `HoundElint:systemOn(notify)`
-
-Turn Hound system on
-
-### `HoundElint:systemOff(notify)`
-
-Turn Hound system off
-
-### `HoundElint:isRunning()`
-
-is Instance on
+- `sectorName` (type=string): name of sector to add
+- `sectorSettings` (opt): table of sector settings
+- `priority` (opt): Sector priority (lower is higher)
 
 **Returns:**
-- (type=bool): , True if system is running
+- (type=bool): True if sector successfully added
 
-### `HoundElint:getContacts()`
+### `HoundElint:removeSector(sectorName)`
 
-get an exported list of all contacts tracked by the instance
-
-**Returns:**
-- (table): of all contact tracked for integration with external tools
-
-### `HoundElint:getSites()`
-
-get an exported list of all sites tracked by the instance
-
-**Returns:**
-- (table): of all contact tracked for integration with external tools
-
-### `HoundElint:dumpIntelBrief(filename)`
-
-dump Intel Brief to csv will dump intel summery to CSV in the DCS saved games folder requires desanitization of lfs and io modules
+Remove Named sector
 
 **Parameters:**
-- `filename` (opt): target filename. (default: hound_contacts_%d.csv)
-
-### `HoundElint:printDebugging()`
-
-return Debugging information
+- `sectorName` (type=string): name of sector to add
 
 **Returns:**
-- (strin): g
+- (type=bool): True if sector successfully removed
+
+### `HoundElint:updateSectorSettings(sectorName, sectorSettings, subSettingName)`
+
+Update named sector settings
+
+**Parameters:**
+- `sectorName` (type=string|nil): name of sector (nil == "default")
+- `subSettingName` (type=?string): update specific setting ("controller", "atis", "notifier")
+
+**Returns:**
+- (type=bool): False if an error occurred, true otherwise
+
+### `HoundElint:listSectors(element)`
+
+list all sectors
+
+**Parameters:**
+- `element` (type=?string): list only sectors with specified element. Valid options are "controller", "atis", "notifier" and "zone"
+
+**Returns:**
+- (list): of sector names
+
+### `HoundElint:getSectors(element)`
+
+get all sectors
+
+**Parameters:**
+- `element` (type=?string): list only sectors with specified element. Valid options are "controller", "atis", "notifier" and "zone"
+
+**Returns:**
+- (list): of HOUND.Sector instances
+
+### `HoundElint:countSectors(element)`
+
+return number of sectors
+
+**Parameters:**
+- `element` (type=?string): count only sectors with specified element ("controller"/"atis"/"notifier"/"zone")
+
+**Returns:**
+- (type=int): . number of sectors
+
+### `HoundElint:getSector(sectorName)`
+
+return HOUND.Sector instance
+
+**Returns:**
+- (HOUND.Secto): r
+
+### `HoundElint:enableText(sectorName)`
+
+enable Text notification for controller
+
+**Parameters:**
+- `sectorName` (type=?string): name of sector to enable (default is "default", "all" will enable on all sectors)
+
+### `HoundElint:disableText(sectorName)`
+
+disable Text notification for controller
+
+**Parameters:**
+- `sectorName` (type=?string): name of sector to disable (default is "default", "all" will enable on all sectors)
+
+### `HoundElint:enableTTS(sectorName)`
+
+enable Text-To-Speach notification for controller
+
+**Parameters:**
+- `sectorName` (type=?string): name of sector to enable (default is "default", "all" will enable on all sectors)
+
+### `HoundElint:disableTTS(sectorName)`
+
+disable Text-to-speach notification for controller
+
+**Parameters:**
+- `sectorName` (type=?string): name of sector to disable (default is "default", "all" will enable on all sectors)
+
+### `HoundElint:enableAlerts(sectorName)`
+
+enable Alert notification for controller
+
+**Parameters:**
+- `sectorName` (type=?string): name of sector to enable (default is "default", "all" will enable on all sectors)
+
+### `HoundElint:disableAlerts(sectorName)`
+
+disable Alert notification for controller
+
+**Parameters:**
+- `sectorName` (type=?string): name of sector to disable (default is "default", "all" will enable on all sectors)
+
+### `HoundElint:setCallsign(sectorName, sectorCallsign)`
+
+Set sector callsign
+
+**Returns:**
+- (type=bool): True if callsign was changes. False otherwise
+
+### `HoundElint:getCallsign(sectorName)`
+
+get sector callsign
+
+**Returns:**
+- (String): - callsign for sector. will return empty string if err
+
+### `HoundElint:setTransmitter(sectorName, transmitter)`
+
+set transmitter to named sector valid values are name of sector, "all" or nil (will change default)
+
+**Parameters:**
+- `sectorName` (type=string): name of sector to apply to.
+- `DCS` (transmitter): unit name which will be the transmitter
+
+### `HoundElint:removeTransmitter(sectorName)`
+
+remove transmitter to named sector valid values are name of sector, "all" or nil (will change default)
+
+**Parameters:**
+- `sectorName` (type=string): name of sector to apply to.
+
+### `HoundElint:getZone(sectorName)`
+
+get zone of sector
+
+**Parameters:**
+- `sectorName` (type=string): to act on
+
+**Returns:**
+- (table): of points or nil if no sector set
+
+### `HoundElint:setZone(sectorName, zoneCandidate)`
+
+add zone to sector same as MOOSE. use late activation invisible helicopter group is recommended.
+
+**Parameters:**
+- `sectorName` (type=string): to act on
+- `DCS` (zoneCandidate): Group name. Group's waypoints will be used.
+
+### `HoundElint:removeZone(sectorName)`
+
+remove zone from sector
+
+**Parameters:**
+- `sectorName` (type=string): to act on
+
+### `HoundElint:addChildSector(metaSectorName, childSectorName)`
+
+add a child sector to a meta-sector
+
+**Parameters:**
+- `metaSectorName` (type=string): name of the meta-sector
+- `childSectorName` (type=string): name of the child sector to add
+
+### `HoundElint:removeChildSector(metaSectorName, childSectorName)`
+
+remove a child sector from a meta-sector
+
+**Parameters:**
+- `metaSectorName` (type=string): name of the meta-sector
+- `childSectorName` (type=string): name of the child sector to remove
+
+### `HoundElint:updateSectorMembership()`
+
+update sector membership for all contacts
+
+*Note: This is a local function*
 
 ---
 
@@ -4735,7 +5570,201 @@ Hound Main interface Elint system for DCS
 **Author:** uri_ba
 **Copyright:** uri_ba 2020-2021
 
-**File:** `801 - HoundElintEvents.lua`
+**File:** `803 - HoundElint_comms.lua`
+
+### Controller
+
+Controller managment
+
+### ATIS
+
+ATIS managment
+
+### Notifier
+
+Notifier managment
+
+### Functions
+
+### `HoundElint:enableController(sectorName, settings)`
+
+enable controller in sector
+
+**Parameters:**
+- `sectorName` (type=?string): name of sector in which a controller is enabled (default is "default") - "all" enable controller on all sectors
+
+### `HoundElint:disableController(sectorName)`
+
+disable controller in sector
+
+**Parameters:**
+- `sectorName` (type=?string): Name of sector to act on. default is "default". all will disable all controllers
+
+### `HoundElint:removeController(sectorName)`
+
+remove controller in sector
+
+**Parameters:**
+- `sectorName` (type=?string): Name of sector to act on. default is "default". all will disable all controllers
+
+### `HoundElint:configureController(sectorName, settings)`
+
+configure controller in sector
+
+**Parameters:**
+- `sectorName` (type=?string): name of sector to configure
+
+### `HoundElint:getControllerFreq(sectorName)`
+
+get controller freq
+
+**Parameters:**
+- `sectorName` (type=?string): name of sector to configure
+
+**Returns:**
+- (frequncies): table for sector's controller
+
+### `HoundElint:getControllerState(sectorName)`
+
+get controller state
+
+**Parameters:**
+- `sectorName` (type=?string): name of sector to probe
+
+**Returns:**
+- (type=Bool): True = enabled. False is disable or not configured
+
+### `HoundElint:transmitOnController(sectorName, msg, priority)`
+
+Transmit custom TTS message on controller freqency
+
+**Parameters:**
+- `sectorName` (type=string): name of the sector to transmit on.
+- `msg` (type=string): message to broadcast
+- `priority` (type=?number): message priority
+
+### `HoundElint:enableAtis(sectorName, settings)`
+
+enable ATIS in sector
+
+**Parameters:**
+- `sectorName` (type=?string): name of sector in which a controller is enabled (default is "default") - "all" enable ATIS on all sectors
+
+### `HoundElint:disableAtis(sectorName)`
+
+disable ATIS in sector
+
+**Parameters:**
+- `sectorName` (type=?string): Name of sector to act on. default is "default". all will disable all ATIS
+
+### `HoundElint:removeAtis(sectorName)`
+
+remove ATIS in sector
+
+**Parameters:**
+- `sectorName` (type=?string): Name of sector to act on. default is "default". all will disable all ATIS
+
+### `HoundElint:configureAtis(sectorName, settings)`
+
+configure ATIS in sector
+
+**Parameters:**
+- `sectorName` (type=?string): name of sector to configure
+
+### `HoundElint:getAtisFreq(sectorName)`
+
+get ATIS freq
+
+**Parameters:**
+- `sectorName` (type=?string): name of sector to query
+
+**Returns:**
+- (frequncies): table for sector's controller
+
+### `HoundElint:reportEWR(name, state)`
+
+set ATIS EWR report state for sector
+
+**Parameters:**
+- `name` (type=?string): sector name. valid inputs are sector name, "all". nothing will default to "default"
+
+### `HoundElint:getAtisState(sectorName)`
+
+get ATIS state
+
+**Parameters:**
+- `sectorName` (type=?string): name of sector to probe
+
+**Returns:**
+- (type=Bool): True = enabled. False is disable or not configured
+
+### `HoundElint:enableNotifier(sectorName, settings)`
+
+enable Notifier in sector Only one notifier is required as it will broadcast on a global frequency (default is guard) controller will also handle alerts for per sector notifications
+
+**Parameters:**
+- `sectorName` (type=?string): name of sector in which a Notifier is enabled (default is "default")
+
+### `HoundElint:disableNotifier(sectorName)`
+
+disable Notifier in sector
+
+**Parameters:**
+- `sectorName` (type=?string): Name of sector to act on. default is "default". all will disable all Notifiers
+
+### `HoundElint:removeNotifier(sectorName)`
+
+remove Notifier in sector
+
+**Parameters:**
+- `sectorName` (type=?string): Name of sector to act on. default is "default". all will disable all Notifiers
+
+### `HoundElint:configureNotifier(sectorName, settings)`
+
+configure Notifier in sector
+
+**Parameters:**
+- `sectorName` (type=?string): name of sector to configure
+
+### `HoundElint:getNotifierFreq(sectorName)`
+
+get Notifier freq
+
+**Parameters:**
+- `sectorName` (type=?string): name of sector to query
+
+**Returns:**
+- (frequncies): table for sector's Notifier
+
+### `HoundElint:getNotifierState(sectorName)`
+
+get Notifier state
+
+**Parameters:**
+- `sectorName` (type=?string): name of sector to probe
+
+**Returns:**
+- (type=Bool): True = enabled. False is disable or not configured
+
+### `HoundElint:transmitOnNotifier(sectorName, msg, priority)`
+
+Transmit custom TTS message on Notifier freqency
+
+**Parameters:**
+- `sectorName` (type=string): name of the sector to transmit on.
+- `msg` (type=string): message to broadcast
+- `priority` (type=?number): message priority
+
+---
+
+## HoundElint
+
+Hound Main interface Elint system for DCS
+
+**Author:** uri_ba
+**Copyright:** uri_ba 2020-2021
+
+**File:** `804 - HoundElintEvents.lua`
 
 ### eventHandler
 

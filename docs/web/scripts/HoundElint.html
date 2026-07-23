@@ -34,14 +34,14 @@
 <h2>Contents</h2>
 <ul>
 <li><a href="#Instance_Setup">Instance Setup </a></li>
+<li><a href="#Instance_Internal_functions">Instance Internal functions </a></li>
+<li><a href="#Exports">Exports </a></li>
 <li><a href="#Platforms_managment">Platforms managment </a></li>
 <li><a href="#Contact_managment">Contact managment </a></li>
 <li><a href="#Sector_managment">Sector managment </a></li>
 <li><a href="#Controller_managment">Controller managment </a></li>
 <li><a href="#ATIS_managment">ATIS managment </a></li>
 <li><a href="#Notifier_managment">Notifier managment </a></li>
-<li><a href="#Instance_Internal_functions">Instance Internal functions </a></li>
-<li><a href="#Exports">Exports </a></li>
 <li><a href="#EventHandler_functions">EventHandler functions </a></li>
 </ul>
 
@@ -130,6 +130,14 @@
 	<td class="summary">disable platforms INS position errors</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#getCallsignOverride">getCallsignOverride ()</a></td>
+	<td class="summary">get current callsign override table</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#setCallsignOverride">setCallsignOverride (overrides)</a></td>
+	<td class="summary">set callsign override table</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#getBDA">getBDA ()</a></td>
 	<td class="summary">get current BDA setting state</td>
 	</tr>
@@ -163,7 +171,7 @@
 	<td class="summary">set Alert on Launch for Hound instance</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#useNATOCallsignes">useNATOCallsignes (value)</a></td>
+	<td class="name" nowrap><a href="#useNATOCallsigns">useNATOCallsigns (value)</a></td>
 	<td class="summary">set flag if callsignes for sectors under Callsignes would be from the NATO pool</td>
 	</tr>
 	<tr>
@@ -174,6 +182,42 @@
 	<td class="name" nowrap><a href="#setRadioMenuParent">setRadioMenuParent (parent)</a></td>
 	<td class="summary">Set Main parent menu for hound Instace
  must be set <b>BEFORE</b> calling <code>enableController()</code></td>
+	</tr>
+</table>
+<h2><a href="#Instance_Internal_functions">Instance Internal functions </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#systemOn">systemOn ([notify])</a></td>
+	<td class="summary">Turn Hound system on</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#systemOff">systemOff ([notify])</a></td>
+	<td class="summary">Turn Hound system off</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#isRunning">isRunning ()</a></td>
+	<td class="summary">is Instance on</td>
+	</tr>
+</table>
+<h2><a href="#Exports">Exports </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#getContacts">getContacts ()</a></td>
+	<td class="summary">get an exported list of all contacts tracked by the instance</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#getSites">getSites ()</a></td>
+	<td class="summary">get an exported list of all sites tracked by the instance</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#dumpIntelBrief">dumpIntelBrief ([filename[, format]])</a></td>
+	<td class="summary">dump Intel Brief to CSV or JSON
+ will dump intel summary to the DCS saved games folder
+ requires desanitization of lfs and io modules</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#printDebugging">printDebugging ()</a></td>
+	<td class="summary">return Debugging information</td>
 	</tr>
 </table>
 <h2><a href="#Platforms_managment">Platforms managment </a></h2>
@@ -308,6 +352,14 @@
 	<td class="name" nowrap><a href="#removeZone">removeZone (sectorName)</a></td>
 	<td class="summary">remove zone from sector</td>
 	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#addChildSector">addChildSector (metaSectorName, childSectorName)</a></td>
+	<td class="summary">add a child sector to a meta-sector</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#removeChildSector">removeChildSector (metaSectorName, childSectorName)</a></td>
+	<td class="summary">remove a child sector from a meta-sector</td>
+	</tr>
 </table>
 <h2><a href="#Controller_managment">Controller managment </a></h2>
 <table class="function_list">
@@ -385,7 +437,7 @@
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#removeNotifier">removeNotifier (sectorName)</a></td>
-	<td class="summary">remove controller in sector</td>
+	<td class="summary">remove Notifier in sector</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#configureNotifier">configureNotifier (sectorName, settings)</a></td>
@@ -402,42 +454,6 @@
 	<tr>
 	<td class="name" nowrap><a href="#transmitOnNotifier">transmitOnNotifier (sectorName, msg, priority)</a></td>
 	<td class="summary">Transmit custom TTS message on Notifier freqency</td>
-	</tr>
-</table>
-<h2><a href="#Instance_Internal_functions">Instance Internal functions </a></h2>
-<table class="function_list">
-	<tr>
-	<td class="name" nowrap><a href="#systemOn">systemOn ([notify])</a></td>
-	<td class="summary">Turn Hound system on</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#systemOff">systemOff ([notify])</a></td>
-	<td class="summary">Turn Hound system off</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#isRunning">isRunning ()</a></td>
-	<td class="summary">is Instance on</td>
-	</tr>
-</table>
-<h2><a href="#Exports">Exports </a></h2>
-<table class="function_list">
-	<tr>
-	<td class="name" nowrap><a href="#getContacts">getContacts ()</a></td>
-	<td class="summary">get an exported list of all contacts tracked by the instance</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#getSites">getSites ()</a></td>
-	<td class="summary">get an exported list of all sites tracked by the instance</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#dumpIntelBrief">dumpIntelBrief ([filename])</a></td>
-	<td class="summary">dump Intel Brief to csv
- will dump intel summery to CSV in the DCS saved games folder
- requires desanitization of lfs and io modules</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#printDebugging">printDebugging ()</a></td>
-	<td class="summary">return Debugging information</td>
 	</tr>
 </table>
 <h2><a href="#EventHandler_functions">EventHandler functions </a></h2>
@@ -779,6 +795,51 @@
 
 </dd>
     <dt>
+    <a name = "getCallsignOverride"></a>
+    <strong>getCallsignOverride ()</strong>
+    </dt>
+    <dd>
+    get current callsign override table
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table current state
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "setCallsignOverride"></a>
+    <strong>setCallsignOverride (overrides)</strong>
+    </dt>
+    <dd>
+    set callsign override table
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">overrides</span>
+         Table of overrides
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">Bool</span></span>
+        True if setting has been updated
+    </ol>
+
+
+
+
+</dd>
+    <dt>
     <a name = "getBDA"></a>
     <strong>getBDA ()</strong>
     </dt>
@@ -946,8 +1007,8 @@
 
 </dd>
     <dt>
-    <a name = "useNATOCallsignes"></a>
-    <strong>useNATOCallsignes (value)</strong>
+    <a name = "useNATOCallsigns"></a>
+    <strong>useNATOCallsigns (value)</strong>
     </dt>
     <dd>
     set flag if callsignes for sectors under Callsignes would be from the NATO pool
@@ -1017,6 +1078,162 @@
 
            <span class="types"><span class="type">Bool</span></span>
         True if no errors
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Instance_Internal_functions"></a>Instance Internal functions </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "systemOn"></a>
+    <strong>systemOn ([notify])</strong>
+    </dt>
+    <dd>
+    Turn Hound system on
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">notify</span>
+            <span class="types"><span class="type">boolean</span></span>
+         if True a text notification will be printed in 3d world
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "systemOff"></a>
+    <strong>systemOff ([notify])</strong>
+    </dt>
+    <dd>
+    Turn Hound system off
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">notify</span>
+            <span class="types"><span class="type">boolean</span></span>
+         if True a text notification will be printed in 3d world
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "isRunning"></a>
+    <strong>isRunning ()</strong>
+    </dt>
+    <dd>
+    is Instance on
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">bool</span></span>
+        , True if system is running
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Exports"></a>Exports </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "getContacts"></a>
+    <strong>getContacts ()</strong>
+    </dt>
+    <dd>
+    get an exported list of all contacts tracked by the instance
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table of all contact tracked for integration with external tools
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "getSites"></a>
+    <strong>getSites ()</strong>
+    </dt>
+    <dd>
+    get an exported list of all sites tracked by the instance
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table of all contact tracked for integration with external tools
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "dumpIntelBrief"></a>
+    <strong>dumpIntelBrief ([filename[, format]])</strong>
+    </dt>
+    <dd>
+    dump Intel Brief to CSV or JSON
+ will dump intel summary to the DCS saved games folder
+ requires desanitization of lfs and io modules
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">filename</span>
+         target filename. (default: hound_contacts_%d.csv)
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">format</span>
+         target format "csv" or "json" (default: csv)
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "printDebugging"></a>
+    <strong>printDebugging ()</strong>
+    </dt>
+    <dd>
+    return Debugging information
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        string
     </ol>
 
 
@@ -1359,7 +1576,7 @@
     <ol>
 
            <span class="types"><span class="type">bool</span></span>
-        True if sector successfully added
+        True if sector successfully removed
     </ol>
 
 
@@ -1808,6 +2025,56 @@
 
 
 </dd>
+    <dt>
+    <a name = "addChildSector"></a>
+    <strong>addChildSector (metaSectorName, childSectorName)</strong>
+    </dt>
+    <dd>
+    add a child sector to a meta-sector
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">metaSectorName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         name of the meta-sector
+        </li>
+        <li><span class="parameter">childSectorName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         name of the child sector to add
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "removeChildSector"></a>
+    <strong>removeChildSector (metaSectorName, childSectorName)</strong>
+    </dt>
+    <dd>
+    remove a child sector from a meta-sector
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">metaSectorName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         name of the meta-sector
+        </li>
+        <li><span class="parameter">childSectorName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         name of the child sector to remove
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
 </dl>
     <h2 class="section-header "><a name="Controller_managment"></a>Controller managment </h2>
 
@@ -2220,7 +2487,7 @@
     <strong>removeNotifier (sectorName)</strong>
     </dt>
     <dd>
-    remove controller in sector
+    remove Notifier in sector
 
 
     <h3>Parameters:</h3>
@@ -2344,158 +2611,6 @@
 
 </dd>
 </dl>
-    <h2 class="section-header "><a name="Instance_Internal_functions"></a>Instance Internal functions </h2>
-
-    <dl class="function">
-    <dt>
-    <a name = "systemOn"></a>
-    <strong>systemOn ([notify])</strong>
-    </dt>
-    <dd>
-    Turn Hound system on
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">notify</span>
-            <span class="types"><span class="type">boolean</span></span>
-         if True a text notification will be printed in 3d world
-         (<em>optional</em>)
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "systemOff"></a>
-    <strong>systemOff ([notify])</strong>
-    </dt>
-    <dd>
-    Turn Hound system off
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">notify</span>
-            <span class="types"><span class="type">boolean</span></span>
-         if True a text notification will be printed in 3d world
-         (<em>optional</em>)
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "isRunning"></a>
-    <strong>isRunning ()</strong>
-    </dt>
-    <dd>
-    is Instance on
-
-
-
-    <h3>Returns:</h3>
-    <ol>
-
-           <span class="types"><span class="type">bool</span></span>
-        , True if system is running
-    </ol>
-
-
-
-
-</dd>
-</dl>
-    <h2 class="section-header "><a name="Exports"></a>Exports </h2>
-
-    <dl class="function">
-    <dt>
-    <a name = "getContacts"></a>
-    <strong>getContacts ()</strong>
-    </dt>
-    <dd>
-    get an exported list of all contacts tracked by the instance
-
-
-
-    <h3>Returns:</h3>
-    <ol>
-
-        table of all contact tracked for integration with external tools
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "getSites"></a>
-    <strong>getSites ()</strong>
-    </dt>
-    <dd>
-    get an exported list of all sites tracked by the instance
-
-
-
-    <h3>Returns:</h3>
-    <ol>
-
-        table of all contact tracked for integration with external tools
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "dumpIntelBrief"></a>
-    <strong>dumpIntelBrief ([filename])</strong>
-    </dt>
-    <dd>
-    dump Intel Brief to csv
- will dump intel summery to CSV in the DCS saved games folder
- requires desanitization of lfs and io modules
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">filename</span>
-         target filename. (default: hound_contacts_%d.csv)
-         (<em>optional</em>)
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "printDebugging"></a>
-    <strong>printDebugging ()</strong>
-    </dt>
-    <dd>
-    return Debugging information
-
-
-
-    <h3>Returns:</h3>
-    <ol>
-
-        string
-    </ol>
-
-
-
-
-</dd>
-</dl>
     <h2 class="section-header "><a name="EventHandler_functions"></a>EventHandler functions </h2>
 
     <dl class="function">
@@ -2527,7 +2642,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/lunarmodules/LDoc">LDoc 1.5.0</a></i>
-<i style="float:right;">Last updated 2026-04-29 13:28:08 </i>
+<i style="float:right;">Last updated 2026-07-23 22:37:13 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>
