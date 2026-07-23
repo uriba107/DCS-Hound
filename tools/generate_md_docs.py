@@ -72,7 +72,7 @@ class LuaDocParser:
         'TABLE_DEF': re.compile(r'^\s*([\w\.]+)\s*=\s*{'),
         'COMMENT_LINE': re.compile(r'^\s*--+\s*(.*)\s*$'),
         'BLOCK_COMMENT_START': re.compile(r'^\s*--\[\['),
-        'BLOCK_COMMENT_END': re.compile(r'\]\]--?\s*$'),
+        'BLOCK_COMMENT_END': re.compile(r'\]\]-?\s*$|--\]\]'),
     }
     
     def __init__(self, verbose: bool = False):
@@ -297,26 +297,104 @@ class MarkdownGenerator:
         if self.verbose:
             print(f"[INFO] Ollama host: {self.llm_host}")
     
+    INTEGRATION_SCENARIOS = [
+        {
+            "title": "Minimal Setup \u2014 Map Markers Only",
+            "desc": "Simplest possible Hound setup. Create instance for Blue coalition, "
+                    "add 2 ELINT platforms by unit name, enable polygon map markers, "
+                    "activate the system. No voice, no sectors. Wrap in do...end block.",
+        },
+        {
+            "title": "Basic Setup with Voice Communications",
+            "desc": "Blue coalition with 3 platforms. Set HOUND.FORCE_MANAGE_MARKERS = true "
+                    "BEFORE creating the instance. Enable Controller with multi-frequency: "
+                    "freq='251.000,35.000' and modulation='AM,FM'. Enable text messages. "
+                    "Enable ATIS on 253.000 AM. Use setTransmitter('all', 'ELINT_C130_1'). "
+                    "Enable BDA and launch alerts. Pre-brief 2 known SAM sites with custom "
+                    "code names. Use HOUND.MARKER.CIRCLE for markers. Wrap in do...end block.",
+        },
+        {
+            "title": "Multi-Sector Mission with Meta-Sectors and Zones",
+            "desc": "Blue coalition with 4 platforms. Add child sectors with priority: "
+                    "addSector('Beslan', 10) and addSector('Vladikavkaz', 20), each with setZone(). "
+                    "Create a meta-sector 'Northern Front' (default priority) and add both children "
+                    "using addChildSector(). Use configureController + configureAtis on 'Northern Front' "
+                    "with settings tables, then enableController + enableAtis separately. "
+                    "Use enableNotifier with inline settings on 'Northern Front'. "
+                    "Add a global Notifier on guard freq 243.000 AM. "
+                    "Use setTransmitter('Northern Front', 'ELINT_C130_1'). Enable text for all sectors. "
+                    "Wrap in do...end block.",
+        },
+        {
+            "title": "Event Handlers \u2014 Custom Mission Logic",
+            "desc": "Set up basic Hound instance. Create an event handler TABLE (not function) "
+                    "with an onHoundEvent METHOD. Register it with HOUND.addEventHandler(). "
+                    "Handle RADAR_NEW (announce via trigger.action.outText), RADAR_DESTROYED "
+                    "(count kills), and SITE_REMOVED (check mission objectives). "
+                    "Always filter by event.coalition. Show the handler table pattern from "
+                    "the official docs.",
+        },
+        {
+            "title": "Data Export and Periodic Intelligence",
+            "desc": "Set up Hound instance. Show how to: "
+                    "(1) call getSites() \u2014 it returns {sam={count=N, sites={...}}, ewr={count=N, sites={...}}}. "
+                    "Iterate with: for _, site in ipairs(data.sam.sites) do ... end. "
+                    "Access site.name, site.Type, site.emitters. For each emitter: "
+                    "emitter.typeName, emitter.LL.lat, emitter.LL.lon, emitter.accuracy. "
+                    "IMPORTANT: check 'if emitter.pos then' before accessing LL. "
+                    "(2) Call dumpIntelBrief() for CSV export. "
+                    "(3) Set up periodic export using DCS timer: "
+                    "timer.scheduleFunction(fn, nil, timer.getTime() + interval). "
+                    "NOTE: timer.scheduleFunction takes (function, argument, absoluteTime). "
+                    "Use timer.getTime() + seconds for the time parameter. "
+                    "Put the getSites iteration in a scheduled function (not immediately after systemOn, "
+                    "since detection takes 1-2 minutes). Call onScreenDebug(true) for diagnostics. "
+                     "Wrap in do...end block.",
+        },
+        {
+            "title": "Advanced Configuration \u2014 Batch Discovery, Multi-Frequency, and Globals",
+            "desc": "Set HOUND.* globals (FORCE_MANAGE_MARKERS, USE_LEGACY_MARKERS, "
+                    "MARKER_TEXT_POINTER) BEFORE creating the instance. "
+                    "Discover all ELINT platforms using HOUND.Utils.Filter.unitsByPrefix('ELINT ') "
+                    "and loop with pairs(name, unit) calling addPlatform(name). "
+                    "Add a sector with priority: addSector('North', 10) and setZone('North', 'Zone_North'). "
+                    "Enable Controller with multi-frequency: freq='251.000,35.000' and modulation='AM,FM', "
+                    "provider='piper', voice='en_US-ryan-low'. "
+                    "Use setTransmitter('all', 'ELINT_Main'). Enable text and BDA. "
+                    "Add an event handler TABLE with onHoundEvent that checks event.initiator type: "
+                    "if event.id == HOUND.EVENTS.SITE_CREATED then check event.initiator.isEWR before "
+                    "processing. Filter by event.coalition. "
+                    "Call onScreenDebug(true) for diagnostics. Wrap in do...end block.",
+        },
+    ]
+
     @staticmethod
     def _resolve_ollama_host() -> str:
         """Resolve Ollama API host. Priority:
         1. OLLAMA_HOST env var (Ollama's own convention)
-        2. Auto-detect WSL -> use Windows host IP
-        3. Fall back to localhost
+        2. WSL -> host.docker.internal (canonical WSL2 Windows host)
+        3. WSL -> default gateway IP (fallback)
+        4. Fall back to localhost
         """
-        # 1. Env var (Ollama convention)
         env_host = os.environ.get('OLLAMA_HOST')
         if env_host:
-            # Normalize: add scheme if missing
             if not env_host.startswith('http'):
                 env_host = f"http://{env_host}"
             return env_host.rstrip('/')
-        
-        # 2. Auto-detect WSL — use default gateway as Windows host IP
+
         try:
             with open('/proc/version', 'r') as f:
                 if 'microsoft' in f.read().lower():
                     import subprocess
+                    try:
+                        subprocess.run(
+                            ['getent', 'hosts', 'host.docker.internal'],
+                            capture_output=True, timeout=2, check=True
+                        )
+                        return "http://host.docker.internal:11434"
+                    except (subprocess.TimeoutExpired, FileNotFoundError,
+                            subprocess.CalledProcessError):
+                        pass
                     result = subprocess.run(
                         ['ip', 'route', 'show', 'default'],
                         capture_output=True, text=True, timeout=5
@@ -327,8 +405,7 @@ class MarkdownGenerator:
                     return "http://localhost:11434"
         except (FileNotFoundError, PermissionError, subprocess.TimeoutExpired):
             pass
-        
-        # 3. Default
+
         return "http://localhost:11434"
     
     def log(self, message: str) -> None:
@@ -451,7 +528,7 @@ class MarkdownGenerator:
                         content = f.read()
                     scripts[rel_path] = content
                     self.log(f"Loaded demo script: {rel_path}")
-                except Exception as e:
+                except (OSError, UnicodeError) as e:
                     self.log(f"Could not read {filepath}: {e}")
         return scripts
 
@@ -745,7 +822,7 @@ class MarkdownGenerator:
         """Validate that generated Lua code only uses real API methods.
         Returns (is_valid, list_of_issues)"""
         issues = []
-        calls = re.findall(r'((?:HoundElint|HOUND)[.:]\w+)\s*[\(\{]', code)
+        calls = re.findall(r'((?:HoundElint|HOUND)(?:[.:][\w.]+))\s*[\(\{]', code)
         
         for call in set(calls):
             if call not in valid_methods:
@@ -1131,6 +1208,8 @@ class MarkdownGenerator:
         categorized_api = self.build_categorized_api_reference(parsed_files)
         docs = self.read_docs_context(docs_dir)
         demo_scripts = self.read_demo_scripts(docs_dir)
+        for path, content in demo_scripts.items():
+            demo_scripts[path] = f"```lua\n{content}\n```"
         docs.update(demo_scripts)
         valid_methods = self.extract_valid_methods(parsed_files)
         ground_truth = self._extract_code_blocks(docs)
@@ -1142,77 +1221,8 @@ class MarkdownGenerator:
         self.log(f"Demo scripts: {len(demo_scripts)} loaded")
         self.log(f"Valid methods: {len(valid_methods)}")
         
-        # Step 2: Define integration scenarios
-        scenarios = [
-            {
-                "title": "Minimal Setup — Map Markers Only",
-                "desc": "Simplest possible Hound setup. Create instance for Blue coalition, "
-                        "add 2 ELINT platforms by unit name, enable polygon map markers, "
-                        "activate the system. No voice, no sectors. Wrap in do...end block.",
-            },
-            {
-                "title": "Basic Setup with Voice Communications",
-                "desc": "Blue coalition with 3 platforms. Set HOUND.FORCE_MANAGE_MARKERS = true "
-                        "BEFORE creating the instance. Enable Controller with multi-frequency: "
-                        "freq='251.000,35.000' and modulation='AM,FM'. Enable text messages. "
-                        "Enable ATIS on 253.000 AM. Use setTransmitter('all', 'ELINT_C130_1'). "
-                        "Enable BDA and launch alerts. Pre-brief 2 known SAM sites with custom "
-                        "code names. Use HOUND.MARKER.CIRCLE for markers. Wrap in do...end block.",
-            },
-            {
-                "title": "Multi-Sector Mission with Meta-Sectors and Zones",
-                "desc": "Blue coalition with 4 platforms. Add child sectors with priority: "
-                        "addSector('Beslan', 10) and addSector('Vladikavkaz', 20), each with setZone(). "
-                        "Create a meta-sector 'Northern Front' (default priority) and add both children "
-                        "using addChildSector(). Use configureController + configureAtis on 'Northern Front' "
-                        "with settings tables, then enableController + enableAtis separately. "
-                        "Use enableNotifier with inline settings on 'Northern Front'. "
-                        "Add a global Notifier on guard freq 243.000 AM. "
-                        "Use setTransmitter('Northern Front', 'ELINT_C130_1'). Enable text for all sectors. "
-                        "Wrap in do...end block.",
-            },
-            {
-                "title": "Event Handlers — Custom Mission Logic",
-                "desc": "Set up basic Hound instance. Create an event handler TABLE (not function) "
-                        "with an onHoundEvent METHOD. Register it with HOUND.addEventHandler(). "
-                        "Handle RADAR_NEW (announce via trigger.action.outText), RADAR_DESTROYED "
-                        "(count kills), and SITE_REMOVED (check mission objectives). "
-                        "Always filter by event.coalition. Show the handler table pattern from "
-                        "the official docs.",
-            },
-            {
-                "title": "Data Export and Periodic Intelligence",
-                "desc": "Set up Hound instance. Show how to: "
-                        "(1) call getSites() — it returns {sam={count=N, sites={...}}, ewr={count=N, sites={...}}}. "
-                        "Iterate with: for _, site in ipairs(data.sam.sites) do ... end. "
-                        "Access site.name, site.Type, site.emitters. For each emitter: "
-                        "emitter.typeName, emitter.LL.lat, emitter.LL.lon, emitter.accuracy. "
-                        "IMPORTANT: check 'if emitter.pos then' before accessing LL. "
-                        "(2) Call dumpIntelBrief() for CSV export. "
-                        "(3) Set up periodic export using DCS timer: "
-                        "timer.scheduleFunction(fn, nil, timer.getTime() + interval). "
-                        "NOTE: timer.scheduleFunction takes (function, argument, absoluteTime). "
-                        "Use timer.getTime() + seconds for the time parameter. "
-                        "Put the getSites iteration in a scheduled function (not immediately after systemOn, "
-                        "since detection takes 1-2 minutes). Call onScreenDebug(true) for diagnostics. "
-                         "Wrap in do...end block.",
-            },
-            {
-                "title": "Advanced Configuration — Batch Discovery, Multi-Frequency, and Globals",
-                "desc": "Set HOUND.* globals (FORCE_MANAGE_MARKERS, USE_LEGACY_MARKERS, "
-                        "MARKER_TEXT_POINTER) BEFORE creating the instance. "
-                        "Discover all ELINT platforms using HOUND.Utils.Filter.unitsByPrefix('ELINT ') "
-                        "and loop with pairs(name, unit) calling addPlatform(name). "
-                        "Add a sector with priority: addSector('North', 10) and setZone('North', 'Zone_North'). "
-                        "Enable Controller with multi-frequency: freq='251.000,35.000' and modulation='AM,FM', "
-                        "provider='piper', voice='en_US-ryan-low'. "
-                        "Use setTransmitter('all', 'ELINT_Main'). Enable text and BDA. "
-                        "Add an event handler TABLE with onHoundEvent that checks event.initiator type: "
-                        "if event.id == HOUND.EVENTS.SITE_CREATED then check event.initiator.isEWR before "
-                        "processing. Filter by event.coalition. "
-                        "Call onScreenDebug(true) for diagnostics. Wrap in do...end block.",
-            },
-        ]
+        # Step 2: Reference integration scenarios (defined as class constant)
+        scenarios = self.INTEGRATION_SCENARIOS
 
         # Step 3: Build system message (sent once, cached across all turns)
         # Use compact cheatsheet + ground truth examples only — the full generated_api_doc
@@ -1244,8 +1254,8 @@ STRICT RULES:
 15. configureController/configureAtis/configureNotifier(sector, settings) stores settings
     but does NOT activate them; call enableController/enableAtis/enableNotifier(sector)
     separately, or pass settings inline: enableController("sector", {{freq="251.000"}})
-16. addSector("name", priority) — if second arg is a number, it is the priority
-    (lower = higher), not a settings table. Default priority is 50.
+16. addSector("name", priority) — takes (sectorName, priority) OR (sectorName, settingsTable).
+    Do NOT pass nil as second arg. Priority is the second arg if it's a number (lower = higher).
 17. Set HOUND.* globals (FORCE_MANAGE_MARKERS, USE_LEGACY_MARKERS, MARKER_TEXT_POINTER,
     TTS_ENGINE, etc.) BEFORE calling HoundElint:create()
 18. Sector names "default" and "all" are reserved. "default" exists automatically.
@@ -1440,6 +1450,158 @@ For each task, return ONLY the Lua code in a markdown code block. No explanation
         # Step 6: Assemble final document
         return self._assemble_integration_guide(categorized_api, generated,
                                                  validation_result)
+    
+    def generate_llm_integration_guide_opencode(
+        self, parsed_files, docs_dir, model=None, generated_api_doc=""
+    ) -> str:
+        """One-shot integration guide via opencode CLI.
+
+        Pipes prompt to `opencode run` via stdin, supporting any
+        provider/model opencode routes to (Anthropic, OpenAI, etc.).
+        No multi-turn conversation — all scenarios generated in one call.
+        """
+        import subprocess
+
+        # Build context (same as Ollama path)
+        api_cheatsheet = self.build_api_cheatsheet(parsed_files)
+        categorized_api = self.build_categorized_api_reference(parsed_files)
+        docs = self.read_docs_context(docs_dir)
+        demo_scripts = self.read_demo_scripts(docs_dir)
+        for path, content in demo_scripts.items():
+            demo_scripts[path] = f"```lua\n{content}\n```"
+        docs.update(demo_scripts)
+        valid_methods = self.extract_valid_methods(parsed_files)
+        ground_truth = self._extract_code_blocks(docs)
+
+        self.log(f"Opencode path: API cheatsheet {len(api_cheatsheet)} chars")
+        self.log(f"Ground truth examples: {len(ground_truth)} chars")
+        self.log(f"Valid methods: {len(valid_methods)}")
+
+        # Build system content (same format as Ollama path)
+        system_content = f"""You are writing DCS World mission Lua scripts using the Hound ELINT radar detection system.
+
+API METHOD SIGNATURES (use ONLY these methods):
+{api_cheatsheet}
+
+CORRECT USAGE PATTERNS FROM OFFICIAL DOCUMENTATION:
+{ground_truth}
+
+STRICT RULES:
+1. Use ONLY methods listed in the API reference above
+2. Follow the EXACT patterns shown in the official examples
+3. Coalition parameter is coalition.side.BLUE or coalition.side.RED
+4. Platform names are DCS unit name strings like "ELINT_C130", "ELINT_Tower"
+5. enableController/enableAtis accept optional sector name as first arg, settings table as second
+6. Settings table format: {{freq = "251.000", modulation = "AM", gender = "male"}}
+7. Marker types use enum: HOUND.MARKER.CIRCLE, HOUND.MARKER.POLYGON, etc.
+8. Event handlers are TABLE objects with onHoundEvent(event) method, registered via HOUND.addEventHandler()
+9. addPlatform() takes ONE argument: the DCS unit name string
+10. HOUND.getInstance() takes a number, not a string
+11. preBriefedContact() takes a SAM unit/group name and optional code name string
+12. Wrap the main script in do...end block
+13. Include clear inline comments
+14. Do NOT invent methods or parameters not in the API reference
+15. configureController/configureAtis/configureNotifier(sector, settings) stores settings
+    but does NOT activate them; call enableController/enableAtis/enableNotifier(sector)
+    separately, or pass settings inline: enableController("sector", {{freq="251.000"}})
+16. addSector("name", priority) — takes (sectorName, priority) OR (sectorName, settingsTable).
+    Do NOT pass nil as second arg. Priority is the second arg if it's a number (lower = higher).
+17. Set HOUND.* globals (FORCE_MANAGE_MARKERS, USE_LEGACY_MARKERS, MARKER_TEXT_POINTER,
+    TTS_ENGINE, etc.) BEFORE calling HoundElint:create()
+18. Sector names "default" and "all" are reserved. "default" exists automatically.
+    Pass "all" to apply an operation to every sector.
+19. HOUND.Utils.Filter.unitsByPrefix("ELINT ") returns {{[name]=unit}} for batch
+    platform discovery. Use pairs() and addPlatform(name) in a loop.
+20. event.initiator type varies by HOUND.EVENTS: RADAR_DESTROYED → Emitter
+    (getName, getDcsGroupName), SITE_CREATED → Site (getDcsObject, getNatoDesignation,
+    isEWR boolean field), SITE_REMOVED → Site (DcsGroupName string field).
+    Always check event.coalition and event.initiator type before accessing fields.
+21. Multi-channel frequencies use comma-separated strings:
+    freq = "251.000,35.000" with matching modulation = "AM,FM".
+    Settings fields: freq, modulation, volume, speed, provider, gender, voice.
+22. getSites() returns {{sam={{count=N, sites={{...}}}}, ewr={{count=N, sites={{...}}}}}}.
+    Access site fields as TABLE properties: site.name, site.Type, site.emitters.
+    Access emitter fields as TABLE properties: emitter.typeName, emitter.LL.lat, emitter.LL.lon, emitter.accuracy.
+    Check `if emitter.pos then` before accessing LL. emitter.pos is a nested table with .LL subfield.
+
+Output EACH example as a Lua code block preceded by a header line like: ## Scenario N: title"""
+
+        scenarios = self.INTEGRATION_SCENARIOS
+
+        scenario_lines = []
+        for i, s in enumerate(scenarios, 1):
+            scenario_lines.append(f"Scenario {i}: {s['title']}")
+            scenario_lines.append(f"Description: {s['desc']}")
+            scenario_lines.append("")
+
+        prompt = f"""{system_content}
+
+=== TASK ===
+
+Generate working, complete, PRODUCTION-QUALITY Lua integration examples for EACH of the {len(scenarios)} scenarios below.
+
+REQUIREMENTS for every example:
+- Use `local` keyword for ALL variables
+- Include clear `--` comments on each logical block
+- Use ONLY methods from the API reference above — do not invent anything
+
+Output ALL {len(scenarios)} examples in a single response.
+Use the EXACT format below:
+
+## Scenario {{N}}: {{title}}
+```lua
+...
+```
+
+=== SCENARIOS ===
+
+{chr(10).join(scenario_lines)}
+
+Generate ALL {len(scenarios)} examples now."""
+
+        # Call opencode run
+        self.log(f"One-shot prompt: {len(prompt)} chars")
+        cmd = ["opencode", "run"]
+
+        self.log(f"Running: {' '.join(cmd)}")
+        try:
+            result = subprocess.run(
+                cmd, input=prompt, capture_output=True, text=True,
+                timeout=self.llm_timeout
+            )
+        except FileNotFoundError:
+            print("[ERROR] opencode not found. Install it or use --skip-integration-guide.")
+            return ""
+        except subprocess.TimeoutExpired:
+            print(f"[ERROR] opencode timed out after {self.llm_timeout}s.")
+            return ""
+
+        if result.returncode != 0:
+            print(f"[ERROR] opencode failed (exit {result.returncode}): {result.stderr[:500]}")
+            return ""
+
+        response = result.stdout.strip()
+        self.log(f"Opencode response: {len(response)} chars")
+
+        # Extract code blocks in order, match to scenarios
+        code_blocks = re.findall(r'```lua\n(.*?)```', response, re.DOTALL)
+        self.log(f"Extracted {len(code_blocks)} code blocks for {len(scenarios)} scenarios")
+
+        generated = []
+        for i, s in enumerate(scenarios):
+            code = code_blocks[i].strip() if i < len(code_blocks) else ""
+            is_valid, issues = self.validate_generated_code(code, valid_methods)
+            if not is_valid:
+                self.log(f"Scenario {i+1} '{s['title']}' validation: {issues}")
+            generated.append({
+                "title": s['title'],
+                "desc": s['desc'],
+                "code": code,
+                "valid": is_valid,
+                "issues": issues if not is_valid else []
+            })
+
+        return self._assemble_integration_guide(categorized_api, generated, "")
     
     def _assemble_integration_guide(self, categorized_api: str, scenarios: list,
                                      validation_result: str) -> str:
@@ -1671,6 +1833,17 @@ def main():
         help="Skip LLM integration guide generation (only produce API reference markdown files)"
     )
     parser.add_argument(
+        "--use-opencode",
+        action="store_true",
+        help="Use opencode CLI instead of Ollama for integration guide generation"
+    )
+    parser.add_argument(
+        "--opencode-model",
+        default=None,
+        help="Model to pass to opencode (e.g. 'anthropic/claude-sonnet-4-20250514'). "
+             "Uses opencode default if not set."
+    )
+    parser.add_argument(
         "--verbose", "-v", 
         action="store_true", 
         help="Enable verbose output"
@@ -1745,7 +1918,25 @@ def main():
     
     # Generate LLM integration guide (default, unless --skip-integration-guide or Ollama unavailable)
     if not args.skip_integration_guide:
-        if not generator.check_ollama_available():
+        if args.use_opencode:
+            model = args.opencode_model
+            model_label = model or "opencode default"
+            print(f"Generating LLM integration guide via opencode (model: {model_label})")
+            guide_doc = generator.generate_llm_integration_guide_opencode(
+                parsed_files, args.guides_dir, model,
+                generated_api_doc=public_doc)
+            if not guide_doc:
+                print("[ERROR] Opencode integration guide generation failed")
+                return 1
+            guide_path = public_output_path / "llm-integration-guide.md"
+            try:
+                with open(guide_path, 'w', encoding='utf-8') as f:
+                    f.write(guide_doc)
+                print(f"\u2713 Generated LLM integration guide: {guide_path}")
+            except Exception as e:
+                print(f"[ERROR] Could not write integration guide: {e}")
+                return 1
+        elif not generator.check_ollama_available():
             print("[WARN] Ollama not available — skipping integration guide generation")
         else:
             if args.use_large_model:

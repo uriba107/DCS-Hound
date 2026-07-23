@@ -22,7 +22,9 @@ This subtree owns all developer tooling that processes source code into delivera
   | `--release` | Compile + docs + missions, strips `-TRUNK` version suffix |
   | `--all` | Lint + docs + compile + missions |
 
-- **`generate_md_docs.py`**: Generates `HOUND_API_REFERENCE.md`, `DEVELOPER_API_REFERENCE.md`, and `llm-integration-guide.md` from LDoc-annotated source. Requires Ollama for the LLM integration guide.
+- **`generate_md_docs.py`**: Generates `HOUND_API_REFERENCE.md`, `DEVELOPER_API_REFERENCE.md`, and `llm-integration-guide.md` from LDoc-annotated source. Two LLM paths for integration guide generation:
+  - **Ollama** (default): `generate_llm_integration_guide()` — multi-turn chat with KV cache reuse, self-review loop. Configure with `--llm-model`, `--llm-host`, `--llm-context`, `--use-large-model`.
+  - **opencode CLI** (`--use-opencode`): `generate_llm_integration_guide_opencode()` — one-shot generation via `opencode --print`. Supports any provider opencode routes to. Optionally set model with `--opencode-model` (uses opencode default if omitted).
 - **`validate_db.lua` / `validate_db.sh`**: Validate DCS unit databases for correctness.
 - **`hound_json_export.lua`**: Export contact data to JSON.
 - **`parse_dcs-lua-datamine_for_hound.lua`**: Parse DCS datamine output into Hound DB format.

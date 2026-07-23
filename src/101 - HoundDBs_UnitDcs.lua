@@ -1046,7 +1046,7 @@ do
             ['F-16C_50'] = { antenna = { size = 1.45, factor = 1 }, require = { Payload = { 'f-16c_hts_pod' } }, ins_error = 0 },
             ['FA-18C_hornet'] = { antenna = { size = 14, factor = 1 }, require = { Payload = { 'ais-pod-t50' } },ins_error = 0 }, -- FA-18C stand in for EA-18G, AIS-POD-T50 is standin for AN/ALQ-218
             ['JF-17'] = { antenna = { size = 3.25, factor = 1 }, require = { Payload = { 'KG-600' } }, ins_error = 0 },
-            ['A6E'] = { antenna = { size = 9, factor = 1 }, require = { Payload = { 'BDU_45B' } }, ins_error = 0 }, -- A-6E stand in for EA-6B, BDU_45B is Standin for ALQ-99 
+            ['A6E'] = { antenna = { size = 9, factor = 1 }, require = { Payload = { 'BDU_45B' } }, ins_error = 0 }, -- A-6E stand in for EA-6B, BDU_45B is Standin for ALQ-99
             -- Mirage F1 placeholders. Thanks Viboa and Aerges for supplying the typeNames for the module's aircrafts.
             -- ['Mirage-F1CE'] = {antenna = {size = 3.7, factor = 1}, require = {Payload={'TMV_018_Syrel_POD'}},ins_error=100}, -- temporary for intial release, CE had not INS, therefor could not do ELINT.
             ['Mirage-F1EE'] = { antenna = { size = 3.7, factor = 1 }, require = { Payload = { 'TMV_018_Syrel_POD' } }, ins_error = 50 }, -- does not reflect features in actual released product
