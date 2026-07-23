@@ -2,7 +2,7 @@
 
 Everything needed to integrate the Hound ELINT radar detection system into a DCS World mission. This document is self-contained — no other files required.
 
-*Generated on: 2026-04-29 13:29:12*
+*Generated on: 2026-07-23 22:38:33*
 
 ---
 
@@ -23,7 +23,7 @@ Hound is a radar detection and tracking system for DCS World. It detects enemy r
 | **Platform** | DCS unit that collects radar signals (C-130, tower, etc.) |
 | **Contact** | Detected radar emitter with estimated position |
 | **Site** | Group of related radars (e.g., SA-6 with TR + SR) |
-| **Sector** | Geographic region with separate comms channels |
+| **Sector** | Geographic region with separate comms channels; can be nested as meta-sectors |
 | **Controller** | Interactive F10 radio menu for on-demand intel |
 | **ATIS** | Automated periodic threat broadcast |
 | **Notifier** | Alert broadcasts (new threats, launches, BDA) |
@@ -101,6 +101,8 @@ Place at least 2 ELINT platform units (for triangulation):
 | `HoundElint:getZone()` | `sectorName` (string) | table | Get zone of sector |
 | `HoundElint:setZone()` | `sectorName` (string), `DCS` (zoneCandidate) | — | Add zone to sector same as MOOSE. use late activation invisible helicopter gr... |
 | `HoundElint:removeZone()` | `sectorName` (string) | — | Remove zone from sector |
+| `HoundElint:addChildSector()` | `metaSectorName` (string), `childSectorName` (string) | — | Add a child sector to a meta-sector |
+| `HoundElint:removeChildSector()` | `metaSectorName` (string), `childSectorName` (string) | — | Remove a child sector from a meta-sector |
 | `HoundElint:updateSectorMembership()` | — | — | Update sector membership for all contacts |
 
 ### Controller
@@ -119,6 +121,7 @@ Place at least 2 ELINT platform units (for triangulation):
 
 | Method | Parameters | Returns | Description |
 |--------|------------|---------|-------------|
+| `HoundElint:setAtisUpdateInterval()` | `desired` (value) | true | Set Atis Update interval |
 | `HoundElint:enableAtis()` | `sectorName` (string) | — | Enable ATIS in sector |
 | `HoundElint:disableAtis()` | `sectorName` (string) | — | Disable ATIS in sector |
 | `HoundElint:removeAtis()` | `sectorName` (string) | — | Remove ATIS in sector |
@@ -126,7 +129,6 @@ Place at least 2 ELINT platform units (for triangulation):
 | `HoundElint:getAtisFreq()` | `sectorName` (string) | frequncies | Get ATIS freq |
 | `HoundElint:reportEWR()` | `name` (string) | — | Set ATIS EWR report state for sector |
 | `HoundElint:getAtisState()` | `sectorName` (string) | Bool | Get ATIS state |
-| `HoundElint:setAtisUpdateInterval()` | `desired` (value) | true | Set Atis Update interval |
 
 ### Notifier
 
@@ -134,7 +136,7 @@ Place at least 2 ELINT platform units (for triangulation):
 |--------|------------|---------|-------------|
 | `HoundElint:enableNotifier()` | `sectorName` (string) | — | Enable Notifier in sector Only one notifier is required as it will broadcast ... |
 | `HoundElint:disableNotifier()` | `sectorName` (string) | — | Disable Notifier in sector |
-| `HoundElint:removeNotifier()` | `sectorName` (string) | — | Remove controller in sector |
+| `HoundElint:removeNotifier()` | `sectorName` (string) | — | Remove Notifier in sector |
 | `HoundElint:configureNotifier()` | `sectorName` (string) | — | Configure Notifier in sector |
 | `HoundElint:getNotifierFreq()` | `sectorName` (string) | frequncies | Get Notifier freq |
 | `HoundElint:getNotifierState()` | `sectorName` (string) | Bool | Get Notifier state |
@@ -154,16 +156,6 @@ Place at least 2 ELINT platform units (for triangulation):
 
 | Method | Parameters | Returns | Description |
 |--------|------------|---------|-------------|
-| `HoundElint:enableText()` | `sectorName` (string) | — | Enable Text notification for controller |
-| `HoundElint:disableText()` | `sectorName` (string) | — | Disable Text notification for controller |
-| `HoundElint:enableTTS()` | `sectorName` (string) | — | Enable Text-To-Speach notification for controller |
-| `HoundElint:disableTTS()` | `sectorName` (string) | — | Disable Text-to-speach notification for controller |
-| `HoundElint:enableAlerts()` | `sectorName` (string) | — | Enable Alert notification for controller |
-| `HoundElint:disableAlerts()` | `sectorName` (string) | — | Disable Alert notification for controller |
-| `HoundElint:setCallsign()` | — | bool | Set sector callsign |
-| `HoundElint:getCallsign()` | — | String | Get sector callsign |
-| `HoundElint:setTransmitter()` | `sectorName` (string), `DCS` (transmitter) | — | Set transmitter to named sector valid values are name of sector, "all" or nil... |
-| `HoundElint:removeTransmitter()` | `sectorName` (string) | — | Remove transmitter to named sector valid values are name of sector, "all" or ... |
 | `HoundElint:setTimerInterval()` | `interval` (setIntervalName), `interval` (setValue) | Bool | Set intervals |
 | `HoundElint:enablePlatformPosErrors()` | — | bool | Enable platforms INS position errors |
 | `HoundElint:disablePlatformPosErrors()` | — | bool | Disable platforms INS position errors |
@@ -177,8 +169,18 @@ Place at least 2 ELINT platform units (for triangulation):
 | `HoundElint:disableNATO()` | — | Bool | Disable NATO brevity for Hound Instance |
 | `HoundElint:getAlertOnLaunch()` | — | Bool | Get Alert on launch for Hound Instance |
 | `HoundElint:setAlertOnLaunch()` | — | Bool | Set Alert on Launch for Hound instance |
-| `HoundElint:useNATOCallsignes()` | — | Bool | Set flag if callsignes for sectors under Callsignes would be from the NATO pool |
+| `HoundElint:useNATOCallsigns()` | — | Bool | Set flag if callsignes for sectors under Callsignes would be from the NATO pool |
 | `HoundElint:setRadioMenuParent()` | `desired` (parent) | Bool | Set Main parent menu for hound Instace must be set <b>BEFORE</b> calling <cod... |
+| `HoundElint:enableText()` | `sectorName` (string) | — | Enable Text notification for controller |
+| `HoundElint:disableText()` | `sectorName` (string) | — | Disable Text notification for controller |
+| `HoundElint:enableTTS()` | `sectorName` (string) | — | Enable Text-To-Speach notification for controller |
+| `HoundElint:disableTTS()` | `sectorName` (string) | — | Disable Text-to-speach notification for controller |
+| `HoundElint:enableAlerts()` | `sectorName` (string) | — | Enable Alert notification for controller |
+| `HoundElint:disableAlerts()` | `sectorName` (string) | — | Disable Alert notification for controller |
+| `HoundElint:setCallsign()` | — | bool | Set sector callsign |
+| `HoundElint:getCallsign()` | — | String | Get sector callsign |
+| `HoundElint:setTransmitter()` | `sectorName` (string), `DCS` (transmitter) | — | Set transmitter to named sector valid values are name of sector, "all" or nil... |
+| `HoundElint:removeTransmitter()` | `sectorName` (string) | — | Remove transmitter to named sector valid values are name of sector, "all" or ... |
 
 ### Event System
 
@@ -194,7 +196,7 @@ Place at least 2 ELINT platform units (for triangulation):
 |--------|------------|---------|-------------|
 | `HoundElint:getContacts()` | — | table | Get an exported list of all contacts tracked by the instance |
 | `HoundElint:getSites()` | — | table | Get an exported list of all sites tracked by the instance |
-| `HoundElint:dumpIntelBrief()` | `filename` (opt) | — | Dump Intel Brief to csv will dump intel summery to CSV in the DCS saved games... |
+| `HoundElint:dumpIntelBrief()` | `filename` (opt), `format` (opt) | — | Dump Intel Brief to CSV or JSON will dump intel summary to the DCS saved game... |
 
 ### Global Utilities
 
@@ -220,18 +222,11 @@ Place at least 2 ELINT platform units (for triangulation):
 
 ```lua
 do
-  -- Create Hound instance for Blue coalition
-  HoundBlue = HoundElint:create(coalition.side.BLUE)
-
-  -- Add ELINT platforms by unit name
-  HoundBlue:addPlatform("ELINT_Unit_1")
-  HoundBlue:addPlatform("ELINT_Unit_2")
-
-  -- Configure and enable polygon map markers
+  local HoundBlue = HoundElint:create(coalition.side.BLUE)
+  HoundBlue:addPlatform("ELINT_C130")
+  HoundBlue:addPlatform("ELINT_Tower")
   HoundBlue:setMarkerType(HOUND.MARKER.POLYGON)
   HoundBlue:enableMarkers()
-
-  -- Activate the system
   HoundBlue:systemOn()
 end
 ```
@@ -242,108 +237,92 @@ end
 
 ```lua
 do
-  -- Create Hound instance for Blue coalition
-  HoundBlue = HoundElint:create(coalition.side.BLUE)
+  HOUND.FORCE_MANAGE_MARKERS = true
 
-  -- Add 3 ELINT platforms
+  local HoundBlue = HoundElint:create(coalition.side.BLUE)
+
   HoundBlue:addPlatform("ELINT_C130_1")
   HoundBlue:addPlatform("ELINT_C130_2")
   HoundBlue:addPlatform("ELINT_Tower")
 
-  -- Enable Controller on 251.000 AM
   HoundBlue:enableController({
-    freq = "251.000",
-    modulation = "AM"
+    freq = "251.000,35.000",
+    modulation = "AM,FM"
   })
 
-  -- Enable text notifications for the controller
   HoundBlue:enableText()
 
-  -- Enable ATIS on 253.000 AM
   HoundBlue:enableAtis({
     freq = "253.000",
     modulation = "AM"
   })
 
-  -- Enable BDA (Battle Damage Assessment) and Launch Alerts
+  HoundBlue:setTransmitter("all", "ELINT_C130_1")
+
   HoundBlue:enableBDA()
   HoundBlue:setAlertOnLaunch(true)
 
-  -- Pre-brief 2 known SAM sites with custom code names
-  HoundBlue:preBriefedContact("SAM_Site_Alpha", "ANVIL")
-  HoundBlue:preBriefedContact("SAM_Site_Bravo", "HAMMER")
+  HoundBlue:preBriefedContact("SA-10_Site_1", "ANVIL")
+  HoundBlue:preBriefedContact("SA-6_Site_2", "HAMMER")
 
-  -- Configure map markers to use circles
   HoundBlue:setMarkerType(HOUND.MARKER.CIRCLE)
   HoundBlue:enableMarkers()
 
-  -- Activate the system
   HoundBlue:systemOn()
 end
 ```
 
 ---
 
-### Example 3: Multi-Sector Mission with Zones
+### Example 3: Multi-Sector Mission with Meta-Sectors and Zones
 
 ```lua
 do
-  -- Create Hound instance for Blue coalition
-  HoundBlue = HoundElint:create(coalition.side.BLUE)
+  local HoundBlue = HoundElint:create(coalition.side.BLUE)
 
-  -- Add 4 ELINT platforms
-  HoundBlue:addPlatform("ELINT_North_1")
-  HoundBlue:addPlatform("ELINT_North_2")
-  HoundBlue:addPlatform("ELINT_South_1")
-  HoundBlue:addPlatform("ELINT_South_2")
+  HoundBlue:addPlatform("ELINT_C130_1")
+  HoundBlue:addPlatform("ELINT_C130_2")
+  HoundBlue:addPlatform("ELINT_Tower_Hermon")
+  HoundBlue:addPlatform("ELINT_Tower_Meron")
 
-  -- Create named sectors
-  HoundBlue:addSector("North")
-  HoundBlue:addSector("South")
+  HoundBlue:addSector("Beslan", 10)
+  HoundBlue:setZone("Beslan", "Zone_Beslan")
 
-  -- Set geographic zones for each sector
-  HoundBlue:setZone("North", "Zone_North")
-  HoundBlue:setZone("South", "Zone_South")
+  HoundBlue:addSector("Vladikavkaz", 20)
+  HoundBlue:setZone("Vladikavkaz", "Zone_Vladikavkaz")
 
-  -- Set custom callsigns per sector
-  HoundBlue:setCallsign("North", "NORTHSTAR")
-  HoundBlue:setCallsign("South", "SOUTHSTAR")
+  HoundBlue:addSector("Northern Front")
+  HoundBlue:addChildSector("Northern Front", "Beslan")
+  HoundBlue:addChildSector("Northern Front", "Vladikavkaz")
 
-  -- Configure North Sector: Controller (Male) and ATIS (Female)
-  HoundBlue:enableController("North", {
-    freq = "251.000",
-    modulation = "AM",
+  HoundBlue:configureController("Northern Front", {
+    freq = "251.000,35.000",
+    modulation = "AM,FM",
     gender = "male"
   })
-  HoundBlue:enableAtis("North", {
+  HoundBlue:enableController("Northern Front")
+
+  HoundBlue:configureAtis("Northern Front", {
     freq = "253.000",
     modulation = "AM",
     gender = "female"
   })
+  HoundBlue:enableAtis("Northern Front")
 
-  -- Configure South Sector: Controller (Male) and ATIS (Female)
-  HoundBlue:enableController("South", {
-    freq = "255.000",
-    modulation = "AM",
-    gender = "male"
-  })
-  HoundBlue:enableAtis("South", {
-    freq = "257.000",
-    modulation = "AM",
-    gender = "female"
+  HoundBlue:enableNotifier("Northern Front", {
+    freq = "244.000",
+    modulation = "AM"
   })
 
-  -- Enable text notifications for all sectors
-  HoundBlue:enableText("all")
-
-  -- Add a global Notifier on guard frequency 243.000 AM
   HoundBlue:enableNotifier({
     freq = "243.000",
-    modulation = "AM",
-    gender = "male"
+    modulation = "AM"
   })
 
-  -- Activate the system
+  HoundBlue:setTransmitter("Northern Front", "ELINT_C130_1")
+
+  HoundBlue:enableText("all")
+
   HoundBlue:systemOn()
 end
 ```
@@ -354,56 +333,46 @@ end
 
 ```lua
 do
-  -- Create Hound instance for Blue coalition
-  HoundBlue = HoundElint:create(coalition.side.BLUE)
+  local HoundBlue = HoundElint:create(coalition.side.BLUE)
   HoundBlue:addPlatform("ELINT_C130")
+  HoundBlue:addPlatform("ELINT_Tower")
   HoundBlue:systemOn()
+end
 
-  -- Mission Objectives configuration
-  MissionObjectives = {
-    targetSites = {"SA_10_Site_1", "SA_6_Site_2"},
-    destroyedCount = 0,
-    kills = 0
-  }
+local MissionTracker = {
+  radarKills = 0,
+  targetSites = {"SA-10_Site_1", "SA-6_Site_2"},
+  destroyed = {}
+}
 
-  -- Event handler TABLE with onHoundEvent METHOD
-  function MissionObjectives:onHoundEvent(event)
-    -- Always filter by coalition to ensure we only process Blue's detections
-    if event.coalition ~= coalition.side.BLUE then return end
+function MissionTracker:onHoundEvent(event)
+  if event.coalition ~= coalition.side.BLUE then return end
 
-    -- Handle RADAR_NEW: Announce new threat
-    if event.id == HOUND.EVENTS.RADAR_NEW then
-      local contact = event.initiator
-      trigger.action.outText("ELINT Alert: New radar emission detected from " .. contact:getName(), 10)
-    end
+  if event.id == HOUND.EVENTS.RADAR_NEW then
+    local contact = event.initiator
+    trigger.action.outText("New threat detected: " .. contact:getName(), 10)
+  end
 
-    -- Handle RADAR_DESTROYED: Count total radar kills
-    if event.id == HOUND.EVENTS.RADAR_DESTROYED then
-      self.kills = self.kills + 1
-      trigger.action.outText("Radar neutralized! Total kills: " .. self.kills, 10)
-    end
+  if event.id == HOUND.EVENTS.RADAR_DESTROYED then
+    self.radarKills = self.radarKills + 1
+    trigger.action.outText("Radars destroyed: " .. self.radarKills, 10)
+  end
 
-    -- Handle SITE_REMOVED: Check against mission objective list
-    if event.id == HOUND.EVENTS.SITE_REMOVED then
-      local site = event.initiator
-      -- Check if the removed site is one of our target sites
-      for _, targetName in ipairs(self.targetSites) do
-        if site.DcsGroupName == targetName then
-          self.destroyedCount = self.destroyedCount + 1
-          trigger.action.outText("Objective Complete: Target " .. targetName .. " destroyed!", 15)
-
-          -- Check if all objectives are complete
-          if self.destroyedCount >= #self.targetSites then
-            trigger.action.outText("All primary SAM sites neutralized. Mission Success!", 30)
-          end
+  if event.id == HOUND.EVENTS.SITE_REMOVED then
+    local site = event.initiator
+    for _, targetName in ipairs(self.targetSites) do
+      if site.DcsGroupName == targetName then
+        table.insert(self.destroyed, targetName)
+        trigger.action.outText("Site destroyed: " .. targetName, 15)
+        if #self.destroyed >= #self.targetSites then
+          trigger.action.outText("All primary targets eliminated!", 30)
         end
       end
     end
   end
-
-  -- Register the handler table with the global HOUND system
-  HOUND.addEventHandler(MissionObjectives)
 end
+
+HOUND.addEventHandler(MissionTracker)
 ```
 
 ---
@@ -412,59 +381,98 @@ end
 
 ```lua
 do
-  -- Create Hound instance for Blue coalition
-  HoundBlue = HoundElint:create(coalition.side.BLUE)
+  local HoundBlue = HoundElint:create(coalition.side.BLUE)
   HoundBlue:addPlatform("ELINT_C130")
+  HoundBlue:addPlatform("ELINT_Tower")
+  HoundBlue:addPlatform("ELINT_C17")
+  HoundBlue:onScreenDebug(true)
   HoundBlue:systemOn()
 
-  -- Function to process and print site data
-  local function processIntel()
-    -- (1) Call getSites() which returns a table with sam and ewr categories
+  local function periodicIntelReport()
     local data = HoundBlue:getSites()
 
-    if data and data.sam and data.sam.sites then
-      trigger.action.outText("--- Processing SAM Intel ---", 5)
-      
-      -- Iterate through the SAM sites list
-      for _, site in ipairs(data.sam.sites) do
-        local siteInfo = "Site: " .. (site.name or "Unknown") .. " Type: " .. (site.Type or "Unknown")
-        
-        -- Iterate through emitters associated with the site
-        if site.emitters then
-          for _, emitter in ipairs(site.emitters) do
-            local emitterInfo = " | Emitter: " .. (emitter.typeName or "Unknown")
-            
-            -- IMPORTANT: check if emitter.pos exists before accessing LL (Latitude/Longitude)
-            if emitter.pos then
-              emitterInfo = emitterInfo .. " Pos: " .. emitter.LL.lat .. ", " .. emitter.LL.lon 
-              emitterInfo = emitterInfo .. " Acc: " .. (emitter.accuracy or "N/A")
-            end
-            siteInfo = siteInfo .. emitterInfo
-          end
+    for _, site in ipairs(data.sam.sites) do
+      local siteName = site.name
+      local siteType = site.Type
+      for _, emitter in ipairs(site.emitters) do
+        local typeName = emitter.typeName
+        local accuracy = emitter.accuracy
+        if emitter.pos then
+          local lat = emitter.LL.lat
+          local lon = emitter.LL.lon
+          env.info("SAM emitter " .. typeName .. " at " .. lat .. ", " .. lon)
         end
-        
-        trigger.action.outText(siteInfo, 10)
+      end
+    end
+
+    for _, site in ipairs(data.ewr.sites) do
+      for _, emitter in ipairs(site.emitters) do
+        if emitter.pos then
+          env.info("EWR emitter " .. emitter.typeName .. " at " .. emitter.LL.lat .. ", " .. emitter.LL.lon)
+        end
+      end
+    end
+
+    HoundBlue:dumpIntelBrief("intel_report", "csv")
+
+    return timer.getTime() + 120
+  end
+
+  timer.scheduleFunction(periodicIntelReport, nil, timer.getTime() + 120)
+end
+```
+
+---
+
+### Example 6: Advanced Configuration — Batch Discovery, Multi-Frequency, and Globals
+
+```lua
+do
+  HOUND.FORCE_MANAGE_MARKERS = true
+  HOUND.USE_LEGACY_MARKERS = false
+  HOUND.MARKER_TEXT_POINTER = "❖ « "
+
+  local HoundBlue = HoundElint:create(coalition.side.BLUE)
+
+  local platforms = HOUND.Utils.Filter.unitsByPrefix("ELINT ")
+  for name, unit in pairs(platforms) do
+    HoundBlue:addPlatform(name)
+  end
+
+  HoundBlue:addSector("North", 10)
+  HoundBlue:setZone("North", "Zone_North")
+
+  HoundBlue:enableController({
+    freq = "251.000,35.000",
+    modulation = "AM,FM",
+    provider = "piper",
+    voice = "en_US-ryan-low"
+  })
+
+  HoundBlue:setTransmitter("all", "ELINT_Main")
+
+  HoundBlue:enableText()
+  HoundBlue:enableBDA()
+
+  local IntelTracker = {}
+
+  function IntelTracker:onHoundEvent(event)
+    if event.coalition ~= coalition.side.BLUE then return end
+
+    if event.id == HOUND.EVENTS.SITE_CREATED then
+      local site = event.initiator
+      if site.isEWR then
+        env.info("New EWR site: " .. site:getName())
+      else
+        env.info("New SAM site: " .. site:getName())
       end
     end
   end
 
-  -- (2) Call dumpIntelBrief() for CSV export to saved games folder
-  HoundBlue:dumpIntelBrief("Mission_Intel_Export.csv")
+  HOUND.addEventHandler(IntelTracker)
 
-  -- (3) Set up periodic export using DCS timer
-  -- Detection takes time, so we schedule the first run for 120 seconds from now
-  local interval = 300 -- Run every 5 minutes
-  local startTime = timer.getTime() + 120
-
-  -- Define a wrapper to reschedule the function
-  local function scheduledIntel()
-    processIntel()
-    -- Schedule the next execution
-    timer.scheduleFunction(scheduledIntel, nil, timer.getTime() + interval)
-  end
-
-  -- Initial schedule call: timer.scheduleFunction(function, argument, absoluteTime)
-  timer.scheduleFunction(scheduledIntel, nil, startTime)
+  HoundBlue:onScreenDebug(true)
+  HoundBlue:systemOn()
 end
 ```
 
@@ -536,7 +544,7 @@ end
 
 ## Documentation Quality Check
 
-**PASSED** — An LLM successfully wrote correct integration code using only this guide as context.
+
 
 ---
 

@@ -4,7 +4,7 @@ do
         l_stts.DIRECTORY = "C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
         l_stts.GOOGLE_CREDENTIALS = "E:\\Dropbox\\uri\\Dropbox\\DCS\\Mission Building\\googletts.json"
     end
-    HOUND.USE_LEGACY_MARKS = false
+    HOUND.USE_LEGACY_MARKERS = false
     HOUND.MARKER_TEXT_POINTER = "❖ « "
 end
 
