@@ -122,7 +122,7 @@ function build_docs {
 
 function build_llm_docs {
     highlight "Building Markdown API Docs + LLM Integration Guide"
-    python3 tools/generate_md_docs.py --src-dir ./src --public-output-dir ./ --dev-output-dir ./ --guides-dir ./docs -v
+    python3 tools/generate_md_docs.py --src-dir ./src --public-output-dir ./ --dev-output-dir ./ --guides-dir ./docs -v --use-opencode
 }
 
 function build_toc {
