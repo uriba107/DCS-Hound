@@ -282,13 +282,35 @@ do
         end
     end
     --- Send Launch Alert
-    -- @param fireGrp DCS Group/Group name that is firing
-    function HOUND.ElintWorker:AlertOnLaunch(fireGrp)
+    -- Publishes RADAR_LAUNCH event for tracked emitter unit, or SITE_LAUNCH
+    -- for parent site. Cooldown prevents spam.
+    -- @param[type=table|string] fireUnit DCS Unit, DCS Group or Group name that is firing
+    function HOUND.ElintWorker:AlertOnLaunch(fireUnit)
         if not self.settings:getAlertOnLaunch() then return end
-        local site = self:getSite(fireGrp,true)
+
+        if HoundUtils.Dcs.isUnit(fireUnit) then
+            local unitName = fireUnit:getName()
+            if self.contacts[unitName] then
+                local event = self.contacts[unitName]:LaunchDetected()
+                if type(event) == "table" then
+                    event.houndId = self.settings:getId()
+                    event.coalition = self.settings:getCoalition()
+                    HOUND.EventHandler.publishEvent(event)
+                end
+                return
+            end
+        end
+
+        local grpName = nil
+        if type(fireUnit) == "string" then
+            grpName = fireUnit
+        elseif HoundUtils.Dcs.isGroup(fireUnit) then
+            grpName = fireUnit:getName()
+        end
+        if not grpName then return end
+
+        local site = self:getSite(grpName,true)
         if site then
-            -- HOUND.Logger.trace("Launch Alert called for " .. site:getName())
-            -- HOUND.Logger.onScreenDebug(site:getName().. " is launching!")
             local event = site:LaunchDetected()
             if type(event) == "table" then
                 event.houndId = self.settings:getId()
@@ -424,7 +446,7 @@ do
                 for _,platform in ipairs(self.platforms) do
                     local platformData = HOUND.DB.getPlatformData(platform)
 
-                    if HoundUtils.Geo.checkLOS(platformData.pos, radarPos) then
+                    if platformData and HoundUtils.Geo.checkLOS(platformData.pos, radarPos) then
                         local contact = self:getContact(radar)
                         local sampleAngularResolution = HOUND.DB.getSensorPrecision(platform,contact:getWavelenght(isRadarTracking))
                         if sampleAngularResolution < l_math.rad(10.0) then

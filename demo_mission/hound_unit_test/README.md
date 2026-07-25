@@ -659,6 +659,14 @@ Worker and query unit tests covering `HOUND.ElintWorker` (500) and `HOUND.ElintW
 | `TestCountPlatformsAfterInsert` | `countPlatforms` returns platform table length |
 | `TestListPlatforms` | `listPlatforms` returns table with `getName` iteration |
 
+**DB Platform Data Guards:**
+
+| Method | What It Tests |
+|--------|--------------|
+| `TestGetPlatformDataDeadUnit` | `getPlatformData` on destroyed unit mock → nil, no `getPosition` crash |
+| `TestGetPlatformDataDeadStatic` | `getPlatformData` on destroyed static mock → nil |
+| `TestGetPlatformDataInvalidType` | `getPlatformData(nil/string)` → nil |
+
 **Tracked/Contact/Site Lookups:**
 
 | Method | What It Tests |

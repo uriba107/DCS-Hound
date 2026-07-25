@@ -111,29 +111,6 @@ do
         return msg .. "."
     end
 
-    --- Generate a launch alert message.
-    -- @param isTTS (bool) True if the message is for TTS, false for text message.
-    -- @param[type=string] sectorName Name of the primary sector; if present, the message will include the sector name.
-    -- @return string Compiled launch alert message.
-    function HOUND.Contact.Site:generateLaunchAlert(isTTS,sectorName)
-    local msg = "SAM LAUNCH! SAM LAUNCH! " .. self:getDesignation(true)
-    if sectorName then
-        msg = msg .. " in " .. sectorName
-    else
-        if self:hasPos() then
-            local GridPos,BePos
-            if isTTS then
-                GridPos,BePos = self:getTtsData(true,1)
-                msg = msg .. ", bullseye " .. BePos
-            else
-                GridPos,BePos = self:getTextData(true,1)
-                msg = msg .. " BE: " .. BePos .. " (grid ".. GridPos ..")"
-            end
-        end
-    end
-    return  msg .. "!"
-    end
-
     --- generate Ident report
     -- @param isTTS Bool. If true message will be for TTS. False will make a text message
     -- @param[type=string] sectorName Name of primary sector if present function will only return sector data

@@ -1565,6 +1565,16 @@ Generate ALL {len(scenarios)} examples now."""
         generated = []
         for i, s in enumerate(scenarios):
             code = code_by_number.get(i + 1, "")
+            if not code:
+                generated.append({
+                    "title": s['title'],
+                    "desc": s['desc'],
+                    "code": code,
+                    "valid": False,
+                    "issues": ["No code block generated for this scenario"]
+                })
+                self.log(f"Scenario {i+1} '{s['title']}' missing code block")
+                continue
             is_valid, issues = self.validate_generated_code(code, valid_methods)
             if not is_valid:
                 self.log(f"Scenario {i+1} '{s['title']}' validation: {issues}")
@@ -1576,7 +1586,8 @@ Generate ALL {len(scenarios)} examples now."""
                 "issues": issues if not is_valid else []
             })
 
-        return self._assemble_integration_guide(categorized_api, generated, "")
+        return self._assemble_integration_guide(categorized_api, generated,
+                                                "LLM quality/effectiveness check skipped for opencode path.")
     
     def _assemble_integration_guide(self, categorized_api: str, scenarios: list,
                                      validation_result: str) -> str:

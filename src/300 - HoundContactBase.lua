@@ -351,4 +351,27 @@ do
 
         return phoneticGridPos,phoneticBulls
     end
+
+    --- Generate a launch alert message.
+    -- @param isTTS (bool) True if the message is for TTS, false for text message.
+    -- @param[type=string] sectorName Name of the primary sector; if present, the message will include the sector name.
+    -- @return string Compiled launch alert message.
+    function HOUND.Contact.Base:generateLaunchAlert(isTTS,sectorName)
+        local msg = "SAM LAUNCH! SAM LAUNCH! " .. self:getDesignation(true)
+        if sectorName then
+            msg = msg .. " in " .. sectorName
+        else
+            if self:hasPos() then
+                local GridPos,BePos
+                if isTTS then
+                    GridPos,BePos = self:getTtsData(true,1)
+                    msg = msg .. ", bullseye " .. BePos
+                else
+                    GridPos,BePos = self:getTextData(true,1)
+                    msg = msg .. " BE: " .. BePos .. " (grid ".. GridPos ..")"
+                end
+            end
+        end
+        return msg .. "!"
+    end
 end

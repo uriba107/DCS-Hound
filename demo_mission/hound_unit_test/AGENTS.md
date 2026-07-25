@@ -49,7 +49,8 @@ Validate Hound ELINT runtime behavior inside DCS World. Tests exercise Lua sourc
 
 - The README is the high-level reference (timeline, per-file method docs, mission layout). Keep it in sync with test changes.
 - The AGENTS.md is the operational knowledge store (gotchas, patterns, TODO context, constraints). Update it when you discover a new gotcha or fix a longstanding one.
-- `test-hound-worker.lua` covers `HOUND.ElintWorker` (500) and `HOUND.ElintWorker_queries` (501) with 49 test methods.
+- `test-hound-worker.lua` covers `HOUND.ElintWorker` (500) and `HOUND.ElintWorker_queries` (501) with 52 test methods.
+- `HOUND.DB.getPlatformData` returns `nil` for invalidated DCS objects (not a Unit/StaticObject, or `isExist()` false). Callers must check the result before accessing platform fields (e.g. `pos`).
 - Verify against `dcs.log` output — luaunit prints pass/fail/skip counts per batch.
 - When debugging a single batch, you can comment out other batches in `hound-unit-tests.lua` to shorten the loop.
 

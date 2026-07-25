@@ -40,7 +40,7 @@ do
 
         local sa6 = Group.getByName('SA-6_TINIAN')
         lu.assertIsTable(sa6)
-        lu.assertEquals(sa6:getSize(),5)
+        lu.assertEquals(sa6:getSize(),6)
         setupGroup(sa6)
 
         local sa3 = Group.getByName('SA-3_TINIAN')

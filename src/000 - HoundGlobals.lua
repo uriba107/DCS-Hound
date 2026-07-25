@@ -107,6 +107,7 @@ do
     -- @field SITE_ALIVE Hound Event
     -- @field SITE_ASLEEP Hound Event
     -- @field SITE_LAUNCH Hound Event
+-- @field RADAR_LAUNCH Hound Event
     HOUND.EVENTS = {
         NO_CHANGE     = 0,
         HOUND_ENABLED = 1,
@@ -131,6 +132,7 @@ do
         SITE_ALIVE = 20,
         SITE_ASLEEP = 21,
         SITE_LAUNCH = 22,
+        RADAR_LAUNCH = 23,
     }
 
     --- Event structure

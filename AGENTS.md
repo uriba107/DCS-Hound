@@ -101,3 +101,4 @@ When the user requests a durable behavior change, record it here or in the relev
 - Project assets: `README.MD`, `images/`, `logo/` (gitignored), `include/DCS-SimpleTextToSpeech.lua` (TTS audio lib)
 - IDE config: `.vscode/`, `.cursor/` (both gitignored)
 - AI planning: `.claude/` (gitignored)
+- **Testing requirement**: Every new function or functionality must include unit tests in `demo_mission/hound_unit_test/` unless testing is infeasible (e.g., depends on DCS runtime features that can't be mocked). Add tests under `demo_mission/hound_unit_test/extras/test-*.lua` following the patterns in `demo_mission/hound_unit_test/AGENTS.md`.

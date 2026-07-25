@@ -71,6 +71,7 @@ do
     -- @return platform data
     function HOUND.DB.getPlatformData(DcsObject)
         if not HOUND.Utils.Dcs.isUnit(DcsObject) and not HOUND.Utils.Dcs.isStaticObject(DcsObject) then return end
+        if not DcsObject:isExist() then return end
 
         local platformData={
             pos = HOUND.Utils.Dcs.copyPoint(DcsObject:getPosition().p),

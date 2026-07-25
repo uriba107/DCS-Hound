@@ -62,6 +62,13 @@ do
                 if houndEvent.id == HOUND.EVENTS.SITE_LAUNCH then
                     sector:notifySiteLaunching(houndEvent.initiator)
                 end
+                if houndEvent.id == HOUND.EVENTS.RADAR_LAUNCH then
+                    local emitter = houndEvent.initiator
+                    local site = self.contacts:getSite(emitter:getDcsGroupName(), true)
+                    if site then
+                        sector:notifySiteLaunching(site)
+                    end
+                end
             end
 
             if houndEvent.id == HOUND.EVENTS.SITE_CREATED or houndEvent.id == HOUND.EVENTS.SITE_CLASSIFIED then
@@ -133,7 +140,8 @@ do
         then
             local _,catEx = DcsEvent.initiator:getCategory()
             if not HOUND.setContainsValue({Unit.Category.GROUND_UNIT,Unit.Category.SHIP},catEx) then return end
-            local grp = DcsEvent.initiator:getGroup()
+            local unit = DcsEvent.initiator
+            local grp = unit:getGroup()
             if HoundUtils.Dcs.isGroup(grp) then
                 self.contacts:Sniff(grp:getName())
                 if DcsEvent.weapon:getDesc().category ~= Weapon.Category.MISSILE then return end
@@ -146,7 +154,11 @@ do
                     HoundUtils.Geo.setPointHeight(tgtPos)
                 end
                 self.contacts:ensureSitePrimaryHasPos(grp:getName(),tgtPos) -- pass target position, if no position available, it will alert on target position
-                self:AlertOnLaunch(grp)
+                if HOUND.DB.Radars[unit:getTypeName()] then
+                    self:AlertOnLaunch(unit)
+                else
+                    self:AlertOnLaunch(grp)
+                end
             end
         end
 

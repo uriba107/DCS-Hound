@@ -82,6 +82,23 @@ do
         lu.assertItemsEquals(result, { "PlatformA", "PlatformB" })
     end
 
+    -- DB platform data guards (HOUND.DB.getPlatformData / 103)
+
+    function TestHoundWorker:TestGetPlatformDataDeadUnit()
+        local mock = setmetatable({ isExist = function() return false end }, Unit)
+        lu.assertIsNil(HOUND.DB.getPlatformData(mock))
+    end
+
+    function TestHoundWorker:TestGetPlatformDataDeadStatic()
+        local mock = setmetatable({ isExist = function() return false end }, StaticObject)
+        lu.assertIsNil(HOUND.DB.getPlatformData(mock))
+    end
+
+    function TestHoundWorker:TestGetPlatformDataInvalidType()
+        lu.assertIsNil(HOUND.DB.getPlatformData(nil))
+        lu.assertIsNil(HOUND.DB.getPlatformData("PlatformA"))
+    end
+
     -- Contact query methods
 
     function TestHoundWorker:TestIsTrackedNil()
