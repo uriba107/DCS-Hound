@@ -840,7 +840,58 @@ class MarkdownGenerator:
                 if len(block) > 30 and ('HoundElint' in block or 'HOUND.' in block):
                     blocks.append(f"-- From {filename}:\n{block}")
         return '\n\n'.join(blocks[:30])
-    
+
+    @staticmethod
+    def _build_llm_system_prompt(api_cheatsheet, ground_truth, closing_instruction):
+        """Shared system prompt template used by both Ollama and opencode paths."""
+        return f"""You are writing DCS World mission Lua scripts using the Hound ELINT radar detection system.
+
+API METHOD SIGNATURES (use ONLY these methods):
+{api_cheatsheet}
+
+CORRECT USAGE PATTERNS FROM OFFICIAL DOCUMENTATION:
+{ground_truth}
+
+STRICT RULES:
+1. Use ONLY methods listed in the API reference above
+2. Follow the EXACT patterns shown in the official examples
+3. Coalition parameter is coalition.side.BLUE or coalition.side.RED
+4. Platform names are DCS unit name strings like "ELINT_C130", "ELINT_Tower"
+5. enableController/enableAtis accept optional sector name as first arg, settings table as second
+6. Settings table format: {{freq = "251.000", modulation = "AM", gender = "male"}}
+7. Marker types use enum: HOUND.MARKER.CIRCLE, HOUND.MARKER.POLYGON, etc.
+8. Event handlers are TABLE objects with onHoundEvent(event) method, registered via HOUND.addEventHandler()
+9. addPlatform() takes ONE argument: the DCS unit name string
+10. HOUND.getInstance() takes a number, not a string
+11. preBriefedContact() takes a SAM unit/group name and optional code name string
+12. Wrap the main script in do...end block
+13. Include clear inline comments
+14. Do NOT invent methods or parameters not in the API reference
+15. configureController/configureAtis/configureNotifier(sector, settings) stores settings
+    but does NOT activate them; call enableController/enableAtis/enableNotifier(sector)
+    separately, or pass settings inline: enableController("sector", {{freq="251.000"}})
+16. addSector("name", priority) — takes (sectorName, priority) OR (sectorName, settingsTable).
+    Do NOT pass nil as second arg. Priority is the second arg if it's a number (lower = higher).
+17. Set HOUND.* globals (FORCE_MANAGE_MARKERS, USE_LEGACY_MARKERS, MARKER_TEXT_POINTER,
+    TTS_ENGINE, etc.) BEFORE calling HoundElint:create()
+18. Sector names "default" and "all" are reserved. "default" exists automatically.
+    Pass "all" to apply an operation to every sector.
+19. HOUND.Utils.Filter.unitsByPrefix("ELINT ") returns {{[name]=unit}} for batch
+    platform discovery. Use pairs() and addPlatform(name) in a loop.
+20. event.initiator type varies by HOUND.EVENTS: RADAR_DESTROYED → Emitter
+    (getName, getDcsGroupName), SITE_CREATED → Site (getDcsObject, getNatoDesignation,
+    isEWR boolean field), SITE_REMOVED → Site (DcsGroupName string field).
+    Always check event.coalition and event.initiator type before accessing fields.
+21. Multi-channel frequencies use comma-separated strings:
+    freq = "251.000,35.000" with matching modulation = "AM,FM".
+    Settings fields: freq, modulation, volume, speed, provider, gender, voice.
+22. getSites() returns {{sam={{count=N, sites={{...}}}}, ewr={{count=N, sites={{...}}}}}}.
+    Access site fields as TABLE properties: site.name, site.Type, site.emitters.
+    Access emitter fields as TABLE properties: emitter.typeName, emitter.LL.lat, emitter.LL.lon, emitter.accuracy.
+    Check `if emitter.pos then` before accessing LL. emitter.pos is a nested table with .LL subfield.
+
+{closing_instruction}"""
+
     def escape_markdown(self, text: str) -> str:
         """Escape special Markdown characters"""
         if not text:
@@ -1228,49 +1279,11 @@ class MarkdownGenerator:
         # Use compact cheatsheet + ground truth examples only — the full generated_api_doc
         # is ~22KB of verbose markdown that duplicates info already in the cheatsheet.
         # Keeping the system message lean cuts first-turn processing time significantly.
-        system_content = f"""You are writing DCS World mission Lua scripts using the Hound ELINT radar detection system.
-
-API METHOD SIGNATURES (use ONLY these methods):
-{api_cheatsheet}
-
-CORRECT USAGE PATTERNS FROM OFFICIAL DOCUMENTATION:
-{ground_truth}
-
-STRICT RULES:
-1. Use ONLY methods listed in the API reference above
-2. Follow the EXACT patterns shown in the official examples
-3. Coalition parameter is coalition.side.BLUE or coalition.side.RED
-4. Platform names are DCS unit name strings like "ELINT_C130", "ELINT_Tower"
-5. enableController/enableAtis accept optional sector name as first arg, settings table as second
-6. Settings table format: {{freq = "251.000", modulation = "AM", gender = "male"}}
-7. Marker types use enum: HOUND.MARKER.CIRCLE, HOUND.MARKER.POLYGON, etc.
-8. Event handlers are TABLE objects with onHoundEvent(event) method, registered via HOUND.addEventHandler()
-9. addPlatform() takes ONE argument: the DCS unit name string
-10. HOUND.getInstance() takes a number, not a string
-11. preBriefedContact() takes a SAM unit/group name and optional code name string
-12. Wrap the main script in do...end block
-13. Include clear inline comments
-14. Do NOT invent methods or parameters not in the API reference
-15. configureController/configureAtis/configureNotifier(sector, settings) stores settings
-    but does NOT activate them; call enableController/enableAtis/enableNotifier(sector)
-    separately, or pass settings inline: enableController("sector", {{freq="251.000"}})
-16. addSector("name", priority) — takes (sectorName, priority) OR (sectorName, settingsTable).
-    Do NOT pass nil as second arg. Priority is the second arg if it's a number (lower = higher).
-17. Set HOUND.* globals (FORCE_MANAGE_MARKERS, USE_LEGACY_MARKERS, MARKER_TEXT_POINTER,
-    TTS_ENGINE, etc.) BEFORE calling HoundElint:create()
-18. Sector names "default" and "all" are reserved. "default" exists automatically.
-    Pass "all" to apply an operation to every sector.
-19. HOUND.Utils.Filter.unitsByPrefix("ELINT ") returns {{[name]=unit}} for batch
-    platform discovery. Use pairs() and addPlatform(name) in a loop.
-20. event.initiator type varies by HOUND.EVENTS: RADAR_DESTROYED → Emitter
-    (getName, getDcsGroupName), SITE_CREATED → Site (getDcsObject, getNatoDesignation,
-    isEWR boolean field), SITE_REMOVED → Site (DcsGroupName string field).
-    Always check event.coalition and event.initiator type before accessing fields.
-21. Multi-channel frequencies use comma-separated strings:
-    freq = "251.000,35.000" with matching modulation = "AM,FM".
-    Settings fields: freq, modulation, volume, speed, provider, gender, voice.
-
-For each task, return ONLY the Lua code in a markdown code block. No explanations outside the code."""
+        system_content = self._build_llm_system_prompt(
+            api_cheatsheet, ground_truth,
+            "For each task, return ONLY the Lua code in a markdown code block. "
+            "No explanations outside the code."
+        )
 
         # Preload model and start chat session
         self._preload_model(model)
@@ -1454,11 +1467,11 @@ For each task, return ONLY the Lua code in a markdown code block. No explanation
     def generate_llm_integration_guide_opencode(
         self, parsed_files, docs_dir, model=None, generated_api_doc=""
     ) -> str:
-        """One-shot integration guide via opencode CLI.
+        """One-shot integration guide via `opencode run`.
 
-        Pipes prompt to `opencode run` via stdin, supporting any
-        provider/model opencode routes to (Anthropic, OpenAI, etc.).
-        No multi-turn conversation — all scenarios generated in one call.
+        Pipes prompt via stdin with `opencode run`. Passes `--model`
+        when --opencode-model is configured. No multi-turn conversation
+        — all scenarios generated in one call.
         """
         import subprocess
 
@@ -1478,53 +1491,11 @@ For each task, return ONLY the Lua code in a markdown code block. No explanation
         self.log(f"Valid methods: {len(valid_methods)}")
 
         # Build system content (same format as Ollama path)
-        system_content = f"""You are writing DCS World mission Lua scripts using the Hound ELINT radar detection system.
-
-API METHOD SIGNATURES (use ONLY these methods):
-{api_cheatsheet}
-
-CORRECT USAGE PATTERNS FROM OFFICIAL DOCUMENTATION:
-{ground_truth}
-
-STRICT RULES:
-1. Use ONLY methods listed in the API reference above
-2. Follow the EXACT patterns shown in the official examples
-3. Coalition parameter is coalition.side.BLUE or coalition.side.RED
-4. Platform names are DCS unit name strings like "ELINT_C130", "ELINT_Tower"
-5. enableController/enableAtis accept optional sector name as first arg, settings table as second
-6. Settings table format: {{freq = "251.000", modulation = "AM", gender = "male"}}
-7. Marker types use enum: HOUND.MARKER.CIRCLE, HOUND.MARKER.POLYGON, etc.
-8. Event handlers are TABLE objects with onHoundEvent(event) method, registered via HOUND.addEventHandler()
-9. addPlatform() takes ONE argument: the DCS unit name string
-10. HOUND.getInstance() takes a number, not a string
-11. preBriefedContact() takes a SAM unit/group name and optional code name string
-12. Wrap the main script in do...end block
-13. Include clear inline comments
-14. Do NOT invent methods or parameters not in the API reference
-15. configureController/configureAtis/configureNotifier(sector, settings) stores settings
-    but does NOT activate them; call enableController/enableAtis/enableNotifier(sector)
-    separately, or pass settings inline: enableController("sector", {{freq="251.000"}})
-16. addSector("name", priority) — takes (sectorName, priority) OR (sectorName, settingsTable).
-    Do NOT pass nil as second arg. Priority is the second arg if it's a number (lower = higher).
-17. Set HOUND.* globals (FORCE_MANAGE_MARKERS, USE_LEGACY_MARKERS, MARKER_TEXT_POINTER,
-    TTS_ENGINE, etc.) BEFORE calling HoundElint:create()
-18. Sector names "default" and "all" are reserved. "default" exists automatically.
-    Pass "all" to apply an operation to every sector.
-19. HOUND.Utils.Filter.unitsByPrefix("ELINT ") returns {{[name]=unit}} for batch
-    platform discovery. Use pairs() and addPlatform(name) in a loop.
-20. event.initiator type varies by HOUND.EVENTS: RADAR_DESTROYED → Emitter
-    (getName, getDcsGroupName), SITE_CREATED → Site (getDcsObject, getNatoDesignation,
-    isEWR boolean field), SITE_REMOVED → Site (DcsGroupName string field).
-    Always check event.coalition and event.initiator type before accessing fields.
-21. Multi-channel frequencies use comma-separated strings:
-    freq = "251.000,35.000" with matching modulation = "AM,FM".
-    Settings fields: freq, modulation, volume, speed, provider, gender, voice.
-22. getSites() returns {{sam={{count=N, sites={{...}}}}, ewr={{count=N, sites={{...}}}}}}.
-    Access site fields as TABLE properties: site.name, site.Type, site.emitters.
-    Access emitter fields as TABLE properties: emitter.typeName, emitter.LL.lat, emitter.LL.lon, emitter.accuracy.
-    Check `if emitter.pos then` before accessing LL. emitter.pos is a nested table with .LL subfield.
-
-Output EACH example as a Lua code block preceded by a header line like: ## Scenario N: title"""
+        system_content = self._build_llm_system_prompt(
+            api_cheatsheet, ground_truth,
+            "Output EACH example as a Lua code block preceded by a header line like: "
+            "## Scenario N: title"
+        )
 
         scenarios = self.INTEGRATION_SCENARIOS
 
@@ -1562,6 +1533,8 @@ Generate ALL {len(scenarios)} examples now."""
         # Call opencode run
         self.log(f"One-shot prompt: {len(prompt)} chars")
         cmd = ["opencode", "run"]
+        if model:
+            cmd += ["--model", model]
 
         self.log(f"Running: {' '.join(cmd)}")
         try:
@@ -1583,13 +1556,15 @@ Generate ALL {len(scenarios)} examples now."""
         response = result.stdout.strip()
         self.log(f"Opencode response: {len(response)} chars")
 
-        # Extract code blocks in order, match to scenarios
-        code_blocks = re.findall(r'```lua\n(.*?)```', response, re.DOTALL)
-        self.log(f"Extracted {len(code_blocks)} code blocks for {len(scenarios)} scenarios")
+        # Parse ## Scenario N: headers and extract following Lua blocks by number
+        header_pattern = r'## Scenario (\d+):.*?\n```lua\n(.*?)```'
+        header_matches = re.findall(header_pattern, response, re.DOTALL)
+        code_by_number = {int(num): block.strip() for num, block in header_matches}
+        self.log(f"Extracted {len(code_by_number)} labeled code blocks for {len(scenarios)} scenarios")
 
         generated = []
         for i, s in enumerate(scenarios):
-            code = code_blocks[i].strip() if i < len(code_blocks) else ""
+            code = code_by_number.get(i + 1, "")
             is_valid, issues = self.validate_generated_code(code, valid_methods)
             if not is_valid:
                 self.log(f"Scenario {i+1} '{s['title']}' validation: {issues}")
