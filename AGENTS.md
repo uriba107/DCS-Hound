@@ -93,6 +93,7 @@ When the user requests a durable behavior change, record it here or in the relev
 ### What stays owned by root
 
 - Build orchestration: `hound_builder.sh` (concatenates `src/*.lua` → `include/HoundElint.lua`, strips debug, optional minify). Run `bash hound_builder.sh --compile` to rebuild.
+- CI/CD: `.github/workflows/build.yml` compiles `include/HoundElint.lua` on push to `main` and on `v*` tags; on tag push it also creates a draft Release with the built file attached
 - **Generated file**: `include/HoundElint.lua` is built by `hound_builder.sh` from `src/*.lua` — do not edit directly.
 - LDoc configuration: `config_general.ld`, `config_developer.ld`
 - Development loader: `HoundElint_devel.lua` (sequential source loading). Dev loop: edit `HoundWorkDir` in both `hound_loader.lua` + `HoundElint_devel.lua`, then `loadfile hound_loader.lua` from DCS mission to load individual `src/*.lua` files preserving per-file stack frames.

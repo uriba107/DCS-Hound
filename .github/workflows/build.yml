@@ -1,0 +1,53 @@
+name: Build HoundElint
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Lua
+        uses: leafo/gh-actions-lua@v13
+        with:
+          luaVersion: '5.1'
+
+      - name: Setup LuaRocks
+        uses: leafo/gh-actions-luarocks@v6
+
+      - name: Install build dependencies
+        run: |
+          luarocks install luacheck
+          luarocks install luasrcdiet
+          luarocks install ldoc
+
+      - name: Compile HoundElint.lua
+        run: bash hound_builder.sh --compile
+
+      - name: Upload built Lua file
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v7
+        with:
+          name: HoundElint.lua
+          path: include/HoundElint.lua
+
+      - name: Create draft release
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v3
+        with:
+          files: include/HoundElint.lua
+          generate_release_notes: true
+          draft: true
