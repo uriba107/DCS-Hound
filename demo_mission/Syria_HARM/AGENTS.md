@@ -94,8 +94,8 @@ State: Active/Asleep/Down. Accuracy: Precise/High/Very High/Very Low. Pre-briefe
 
 ### Modifying SA-6 Behavior
 
-- Adjust respawn interval by changing the second argument to `mist.scheduleFunction` (currently 600).
-- Adjust Joker spawn probability via `HOUND_MISSION.SA6.spawnJoker` (currently 40%).
+- Respawn interval = second argument to `mist.scheduleFunction` (600).
+- Joker spawn probability = `HOUND_MISSION.SA6.spawnJoker` (0.40).
 - Add or remove templates from `randomTemplate()` to change Joker composition.
 
 ## Verification

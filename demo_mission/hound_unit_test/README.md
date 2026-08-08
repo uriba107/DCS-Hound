@@ -746,7 +746,7 @@ Comms infrastructure unit tests for `HOUND.Comms.Manager` (400) and `HOUND.Comms
 | `TestGetSettings` | Unknown key returns nil |
 | `TestEnableText` | `enableText` → preferences.enabletext true |
 | `TestDisableText` | `disableText` → preferences.enabletext false |
-| `TestEnableTTS` | `enableTTS` no-op (TTS unavailable) |
+| `TestEnableTTS` | `enableTTS` → preferences.enabletts true (TTS availability stubbed) |
 | `TestEnableAlerts` | `enableAlerts` → preferences.alerts true |
 | `TestDisableAlerts` | `disableAlerts` → preferences.alerts false |
 | `TestGetCallsignDefault` | Default "Hound" |

@@ -251,13 +251,27 @@ do
         local pollShoot
         local siteLaunchFired = false
         local radarLaunchFired = false
+        local osaLaunchFired = false
+        local shotAtUav = false
+
+        local SA6 = Group.getByName("SA-6_TINIAN")
+        local samRadar = SA6:getUnit(1)
+        local osaRadar = SA6:getUnit(6)
+        local function isUav(unit)
+            if not unit then return false end
+            local uav = Unit.getByName("MQ-9_TGT")
+            local uav2 = Unit.getByName("MQ-9_TGT2")
+            return (uav and unit.id_ == uav.id_) or (uav2 and unit.id_ == uav2.id_)
+        end
+
         pollShoot = function(expectedStr, retriesLeft)
             local debugStr = self.houndBlue:printDebugging()
-            if string.find(debugStr, expectedStr, 1, true) and siteLaunchFired and radarLaunchFired then return end
+            if string.find(debugStr, expectedStr, 1, true) and siteLaunchFired and radarLaunchFired and shotAtUav then return end
             if retriesLeft <= 0 then
                 lu.assertStrContains(debugStr, expectedStr)
                 lu.assertIsTrue(siteLaunchFired)
                 lu.assertIsTrue(radarLaunchFired)
+                lu.assertIsTrue(shotAtUav)
                 return
             end
             timer.scheduleFunction(pollShoot, expectedStr, timer.getTime() + 5, retriesLeft - 1)
@@ -270,9 +284,10 @@ do
                     and ( DcsEvent.initiator:getGroup() == Group.getByName("SA-6_TINIAN") )
                 then
                     local tgt = DcsEvent.weapon:getTarget()
-                    local uav = Unit.getByName("MQ-9_TGT")
-                    lu.assertItemsEquals(tgt,uav)
-                    HOUND.Logger.info("SA-6 group fired on UAV")
+                    if isUav(tgt) then
+                        shotAtUav = true
+                        HOUND.Logger.info("SA-6 group fired on UAV")
+                    end
                 end
             end
         end
@@ -287,13 +302,20 @@ do
                     lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(grp))
                     lu.assertEquals("SA-6_TINIAN",grp:getName())
                 end
+                lu.assertIsTrue(osaLaunchFired)
                 siteLaunchFired = true
             end
             if houndEvent.id == HOUND.EVENTS.RADAR_LAUNCH then
                 lu.assertEquals(getmetatable(houndEvent.initiator),HOUND.Contact.Emitter)
-                lu.assertEquals(houndEvent.initiator:getType(), "Osa 9A33 ln")
+                lu.assertEquals(houndEvent.initiator:getType(), "Osa")
                 lu.assertEquals(houndEvent.initiator:getDcsGroupName(), "SA-6_TINIAN")
                 radarLaunchFired = true
+                if not osaLaunchFired then
+                    osaLaunchFired = true
+                    HOUND.Logger.info("OSA launch detected - holding OSA, freeing SA-6")
+                    osaRadar:enableEmission(false)
+                    samRadar:enableEmission(true)
+                end
             end           
         end
         world.addEventHandler(shootEvent)
@@ -302,18 +324,21 @@ do
         local uavgrp = Unit.getByName("MQ-9_TGT"):getGroup()
         local uavgrp2 = Unit.getByName("MQ-9_TGT2"):getGroup()
 
-        local SA6 = Group.getByName("SA-6_TINIAN")
         lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(uavgrp))
         lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(uavgrp2))
         lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(SA6))
+
         SA6:enableEmission(true)
+        samRadar:enableEmission(false)
+        osaRadar:enableEmission(false)
 
         uavgrp:activate()
         uavgrp2:activate()
-        local sam_brain = SA6:getUnit(1):getController()
+        local sam_brain = samRadar:getController()
         sam_brain:knowTarget(Unit.getByName("MQ-9_TGT"))
-        local osa_brain = SA6:getUnit(6):getController()
+        local osa_brain = osaRadar:getController()
         osa_brain:knowTarget(Unit.getByName("MQ-9_TGT2"))
+        osaRadar:enableEmission(true)
         timer.scheduleFunction(pollShoot,string.format("| Sites: %d | Contacts: %d (A:%d ,PB:%d)",
             self.baseUnitCount.sites+2,self.baseUnitCount.contacts+2,self.baseUnitCount.active+3,self.baseUnitCount.preBriefed-1
         ),timer.getTime()+120, 6)
