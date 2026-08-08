@@ -100,6 +100,14 @@ do
         return HoundUtils.Dcs.isPoint(self.pos.p)
     end
 
+    --- Check if contact has full position data (pos + grid + BE)
+    -- Ensures grid/BE are lazily computed from pos.p if missing.
+    -- @return[type=Bool] True if full position data is available
+    function HOUND.Contact.Base:hasPosData()
+        if not self:hasPos() then return false end
+        return self:ensurePosData()
+    end
+
     --- get current estimated position
     -- @return DCS point - estimated position
     function HOUND.Contact.Base:getPos()
@@ -304,13 +312,31 @@ do
     --- Base comms functions
     -- @section comms
 
+    --- Lazily compute grid/BE/LL position data from pos.p when missing
+    -- @return[type=Bool] True once full position data is available, false on failure
+    function HOUND.Contact.Base:ensurePosData()
+        if not HoundUtils.Dcs.isPoint(self.pos.p) then return false end
+        if self.pos.LL == nil or self.pos.LL.lat == nil then
+            self.pos.LL = {}
+            self.pos.LL.lat, self.pos.LL.lon = coord.LOtoLL(self.pos.p)
+        end
+        if self.pos.grid == nil then
+            self.pos.grid = coord.LLtoMGRS(self.pos.LL.lat, self.pos.LL.lon)
+        end
+        if self.pos.be == nil or self.pos.be.brStr == nil then
+            local bullsPos = coalition.getMainRefPoint(self._platformCoalition)
+            self.pos.be = HoundUtils.getBR(bullsPos,self.pos.p)
+        end
+        return self.pos.grid ~= nil and self.pos.be ~= nil and self.pos.be.brStr ~= nil
+    end
+
     --- return Information used in Text messages
     -- @param utmZone (bool) True will add UTM zone to response
     -- @param MGRSdigits (Number) number of digits in the MGRS part of the response (eg. 2 = 12, 5=12345)
     -- @return GridPos (string) MGRS grid position (eg. "CY 564 123", "DN 2 4")
     -- @return BE (string) Bullseye position string (eg. "035/15", "187/120")
     function HOUND.Contact.Base:getTextData(utmZone,MGRSdigits)
-        if self:getPos() == nil or self.pos.grid == nil or self.pos.be == nil then return end
+        if not self:hasPosData() then return end
         local GridPos = ""
         if utmZone then
             GridPos = GridPos .. self.pos.grid.UTMZone .. " "
@@ -333,7 +359,7 @@ do
     -- @return GridPos (string) MGRS grid position (eg. "Charlie Yankee one two   Three  four")
     -- @return BE (string) Bullseye position string (eg. "Zero Three Five 15")
     function HOUND.Contact.Base:getTtsData(utmZone,MGRSdigits)
-        if self:getPos() == nil or self.pos.grid == nil or self.pos.be == nil then return end
+        if not self:hasPosData() then return end
         local phoneticGridPos = ""
         if utmZone then
             phoneticGridPos =  phoneticGridPos .. HoundUtils.TTS.toPhonetic(self.pos.grid.UTMZone) .. " "
@@ -361,7 +387,7 @@ do
         if sectorName then
             msg = msg .. " in " .. sectorName
         else
-            if self:hasPos() then
+            if self:hasPosData() then
                 local GridPos,BePos
                 if isTTS then
                     GridPos,BePos = self:getTtsData(true,1)

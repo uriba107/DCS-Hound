@@ -305,6 +305,7 @@ Contact model unit tests for `HOUND.Contact.Emitter` — integration tests with 
 | `TestDefaultSectorFallback` | Removing all named sectors restores default (folded from Base) |
 | `TestRemoveMarkers` | Smoke test — `removeMarkers` runs without error (folded from Base) |
 | `TestGetTextDataNoPos` | `getTextData`/`getTtsData` return nil when no position (folded from Base) |
+| `TestGetTextDataLazyPos` | `getTextData` lazily fills nil grid/BE from pos.p |
 
 **TestHoundEmitterComms** — `HOUND.Contact.Emitter` comms helpers (mocked):
 
@@ -371,6 +372,7 @@ Contact model unit tests for `HOUND.Contact.Site` — unit-level site logic with
 | `TestConstructorInvalid` | Nil, wrong types → nil |
 | `TestConstructorValid` | Valid construction, metatable, SITE_NEW state |
 | `TestConstructorWithId` | Custom SiteId → `getId` returns id % 1000 |
+| `TestGenerateLaunchAlertWithoutGrid` | Site with pos.p but nil grid/BE → `generateLaunchAlert` fills lazily, no error |
 | `TestName` | Default "T" + id, `setName` custom, `setName(nil)` clears |
 | `TestEWRName` | EWR-based Site uses "S" prefix |
 | `TestTypeAndId` | `getType`, `getId` return strings/numbers |
@@ -416,6 +418,7 @@ Contact model unit tests for `HOUND.Contact.Site` — unit-level site logic with
 | `TestGenerateLaunchAlert` | Launch alert |
 | `TestGenerateLaunchAlertWithSector` | Launch alert with sector label |
 | `TestGenerateLaunchAlertTTS` | Launch alert TTS |
+| `TestGenerateLaunchAlertTTSWithoutGrid` | Launch alert TTS with nil grid/BE → lazy fill, no error |
 | `TestGenerateIdentReport` | Ident report |
 | `TestGenerateIdentReportWithSector` | Ident report with sector label |
 | `TestGenerateIdentReportTTSWithPos` | Ident report TTS with position |
@@ -488,7 +491,7 @@ Time-dependent behavior: BDA, site lifecycle, ATIS content, launch detection. Tw
 | `Test_6mDelay_01_preBriefed` | Enable TOR emission, on-screen debug, verify contact count changes |
 | `Test_6mDelay_02_exports` | `dumpIntelBrief()` smoke test |
 | `Test_6mDelay_03_boats` | ATIS message contains ship names "Kirov (CG)" and "Moskva (CG)" |
-| `Test_6mDelay_04_shoot` | Activate MQ-9 UAV, enable SA-6 emission, force SAM brain to know target via `knowTarget()`, verify `S_EVENT_SHOT` and `SITE_LAUNCH` events |
+| `Test_6mDelay_04_shoot` | Activate MQ-9 UAVs, force SAM brain to know target via `knowTarget()`, sequence fire via per-unit `enableEmission` (OSA free → launches → emission off, then SA-6 radar on → launches), verify `RADAR_LAUNCH` and `SITE_LAUNCH` events, `shotAtUav` |
 
 ### `test-hound-comms.lua` — TestHoundFunctional (comms)
 
@@ -498,7 +501,7 @@ Human-player radio comms. Only runs after a human spawns (batch 5, pattern `Comm
 |--------|--------------|
 | `Test_Comms_00_HumanUnitsFunctions` | `updateHumanDb`, `getPlayersInGroup`, player lookup |
 | `Test_Comms_01_CheckIn` | Check-in flow: verify menu items, `Sector.checkIn`, enrollment count |
-| `Test_Comms_02_MenuItems` | List radio items for sector, verify keys `{'SA-3', 'Naval'}` |
+| `Test_Comms_02_MenuItems` | List radio items for sector, verify site types `{'SA-3', 'SA-6', 'SA-15', 'Naval'}` |
 | `Test_Comms_03_CommsMenu` | Menu structure: verify grpMenu.items/objs/pages, check_in shows "Check out", type-assigned submenus exist |
 | `Test_Comms_04_RequestReport` | `TransmitSamReport`: verify message added to controller queue with correct coalition, priority, contactId, tts |
 | `Test_Comms_05_TinianCheckIn` | Tinian sector: enable controller, check in, verify enrollment and menu items |
@@ -858,7 +861,7 @@ Drawn zone: **"Tinian Sector"** polygon (Author layer).
    - `test-HoundContactEmitter.lua` — Polygon clipping and `posPolygon` assertions (`TestLocationErr` body) remain commented out.
    - `test-houndUtils.lua:26` — An azimuth-average test case is commented out.
 
-4. **`test-hound-comms.lua:Test_Comms_02_MenuItems`**: Uses `for k,v in menuItems do` (not `pairs()`/`ipairs()`) which may not work as expected in standard Lua — rely on `Test_Comms_03` for menu structure coverage.
+4. **`test-hound-comms.lua:Test_Comms_02_MenuItems`**: Collects the `typeAssigned` of each menu item (site data) and compares against the Saipan sector's site types. Menu items are sorted by range, so ordering is positional, not insertion order — `assertItemsEquals` is order-insensitive. The expected list reflects the current mission (SA-3/SA-6/SA-15 land sites + ships); update it when mission groups change.
 
 5. **Redundant class**: `TestHoundFunctionalBase` in `test-hound-base.lua` has the same setUp/tearDown as `TestHoundFunctional` and only one exclusive test method (`Test_02_base_00_unitSetup`). All other `02_base` tests are on `TestHoundFunctional`.
 

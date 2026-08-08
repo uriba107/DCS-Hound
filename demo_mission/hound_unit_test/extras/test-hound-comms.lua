@@ -60,11 +60,13 @@ do
         lu.assertIsTrue(getmetatable(player) == getmetatable(saipanComms.enrolled[player.unitName]))
 
         local menuItems = saipan:getRadioItemsText()
-        local keys = {}
-        for k,v in ipairs(menuItems) do
-            table.insert(keys,k)
+        local types = {}
+        for _, item in ipairs(menuItems) do
+            if item.typeAssigned then
+                table.insert(types, item.typeAssigned)
+            end
         end
-        lu.assertItemsEquals(keys,{'SA-3','Naval'})
+        lu.assertItemsEquals(types,{'SA-3','SA-6','SA-15','Naval'})
     end
 
     function TestHoundFunctional:Test_Comms_03_CommsMenu()

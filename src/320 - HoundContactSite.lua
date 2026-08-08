@@ -326,6 +326,10 @@ do
             if primary then
                 local uncertenty = primary:getMaxWeaponsRange() * 0.75
                 self.pos.p = HoundUtils.Dcs.copyPoint(refPos)
+                self.pos.LL = {}
+                self.pos.LL.lat, self.pos.LL.lon = coord.LOtoLL(refPos)
+                self.pos.grid = coord.LLtoMGRS(self.pos.LL.lat, self.pos.LL.lon)
+                self.pos.be = HoundUtils.getBR(coalition.getMainRefPoint(self._platformCoalition),refPos)
                 self.uncertenty_data = {}
                 self.uncertenty_data.major = uncertenty
                 self.uncertenty_data.minor = uncertenty

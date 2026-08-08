@@ -8,7 +8,7 @@ do
     --- generate Text for the Radio menu item
     -- @return string
     function HOUND.Contact.Site:getRadioItemText()
-        if not self:hasPos() then return self:getName() end
+        if not self:hasPosData() then return self:getName() end
 
         local GridPos,BePos = self:getTextData(true,1)
         BePos = BePos:gsub(" for ","/")
@@ -27,7 +27,7 @@ do
             ['emitters'] = {}
         }
         for _,emitter in ipairs(self.emitters) do
-            if emitter:hasPos() then
+            if emitter:hasPosData() then
                 local emitterEntry = {
                     ['dcsName'] = emitter:getDcsName(),
                     ['txt'] = emitter:getRadioItemText()
@@ -51,7 +51,7 @@ do
         if sectorName then
             msg = msg .. " in " .. sectorName
         else
-            if self:hasPos() then
+            if self:hasPosData() then
                 local GridPos,BePos
                 if isTTS then
                     GridPos,BePos = self:getTtsData(true,1)
@@ -74,7 +74,7 @@ do
         if sectorName then
             msg = msg .. " in " .. sectorName
         else
-            if self:hasPos() then
+            if self:hasPosData() then
                 local GridPos,BePos
                 if isTTS then
                     GridPos,BePos = self:getTtsData(true,1)
@@ -97,7 +97,7 @@ do
         if sectorName then
             msg = msg .. " in " .. sectorName
         else
-            if self:hasPos() then
+            if self:hasPosData() then
                 local GridPos,BePos
                 if isTTS then
                     GridPos,BePos = self:getTtsData(true,1)
@@ -123,7 +123,7 @@ do
             msg = msg .. ", identified as " .. self:getDesignation(true)
         else
             msg = msg .. ", identified as " .. self:getDesignation(true)
-            if self:hasPos() then
+            if self:hasPosData() then
                 local GridPos,BePos
                 if isTTS then
                     GridPos,BePos = self:getTtsData(true,1)
@@ -149,7 +149,7 @@ do
             return table.concat(boatData," ")
         end
         local str = ""
-        if not self:hasPos() or not self.uncertenty_data then return str end
+        if not self:hasPosData() or not self.uncertenty_data then return str end
         local phoneticGridPos,phoneticBulls = self:getTtsData(false,1)
         local reportedName = self:getName() .. " "
         if NATO then

@@ -34,6 +34,7 @@ This subtree owns all Lua source files that compose the HoundElint system. The n
 - `HOUND.ElintWorker.sites[groupId] = Site` — logical grouping by DCS Group
 - `Site.emitters[]` are **references** into `contacts`, not copies
 - `Site.typeAssigned` computed by **set intersection** of its emitters' `typeAssigned` arrays
+- `Contact.Base` position data (`pos.LL`, `pos.grid`, `pos.be`) is lazily derived from `pos.p`; `hasPosData()`/`ensurePosData()` gate functions that concatenate grid/BE strings
 
 ### Processing Cycles (default intervals)
 
