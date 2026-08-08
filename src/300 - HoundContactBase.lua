@@ -316,7 +316,7 @@ do
     -- @return[type=Bool] True once full position data is available, false on failure
     function HOUND.Contact.Base:ensurePosData()
         if not HoundUtils.Dcs.isPoint(self.pos.p) then return false end
-        if self.pos.LL == nil or self.pos.LL.lat == nil then
+        if self.pos.LL == nil or self.pos.LL.lat == nil or self.pos.LL.lon == nil then
             self.pos.LL = {}
             self.pos.LL.lat, self.pos.LL.lon = coord.LOtoLL(self.pos.p)
         end

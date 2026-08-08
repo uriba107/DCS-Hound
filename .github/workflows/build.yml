@@ -8,7 +8,7 @@ on:
     branches: [main]
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: build-${{ github.ref }}
@@ -19,6 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: Setup Lua
         uses: leafo/gh-actions-lua@v13
@@ -43,11 +45,34 @@ jobs:
         with:
           name: HoundElint.lua
           path: include/HoundElint.lua
+          if-no-files-found: error
+
+  release:
+    needs: build
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Download built Lua file
+        uses: actions/download-artifact@v7
+        with:
+          name: HoundElint.lua
+          path: include
 
       - name: Create draft release
-        if: github.ref_type == 'tag'
-        uses: softprops/action-gh-release@v3
-        with:
-          files: include/HoundElint.lua
-          generate_release_notes: true
-          draft: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ ! -f include/HoundElint.lua ]; then
+            echo "Artifact include/HoundElint.lua not found"
+            exit 1
+          fi
+          gh release create "${{ github.ref_name }}" \
+            include/HoundElint.lua \
+            --draft \
+            --generate-notes

@@ -306,6 +306,7 @@ Contact model unit tests for `HOUND.Contact.Emitter` — integration tests with 
 | `TestRemoveMarkers` | Smoke test — `removeMarkers` runs without error (folded from Base) |
 | `TestGetTextDataNoPos` | `getTextData`/`getTtsData` return nil when no position (folded from Base) |
 | `TestGetTextDataLazyPos` | `getTextData` lazily fills nil grid/BE from pos.p |
+| `TestEnsurePosDataPartialLL` | `hasPosData` recomputes LL from pos.p when lon is absent (folded from Base) |
 
 **TestHoundEmitterComms** — `HOUND.Contact.Emitter` comms helpers (mocked):
 

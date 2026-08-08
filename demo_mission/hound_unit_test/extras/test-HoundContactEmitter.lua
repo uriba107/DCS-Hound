@@ -544,6 +544,8 @@ do
 
     function TestHoundContactEmitter:TestGetTextDataLazyPos()
         local c = HOUND.Contact.Emitter:New(self.tor,coalition.side.BLUE)
+        c.pos.p = {x=400000, y=100, z=2000000}
+        c.pos.be = nil
         lu.assertIsNil(c.pos.grid)
         lu.assertIsNil(c.pos.be)
         local GridPos,BePos = c:getTextData(true,1)
@@ -551,6 +553,17 @@ do
         lu.assertIsString(BePos)
         lu.assertNotNil(c.pos.grid)
         lu.assertNotNil(c.pos.be)
+    end
+
+    function TestHoundContactEmitter:TestEnsurePosDataPartialLL()
+        local c = HOUND.Contact.Emitter:New(self.tor,coalition.side.BLUE)
+        c.pos.p = {x=400000,y=100,z=2000000}
+        c.pos.LL = {lat = 15.0}
+        lu.assertIsNil(c.pos.LL.lon)
+        lu.assertIsTrue(c:hasPosData())
+        lu.assertIsNumber(c.pos.LL.lat)
+        lu.assertIsNumber(c.pos.LL.lon)
+        lu.assertNotNil(c.pos.grid)
     end
 end
 
