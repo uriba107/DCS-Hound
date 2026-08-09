@@ -48,7 +48,7 @@ do
 
         local sa6 = Group.getByName('SA-6_TINIAN')
         lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(sa6))
-        lu.assertEquals(sa6:getSize(),5)
+        lu.assertEquals(sa6:getSize(),6)
         sa6:enableEmission(false)
         setupGroup(sa6)
 
@@ -182,7 +182,7 @@ do
 
         local sa6 = Group.getByName('SA-6_TINIAN')
         lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(sa6))
-        lu.assertEquals(sa6:getSize(),5)
+        lu.assertEquals(sa6:getSize(),6)
         sa6:enableEmission(true)
 
         lu.assertIsTrue(sa5:getUnits()[1]:getRadar())

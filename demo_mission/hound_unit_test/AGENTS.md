@@ -31,9 +31,11 @@ Validate Hound ELINT runtime behavior inside DCS World. Tests exercise Lua sourc
 ### Known Patterns & Gotchas
 
 - **Comms menu state** (`test-hound-comms.lua`): `populateRadioMenu()` rebuilds the menu as a fresh table on each call — old references to `grpMenu.items.check_in` are stale after checkIn/checkOut. Always get a fresh reference from `saipan.comms.menu[player]` after state changes. `getRadioItemsText()` returns an array of site-data tables with `typeAssigned`, `dcsName`, `txt`, `pos`, and `emitters[]` keys.
+- **TTS availability**: The test env loads no TTS engine, so `HOUND.Utils.TTS.isAvailable()` returns false and `enableTTS()`/TTS-transmit paths are no-ops. Tests exercising those paths must stub `HOUND.Utils.TTS.isAvailable = function() return true end` in `setUp` and restore the original in `tearDown` (pattern in `test-HoundCommsManager.lua` and `test-HoundContactSite.lua`).
 - **Controller queue access**: `controller._queue` is a 3-element array for priority levels 1-3. Messages are plain tables with `coalition`, `priority`, `gid` (wrapped as `{groupId}` by addMessageObj), `contactId`, `tts`, and `txt` keys. Use `ipairs(controller._queue[N])` to iterate — `HOUND.Length` and `#` both work for this standard array. Messages are transient; the scheduler dequeues them asynchronously.
 - **Flaky assertions** prefer **polling**: schedule a closure every 5s for 6 attempts (~30s window). On timeout, call `lu.assertStrContains(debugStr, expected)` with the current state to get a useful failure message.
 - **Contact timing**: `CONTACT_TIMEOUT` = 900s; contact processing cycle runs every 30s.
+- **Contact mocks**: `Base:hasPosData()` runs `ensurePosData()`, which calls `coalition.getMainRefPoint(self._platformCoalition)` and touches `pos.grid`/`pos.be`. Mock contacts that only stub `pos`/`hasPos` must also override `hasPosData` (e.g. `return self:hasPos()`), or set `_platformCoalition` plus `pos.grid`/`pos.be` — otherwise comms functions error with `Parameter #1 (coalition id) missed` or `attempt to index field 'pos' (a nil value)`.
 - **BDA/destroyObject**: Repeated explosions with `pwr = life0 * 2` until `life <= 1`. Track radar (unit 2) is destroyed first because unit 1 is the search radar.
 - **`printDebugging()` format**: `| Sites: %d | Contacts: %d (A:%d ,PB:%d)` — the `-1` adjustments track site removal, contact timeout, active loss, and pre-briefed count changes.
 
@@ -49,7 +51,8 @@ Validate Hound ELINT runtime behavior inside DCS World. Tests exercise Lua sourc
 
 - The README is the high-level reference (timeline, per-file method docs, mission layout). Keep it in sync with test changes.
 - The AGENTS.md is the operational knowledge store (gotchas, patterns, TODO context, constraints). Update it when you discover a new gotcha or fix a longstanding one.
-- `test-hound-worker.lua` covers `HOUND.ElintWorker` (500) and `HOUND.ElintWorker_queries` (501) with 49 test methods.
+- `test-hound-worker.lua` covers `HOUND.ElintWorker` (500) and `HOUND.ElintWorker_queries` (501) with 52 test methods.
+- `HOUND.DB.getPlatformData` returns `nil` for invalidated DCS objects (not a Unit/StaticObject, or `isExist()` false). Callers must check the result before accessing platform fields (e.g. `pos`).
 - Verify against `dcs.log` output — luaunit prints pass/fail/skip counts per batch.
 - When debugging a single batch, you can comment out other batches in `hound-unit-tests.lua` to shorten the loop.
 

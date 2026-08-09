@@ -11,6 +11,8 @@ do
             set = function(_, key, val) self._savedSettings[key] = val end,
         }
         self.sector = "test_sector"
+        self._origIsAvailable = HOUND.Utils.TTS.isAvailable
+        HOUND.Utils.TTS.isAvailable = function() return true end
         self.manager = HOUND.Comms.Manager:create(self.sector, self.houndConfig)
         lu.assertNotNil(self.manager)
     end
@@ -22,6 +24,7 @@ do
                 self.manager.scheduler = nil
             end
         end
+        HOUND.Utils.TTS.isAvailable = self._origIsAvailable
     end
 
     --- Constructor guards

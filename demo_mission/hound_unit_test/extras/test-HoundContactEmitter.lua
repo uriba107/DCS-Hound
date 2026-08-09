@@ -541,6 +541,30 @@ do
         lu.assertIsNil(c:getTextData())
         lu.assertIsNil(c:getTtsData())
     end
+
+    function TestHoundContactEmitter:TestGetTextDataLazyPos()
+        local c = HOUND.Contact.Emitter:New(self.tor,coalition.side.BLUE)
+        c.pos.p = {x=400000, y=100, z=2000000}
+        c.pos.be = nil
+        lu.assertIsNil(c.pos.grid)
+        lu.assertIsNil(c.pos.be)
+        local GridPos,BePos = c:getTextData(true,1)
+        lu.assertIsString(GridPos)
+        lu.assertIsString(BePos)
+        lu.assertNotNil(c.pos.grid)
+        lu.assertNotNil(c.pos.be)
+    end
+
+    function TestHoundContactEmitter:TestEnsurePosDataPartialLL()
+        local c = HOUND.Contact.Emitter:New(self.tor,coalition.side.BLUE)
+        c.pos.p = {x=400000,y=100,z=2000000}
+        c.pos.LL = {lat = 15.0}
+        lu.assertIsNil(c.pos.LL.lon)
+        lu.assertIsTrue(c:hasPosData())
+        lu.assertIsNumber(c.pos.LL.lat)
+        lu.assertIsNumber(c.pos.LL.lon)
+        lu.assertNotNil(c.pos.grid)
+    end
 end
 
 do
@@ -567,6 +591,7 @@ do
         e.getDesignation = function(self_, NATO) if NATO then return "EYEBALL" end return "Early Warning" end
         e.isAccurate = function(self_) return false end
         e.hasPos = function(self_) return self_.pos ~= nil and self_.pos.p ~= nil end
+        e.hasPosData = function(self_) return self_:hasPos() end
         e.getElev = function(self_) return 100 end
         e.getTrackId = function(self_) return "E001" end
         e.getType = function(self_) return "55G6" end

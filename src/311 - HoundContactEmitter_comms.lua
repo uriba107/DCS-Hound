@@ -14,7 +14,7 @@ do
     -- @return string containing
 
     function HOUND.Contact.Emitter:generateTtsBrief(NATO)
-        if self.pos.p == nil or self.uncertenty_data == nil then return end
+        if not self:hasPosData() or self.uncertenty_data == nil then return end
         local phoneticGridPos,phoneticBulls = self:getTtsData(false,1)
         local reportedName = self:getName()
         if NATO then
@@ -44,7 +44,7 @@ do
     -- @param[opt] refPos position of reference point for BR (Not Currently Used)
     -- @return generated message
     function HOUND.Contact.Emitter:generateTtsReport(useDMM,preferMGRS,refPos)
-        if self.pos.p == nil then return end
+        if not self:hasPosData() then return end
         useDMM = useDMM or false
         preferMGRS = preferMGRS or false
         local MGRSPrecision = HOUND.MGRS_PRECISION
@@ -102,7 +102,7 @@ do
     -- @param[opt] refPos position of reference point for BR
     -- @return generated message
     function HOUND.Contact.Emitter:generateTextReport(useDMM,refPos)
-        if self.pos.p == nil then return end
+        if not self:hasPosData() then return end
         useDMM = useDMM or false
 
         local GridPos,BePos = self:getTextData(true,HOUND.MGRS_PRECISION)
@@ -139,7 +139,7 @@ do
     --- generate Text for the Radio menu item
     -- @return string
     function HOUND.Contact.Emitter:getRadioItemText()
-        if not self:hasPos() then return self:getName() end
+        if not self:hasPosData() then return self:getName() end
         local GridPos,BePos = self:getTextData(true,1)
         BePos = BePos:gsub(" for ","/")
         return self:getName() .. " - BE: " .. BePos .. " (".. GridPos ..")"
@@ -160,7 +160,7 @@ do
         if sectorName then
             msg = msg .. " in " .. sectorName
         else
-            if self:hasPos() then
+            if self:hasPosData() then
                 local GridPos,BePos
                 if isTTS then
                     GridPos,BePos = self:getTtsData(true,1)
@@ -183,7 +183,7 @@ do
         if sectorName then
             msg = msg .. " in " .. sectorName
         else
-            if self:hasPos() then
+            if self:hasPosData() then
                 local GridPos,BePos
                 if isTTS then
                     GridPos,BePos = self:getTtsData(true,1)
@@ -202,7 +202,7 @@ do
     function HOUND.Contact.Emitter:generateIntelBrief()
         -- TrackId,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accuracy,DCS type,DCS Unit
         local msg = ""
-        if self:hasPos() then
+        if self:hasPosData() then
             local GridPos,BePos = self:getTextData(true,HOUND.MGRS_PRECISION)
             msg = {
                 self:getTrackId(),self:getType(),

@@ -36,7 +36,6 @@ do
         instance.primaryEmitter = HoundContact
         instance.last_seen = HoundContact:getLastSeen()
         instance.first_seen = HoundContact.first_seen
-        instance.last_launch_notify = 0
         instance.maxWeaponsRange = HoundContact:getMaxWeaponsRange()
         instance.detectionRange = HoundContact:getRadarDetectionRange()
         instance.isEWR = HoundContact.isEWR
@@ -327,6 +326,10 @@ do
             if primary then
                 local uncertenty = primary:getMaxWeaponsRange() * 0.75
                 self.pos.p = HoundUtils.Dcs.copyPoint(refPos)
+                self.pos.LL = {}
+                self.pos.LL.lat, self.pos.LL.lon = coord.LOtoLL(refPos)
+                self.pos.grid = coord.LLtoMGRS(self.pos.LL.lat, self.pos.LL.lon)
+                self.pos.be = HoundUtils.getBR(coalition.getMainRefPoint(self._platformCoalition),refPos)
                 self.uncertenty_data = {}
                 self.uncertenty_data.major = uncertenty
                 self.uncertenty_data.minor = uncertenty
@@ -354,7 +357,7 @@ do
     function HOUND.Contact.Site:LaunchDetected(cooldown)
         local cooldown = cooldown or 30
         -- HOUND.Logger.trace(self:getName() .. " Launch detected - last notification " ..  HoundUtils.absTimeDelta(self.last_launch_notify))
-        if ( HoundUtils.absTimeDelta(self.last_launch_notify) > cooldown ) then
+        if not self.last_launch_notify or HoundUtils.absTimeDelta(self.last_launch_notify) > cooldown then
             -- HOUND.Logger.trace(self:getName() .. " LaunchDetected - triggered")
 
             self.last_launch_notify = timer.getAbsTime()

@@ -1,0 +1,78 @@
+name: Build HoundElint
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Setup Lua
+        uses: leafo/gh-actions-lua@v13
+        with:
+          luaVersion: '5.1'
+
+      - name: Setup LuaRocks
+        uses: leafo/gh-actions-luarocks@v6
+
+      - name: Install build dependencies
+        run: |
+          luarocks install luacheck
+          luarocks install luasrcdiet
+          luarocks install ldoc
+
+      - name: Compile HoundElint.lua
+        run: bash hound_builder.sh --compile
+
+      - name: Upload built Lua file
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v7
+        with:
+          name: HoundElint.lua
+          path: include/HoundElint.lua
+          if-no-files-found: error
+
+  release:
+    needs: build
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Download built Lua file
+        uses: actions/download-artifact@v7
+        with:
+          name: HoundElint.lua
+          path: include
+
+      - name: Create draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ ! -f include/HoundElint.lua ]; then
+            echo "Artifact include/HoundElint.lua not found"
+            exit 1
+          fi
+          gh release create "${{ github.ref_name }}" \
+            include/HoundElint.lua \
+            --draft \
+            --generate-notes

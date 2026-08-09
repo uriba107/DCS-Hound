@@ -80,6 +80,7 @@ do
         instance.preBriefed = false
         instance.unitAlive = true
         instance.Kalman = nil
+        instance.last_launch_notify = nil
         return instance
     end
 
@@ -714,6 +715,20 @@ do
         table.insert(self.detected_by,"External")
         self:updateMarker(unitPosMarker)
         return self.state
+    end
+
+    --- trigger launch event
+    -- @param[number] cooldown interval between alerts. avoid spam
+    function HOUND.Contact.Emitter:LaunchDetected(cooldown)
+        local cooldown = cooldown or 30
+        if not self.last_launch_notify or HoundUtils.absTimeDelta(self.last_launch_notify) > cooldown then
+            self.last_launch_notify = timer.getAbsTime()
+            return {
+                id = HOUND.EVENTS.RADAR_LAUNCH,
+                initiator = self,
+                time = timer.getTime()
+            }
+        end
     end
 
     --- Generate contact export object

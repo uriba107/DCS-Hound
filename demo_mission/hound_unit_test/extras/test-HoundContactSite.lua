@@ -33,6 +33,29 @@ do
         lu.assertEquals(self.site:getId(),5555%1000)
     end
 
+    function TestHoundContactSite:TestGenerateLaunchAlertWithoutGrid()
+        self.site = HOUND.Contact.Site:New(self.torContact,coalition.side.BLUE)
+        self.site.pos.p = HoundUtils.Dcs.copyPoint(self.torUnit:getPoint())
+        self.site.pos.grid = nil
+        lu.assertIsNil(self.site.pos.grid)
+        lu.assertIsNil(self.site.pos.be.brStr)
+        local msg = self.site:generateLaunchAlert(false,nil)
+        lu.assertIsString(msg)
+        lu.assertStrContains(msg,"BE:")
+        lu.assertStrContains(msg,"grid ")
+        lu.assertNotNil(self.site.pos.grid)
+        lu.assertNotNil(self.site.pos.be.brStr)
+    end
+
+    function TestHoundContactSite:TestGenerateLaunchAlertTTSWithoutGrid()
+        self.site = HOUND.Contact.Site:New(self.torContact,coalition.side.BLUE)
+        self.site.pos.p = HoundUtils.Dcs.copyPoint(self.torUnit:getPoint())
+        self.site.pos.grid = nil
+        local msg = self.site:generateLaunchAlert(true,nil)
+        lu.assertIsString(msg)
+        lu.assertStrContains(msg,"bullseye")
+    end
+
     function TestHoundContactSite:TestName()
         self.site = HOUND.Contact.Site:New(self.torContact,coalition.side.BLUE)
         lu.assertIsString(self.site:getName())
@@ -191,6 +214,7 @@ do
         e._hasPos = hasPos
         e._radioItemText = radioItemText
         function e:hasPos() return self._hasPos end
+        function e:hasPosData() return self._hasPos end
         function e:getDcsName() return self.dcsName end
         function e:getRadioItemText() return self._radioItemText end
         return e

@@ -8,9 +8,9 @@ do
         atis = 2,
         notifiers = 1,
         sites = 3,
-        contacts = 5,
+        contacts = 6,
         preBriefed = 4,
-        active = 2
+        active = 3
     }
 
     function TestHoundFunctional:setBaseUnitCount()
@@ -79,6 +79,7 @@ do
     function TestHoundFunctional:Test_2mDelay_03_EventHandler()
         lu.assertEquals(type(self.houndBlue.onHoundEvent),"function")
         lu.assertIsNil(self.houndBlue:onHoundEvent({HoundId = self.houndBlue:getId(),id = "updated"}))
+        local base = self.baseUnitCount
         function self.houndBlue:onHoundEvent(event)
             local function destroyObject(DcsObject)
                 local units = {}
@@ -138,10 +139,10 @@ do
                 pollSiteRemoved = function(_, retriesLeft)
                     local debugStr = self:printDebugging()
                     local expected = string.format("| Sites: %d | Contacts: %d (A:%d ,PB:%d)",
-                        TestHoundFunctional.baseUnitCount.sites - 1,
-                        TestHoundFunctional.baseUnitCount.contacts - 1,
-                        TestHoundFunctional.baseUnitCount.active - 1,
-                        TestHoundFunctional.baseUnitCount.preBriefed)
+                        base.sites - 1,
+                        base.contacts - 1,
+                        base.active - 1,
+                        base.preBriefed)
                     if string.find(debugStr, expected, 1, true) then return end
                     if retriesLeft <= 0 then lu.assertStrContains(debugStr, expected) return end
                     timer.scheduleFunction(pollSiteRemoved, nil, timer.getTime() + 5, retriesLeft - 1)
@@ -248,10 +249,31 @@ do
 
     function TestHoundFunctional:Test_6mDelay_04_shoot()
         local pollShoot
+        local siteLaunchFired = false
+        local radarLaunchFired = false
+        local osaLaunchFired = false
+        local shotAtUav = false
+
+        local SA6 = Group.getByName("SA-6_TINIAN")
+        local samRadar = SA6:getUnit(1)
+        local osaRadar = SA6:getUnit(6)
+        local function isUav(unit)
+            if not unit then return false end
+            local uav = Unit.getByName("MQ-9_TGT")
+            local uav2 = Unit.getByName("MQ-9_TGT2")
+            return (uav and unit.id_ == uav.id_) or (uav2 and unit.id_ == uav2.id_)
+        end
+
         pollShoot = function(expectedStr, retriesLeft)
             local debugStr = self.houndBlue:printDebugging()
-            if string.find(debugStr, expectedStr, 1, true) then return end
-            if retriesLeft <= 0 then lu.assertStrContains(debugStr, expectedStr) return end
+            if string.find(debugStr, expectedStr, 1, true) and siteLaunchFired and radarLaunchFired and shotAtUav then return end
+            if retriesLeft <= 0 then
+                lu.assertStrContains(debugStr, expectedStr)
+                lu.assertIsTrue(siteLaunchFired)
+                lu.assertIsTrue(radarLaunchFired)
+                lu.assertIsTrue(shotAtUav)
+                return
+            end
             timer.scheduleFunction(pollShoot, expectedStr, timer.getTime() + 5, retriesLeft - 1)
         end
         shootEvent = {}
@@ -262,38 +284,61 @@ do
                     and ( DcsEvent.initiator:getGroup() == Group.getByName("SA-6_TINIAN") )
                 then
                     local tgt = DcsEvent.weapon:getTarget()
-                    local uav = Unit.getByName("MQ-9_TGT")
-                    lu.assertItemsEquals(tgt,uav)
-                    HOUND.Logger.info("SA-6 fired on UAV")
+                    if isUav(tgt) then
+                        shotAtUav = true
+                        HOUND.Logger.info("SA-6 group fired on UAV")
+                    end
                 end
             end
         end
         function shootEvent:onHoundEvent(houndEvent)
             if houndEvent.houndId ~= self.HoundInstance.settings:getId() then
-                -- HOUND.Logger.trace("Processing Event " .. HOUND.reverseLookup(HOUND.EVENTS,houndEvent.id) .. " for myself? " .. tostring(houndEvent.houndId == self:getId()))
                 return
             end 
             if houndEvent.id == HOUND.EVENTS.SITE_LAUNCH then
                 lu.assertEquals(getmetatable(houndEvent.initiator),HOUND.Contact.Site)
                 local grp = houndEvent.initiator.DcsObject
-                lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(grp))
-                lu.assertEquals("SA-6_TINIAN",grp:getName())
+                if grp then
+                    lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(grp))
+                    lu.assertEquals("SA-6_TINIAN",grp:getName())
+                end
+                lu.assertIsTrue(osaLaunchFired)
+                siteLaunchFired = true
+            end
+            if houndEvent.id == HOUND.EVENTS.RADAR_LAUNCH then
+                lu.assertEquals(getmetatable(houndEvent.initiator),HOUND.Contact.Emitter)
+                lu.assertEquals(houndEvent.initiator:getType(), "Osa")
+                lu.assertEquals(houndEvent.initiator:getDcsGroupName(), "SA-6_TINIAN")
+                radarLaunchFired = true
+                if not osaLaunchFired then
+                    osaLaunchFired = true
+                    HOUND.Logger.info("OSA launch detected - holding OSA, freeing SA-6")
+                    osaRadar:enableEmission(false)
+                    samRadar:enableEmission(true)
+                end
             end           
         end
         world.addEventHandler(shootEvent)
         HOUND.EventHandler.addEventHandler(shootEvent)
-        
-        local uavgrp = Unit.getByName("MQ-9_TGT"):getGroup()
-        local SA6 = Group.getByName("SA-6_TINIAN")
-        lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(uavgrp))
-        lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(SA6))
-        SA6:enableEmission(true)
 
-        -- lu.assertIsFalse(uavgrp:isExist())
+        local uavgrp = Unit.getByName("MQ-9_TGT"):getGroup()
+        local uavgrp2 = Unit.getByName("MQ-9_TGT2"):getGroup()
+
+        lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(uavgrp))
+        lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(uavgrp2))
+        lu.assertIsTrue(HOUND.Utils.Dcs.isGroup(SA6))
+
+        SA6:enableEmission(true)
+        samRadar:enableEmission(false)
+        osaRadar:enableEmission(false)
+
         uavgrp:activate()
-        -- lu.assertIsTrue(uavgrp:isExist())
-        local sam_brain = SA6:getUnit(1):getController()
+        uavgrp2:activate()
+        local sam_brain = samRadar:getController()
         sam_brain:knowTarget(Unit.getByName("MQ-9_TGT"))
+        local osa_brain = osaRadar:getController()
+        osa_brain:knowTarget(Unit.getByName("MQ-9_TGT2"))
+        osaRadar:enableEmission(true)
         timer.scheduleFunction(pollShoot,string.format("| Sites: %d | Contacts: %d (A:%d ,PB:%d)",
             self.baseUnitCount.sites+2,self.baseUnitCount.contacts+2,self.baseUnitCount.active+3,self.baseUnitCount.preBriefed-1
         ),timer.getTime()+120, 6)
