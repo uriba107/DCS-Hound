@@ -69,6 +69,7 @@ do
         SITE_ALIVE = 20,
         SITE_ASLEEP = 21,
         SITE_LAUNCH = 22,
+        RADAR_LAUNCH = 23,
     }
 
     HOUND.INSTANCES = {}
@@ -4234,6 +4235,7 @@ do
 
     function HOUND.DB.getPlatformData(DcsObject)
         if not HOUND.Utils.Dcs.isUnit(DcsObject) and not HOUND.Utils.Dcs.isStaticObject(DcsObject) then return end
+        if not DcsObject:isExist() then return end
 
         local platformData={
             pos = HOUND.Utils.Dcs.copyPoint(DcsObject:getPosition().p),
@@ -6422,6 +6424,11 @@ do
         return HoundUtils.Dcs.isPoint(self.pos.p)
     end
 
+    function HOUND.Contact.Base:hasPosData()
+        if not self:hasPos() then return false end
+        return self:ensurePosData()
+    end
+
     function HOUND.Contact.Base:getPos()
         return HoundUtils.Dcs.copyPoint(self.pos.p)
     end
@@ -6564,8 +6571,24 @@ do
         end
     end
 
+    function HOUND.Contact.Base:ensurePosData()
+        if not HoundUtils.Dcs.isPoint(self.pos.p) then return false end
+        if self.pos.LL == nil or self.pos.LL.lat == nil or self.pos.LL.lon == nil then
+            self.pos.LL = {}
+            self.pos.LL.lat, self.pos.LL.lon = coord.LOtoLL(self.pos.p)
+        end
+        if self.pos.grid == nil then
+            self.pos.grid = coord.LLtoMGRS(self.pos.LL.lat, self.pos.LL.lon)
+        end
+        if self.pos.be == nil or self.pos.be.brStr == nil then
+            local bullsPos = coalition.getMainRefPoint(self._platformCoalition)
+            self.pos.be = HoundUtils.getBR(bullsPos,self.pos.p)
+        end
+        return self.pos.grid ~= nil and self.pos.be ~= nil and self.pos.be.brStr ~= nil
+    end
+
     function HOUND.Contact.Base:getTextData(utmZone,MGRSdigits)
-        if self:getPos() == nil or self.pos.grid == nil or self.pos.be == nil then return end
+        if not self:hasPosData() then return end
         local GridPos = ""
         if utmZone then
             GridPos = GridPos .. self.pos.grid.UTMZone .. " "
@@ -6583,7 +6606,7 @@ do
     end
 
     function HOUND.Contact.Base:getTtsData(utmZone,MGRSdigits)
-        if self:getPos() == nil or self.pos.grid == nil or self.pos.be == nil then return end
+        if not self:hasPosData() then return end
         local phoneticGridPos = ""
         if utmZone then
             phoneticGridPos =  phoneticGridPos .. HoundUtils.TTS.toPhonetic(self.pos.grid.UTMZone) .. " "
@@ -6600,6 +6623,25 @@ do
         phoneticGridPos = phoneticGridPos .. " " .. HoundUtils.TTS.toPhonetic(E) .. "   " .. HoundUtils.TTS.toPhonetic(N)
 
         return phoneticGridPos,phoneticBulls
+    end
+
+    function HOUND.Contact.Base:generateLaunchAlert(isTTS,sectorName)
+        local msg = "SAM LAUNCH! SAM LAUNCH! " .. self:getDesignation(true)
+        if sectorName then
+            msg = msg .. " in " .. sectorName
+        else
+            if self:hasPosData() then
+                local GridPos,BePos
+                if isTTS then
+                    GridPos,BePos = self:getTtsData(true,1)
+                    msg = msg .. ", bullseye " .. BePos
+                else
+                    GridPos,BePos = self:getTextData(true,1)
+                    msg = msg .. " BE: " .. BePos .. " (grid ".. GridPos ..")"
+                end
+            end
+        end
+        return msg .. "!"
     end
 end--- HOUND.Contact.Estimator
 do
@@ -7081,6 +7123,7 @@ do
         instance.preBriefed = false
         instance.unitAlive = true
         instance.Kalman = nil
+        instance.last_launch_notify = nil
         return instance
     end
 
@@ -7623,6 +7666,18 @@ do
         return self.state
     end
 
+    function HOUND.Contact.Emitter:LaunchDetected(cooldown)
+        local cooldown = cooldown or 30
+        if not self.last_launch_notify or HoundUtils.absTimeDelta(self.last_launch_notify) > cooldown then
+            self.last_launch_notify = timer.getAbsTime()
+            return {
+                id = HOUND.EVENTS.RADAR_LAUNCH,
+                initiator = self,
+                time = timer.getTime()
+            }
+        end
+    end
+
     function HOUND.Contact.Emitter:export()
         local contact = {}
         contact.typeName = self.typeName
@@ -7650,7 +7705,7 @@ do
     local HoundUtils = HOUND.Utils
 
     function HOUND.Contact.Emitter:generateTtsBrief(NATO)
-        if self.pos.p == nil or self.uncertenty_data == nil then return end
+        if not self:hasPosData() or self.uncertenty_data == nil then return end
         local phoneticGridPos,phoneticBulls = self:getTtsData(false,1)
         local reportedName = self:getName()
         if NATO then
@@ -7675,7 +7730,7 @@ do
     end
 
     function HOUND.Contact.Emitter:generateTtsReport(useDMM,preferMGRS,refPos)
-        if self.pos.p == nil then return end
+        if not self:hasPosData() then return end
         useDMM = useDMM or false
         preferMGRS = preferMGRS or false
         local MGRSPrecision = HOUND.MGRS_PRECISION
@@ -7729,7 +7784,7 @@ do
     end
 
     function HOUND.Contact.Emitter:generateTextReport(useDMM,refPos)
-        if self.pos.p == nil then return end
+        if not self:hasPosData() then return end
         useDMM = useDMM or false
 
         local GridPos,BePos = self:getTextData(true,HOUND.MGRS_PRECISION)
@@ -7764,7 +7819,7 @@ do
     end
 
     function HOUND.Contact.Emitter:getRadioItemText()
-        if not self:hasPos() then return self:getName() end
+        if not self:hasPosData() then return self:getName() end
         local GridPos,BePos = self:getTextData(true,1)
         BePos = BePos:gsub(" for ","/")
         return self:getName() .. " - BE: " .. BePos .. " (".. GridPos ..")"
@@ -7781,7 +7836,7 @@ do
         if sectorName then
             msg = msg .. " in " .. sectorName
         else
-            if self:hasPos() then
+            if self:hasPosData() then
                 local GridPos,BePos
                 if isTTS then
                     GridPos,BePos = self:getTtsData(true,1)
@@ -7800,7 +7855,7 @@ do
         if sectorName then
             msg = msg .. " in " .. sectorName
         else
-            if self:hasPos() then
+            if self:hasPosData() then
                 local GridPos,BePos
                 if isTTS then
                     GridPos,BePos = self:getTtsData(true,1)
@@ -7816,7 +7871,7 @@ do
 
     function HOUND.Contact.Emitter:generateIntelBrief()
         local msg = ""
-        if self:hasPos() then
+        if self:hasPosData() then
             local GridPos,BePos = self:getTextData(true,HOUND.MGRS_PRECISION)
             msg = {
                 self:getTrackId(),self:getType(),
@@ -7856,7 +7911,6 @@ do
         instance.primaryEmitter = HoundContact
         instance.last_seen = HoundContact:getLastSeen()
         instance.first_seen = HoundContact.first_seen
-        instance.last_launch_notify = 0
         instance.maxWeaponsRange = HoundContact:getMaxWeaponsRange()
         instance.detectionRange = HoundContact:getRadarDetectionRange()
         instance.isEWR = HoundContact.isEWR
@@ -8081,6 +8135,10 @@ do
             if primary then
                 local uncertenty = primary:getMaxWeaponsRange() * 0.75
                 self.pos.p = HoundUtils.Dcs.copyPoint(refPos)
+                self.pos.LL = {}
+                self.pos.LL.lat, self.pos.LL.lon = coord.LOtoLL(refPos)
+                self.pos.grid = coord.LLtoMGRS(self.pos.LL.lat, self.pos.LL.lon)
+                self.pos.be = HoundUtils.getBR(coalition.getMainRefPoint(self._platformCoalition),refPos)
                 self.uncertenty_data = {}
                 self.uncertenty_data.major = uncertenty
                 self.uncertenty_data.minor = uncertenty
@@ -8104,7 +8162,7 @@ do
 
     function HOUND.Contact.Site:LaunchDetected(cooldown)
         local cooldown = cooldown or 30
-        if ( HoundUtils.absTimeDelta(self.last_launch_notify) > cooldown ) then
+        if not self.last_launch_notify or HoundUtils.absTimeDelta(self.last_launch_notify) > cooldown then
 
             self.last_launch_notify = timer.getAbsTime()
             local event = {
@@ -8239,7 +8297,7 @@ do
     local HoundUtils = HOUND.Utils
 
     function HOUND.Contact.Site:getRadioItemText()
-        if not self:hasPos() then return self:getName() end
+        if not self:hasPosData() then return self:getName() end
 
         local GridPos,BePos = self:getTextData(true,1)
         BePos = BePos:gsub(" for ","/")
@@ -8256,7 +8314,7 @@ do
             ['emitters'] = {}
         }
         for _,emitter in ipairs(self.emitters) do
-            if emitter:hasPos() then
+            if emitter:hasPosData() then
                 local emitterEntry = {
                     ['dcsName'] = emitter:getDcsName(),
                     ['txt'] = emitter:getRadioItemText()
@@ -8276,7 +8334,7 @@ do
         if sectorName then
             msg = msg .. " in " .. sectorName
         else
-            if self:hasPos() then
+            if self:hasPosData() then
                 local GridPos,BePos
                 if isTTS then
                     GridPos,BePos = self:getTtsData(true,1)
@@ -8295,7 +8353,7 @@ do
         if sectorName then
             msg = msg .. " in " .. sectorName
         else
-            if self:hasPos() then
+            if self:hasPosData() then
                 local GridPos,BePos
                 if isTTS then
                     GridPos,BePos = self:getTtsData(true,1)
@@ -8314,7 +8372,7 @@ do
         if sectorName then
             msg = msg .. " in " .. sectorName
         else
-            if self:hasPos() then
+            if self:hasPosData() then
                 local GridPos,BePos
                 if isTTS then
                     GridPos,BePos = self:getTtsData(true,1)
@@ -8328,25 +8386,6 @@ do
         return msg .. "."
     end
 
-    function HOUND.Contact.Site:generateLaunchAlert(isTTS,sectorName)
-    local msg = "SAM LAUNCH! SAM LAUNCH! " .. self:getDesignation(true)
-    if sectorName then
-        msg = msg .. " in " .. sectorName
-    else
-        if self:hasPos() then
-            local GridPos,BePos
-            if isTTS then
-                GridPos,BePos = self:getTtsData(true,1)
-                msg = msg .. ", bullseye " .. BePos
-            else
-                GridPos,BePos = self:getTextData(true,1)
-                msg = msg .. " BE: " .. BePos .. " (grid ".. GridPos ..")"
-            end
-        end
-    end
-    return  msg .. "!"
-    end
-
     function HOUND.Contact.Site:generateIdentReport(isTTS,sectorName)
         local msg = self:getName()
 
@@ -8355,7 +8394,7 @@ do
             msg = msg .. ", identified as " .. self:getDesignation(true)
         else
             msg = msg .. ", identified as " .. self:getDesignation(true)
-            if self:hasPos() then
+            if self:hasPosData() then
                 local GridPos,BePos
                 if isTTS then
                     GridPos,BePos = self:getTtsData(true,1)
@@ -8378,7 +8417,7 @@ do
             return table.concat(boatData," ")
         end
         local str = ""
-        if not self:hasPos() or not self.uncertenty_data then return str end
+        if not self:hasPosData() or not self.uncertenty_data then return str end
         local phoneticGridPos,phoneticBulls = self:getTtsData(false,1)
         local reportedName = self:getName() .. " "
         if NATO then
@@ -9110,9 +9149,31 @@ do
             site:ensurePrimaryHasPos(refPos)
         end
     end
-    function HOUND.ElintWorker:AlertOnLaunch(fireGrp)
+    function HOUND.ElintWorker:AlertOnLaunch(fireUnit)
         if not self.settings:getAlertOnLaunch() then return end
-        local site = self:getSite(fireGrp,true)
+
+        if HoundUtils.Dcs.isUnit(fireUnit) then
+            local unitName = fireUnit:getName()
+            if self.contacts[unitName] then
+                local event = self.contacts[unitName]:LaunchDetected()
+                if type(event) == "table" then
+                    event.houndId = self.settings:getId()
+                    event.coalition = self.settings:getCoalition()
+                    HOUND.EventHandler.publishEvent(event)
+                end
+                return
+            end
+        end
+
+        local grpName = nil
+        if type(fireUnit) == "string" then
+            grpName = fireUnit
+        elseif HoundUtils.Dcs.isGroup(fireUnit) then
+            grpName = fireUnit:getName()
+        end
+        if not grpName then return end
+
+        local site = self:getSite(grpName,true)
         if site then
             local event = site:LaunchDetected()
             if type(event) == "table" then
@@ -9219,7 +9280,7 @@ do
                 for _,platform in ipairs(self.platforms) do
                     local platformData = HOUND.DB.getPlatformData(platform)
 
-                    if HoundUtils.Geo.checkLOS(platformData.pos, radarPos) then
+                    if platformData and HoundUtils.Geo.checkLOS(platformData.pos, radarPos) then
                         local contact = self:getContact(radar)
                         local sampleAngularResolution = HOUND.DB.getSensorPrecision(platform,contact:getWavelenght(isRadarTracking))
                         if sampleAngularResolution < l_math.rad(10.0) then
@@ -11818,6 +11879,13 @@ do
                 if houndEvent.id == HOUND.EVENTS.SITE_LAUNCH then
                     sector:notifySiteLaunching(houndEvent.initiator)
                 end
+                if houndEvent.id == HOUND.EVENTS.RADAR_LAUNCH then
+                    local emitter = houndEvent.initiator
+                    local site = self.contacts:getSite(emitter:getDcsGroupName(), true)
+                    if site then
+                        sector:notifySiteLaunching(site)
+                    end
+                end
             end
 
             if houndEvent.id == HOUND.EVENTS.SITE_CREATED or houndEvent.id == HOUND.EVENTS.SITE_CLASSIFIED then
@@ -11883,7 +11951,8 @@ do
         then
             local _,catEx = DcsEvent.initiator:getCategory()
             if not HOUND.setContainsValue({Unit.Category.GROUND_UNIT,Unit.Category.SHIP},catEx) then return end
-            local grp = DcsEvent.initiator:getGroup()
+            local unit = DcsEvent.initiator
+            local grp = unit:getGroup()
             if HoundUtils.Dcs.isGroup(grp) then
                 self.contacts:Sniff(grp:getName())
                 if DcsEvent.weapon:getDesc().category ~= Weapon.Category.MISSILE then return end
@@ -11896,7 +11965,11 @@ do
                     HoundUtils.Geo.setPointHeight(tgtPos)
                 end
                 self.contacts:ensureSitePrimaryHasPos(grp:getName(),tgtPos) -- pass target position, if no position available, it will alert on target position
-                self:AlertOnLaunch(grp)
+                if HOUND.DB.Radars[unit:getTypeName()] then
+                    self:AlertOnLaunch(unit)
+                else
+                    self:AlertOnLaunch(grp)
+                end
             end
         end
 
@@ -11925,4 +11998,4 @@ do
     trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
--- Hound version 0.5.2 - Compiled on 2026-07-23 19:37
+-- Hound version 0.5.2 - Compiled on 2026-08-09 20:24
