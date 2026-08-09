@@ -2,7 +2,7 @@
 
 This document provides comprehensive API documentation for the HOUND ELINT system, automatically generated from LDOC comments in the source code.
 
-*Generated on: 2026-07-23 22:37:14*
+*Generated on: 2026-08-09 23:24:28*
 
 ## Overview
 
@@ -142,6 +142,7 @@ Hound Events
 - `SITE_ALIVE`: Hound Event
 - `SITE_ASLEEP`: Hound Event
 - `SITE_LAUNCH`: Hound Event
+- `RADAR_LAUNCH`: Hound Event
 
 ### `EVENTS.EVENT`
 
@@ -2491,6 +2492,13 @@ check if contact has estimated position
 **Returns:**
 - (type=Bool): True if contact has estimated position
 
+### `HOUND.Contact.Base:hasPosData()`
+
+Check if contact has full position data (pos + grid + BE) Ensures grid/BE are lazily computed from pos.p if missing.
+
+**Returns:**
+- (type=Bool): True if full position data is available
+
 ### `HOUND.Contact.Base:getPos()`
 
 get current estimated position
@@ -2654,6 +2662,13 @@ Remove all contact's F10 map markers
 
 *Note: This is a local function*
 
+### `HOUND.Contact.Base:ensurePosData()`
+
+Lazily compute grid/BE/LL position data from pos.p when missing
+
+**Returns:**
+- (type=Bool): True once full position data is available, false on failure
+
 ### `HOUND.Contact.Base:getTextData(utmZone, MGRSdigits)`
 
 return Information used in Text messages
@@ -2677,6 +2692,17 @@ return Information used in TTS messages
 **Returns:**
 - (GridPos): (string) MGRS grid position (eg. "Charlie Yankee one two   Three  four")
 - (BE): (string) Bullseye position string (eg. "Zero Three Five 15")
+
+### `HOUND.Contact.Base:generateLaunchAlert(isTTS, sectorName)`
+
+Generate a launch alert message.
+
+**Parameters:**
+- `(bool)` (isTTS): True if the message is for TTS, false for text message.
+- `sectorName` (type=string): Name of the primary sector; if present, the message will include the sector name.
+
+**Returns:**
+- (string): Compiled launch alert message.
 
 ---
 
@@ -3178,6 +3204,13 @@ Use DCS Unit Position as contact position
 **Parameters:**
 - `unitPosMarker` (number): marker type to use for unit (see HOUND.MARKER)
 
+### `HOUND.Contact.Emitter:LaunchDetected(cooldown)`
+
+trigger launch event
+
+**Parameters:**
+- `cooldown` (number): interval between alerts. avoid spam
+
 ### `HOUND.Contact.Emitter:export()`
 
 Generate contact export object
@@ -3608,17 +3641,6 @@ generate Radar dead report
 
 **Returns:**
 - (string.): compiled message
-
-### `HOUND.Contact.Site:generateLaunchAlert(isTTS, sectorName)`
-
-Generate a launch alert message.
-
-**Parameters:**
-- `(bool)` (isTTS): True if the message is for TTS, false for text message.
-- `sectorName` (type=string): Name of the primary sector; if present, the message will include the sector name.
-
-**Returns:**
-- (string): Compiled launch alert message.
 
 ### `HOUND.Contact.Site:generateIdentReport(isTTS, sectorName)`
 
@@ -4124,12 +4146,12 @@ set contact as Dead
 **Parameters:**
 - `DCS` (emitter): Unit/Unit name of radar
 
-### `HOUND.ElintWorker:AlertOnLaunch(fireGrp)`
+### `HOUND.ElintWorker:AlertOnLaunch(fireUnit)`
 
-Send Launch Alert
+Send Launch Alert Publishes RADAR_LAUNCH event for tracked emitter unit, or SITE_LAUNCH for parent site. Cooldown prevents spam.
 
 **Parameters:**
-- `DCS` (fireGrp): Group/Group name that is firing
+- `fireUnit` (type=table|string): DCS Unit, DCS Group or Group name that is firing
 
 ### `HOUND.ElintWorker:isTracked(emitter)`
 

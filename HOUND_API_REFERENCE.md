@@ -2,7 +2,7 @@
 
 This document provides public API documentation for the HOUND ELINT system, focusing on functions and classes intended for external use.
 
-*Generated on: 2026-07-23 22:37:14*
+*Generated on: 2026-08-09 23:24:28*
 
 ## Overview
 
@@ -911,6 +911,7 @@ Hound Events
 - `SITE_ALIVE`: Hound Event
 - `SITE_ASLEEP`: Hound Event
 - `SITE_LAUNCH`: Hound Event
+- `RADAR_LAUNCH`: Hound Event
 
 ### `HOUND.INSTANCES`
 
