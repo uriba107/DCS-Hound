@@ -2,7 +2,7 @@
 
 Everything needed to integrate the Hound ELINT radar detection system into a DCS World mission. This document is self-contained — no other files required.
 
-*Generated on: 2026-07-23 22:38:33*
+*Generated on: 2026-08-09 23:24:52*
 
 ---
 
@@ -211,7 +211,7 @@ Place at least 2 ELINT platform units (for triangulation):
 ### Enums
 
 - `HOUND.MARKER`: NONE, SITE_ONLY, POINT, CIRCLE, DIAMOND, OCTAGON, POLYGON
-- `HOUND.EVENTS`: NO_CHANGE, HOUND_ENABLED, HOUND_DISABLED, PLATFORM_ADDED, PLATFORM_REMOVED, PLATFORM_DESTROYED, RADAR_NEW, RADAR_DETECTED, RADAR_UPDATED, RADAR_DESTROYED, RADAR_ALIVE, RADAR_ASLEEP, SITE_NEW, SITE_CREATED, SITE_UPDATED, SITE_CLASSIFIED, SITE_REMOVED, SITE_ALIVE, SITE_ASLEEP, SITE_LAUNCH
+- `HOUND.EVENTS`: NO_CHANGE, HOUND_ENABLED, HOUND_DISABLED, PLATFORM_ADDED, PLATFORM_REMOVED, PLATFORM_DESTROYED, RADAR_NEW, RADAR_DETECTED, RADAR_UPDATED, RADAR_DESTROYED, RADAR_ALIVE, RADAR_ASLEEP, SITE_NEW, SITE_CREATED, SITE_UPDATED, SITE_CLASSIFIED, SITE_REMOVED, SITE_ALIVE, SITE_ASLEEP, SITE_LAUNCH, RADAR_LAUNCH
 
 
 ---
@@ -222,12 +222,19 @@ Place at least 2 ELINT platform units (for triangulation):
 
 ```lua
 do
-  local HoundBlue = HoundElint:create(coalition.side.BLUE)
-  HoundBlue:addPlatform("ELINT_C130")
-  HoundBlue:addPlatform("ELINT_Tower")
-  HoundBlue:setMarkerType(HOUND.MARKER.POLYGON)
-  HoundBlue:enableMarkers()
-  HoundBlue:systemOn()
+  -- Create Hound instance for Blue coalition
+  local houndBlue = HoundElint:create(coalition.side.BLUE)
+
+  -- Add ELINT platforms by DCS unit name
+  houndBlue:addPlatform("ELINT_North")
+  houndBlue:addPlatform("ELINT_South")
+
+  -- Enable polygon map markers
+  houndBlue:setMarkerType(HOUND.MARKER.POLYGON)
+  houndBlue:enableMarkers()
+
+  -- Activate the system
+  houndBlue:systemOn()
 end
 ```
 
@@ -237,38 +244,51 @@ end
 
 ```lua
 do
+  -- Set globals BEFORE creating the instance
   HOUND.FORCE_MANAGE_MARKERS = true
 
-  local HoundBlue = HoundElint:create(coalition.side.BLUE)
+  -- Create Hound instance for Blue coalition
+  local houndBlue = HoundElint:create(coalition.side.BLUE)
 
-  HoundBlue:addPlatform("ELINT_C130_1")
-  HoundBlue:addPlatform("ELINT_C130_2")
-  HoundBlue:addPlatform("ELINT_Tower")
+  -- Add 3 ELINT platforms by DCS unit name
+  houndBlue:addPlatform("ELINT_C130_1")
+  houndBlue:addPlatform("ELINT_C130_2")
+  houndBlue:addPlatform("ELINT_Tower")
 
-  HoundBlue:enableController({
+  -- Enable Controller on multi-frequency (VHF/UHF/FM)
+  houndBlue:enableController({
     freq = "251.000,35.000",
-    modulation = "AM,FM"
+    modulation = "AM,FM",
+    gender = "male"
   })
 
-  HoundBlue:enableText()
+  -- Enable text messages on controller
+  houndBlue:enableText()
 
-  HoundBlue:enableAtis({
+  -- Enable ATIS broadcast on 253.000 AM
+  houndBlue:enableAtis({
     freq = "253.000",
-    modulation = "AM"
+    modulation = "AM",
+    gender = "female"
   })
 
-  HoundBlue:setTransmitter("all", "ELINT_C130_1")
+  -- Use ELINT_C130_1 as transmitter for all sectors
+  houndBlue:setTransmitter("all", "ELINT_C130_1")
 
-  HoundBlue:enableBDA()
-  HoundBlue:setAlertOnLaunch(true)
+  -- Enable BDA (radar destruction notifications) and launch alerts
+  houndBlue:enableBDA()
+  houndBlue:setAlertOnLaunch(true)
 
-  HoundBlue:preBriefedContact("SA-10_Site_1", "ANVIL")
-  HoundBlue:preBriefedContact("SA-6_Site_2", "HAMMER")
+  -- Pre-brief 2 known SAM sites with custom code names
+  houndBlue:preBriefedContact("Known_SAM_1", "ANVIL")
+  houndBlue:preBriefedContact("Known_SAM_2", "HAMMER")
 
-  HoundBlue:setMarkerType(HOUND.MARKER.CIRCLE)
-  HoundBlue:enableMarkers()
+  -- Use circle map markers
+  houndBlue:setMarkerType(HOUND.MARKER.CIRCLE)
+  houndBlue:enableMarkers()
 
-  HoundBlue:systemOn()
+  -- Activate the system
+  houndBlue:systemOn()
 end
 ```
 
@@ -278,52 +298,66 @@ end
 
 ```lua
 do
-  local HoundBlue = HoundElint:create(coalition.side.BLUE)
+  -- Create Hound instance for Blue coalition
+  local houndBlue = HoundElint:create(coalition.side.BLUE)
 
-  HoundBlue:addPlatform("ELINT_C130_1")
-  HoundBlue:addPlatform("ELINT_C130_2")
-  HoundBlue:addPlatform("ELINT_Tower_Hermon")
-  HoundBlue:addPlatform("ELINT_Tower_Meron")
+  -- Add 4 ELINT platforms by DCS unit name
+  houndBlue:addPlatform("ELINT_C130_1")
+  houndBlue:addPlatform("ELINT_C130_2")
+  houndBlue:addPlatform("ELINT_C17")
+  houndBlue:addPlatform("ELINT_Tower")
 
-  HoundBlue:addSector("Beslan", 10)
-  HoundBlue:setZone("Beslan", "Zone_Beslan")
+  -- Add child sectors with priority (lower = higher priority)
+  houndBlue:addSector("Beslan", 10)
+  houndBlue:addSector("Vladikavkaz", 20)
 
-  HoundBlue:addSector("Vladikavkaz", 20)
-  HoundBlue:setZone("Vladikavkaz", "Zone_Vladikavkaz")
+  -- Assign DCS zones to sectors
+  houndBlue:setZone("Beslan", "Zone_Beslan")
+  houndBlue:setZone("Vladikavkaz", "Zone_Vladikavkaz")
 
-  HoundBlue:addSector("Northern Front")
-  HoundBlue:addChildSector("Northern Front", "Beslan")
-  HoundBlue:addChildSector("Northern Front", "Vladikavkaz")
+  -- Create meta-sector and attach children
+  houndBlue:addSector("Northern Front")
+  houndBlue:addChildSector("Northern Front", "Beslan")
+  houndBlue:addChildSector("Northern Front", "Vladikavkaz")
 
-  HoundBlue:configureController("Northern Front", {
+  -- Configure (store) Controller/ATIS settings for the meta-sector
+  houndBlue:configureController("Northern Front", {
     freq = "251.000,35.000",
     modulation = "AM,FM",
     gender = "male"
   })
-  HoundBlue:enableController("Northern Front")
-
-  HoundBlue:configureAtis("Northern Front", {
+  houndBlue:configureAtis("Northern Front", {
     freq = "253.000",
     modulation = "AM",
     gender = "female"
   })
-  HoundBlue:enableAtis("Northern Front")
 
-  HoundBlue:enableNotifier("Northern Front", {
-    freq = "244.000",
-    modulation = "AM"
+  -- Activate Controller and ATIS for the meta-sector
+  houndBlue:enableController("Northern Front")
+  houndBlue:enableAtis("Northern Front")
+
+  -- Enable Notifier on the meta-sector with inline settings
+  houndBlue:enableNotifier("Northern Front", {
+    freq = "251.000",
+    modulation = "AM",
+    gender = "male"
   })
 
-  HoundBlue:enableNotifier({
+  -- Add a global Notifier on guard frequency 243.000 AM
+  houndBlue:enableNotifier({
     freq = "243.000",
-    modulation = "AM"
+    modulation = "AM",
+    gender = "male"
   })
 
-  HoundBlue:setTransmitter("Northern Front", "ELINT_C130_1")
+  -- Use ELINT_C130_1 as transmitter for the meta-sector
+  houndBlue:setTransmitter("Northern Front", "ELINT_C130_1")
 
-  HoundBlue:enableText("all")
+  -- Enable text for all sectors
+  houndBlue:enableText("all")
 
-  HoundBlue:systemOn()
+  -- Activate the system
+  houndBlue:systemOn()
 end
 ```
 
@@ -333,46 +367,58 @@ end
 
 ```lua
 do
-  local HoundBlue = HoundElint:create(coalition.side.BLUE)
-  HoundBlue:addPlatform("ELINT_C130")
-  HoundBlue:addPlatform("ELINT_Tower")
-  HoundBlue:systemOn()
+  -- Create Hound instance for Blue coalition
+  local houndBlue = HoundElint:create(coalition.side.BLUE)
+
+  -- Add ELINT platforms
+  houndBlue:addPlatform("ELINT_C130_1")
+  houndBlue:addPlatform("ELINT_C130_2")
+
+  -- Activate the system
+  houndBlue:systemOn()
 end
 
-local MissionTracker = {
+-- Event handler TABLE with onHoundEvent METHOD
+local MissionIntel = {
   radarKills = 0,
-  targetSites = {"SA-10_Site_1", "SA-6_Site_2"},
+  targetSites = { "SA-10_Site_1", "SA-6_Site_2" },
   destroyed = {}
 }
 
-function MissionTracker:onHoundEvent(event)
+function MissionIntel:onHoundEvent(event)
+  -- Filter by coalition
   if event.coalition ~= coalition.side.BLUE then return end
 
+  -- New radar detected
   if event.id == HOUND.EVENTS.RADAR_NEW then
     local contact = event.initiator
-    trigger.action.outText("New threat detected: " .. contact:getName(), 10)
+    trigger.action.outText("New threat: " .. contact:getName(), 10)
   end
 
+  -- Radar destroyed - count kills
   if event.id == HOUND.EVENTS.RADAR_DESTROYED then
     self.radarKills = self.radarKills + 1
     trigger.action.outText("Radars destroyed: " .. self.radarKills, 10)
   end
 
+  -- Site removed - check mission objectives
   if event.id == HOUND.EVENTS.SITE_REMOVED then
     local site = event.initiator
     for _, targetName in ipairs(self.targetSites) do
       if site.DcsGroupName == targetName then
         table.insert(self.destroyed, targetName)
-        trigger.action.outText("Site destroyed: " .. targetName, 15)
+        trigger.action.outText("Objective complete!", 15)
+
         if #self.destroyed >= #self.targetSites then
-          trigger.action.outText("All primary targets eliminated!", 30)
+          trigger.action.outText("Mission success!", 30)
         end
       end
     end
   end
 end
 
-HOUND.addEventHandler(MissionTracker)
+-- Register the handler globally
+HOUND.addEventHandler(MissionIntel)
 ```
 
 ---
@@ -381,44 +427,51 @@ HOUND.addEventHandler(MissionTracker)
 
 ```lua
 do
-  local HoundBlue = HoundElint:create(coalition.side.BLUE)
-  HoundBlue:addPlatform("ELINT_C130")
-  HoundBlue:addPlatform("ELINT_Tower")
-  HoundBlue:addPlatform("ELINT_C17")
-  HoundBlue:onScreenDebug(true)
-  HoundBlue:systemOn()
+  -- Create Hound instance for Blue coalition
+  local houndBlue = HoundElint:create(coalition.side.BLUE)
 
-  local function periodicIntelReport()
-    local data = HoundBlue:getSites()
+  -- Add ELINT platforms
+  houndBlue:addPlatform("ELINT_C130_1")
+  houndBlue:addPlatform("ELINT_C130_2")
 
+  -- Enable on-screen debug for diagnostics
+  houndBlue:onScreenDebug(true)
+
+  -- Activate the system
+  houndBlue:systemOn()
+
+  -- Periodic intel collection (detection takes 1-2 minutes, so schedule)
+  local function collectIntel()
+    local data = houndBlue:getSites()
+
+    -- Iterate SAM sites
     for _, site in ipairs(data.sam.sites) do
-      local siteName = site.name
-      local siteType = site.Type
+      env.info("SAM site: " .. site.name .. " Type: " .. site.Type)
+
+      -- Iterate emitters on each site
       for _, emitter in ipairs(site.emitters) do
-        local typeName = emitter.typeName
-        local accuracy = emitter.accuracy
+        env.info("  Emitter: " .. emitter.typeName)
+        env.info("  Accuracy: " .. tostring(emitter.accuracy))
+
+        -- Emitter LL is nested under pos - check before access
         if emitter.pos then
-          local lat = emitter.LL.lat
-          local lon = emitter.LL.lon
-          env.info("SAM emitter " .. typeName .. " at " .. lat .. ", " .. lon)
+          env.info("  Lat: " .. emitter.pos.LL.lat)
+          env.info("  Lon: " .. emitter.pos.LL.lon)
         end
       end
     end
 
+    -- Iterate EWR sites
     for _, site in ipairs(data.ewr.sites) do
-      for _, emitter in ipairs(site.emitters) do
-        if emitter.pos then
-          env.info("EWR emitter " .. emitter.typeName .. " at " .. emitter.LL.lat .. ", " .. emitter.LL.lon)
-        end
-      end
+      env.info("EWR site: " .. site.name .. " Type: " .. site.Type)
     end
 
-    HoundBlue:dumpIntelBrief("intel_report", "csv")
-
-    return timer.getTime() + 120
+    -- Dump intel brief to CSV in DCS saved games folder
+    houndBlue:dumpIntelBrief()
   end
 
-  timer.scheduleFunction(periodicIntelReport, nil, timer.getTime() + 120)
+  -- Schedule periodic collection every 120 seconds
+  timer.scheduleFunction(collectIntel, nil, timer.getTime() + 120)
 end
 ```
 
@@ -428,52 +481,68 @@ end
 
 ```lua
 do
+  -- Set globals BEFORE creating the instance
   HOUND.FORCE_MANAGE_MARKERS = true
   HOUND.USE_LEGACY_MARKERS = false
   HOUND.MARKER_TEXT_POINTER = "❖ « "
 
-  local HoundBlue = HoundElint:create(coalition.side.BLUE)
+  -- Create Hound instance for Blue coalition
+  local houndBlue = HoundElint:create(coalition.side.BLUE)
 
+  -- Batch-discover all ELINT platforms by name prefix
   local platforms = HOUND.Utils.Filter.unitsByPrefix("ELINT ")
   for name, unit in pairs(platforms) do
-    HoundBlue:addPlatform(name)
+    houndBlue:addPlatform(name)
   end
 
-  HoundBlue:addSector("North", 10)
-  HoundBlue:setZone("North", "Zone_North")
+  -- Add a sector with priority and assign a zone
+  houndBlue:addSector("North", 10)
+  houndBlue:setZone("North", "Zone_North")
 
-  HoundBlue:enableController({
+  -- Enable Controller on multi-frequency with piper TTS
+  houndBlue:enableController({
     freq = "251.000,35.000",
     modulation = "AM,FM",
     provider = "piper",
     voice = "en_US-ryan-low"
   })
 
-  HoundBlue:setTransmitter("all", "ELINT_Main")
+  -- Use ELINT_Main as transmitter for all sectors
+  houndBlue:setTransmitter("all", "ELINT_Main")
 
-  HoundBlue:enableText()
-  HoundBlue:enableBDA()
+  -- Enable text and BDA
+  houndBlue:enableText()
+  houndBlue:enableBDA()
 
-  local IntelTracker = {}
+  -- Enable on-screen debug for diagnostics
+  houndBlue:onScreenDebug(true)
 
-  function IntelTracker:onHoundEvent(event)
-    if event.coalition ~= coalition.side.BLUE then return end
+  -- Activate the system
+  houndBlue:systemOn()
+end
 
-    if event.id == HOUND.EVENTS.SITE_CREATED then
-      local site = event.initiator
-      if site.isEWR then
-        env.info("New EWR site: " .. site:getName())
-      else
-        env.info("New SAM site: " .. site:getName())
-      end
+-- Event handler TABLE with type-checked onHoundEvent
+local SiteIntel = {}
+
+function SiteIntel:onHoundEvent(event)
+  -- Filter by coalition
+  if event.coalition ~= coalition.side.BLUE then return end
+
+  -- SITE_CREATED - process before accessing initiator fields
+  if event.id == HOUND.EVENTS.SITE_CREATED then
+    local site = event.initiator
+
+    -- Check isEWR flag before processing EWR data
+    if site.isEWR then
+      trigger.action.outText("New EWR site detected: " .. site:getName(), 10)
+    else
+      trigger.action.outText("New SAM site detected: " .. site:getName(), 10)
     end
   end
-
-  HOUND.addEventHandler(IntelTracker)
-
-  HoundBlue:onScreenDebug(true)
-  HoundBlue:systemOn()
 end
+
+-- Register the handler globally
+HOUND.addEventHandler(SiteIntel)
 ```
 
 ---
@@ -544,7 +613,7 @@ end
 
 ## Documentation Quality Check
 
-
+LLM quality/effectiveness check skipped for opencode path.
 
 ---
 
