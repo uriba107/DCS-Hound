@@ -596,7 +596,6 @@ do
         else
             return HOUND.Mist.utils.get2DDist(HOUND.Mist.projectPoint(c1.point, c1.radius, theta + math.pi), c2.point) <= c2.radius
         end
-        return false
     end
     function HOUND.Mist.shape.circleInPoly(circle, poly, full)
 
@@ -788,4 +787,492 @@ do
 		end
 	end
 end
+
+do
+	-- https://www.redblobgames.com/grids/hexagons/
+	-- Due to how DCS handles coordinates I swapped the two main coordinates used with hexagons q and r. All examples from that page are in qrs. I'm using rqs
+	-- uses "pointy top" hexagon orientation
+	-- r cooresponds to x axis (north-south)
+	-- q corresponds to "y axis" but it isn't strictly east-west because it exists on a slight diagonal
+	-- Primarily added as util functions used by Grayflag to abstract spacial calculations related to coalition land ownership, threats, and AI navigation
+
+	--- Hex grid (pointy-top cube rqs, MIST 4.6 ec4e9ca, redblobgames).
+	-- @section HOUND.Mist.hex
+
+	HOUND.Mist.hex = {}
+
+	local hexRadius = 10000
+	local hexIter = math.rad(360/6)
+
+	--- Return the current hex grid radius in meters.
+	-- @treturn number current hex radius
+	function HOUND.Mist.hex.getRadius()
+		return HOUND.Mist.utils.deepCopy(hexRadius)
+	end
+
+	--- Set the hex grid radius in meters.
+	-- @tparam number r new hex radius
+	function HOUND.Mist.hex.setRadius(r)
+		hexRadius = r
+	end
+
+
+
+	--- Construct a cube hex from r/q/s coordinates (r+q+s must be 0).
+	-- @tparam number r r coordinate (DCS x axis, north-south)
+	-- @tparam number q q coordinate (diagonal east-west axis)
+	-- @tparam number s s coordinate
+	-- @treturn table cube hex {q, r, s}
+	function HOUND.Mist.hex.to(r, q, s)
+		assert(math.floor (0.5 + q + r + s) == 0, "r + q + s must be 0")
+		return {q = q, r = r, s = s}
+	end
+	local dirInit = { HOUND.Mist.hex.to(0, 1, -1), HOUND.Mist.hex.to(-1, 1, 0), HOUND.Mist.hex.to(-1, 0, 1), HOUND.Mist.hex.to(0, -1, 1), HOUND.Mist.hex.to(1, -1, 0), HOUND.Mist.hex.to(1, 0, -1),  HOUND.Mist.hex.to(0, -1, 1)}
+	HOUND.Mist.hex.directions = HOUND.Mist.utils.deepCopy(dirInit)
+	for i = 6, 1, -1 do
+		--table.insert(HOUND.Mist.hex.directions, dirInit[i])--HOUND.Mist.hex.directions[1-i] = HOUND.Mist.utils.deepCopy(dirInit[i])
+	end
+
+	--- Add two cube hexes.
+	-- @tparam table a first hex
+	-- @tparam table b second hex
+	-- @treturn table sum hex
+	function HOUND.Mist.hex.add (a, b)
+		return HOUND.Mist.hex.to( a.r + b.r, a.q + b.q, a.s + b.s)
+	end
+
+	--- Subtract hex b from hex a.
+	-- @tparam table a first hex
+	-- @tparam table b second hex
+	-- @treturn table difference hex
+	function HOUND.Mist.hex.subtract (a, b)
+		return HOUND.Mist.hex.to(a.r - b.r, a.q - b.q, a.s - b.s)
+	end
+
+	--- Scale a hex by a scalar factor.
+	-- @tparam table a hex
+	-- @tparam number k scale factor
+	-- @treturn table scaled hex
+	function HOUND.Mist.hex.scale (a, k)
+		return HOUND.Mist.hex.to( a.r * k, a.q * k, a.s * k)
+	end
+
+	--- Rotate a hex 60 degrees counter-clockwise.
+	-- @tparam table a hex
+	-- @treturn table rotated hex
+	function HOUND.Mist.hex.rotate_left (a)				-- might need to swap
+		return HOUND.Mist.hex.to(-a.s, -a.q, -a.r)
+	end
+
+	--- Rotate a hex 60 degrees clockwise.
+	-- @tparam table a hex
+	-- @treturn table rotated hex
+	function HOUND.Mist.hex.rotate_right (a)			-- might need to swap
+		return HOUND.Mist.hex.to(-a.r, -a.s, -a.q)
+	end
+
+
+	--- Return the unit hex for a direction index (1-6).
+	-- @tparam number direction direction index
+	-- @treturn table unit hex, or nil when out of range
+	function HOUND.Mist.hex.direction(direction)
+		if HOUND.Mist.hex.directions[direction] then
+			return HOUND.Mist.hex.directions[direction]
+		end
+	end
+
+	--- Return the neighboring hex in a direction (1-6).
+	-- @tparam table hex origin hex
+	-- @tparam number direction direction index
+	-- @treturn table neighbor hex, or nil when out of range
+	function HOUND.Mist.hex.neighbor (hex, direction)
+		local dirHex = HOUND.Mist.hex.direction(direction)
+		if dirHex then
+			return HOUND.Mist.hex.add(hex, dirHex)
+
+		end
+	end
+
+	--- Count neighbors of a hex not present in a visited set.
+	-- @tparam table hex origin hex
+	-- @tparam table visited set of hashes to skip
+	-- @treturn number count of unvisited neighbors
+	function HOUND.Mist.hex.getNeighborCount(hex, visited)
+		local count = 0
+		for i = 1, 6 do
+			local nHex = HOUND.Mist.hex.neighbor(hex, i)
+			if nHex and not visited[HOUND.Mist.hex.hash(nHex)] then
+				count = count + 1
+			end
+		end
+
+		return count
+	end
+
+	--- Unit diagonal offsets (indexed 1-6 via direction+1).
+	-- @field HOUND.Mist.hex.diagonals
+	HOUND.Mist.hex.diagonals = { HOUND.Mist.hex.to(1, -2, 1), HOUND.Mist.hex.to(2, -1, -1), HOUND.Mist.hex.to(1, 1, -2), HOUND.Mist.hex.to(-1, 2, -1), HOUND.Mist.hex.to(-2, 1, 1), HOUND.Mist.hex.to(-1, -1, 2)}
+	--- Return the diagonal neighbor of a hex (direction 0-5, offset by +1).
+	-- @tparam table hex origin hex
+	-- @tparam number direction diagonal index
+	-- @treturn table diagonal neighbor hex
+	function HOUND.Mist.hex.diagonalNeighbor (hex, direction)
+		return HOUND.Mist.hex.add(hex, HOUND.Mist.hex.diagonals[1+direction])
+	end
+
+
+	--- Return the distance of a hex from the origin (cube length).
+	-- @tparam table hex hex
+	-- @treturn number length
+	function HOUND.Mist.hex.length (hex)
+		return math.floor((math.abs(hex.q) + math.abs(hex.r) + math.abs(hex.s)) / 2)
+	end
+
+	--- Return the hex distance between two hexes.
+	-- @tparam table a first hex
+	-- @tparam table b second hex
+	-- @treturn number distance in hex steps
+	function HOUND.Mist.hex.distance (a, b)
+		return HOUND.Mist.hex.length(HOUND.Mist.hex.subtract(a, b))
+	end
+
+	--- Round fractional cube coordinates to the nearest valid hex.
+	-- @tparam table h fractional hex
+	-- @treturn table rounded hex
+	function HOUND.Mist.hex.round (h)
+		local qi = math.floor(math.floor (0.5 + h.q))
+		local ri = math.floor(math.floor (0.5 + h.r))
+		local si = math.floor(math.floor (0.5 + h.s))
+		local q_diff = math.abs(qi - h.q)
+		local r_diff = math.abs(ri - h.r)
+		local s_diff = math.abs(si - h.s)
+		if qi == 0 and ri == 0 and si == 0 then
+			return {r = 0, q = 0, s = 0}
+		elseif q_diff > r_diff and q_diff > s_diff then
+			qi = (ri*-1) - si
+		else
+			if r_diff > s_diff then
+				ri = -qi - si
+			else
+				si = -qi - ri
+			end
+		end
+		return HOUND.Mist.hex.to(ri, qi, si)
+	end
+
+	--- Linearly interpolate between two hexes.
+	-- @tparam table a first hex
+	-- @tparam table b second hex
+	-- @tparam number t blend factor (0-1)
+	-- @treturn table interpolated fractional hex
+	function HOUND.Mist.hex.lerp (a, b, t)
+		return HOUND.Mist.hex.to(a.r * (1.0 - t) + b.r * t, a.q * (1.0 - t) + b.q * t, a.s * (1.0 - t) + b.s * t)
+	end
+
+
+	--- Scale a hex outward from the origin by a factor.
+	-- @tparam table hex hex
+	-- @tparam number factor scale factor
+	-- @treturn table scaled hex
+	function HOUND.Mist.hex.cubeScale(hex, factor)
+		return  HOUND.Mist.hex.axialToCube({q = hex.q * factor, r = hex.r * factor, s = hex.s * factor})
+	end
+	--- Return the ring of hexes at exactly radius steps from center.
+	-- Note: returns a {[hash]=hex} map, not an array.
+	-- @tparam table center center hex
+	-- @tparam number radius ring radius
+	-- @treturn table ring hexes keyed by hash
+	function HOUND.Mist.hex.cubeRing(center, radius)			-- TODO breakout on match
+		local results = {}
+		local curHex = HOUND.Mist.hex.add(center, HOUND.Mist.hex.cubeScale(HOUND.Mist.hex.direction(5), radius))	--- note dont change 5. This apparently is the axis the coord system uses.
+		--log:warn(curHex)
+		--drawHex(HOUND.Mist.hex.makeVec3(curHex), {0, 0, 1, 0.5})
+		results[HOUND.Mist.hex.hash(curHex)] = curHex
+		for i = 1, 6 do
+
+			for j = 1, radius do
+				curHex = HOUND.Mist.hex.neighbor(curHex, i)
+				--HOUND.Mist.marker.add({mType = "text", point = HOUND.Mist.hex.makeVec3(curHex), text = HOUND.Mist.hex.hash(curHex)})
+				--log:warn(curHex)
+				if HOUND.Mist.hex.distance(center, curHex) <= radius  then
+					--drawHex(HOUND.Mist.hex.makeVec3(curHex), {0, 1/j, 0, 0.5})
+					results[HOUND.Mist.hex.hash(curHex)] = curHex
+				end
+
+
+
+			end
+
+		end
+		return results
+	end
+
+	--- Return all hexes within radius steps of center (center + rings).
+	-- @tparam table center center hex
+	-- @tparam number radius spiral radius
+	-- @treturn table filled hexes keyed by hash
+	function HOUND.Mist.hex.cubeSpiral(center, radius)		-- TODO breakout on match
+		local results = {[HOUND.Mist.hex.hash(center)] = center}
+		for i = 1, radius do
+			local ring = HOUND.Mist.hex.cubeRing(center, i)
+
+			for hexName, hexval in pairs(ring) do
+				results[hexName] = hexval
+			end
+
+		end
+		return results
+
+	end
+
+	--- Return the hexes on the line between two hexes (inclusive).
+	-- @tparam table a first hex
+	-- @tparam table b second hex
+	-- @treturn table array of hexes from a to b
+	function HOUND.Mist.hex.lineDraw (a, b)
+		local N = HOUND.Mist.hex.distance(a, b)
+		local a_nudge = HOUND.Mist.hex.to( a.r + 1e-06, a.q + 1e-06, a.s - 2e-06)
+		local b_nudge = HOUND.Mist.hex.to(b.r + 1e-06, b.q + 1e-06,  b.s - 2e-06)
+		local results = {}
+		local step = 1.0 / math.max(N, 1)
+		for i = 0, N do
+			table.insert(results, HOUND.Mist.hex.round(HOUND.Mist.hex.lerp(a_nudge, b_nudge, step * i)))
+		end
+		return results
+	end
+
+
+	--- Convert a cube hex to axial coordinates.
+	-- @tparam table cube cube hex
+	-- @treturn table axial hex {q, r}
+	function HOUND.Mist.hex.cubeToAxial(cube)
+		local q = cube.q
+		local r = cube.r
+		return {q = q, r = r}
+	end
+
+	--- Convert an axial hex to cube coordinates.
+	-- @tparam table hex axial hex
+	-- @treturn table cube hex
+	function HOUND.Mist.hex.axialToCube(hex)
+		local q = hex.q
+		local r = hex.r
+		local s = -q-r
+		return {q = q, r = r, s = s}
+	end
+
+	--- Convert a DCS point to the containing hex.
+	-- Reads point.z or point.y as the second axis; point.x maps to r.
+	-- @tparam table point DCS point (Vec2/Vec3)
+	-- @tparam number radius optional hex radius override
+	-- @treturn table hex containing the point
+	function HOUND.Mist.hex.pointToHex(point, radius)
+		local radiusUse = radius or hexRadius
+		local x = point.z or point.y
+		local y = point.x
+		local q = (math.sqrt(3)/3 * x  -  1/3 * y) / radiusUse
+		local r = (2/3 * y) / radiusUse
+
+		return HOUND.Mist.hex.round({q = q, r = r, s = -q-r})
+
+	end
+
+
+
+
+	--- Return the Vec2 center of a hex.
+	-- @tparam table hex hex
+	-- @tparam number radius optional hex radius override
+	-- @treturn table Vec2 {x, y}
+	function HOUND.Mist.hex.makeVec2(hex, radius)
+		local radiusUse = radius or hexRadius
+		hex =  HOUND.Mist.hex.round(hex)
+		local y = radiusUse * ((math.sqrt(3) * hex.q)  +  (math.sqrt(3)/2 * hex.r))
+		local x = radiusUse * (3/2 * hex.r)
+		return HOUND.Mist.utils.deepCopy({x = x, y = y})
+	end
+	--- Return the Vec3 center of a hex (ground level, y=0).
+	-- @tparam table hex hex
+	-- @tparam number radius optional hex radius override
+	-- @treturn table Vec3 {x, y=0, z}
+	function HOUND.Mist.hex.makeVec3(hex, radius)
+		local radiusUse = radius or hexRadius
+		local y = radiusUse * ((math.sqrt(3) * hex.q)  +  (math.sqrt(3)/2 * hex.r))
+		local x = radiusUse * (3/2 * hex.r)
+		return HOUND.Mist.utils.deepCopy({x = x, z = y, y = 0})
+	end
+	--- Return the Vec3 center of a hex draped on terrain height.
+	-- DCS-only: requires land.getHeight.
+	-- @tparam table hex hex
+	-- @tparam number o optional altitude offset
+	-- @tparam number radius optional hex radius override
+	-- @treturn table Vec3 {x, y, z}
+	function HOUND.Mist.hex.makeVec3GL(hex, o, radius )
+		local radiusUse = radius or hexRadius
+		local offset = o or 0
+		local z = radiusUse * ((math.sqrt(3) * hex.q)  +  (math.sqrt(3)/2 * hex.r))
+		local x = radiusUse * (3/2 * hex.r)
+		local y = land.getHeight({x = x, y = z}) + offset
+		return {x = x, y = y, z = z}
+	end
+
+	--- Hash a hex to a "r q s" string key (s omitted when nil).
+	-- @tparam table tbl hex
+	-- @treturn string hash key
+	function HOUND.Mist.hex.hash(tbl)
+		local s = tostring(tbl.r) .. " " .. tostring(tbl.q)
+		if tbl.s then
+			s = s .. " " .. tostring(tbl.s)
+		end
+		return s
+	end
+
+	--- Parse a hash string back into a hex.
+	-- @tparam string s hash string
+	-- @treturn table hex {r, q, s}
+	function HOUND.Mist.hex.hashToHex(s)	-- convrt hash string to a hex.
+
+		local commands = {}
+		for w in string.gmatch(s, "%-?%d+") do
+			table.insert(commands, tonumber(w))
+		end
+
+		local hexVal = {}
+		hexVal.r = commands[1]
+		hexVal.q = commands[2]
+		hexVal.s = commands[3]
+
+		return hexVal
+	end
+
+	--- Draw a hex polygon via MIST markers (debug-only, inert without MIST).
+	-- @tparam table|string p hex, DCS point, or hash string
+	-- @tparam table v optional marker overrides (radius supported)
+	-- @treturn table MIST marker id, or nil when MIST is absent
+	function HOUND.Mist.hex.draw(p, v)
+		if type(mist) ~= "table" or type(mist.marker) ~= "table" then return end
+		--log:echo(p)
+		--HOUND.Mist.debug.mark("hex", p)
+		local vars = v or {}
+		local point
+		if type(p) == "string" then
+			point = HOUND.Mist.hex.makeVec2(HOUND.Mist.hex.hashToHex(p))
+		elseif type(p) == "table" then
+			if p.x then
+				point = HOUND.Mist.utils.makeVec2(p)
+			elseif p.q then
+				point = HOUND.Mist.hex.makeVec2(p)
+			end
+		end
+		local radiusUse = vars.radius or hexRadius
+		local coords = {}
+		for j = 1, 6 do
+			local theta = hexIter*j
+			--log:info(theta)
+
+			local corner = HOUND.Mist.projectPoint(point, radiusUse, theta)
+			table.insert(coords, corner)
+			--HOUND.Mist.marker.add({mType = "text", text = j, point = corner})
+		end
+
+		local hexDraw = {mType = 7, points = coords}
+		for key, val in pairs(vars) do
+			hexDraw[key] = val
+		end
+
+		return mist.marker.add(hexDraw)
+	end
+
+	--- Return the hexes covered by a route polygon (edge, or filled when fill=true).
+	-- @tparam table p array of DCS points forming the polygon
+	-- @tparam boolean fill when true, fill interior hexes via point-in-polygon
+	-- @treturn table covered hexes keyed by hash
+	function HOUND.Mist.hex.getFromRoute(p, fill)
+		local points = HOUND.Mist.utils.deepCopy(p)
+		local avg = HOUND.Mist.getAvgPoint(points)
+		table.insert(points, points[1])
+		local drawn = {}
+		local indexed = {}
+		local meta = {count = 0, maxR = 0, minR = 100000000}
+
+		--drawHex(HOUND.Mist.hex.makeVec2(HOUND.Mist.hex.pointToHex(avg)), {1, 1, 1, 0.3})
+
+		for i = 1, #points-1 do
+			--HOUND.Mist.marker.add({mType = "line", points = {points[i], points[i+1]}})
+			local res = HOUND.Mist.hex.lineDraw(HOUND.Mist.hex.pointToHex(points[i]), HOUND.Mist.hex.pointToHex(points[i+1]))
+			for j = 1, #res do
+				local hash = HOUND.Mist.hex.hash(res[j])
+
+				if not drawn[hash] then
+					drawn[hash] = res[j]
+					table.insert(indexed, res[j])
+					local point = HOUND.Mist.hex.makeVec2(res[j])
+					--drawHex(point)
+					--HOUND.Mist.marker.add({mType = "text", text = hash, point = point })
+					meta.count = meta.count + 1
+				end
+
+
+			end
+
+			--log:echo(res)
+		end
+		local row = {}
+		if fill then
+			local poly = HOUND.Mist.utils.deepCopy(drawn)
+
+			for hexName, hex in pairs(poly) do
+				if not row[hex.r] then
+					row[hex.r] = {maxQ = 0, minQ = math.huge}
+				end
+				if hex.q > row[hex.r].maxQ then
+					row[hex.r].maxQ = HOUND.Mist.utils.deepCopy(hex.q)
+				end
+				if hex.q < row[hex.r].minQ then
+					row[hex.r].minQ = HOUND.Mist.utils.deepCopy(hex.q)
+				end
+				row[hex.r][hex.q] = hex
+
+				if hex.r > meta.maxR then
+					meta.maxR = HOUND.Mist.utils.deepCopy(hex.r)
+				end
+				if  hex.r < meta.minR then
+					meta.minR = HOUND.Mist.utils.deepCopy(hex.r)
+				end
+
+			end
+
+			for rIndex, rData in pairs(row) do
+				local skip = {}
+				local draws = {}
+				local crosses = 0
+				local lastClear
+				for i = rData.minQ+1, rData.maxQ-1 do
+					local newHex = {q = i, r = rIndex, s = -rIndex-i}
+					local hash = HOUND.Mist.hex.hash(newHex)
+					local hexPoint = HOUND.Mist.hex.makeVec2(newHex)
+					if (not drawn[hash]) and HOUND.Mist.pointInPolygon(hexPoint, p) then			--- still think there is a faster way than checking old point in polygon, but whatever.
+						row[rIndex][newHex.q] = newHex
+						drawn[hash] = newHex
+						--drawHex(hexPoint, {0, 1, 0, 0.5})
+						--HOUND.Mist.marker.add({mType = "text", text = hash, point = hexPoint })
+						meta.count = meta.count + 1
+					end
+				end
+
+			end
+			meta.row = row
+			--return {hexes = drawn, meta = meta}
+		end
+		if drawn["0 0 -0"] then
+			drawn["0 0 0"] = {r = 0, q = 0, s = 0}
+			drawn["0 0 -0"] = nil
+		end
+
+		return drawn
+
+	end
+
+end
+
 end

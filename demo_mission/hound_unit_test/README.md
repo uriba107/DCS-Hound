@@ -12,7 +12,7 @@ Batches run in order; each sets a `next_test_delay` before the next fires.
 
 | # | Batch | Pattern | Test File(s) | Delay to Next |
 |---|-------|---------|-------------|---------------|
-| 1 | **Modules** | (all) | `test-houndUtils.lua`, `test-HoundContactEmitter.lua`, `test-HoundContactSite.lua`, `test-HoundSector.lua`, `test-hound-worker.lua`, `test-HoundCommsManager.lua`, `test-HoundCoroutine.lua` | 10s |
+| 1 | **Modules** | (all) | `test-houndUtils.lua`, `test-HoundContactEmitter.lua`, `test-HoundContactSite.lua`, `test-HoundSector.lua`, `test-hound-worker.lua`, `test-HoundCommsManager.lua`, `test-HoundCoroutine.lua`, `test-hex.lua` | 10s |
 | 2 | **Init** | `01_init` | `test-hound-init.lua` | 15s |
 | 3 | **Base** | `02_base` | `test-hound-base.lua` | 2 min |
 | 4 | **2m Delay** | `2mDelay` | `test-hound-delayed.lua` | 2 min |
@@ -826,6 +826,25 @@ Coroutine scheduler unit tests for `HOUND.Coroutine` (011). Runs in batch 1.
 | `TestHasWorkFalse` | Empty → false |
 | `TestHasWorkTrue` | Has entries → true |
 | `TestShutdown` | Clear all state |
+
+### `test-hex.lua` — TestHoundHex
+
+Hex grid unit tests for `HOUND.Mist.hex` (`src/020 - HoundMist.lua`). No DCS runtime needed except `TestMakeVec3GL` (skipped when `land` is nil). Runs in batch 1.
+
+| Method | What It Tests |
+|--------|--------------|
+| `TestHashRoundtrip` | `hash`/`hashToHex` roundtrip; `s` omitted when nil; `"0 0 -0"` parses to zero |
+| `TestPointVecRoundtrip` | `pointToHex`/`makeVec3` inverse; `makeVec3` shape `{x, z, y=0}`; `z or y` read |
+| `TestNeighbor` | 6 dirs at distance 1, distinct; `direction(0)`/`neighbor(c, 0)` → nil |
+| `TestDistance` | Known pairs: 0, 1, 2, 6 |
+| `TestCubeRing` | `cubeRing(center, 2)` count = 12, all at distance 2, keys match `hash` |
+| `TestCubeSpiral` | `cubeSpiral(center, 2)` count = 19, all within distance 2, contains center |
+| `TestLineDraw` | Length = distance + 1, endpoints present |
+| `TestGetFromRouteFill` | Fill count > edge-only count; edge hashes subset of fill; no `"0 0 -0"` key |
+| `TestRingWalkProperty` | First-hit ring k == brute-force min distance over `getFromRoute` set |
+| `TestDrawNoMist` | `draw` with `mist` nil/bare table → nil, no error (`_G.mist` restored) |
+| `TestRadius` | Default 10000; `setRadius`/`getRadius` roundtrip with restore |
+| `TestMakeVec3GL` | x/z match `makeVec3`, y = `land.getHeight` + offset; skipped when `land` is nil |
 
 ## Mission Layout
 

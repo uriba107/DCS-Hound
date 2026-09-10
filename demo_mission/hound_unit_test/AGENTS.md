@@ -36,6 +36,7 @@ Validate Hound ELINT runtime behavior inside DCS World. Tests exercise Lua sourc
 - **Flaky assertions** prefer **polling**: schedule a closure every 5s for 6 attempts (~30s window). On timeout, call `lu.assertStrContains(debugStr, expected)` with the current state to get a useful failure message.
 - **Contact timing**: `CONTACT_TIMEOUT` = 900s; contact processing cycle runs every 30s.
 - **Contact mocks**: `Base:hasPosData()` runs `ensurePosData()`, which calls `coalition.getMainRefPoint(self._platformCoalition)` and touches `pos.grid`/`pos.be`. Mock contacts that only stub `pos`/`hasPos` must also override `hasPosData` (e.g. `return self:hasPos()`), or set `_platformCoalition` plus `pos.grid`/`pos.be` — otherwise comms functions error with `Parameter #1 (coalition id) missed` or `attempt to index field 'pos' (a nil value)`.
+- **`HoundUtils` is not a global**: src files alias it file-locally (`local HoundUtils = HOUND.Utils`). Tests must call `HOUND.Utils.*` (e.g. `HOUND.Utils.Dcs.copyPoint`) — bare `HoundUtils` is nil in the test state.
 - **BDA/destroyObject**: Repeated explosions with `pwr = life0 * 2` until `life <= 1`. Track radar (unit 2) is destroyed first because unit 1 is the search radar.
 - **`printDebugging()` format**: `| Sites: %d | Contacts: %d (A:%d ,PB:%d)` — the `-1` adjustments track site removal, contact timeout, active loss, and pre-briefed count changes.
 

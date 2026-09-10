@@ -1050,7 +1050,15 @@ do
 
     function TestHoundUtils:TestHoundSetMgrsPresicion()
         HOUND.setMgrsPresicion(3)
+        lu.assertEquals(HOUND.MGRS_PRECISION,3)
+        HOUND.setMgrsPresicion(0)
         lu.assertEquals(HOUND.MGRS_PRECISION,1)
+        HOUND.setMgrsPresicion(6)
+        lu.assertEquals(HOUND.MGRS_PRECISION,5)
+        HOUND.setMgrsPresicion("string")
+        lu.assertEquals(HOUND.MGRS_PRECISION,5)
+        HOUND.setMgrsPresicion(5)
+        lu.assertEquals(HOUND.MGRS_PRECISION,5)
     end
 
     function TestHoundUtils:TestHoundShowExtendedInfo()

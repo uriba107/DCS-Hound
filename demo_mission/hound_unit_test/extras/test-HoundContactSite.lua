@@ -35,7 +35,7 @@ do
 
     function TestHoundContactSite:TestGenerateLaunchAlertWithoutGrid()
         self.site = HOUND.Contact.Site:New(self.torContact,coalition.side.BLUE)
-        self.site.pos.p = HoundUtils.Dcs.copyPoint(self.torUnit:getPoint())
+        self.site.pos.p = HOUND.Utils.Dcs.copyPoint(self.torUnit:getPoint())
         self.site.pos.grid = nil
         lu.assertIsNil(self.site.pos.grid)
         lu.assertIsNil(self.site.pos.be.brStr)
@@ -49,7 +49,7 @@ do
 
     function TestHoundContactSite:TestGenerateLaunchAlertTTSWithoutGrid()
         self.site = HOUND.Contact.Site:New(self.torContact,coalition.side.BLUE)
-        self.site.pos.p = HoundUtils.Dcs.copyPoint(self.torUnit:getPoint())
+        self.site.pos.p = HOUND.Utils.Dcs.copyPoint(self.torUnit:getPoint())
         self.site.pos.grid = nil
         local msg = self.site:generateLaunchAlert(true,nil)
         lu.assertIsString(msg)
