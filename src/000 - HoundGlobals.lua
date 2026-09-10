@@ -169,7 +169,7 @@ do
     -- @param value (Int) Requested value. allowed values 1-5, default is 3
     function HOUND.setMgrsPresicion(value)
         if type(value) == "number" then
-            HOUND.MGRS_PRECISION = math.min(1,math.max(5,math.floor(value)))
+            HOUND.MGRS_PRECISION = math.max(1,math.min(5,math.floor(value)))
         end
     end
 

@@ -48,6 +48,7 @@ do
         assert(loadfile(HoundWorkDir..'demo_mission\\hound_unit_test\\extras\\test-hound-worker.lua'))()
         assert(loadfile(HoundWorkDir..'demo_mission\\hound_unit_test\\extras\\test-HoundCommsManager.lua'))()
         assert(loadfile(HoundWorkDir..'demo_mission\\hound_unit_test\\extras\\test-HoundCoroutine.lua'))()
+        assert(loadfile(HoundWorkDir..'demo_mission\\hound_unit_test\\extras\\test-hex.lua'))()
         lu.LuaUnit.run()
         -- clean up config/contact state so subsequent batches start fresh
         HOUND.Config.configMaps = {}
