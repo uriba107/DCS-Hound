@@ -87,9 +87,9 @@ do
             HOUND.Logger.info("Cannot pre-brief " .. DCS_Object_Name .. ": object does not exist.")
             return
         end
-        if HoundUtils.Dcs.isGroup(obj) then
-            units = obj:getUnits()
-        elseif HoundUtils.Dcs.isUnit(obj) then
+        if HoundUtils.Dcs.isGroupAlive(obj) then
+            units = HoundUtils.Dcs.getGroupUnits(obj)
+        elseif HoundUtils.Dcs.isUnitAlive(obj) then
             table.insert(units,obj)
             grpName = obj:getGroup():getName()
         end
@@ -115,12 +115,12 @@ do
         if type(radarUnit) == "string" then
             obj = Group.getByName(radarUnit) or Unit.getByName(radarUnit)
         end
-        if HoundUtils.Dcs.isGroup(obj) then
-            units = obj:getUnits()
+        if HoundUtils.Dcs.isGroupAlive(obj) then
+            units = HoundUtils.Dcs.getGroupUnits(obj)
             for i, unit in ipairs(units) do
                 units[i] = unit:getName()
             end
-        elseif HoundUtils.Dcs.isUnit(obj) then
+        elseif HoundUtils.Dcs.isUnitAlive(obj) then
             table.insert(units,obj:getName())
         end
         if not obj then
@@ -142,7 +142,7 @@ do
     --- Issue a Launch Alert
     -- @param[type=string|tab] fireUnit DCS Unit, DCS Group or Unit/Group name currently Launching
     function HoundElint:AlertOnLaunch(fireUnit)
-        if not self:getAlertOnLaunch() or (not HoundUtils.Dcs.isGroup(fireUnit) and not HoundUtils.Dcs.isUnit(fireUnit)) then return end
+        if not self:getAlertOnLaunch() or (not HoundUtils.Dcs.isGroupAlive(fireUnit) and not HoundUtils.Dcs.isUnitAlive(fireUnit)) then return end
         HOUND.Logger.debug("Launch Alert called for " .. fireUnit:getName())
         self.contacts:AlertOnLaunch(fireUnit)
     end

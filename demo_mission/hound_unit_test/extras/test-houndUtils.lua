@@ -876,6 +876,139 @@ do
         lu.assertItemsEquals(notFound,{})
     end
 
+    --- handle that reports itself as gone, like a destroyed object still returned by
+    --- coalition.getGroups / getStaticObjects. Every method raises, so reaching one of
+    --- them through a guard that should have rejected the handle fails the test loudly.
+    local function deadHandle(DcsClass,methods)
+        lu.assertEquals(type(DcsClass),"table",DcsClass .. " must be a table to mock a handle")
+        local mock = {isExist = function() return false end}
+        for _,name in pairs(methods) do
+            mock[name] = function() error("dead handle method called: " .. name) end
+        end
+        return setmetatable(mock, DcsClass)
+    end
+
+    function TestHoundUtils:TestDcsAliveGuards()
+        local liveGrp = Group.getByName("TOR_SAIPAN")
+        local liveUnit = Unit.getByName("TOR_SAIPAN-1")
+        lu.assertIsNotNil(liveGrp)
+        lu.assertIsNotNil(liveUnit)
+        lu.assertIsTrue(HOUND.Utils.Dcs.isGroupAlive(liveGrp))
+        lu.assertIsFalse(HOUND.Utils.Dcs.isGroupAlive("TOR_SAIPAN"))
+        lu.assertIsFalse(HOUND.Utils.Dcs.isGroupAlive(deadHandle(Group,{"getName","getID","getUnits"})))
+        lu.assertIsFalse(HOUND.Utils.Dcs.isGroupAlive(liveUnit))
+        lu.assertIsNil(HOUND.Utils.Dcs.getGroupUnits(deadHandle(Group,{"getUnits"})))
+        lu.assertIsNil(HOUND.Utils.Dcs.getGroupUnits("TOR_SAIPAN"))
+
+        lu.assertIsTrue(HOUND.Utils.Dcs.isUnitAlive(liveUnit))
+        lu.assertIsFalse(HOUND.Utils.Dcs.isUnitAlive("TOR_SAIPAN-1"))
+        lu.assertIsFalse(HOUND.Utils.Dcs.isUnitAlive(deadHandle(Unit,{"getName","getID"})))
+        lu.assertIsFalse(HOUND.Utils.Dcs.isStaticObjectAlive(Unit.getByName("TOR_SAIPAN-1")))
+        lu.assertIsFalse(HOUND.Utils.Dcs.isStaticObjectAlive(deadHandle(StaticObject,{"getName"})))
+
+        local units = HOUND.Utils.Dcs.getGroupUnits(liveGrp)
+        lu.assertIsTable(units)
+        lu.assertIsTrue(#units > 0)
+    end
+
+    --- run a mocked coalition enumeration with the given dead group mixed in
+    --- @param body function receiving the live group and a dead group handle
+    function TestHoundUtils:withMockedGroups(body)
+        local origGetGroups = coalition.getGroups
+        local liveGrp = Group.getByName("TOR_SAIPAN")
+        lu.assertIsNotNil(liveGrp)
+        local deadGrp = deadHandle(Group,{"getName","getID","getUnits"})
+        coalition.getGroups = function() return {liveGrp,deadGrp} end
+        local ok, err = pcall(body,liveGrp,deadGrp)
+        coalition.getGroups = origGetGroups
+        lu.assertIsTrue(ok,tostring(err))
+    end
+
+    --- number of transmitting radars in the mocked live group, using the same
+    --- predicate as HOUND.Utils.Elint.getActiveRadars
+    local function liveRadarCount(liveGrp)
+        local count = 0
+        for _,unit in pairs(HOUND.Utils.Dcs.getGroupUnits(liveGrp)) do
+            if unit:isExist() and unit:isActive() and unit:getRadar() then
+                count = count + 1
+            end
+        end
+        return count
+    end
+
+    function TestHoundUtils:TestDcsQueriesSkipDeadGroups()
+        self:withMockedGroups(function(liveGrp)
+            local groups = HOUND.Utils.Dcs.getGroupNames()
+            lu.assertIsNotNil(groups["TOR_SAIPAN"])
+            lu.assertEquals(HOUND.Length(groups),1)
+
+            local units = HOUND.Utils.Dcs.getUnitNames("TOR_SAIPAN")
+            lu.assertIsNotNil(units["TOR_SAIPAN-1"])
+
+            lu.assertEquals(HOUND.Length(HOUND.Utils.Filter.groupsByPrefix("TOR_SAIPAN")),1)
+            lu.assertEquals(HOUND.Length(HOUND.Utils.Filter.unitsByPrefix("TOR_SAIPAN")),
+                HOUND.Length(HOUND.Utils.Dcs.getGroupUnits(liveGrp)))
+
+            -- getActiveRadars walks 2 enemy coalitions x 2 categories over the same
+            -- mocked group list, so the live group is counted once per pass
+            local expected = liveRadarCount(liveGrp) * 4
+            lu.assertEquals(#HOUND.Utils.Elint.getActiveRadars(coalition.side.BLUE),expected)
+        end)
+    end
+
+    function TestHoundUtils:TestGetActiveRadarsYieldingSkipsDeadGroups()
+        self:withMockedGroups(function(liveGrp)
+            local co = coroutine.create(function()
+                return HOUND.Utils.Elint.getActiveRadarsYielding(coalition.side.BLUE)
+            end)
+            local yields, result, resumes = 0, nil, 0
+            while coroutine.status(co) ~= "dead" do
+                resumes = resumes + 1
+                lu.assertIsTrue(resumes < 1000,"yielding radar discovery did not terminate")
+                local success, first, second = coroutine.resume(co)
+                if not success then error(first) end
+                if coroutine.status(co) == "dead" then
+                    result = first
+                else
+                    yields = yields + 1
+                    if first ~= nil then lu.assertIsTable(second) end
+                end
+            end
+            lu.assertIsTrue(yields > 0,"expected at least one yield")
+            lu.assertIsTable(result)
+            lu.assertEquals(#result,liveRadarCount(liveGrp) * 4)
+        end)
+    end
+
+    function TestHoundUtils:TestStaticObjectQueriesSkipDeadObjects()
+        local origGetStaticObjects = coalition.getStaticObjects
+        local liveObj = StaticObject.getByName("StaticTower")
+        lu.assertIsNotNil(liveObj)
+        local deadObj = deadHandle(StaticObject,{"getName"})
+        coalition.getStaticObjects = function() return {liveObj,deadObj} end
+        local ok, err = pcall(function()
+            local objs = HOUND.Utils.Dcs.getStaticObjectNames()
+            lu.assertIsNotNil(objs["StaticTower"])
+            lu.assertEquals(HOUND.Length(objs),1)
+            lu.assertEquals(HOUND.Length(HOUND.Utils.Filter.staticObjectsByPrefix("StaticTower")),1)
+        end)
+        coalition.getStaticObjects = origGetStaticObjects
+        lu.assertIsTrue(ok,tostring(err))
+    end
+
+    function TestHoundUtils:TestGetActiveRadarsInGroupDeadHandle()
+        local origGetByName = Group.getByName
+        Group.getByName = function(name)
+            if name == "DEAD_GROUP" then return deadHandle(Group,{"getUnits"}) end
+            return origGetByName(name)
+        end
+        local ok, err = pcall(function()
+            lu.assertItemsEquals(HOUND.Utils.Elint.getActiveRadarsInGroup("DEAD_GROUP"),{})
+        end)
+        Group.getByName = origGetByName
+        lu.assertIsTrue(ok,tostring(err))
+    end
+
     function TestHoundUtils:TestDcsGetGroupNamesNoPrefix()
         local groups = HOUND.Utils.Dcs.getGroupNames()
         lu.assertIsTable(groups)

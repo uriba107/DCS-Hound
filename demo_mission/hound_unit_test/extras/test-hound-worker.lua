@@ -378,4 +378,36 @@ do
         lu.assertTrue(#result >= 2)
     end
 
+    -- addContact / addSite must survive a constructor that bails out and returns nil
+    function TestHoundWorker:TestAddContactWithNilConstructor()
+        local tor = Unit.getByName("TOR_SAIPAN-1")
+        lu.assertIsNotNil(tor)
+        local origNew = HOUND.Contact.Emitter.New
+        HOUND.Contact.Emitter.New = function() return nil end
+        local ok, err = pcall(function() self.worker:addContact(tor) end)
+        HOUND.Contact.Emitter.New = origNew
+        lu.assertIsTrue(ok, tostring(err))
+        lu.assertEquals(HOUND.Length(self.worker.contacts), 0)
+    end
+
+    function TestHoundWorker:TestAddSiteWithNilConstructor()
+        local contact = HOUND.Contact.Emitter:New(Unit.getByName("TOR_SAIPAN-1"), coalition.side.BLUE, 1)
+        lu.assertIsNotNil(contact)
+        local origNew = HOUND.Contact.Site.New
+        HOUND.Contact.Site.New = function() return nil end
+        local ok, err = pcall(function() self.worker:addSite(contact) end)
+        HOUND.Contact.Site.New = origNew
+        lu.assertIsTrue(ok, tostring(err))
+        lu.assertEquals(HOUND.Length(self.worker.sites), 0)
+    end
+
+    function TestHoundWorker:TestAddSiteWithoutGroupName()
+        local contact = HOUND.Contact.Emitter:New(Unit.getByName("TOR_SAIPAN-1"), coalition.side.BLUE, 1)
+        lu.assertIsNotNil(contact)
+        contact.DcsGroupName = nil
+        local ok, err = pcall(function() self.worker:addSite(contact) end)
+        lu.assertIsTrue(ok, tostring(err))
+        lu.assertEquals(HOUND.Length(self.worker.sites), 0)
+    end
+
 end

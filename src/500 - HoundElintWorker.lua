@@ -62,7 +62,7 @@ do
             candidate = platformName
         end
 
-        if not (HOUND.Utils.Dcs.isUnit(candidate) or HOUND.Utils.Dcs.isStaticObject(candidate)) then
+        if not (HOUND.Utils.Dcs.isUnitAlive(candidate) or HOUND.Utils.Dcs.isStaticObjectAlive(candidate)) then
             HOUND.Logger.warn("Failed to add platform "..platformName..". Could not find the Object.")
             return false
         end
@@ -187,14 +187,19 @@ do
         if emitter == nil or emitter.getName == nil then return end
         local emitterName = emitter:getName()
         if self.contacts[emitterName] ~= nil then return emitterName end
-        self.contacts[emitterName] = HOUND.Contact.Emitter:New(emitter, self:getCoalition(), self:getNewTrackId())
-        local site = self:getSite(self.contacts[emitterName])
+        local contact = HOUND.Contact.Emitter:New(emitter, self:getCoalition(), self:getNewTrackId())
+        if contact == nil then
+            HOUND.Logger.warn("failed to create contact for " .. tostring(emitterName))
+            return
+        end
+        self.contacts[emitterName] = contact
+        local site = self:getSite(contact)
         if site then
-            site:addEmitter(self.contacts[emitterName])
+            site:addEmitter(contact)
         else
             HOUND.Logger.debug("failed to create site")
         end
-        self.contacts[emitterName]:queueEvent(HOUND.EVENTS.RADAR_NEW)
+        contact:queueEvent(HOUND.EVENTS.RADAR_NEW)
         return emitterName
     end
 
@@ -208,7 +213,7 @@ do
         if type(emitter) == "string" then
             emitterName = emitter
         end
-        if HoundUtils.Dcs.isUnit(emitter) then
+        if HoundUtils.Dcs.isUnitAlive(emitter) then
             emitterName = emitter:getName()
         end
         if getmetatable(emitter) == HOUND.Contact.Emitter then
@@ -288,7 +293,7 @@ do
     function HOUND.ElintWorker:AlertOnLaunch(fireUnit)
         if not self.settings:getAlertOnLaunch() then return end
 
-        if HoundUtils.Dcs.isUnit(fireUnit) then
+        if HoundUtils.Dcs.isUnitAlive(fireUnit) then
             local unitName = fireUnit:getName()
             if self.contacts[unitName] then
                 local event = self.contacts[unitName]:LaunchDetected()
@@ -304,7 +309,7 @@ do
         local grpName = nil
         if type(fireUnit) == "string" then
             grpName = fireUnit
-        elseif HoundUtils.Dcs.isGroup(fireUnit) then
+        elseif HoundUtils.Dcs.isGroupAlive(fireUnit) then
             grpName = fireUnit:getName()
         end
         if not grpName then return end
@@ -342,7 +347,7 @@ do
         if type(site) == "string" then
             groupName = site
         end
-        if HOUND.Utils.Dcs.isGroup(site) then
+        if HOUND.Utils.Dcs.isGroupAlive(site) then
             groupName = site:getName()
         end
         return HOUND.setContains(self.sites,groupName)
@@ -355,9 +360,18 @@ do
     function HOUND.ElintWorker:addSite(emitter)
         if emitter == nil or emitter.getName == nil then return end
         local groupName = emitter:getDcsGroupName()
+        if groupName == nil then
+            HOUND.Logger.warn("failed to add site, emitter has no resolvable group")
+            return
+        end
         if self.sites[groupName] ~= nil then return groupName end
-        self.sites[groupName] = HOUND.Contact.Site:New(emitter, self:getCoalition(), self:getNewTrackId())
-        self.sites[groupName]:queueEvent(HOUND.EVENTS.SITE_NEW)
+        local site = HOUND.Contact.Site:New(emitter, self:getCoalition(), self:getNewTrackId())
+        if site == nil then
+            HOUND.Logger.warn("failed to create site for " .. groupName)
+            return
+        end
+        self.sites[groupName] = site
+        site:queueEvent(HOUND.EVENTS.SITE_NEW)
         return groupName
     end
 
@@ -371,10 +385,13 @@ do
         if type(emitter) == "string" then
             groupName = emitter
         end
-        if HOUND.Utils.Dcs.isGroup(emitter) then
+        if HOUND.Utils.Dcs.isGroupAlive(emitter) then
             groupName = emitter:getName()
-        elseif HOUND.Utils.Dcs.isUnit(emitter) then
-            groupName = Group.getName(emitter:getGroup())
+        elseif HOUND.Utils.Dcs.isUnitAlive(emitter) then
+            local emitterGroup = emitter:getGroup()
+            if HOUND.Utils.Dcs.isGroupAlive(emitterGroup) then
+                groupName = Group.getName(emitterGroup)
+            end
         end
         if getmetatable(emitter) == HOUND.Contact.Emitter then
             groupName = emitter:getDcsGroupName()

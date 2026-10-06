@@ -142,12 +142,12 @@ do
             if not HOUND.setContainsValue({Unit.Category.GROUND_UNIT,Unit.Category.SHIP},catEx) then return end
             local unit = DcsEvent.initiator
             local grp = unit:getGroup()
-            if HoundUtils.Dcs.isGroup(grp) then
+            if HoundUtils.Dcs.isGroupAlive(grp) then
                 self.contacts:Sniff(grp:getName())
                 if DcsEvent.weapon:getDesc().category ~= Weapon.Category.MISSILE then return end
                 local tgtPos = nil
                 local wpnTgt = DcsEvent.weapon:getTarget()
-                if HoundUtils.Dcs.isUnit(wpnTgt) then
+                if HoundUtils.Dcs.isUnitAlive(wpnTgt) then
                   tgtPos = wpnTgt:getPoint()
                 end
                 if HoundUtils.Dcs.isPoint(tgtPos) then
@@ -164,7 +164,7 @@ do
 
         if DcsEvent.id == world.event.S_EVENT_WEAPON_ADD
             and HOUND.AUTO_ADD_PLATFORM_BY_PAYLOAD
-            and HoundUtils.Dcs.isUnit(DcsEvent.initiator)
+            and HoundUtils.Dcs.isUnitAlive(DcsEvent.initiator)
             and DcsEvent.initiator:getCoalition() == self.settings:getCoalition()
         then
             local unit = DcsEvent.initiator

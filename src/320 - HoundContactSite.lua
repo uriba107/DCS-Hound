@@ -26,7 +26,12 @@ do
         local instance = self:superClass():New(HoundContact:getDcsObject(),HoundCoalition)
         setmetatable(instance, HOUND.Contact.Site)
         self.__index = self
-        instance.DcsObject = HoundContact:getDcsObject():getGroup()
+        local siteGroup = HoundContact:getDcsObject():getGroup()
+        if not HoundUtils.Dcs.isGroupAlive(siteGroup) then
+            HOUND.Logger.warn("failed to create HOUND.Contact.Site instance, group does not exist")
+            return
+        end
+        instance.DcsObject = siteGroup
         instance.gid = SiteId or tonumber(instance.DcsObject:getID())
         instance.DcsGroupName = instance.DcsObject:getName()
         instance.DcsObjectName = instance.DcsObject:getName()
@@ -156,9 +161,14 @@ do
     -- @local
     -- @return[type=bool] true if any radars are alive in the group
     function HOUND.Contact.Site:hasRadarUnits()
-        if not HoundUtils.Dcs.isGroup(self.DcsObject) or self.DcsObject:getSize() == 0 then return false end
-        local lastUnit = self.DcsObject:getUnit(self.DcsObject:getSize())
-        return lastUnit:hasSensors(Unit.SensorType.RADAR)
+        if not HoundUtils.Dcs.isGroupAlive(self.DcsObject) then return false end
+        for i = self.DcsObject:getSize(), 1, -1 do
+            local unit = self.DcsObject:getUnit(i)
+            if HoundUtils.Dcs.isUnitAlive(unit) then
+                return unit:hasSensors(Unit.SensorType.RADAR)
+            end
+        end
+        return false
     end
 
     --- Emitter managment

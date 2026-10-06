@@ -129,6 +129,11 @@ The **UI/Comms** batch (5) is special: it registers a `world.event` handler for 
 | `TestGetEmitters` | Emitter list from DB |
 | `TestElintGetAzimuth` | Azimuth between ELINT plane and emitter |
 | `TestGetActiveRadarsInGroup` | Active radar units (valid + invalid) |
+| `TestDcsAliveGuards` | `isGroupAlive` / `isUnitAlive` / `isStaticObjectAlive` / `getGroupUnits` on live, dead, wrong-type handles |
+| `TestDcsQueriesSkipDeadGroups` | `getGroupNames`/`getUnitNames`/`Filter.*`/`getActiveRadars` skip non-existing group handles from `coalition.getGroups` |
+| `TestGetActiveRadarsYieldingSkipsDeadGroups` | Yielding radar discovery terminates, yields, and skips dead group handles |
+| `TestStaticObjectQueriesSkipDeadObjects` | `getStaticObjectNames` / `Filter.staticObjectsByPrefix` skip non-existing static handles |
+| `TestGetActiveRadarsInGroupDeadHandle` | `Group.getByName` returning a dead handle yields an empty radar list |
 | `TestGetRadarDetectionRange` | Detection range from live units |
 | `TestGetRadarUnitsInGroup` | Radar units in group |
 | `TestGetSamMaxRange` | SAM max range from live units |
@@ -728,6 +733,9 @@ Worker and query unit tests covering `HOUND.ElintWorker` (500) and `HOUND.ElintW
 | `TestListAllSitesWithSector` | Sector-filtered list |
 | `TestSortSites` | `sortSites` sorts list by comparator |
 | `TestSortSitesInvalidFunc` | Invalid comparator → no-op |
+| `TestAddContactWithNilConstructor` | `addContact` stores nothing and does not raise when `Emitter:New` returns nil |
+| `TestAddSiteWithNilConstructor` | `addSite` stores nothing and does not raise when `Site:New` returns nil |
+| `TestAddSiteWithoutGroupName` | `addSite` rejects an emitter with no resolvable group name |
 
 ### `test-HoundCommsManager.lua` — TestHoundCommsManager, TestHoundCommsInformationSystem
 

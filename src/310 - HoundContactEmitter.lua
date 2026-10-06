@@ -33,7 +33,8 @@ do
 
         instance.uid = ContactId or tonumber(DcsObject:getID())
         instance.DcsTypeName = DcsObject:getTypeName()
-        instance.DcsGroupName = Group.getName(DcsObject:getGroup())
+        local emitterGroup = DcsObject:getGroup()
+        instance.DcsGroupName = HoundUtils.Dcs.isGroupAlive(emitterGroup) and Group.getName(emitterGroup) or nil
         instance.DcsObjectName = DcsObject:getName()
         instance.DcsObjectAlive = true
         instance.typeName = DcsObject:getTypeName()
