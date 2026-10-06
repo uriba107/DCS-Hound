@@ -30,9 +30,7 @@ do
     -- @param PayloadAdded[?type=string] name of payload added to unit (optional)
     -- @return[type=bool] True if object is valid platform
     function HOUND.DB.isValidPlatform(candidate,PayloadAdded)
-        if (not HOUND.Utils.Dcs.isUnit(candidate) and not HOUND.Utils.Dcs.isStaticObject(candidate)) or not candidate:isExist()
-             then return false
-        end
+        if not HOUND.Utils.Dcs.isUnitAlive(candidate) and not HOUND.Utils.Dcs.isStaticObjectAlive(candidate) then return false end
 
         local isValid = false
         local mainCategory = Object.getCategory(candidate)
@@ -70,8 +68,7 @@ do
     -- @param DcsObject platform unit
     -- @return platform data
     function HOUND.DB.getPlatformData(DcsObject)
-        if not HOUND.Utils.Dcs.isUnit(DcsObject) and not HOUND.Utils.Dcs.isStaticObject(DcsObject) then return end
-        if not DcsObject:isExist() then return end
+        if not HOUND.Utils.Dcs.isUnitAlive(DcsObject) and not HOUND.Utils.Dcs.isStaticObjectAlive(DcsObject) then return end
 
         local platformData={
             pos = HOUND.Utils.Dcs.copyPoint(DcsObject:getPosition().p),
@@ -128,7 +125,7 @@ do
     -- @param DcsObject Unit requested (used as platform)
     -- @return Effective aperture size in meters
     function HOUND.DB.getApertureSize(DcsObject)
-        if not HOUND.Utils.Dcs.isUnit(DcsObject) and not HOUND.Utils.Dcs.isStaticObject(DcsObject) then return 0 end
+        if not HOUND.Utils.Dcs.isUnitAlive(DcsObject) and not HOUND.Utils.Dcs.isStaticObjectAlive(DcsObject) then return 0 end
         local mainCategory = Object.getCategory(DcsObject)
         local typeName = DcsObject:getTypeName()
         if HOUND.setContains(HOUND.DB.Platform,mainCategory) then
@@ -144,7 +141,7 @@ do
     -- @param DcsUnit Radar unit
     -- @return Char radar band
     function HOUND.DB.getEmitterBand(DcsUnit)
-        if not HOUND.Utils.Dcs.isUnit(DcsUnit) then return HOUND.DB.Bands.C end
+        if not HOUND.Utils.Dcs.isUnitAlive(DcsUnit) then return HOUND.DB.Bands.C end
         local typeName = DcsUnit:getTypeName()
         local _,isTracking = DcsUnit:getRadar()
         if HOUND.setContains(HOUND.DB.Radars,typeName) then
@@ -172,7 +169,7 @@ do
     -- @return angular resolution in Radians of platform against specific Radar frequency
     function HOUND.DB.getSensorPrecision(platform,emitterFreq)
         local wavelength = emitterFreq
-        if HOUND.Utils.Dcs.isUnit(emitterFreq) then
+        if HOUND.Utils.Dcs.isUnitAlive(emitterFreq) then
             local _,track = emitterFreq:getRadar()
             wavelength = HOUND.DB.getEmitterFrequencies(HOUND.DB.getEmitterBand(emitterFreq))[HOUND.Utils.Dcs.isUnit(track)]
         end
@@ -234,7 +231,8 @@ do
     --@param DcsUnit
     --@return table
     function HOUND.DB.generateMistDbEntry(DcsUnit)
-        if not HOUND.Utils.Dcs.isUnit(DcsUnit) then return {} end
+        if not HOUND.Utils.Dcs.isUnitAlive(DcsUnit) then return {} end
+        if not HOUND.Utils.Dcs.isGroupAlive(DcsUnit:getGroup()) then return {} end
         -- {
         --     ["type"] = "F-15C",
         --     ["unitId"] = 10,

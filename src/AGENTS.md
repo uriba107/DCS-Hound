@@ -67,6 +67,7 @@ Coroutine scheduler pump interval: **50ms** (`src/011 - HoundCoroutine.lua`).
 - Don't put logic in `StopWatch` / `:Stop()` / `HOUND.Logger.trace("` lines — stripped at compile
 - `DATAPOINTS_NUM = 30` hard FIFO cap per platform per emitter
 - Pre-briefed contacts (`preBriefedContact`) bypass triangulation but still drive state machine
+- Validate DCS handles before method calls: `coalition.getGroups` / `coalition.getStaticObjects` / `Group.getByName` return objects that may already be destroyed, and a live group can still hold destroyed units. DCS raises on any method call for a dead handle. Use `HOUND.Utils.Dcs.isGroupAlive` / `isUnitAlive` / `isStaticObjectAlive` / `getGroupUnits` (defined in `200 - HoundUtils.lua`) before calling methods on a handle. `isGroup` / `isUnit` / `isStaticObject` are type tests only — keep them where liveness is irrelevant or where a distinct dead state is part of the contract (`HOUND.Utils.TTS.getTransmitterPos`, `HOUND.Contact.Emitter:isAlive()`, the `S_EVENT_UNIT_LOST` gate in `804 - HoundElintEvents.lua`).
 
 ## Verification
 

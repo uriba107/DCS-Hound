@@ -63,12 +63,16 @@ function HOUND.Mist.getAvgPos(unitNames)
 end
 
 function HOUND.Mist.getAvgGroupPos(groupName)
-	if type(groupName) == 'string' and Group.getByName(groupName) and Group.getByName(groupName):isExist() == true then
+	if type(groupName) == 'string' then
 		groupName = Group.getByName(groupName)
 	end
+	if not HOUND.Utils.Dcs.isGroupAlive(groupName) then return end
 	local units = {}
 	for i = 1, groupName:getSize() do
-		table.insert(units, groupName:getUnit(i):getName())
+		local unit = groupName:getUnit(i)
+		if HOUND.Utils.Dcs.isUnitAlive(unit) then
+			table.insert(units, unit:getName())
+		end
 	end
 
 	return HOUND.Mist.getAvgPos(units)

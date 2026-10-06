@@ -601,6 +601,42 @@ do
         return getmetatable(obj) == StaticObject
     end
 
+    --- check if object is a group that still exists in the world
+    -- `isGroup` only tests the handle type. coalition.getGroups, Group.getByName and
+    -- unit:getGroup() can all return groups that were destroyed or removed, and DCS raises
+    -- "Group doesn't exist" on any method call for a dead handle. Use this before calling
+    -- methods on a group handle.
+    -- @param obj DCS Object canidate
+    -- @return[type=Bool] True if object is a Group that still exists
+    function HOUND.Utils.Dcs.isGroupAlive(obj)
+        if not HOUND.Utils.Dcs.isGroup(obj) then return false end
+        return obj:isExist() == true
+    end
+
+    --- check if object is a unit that still exists in the world
+    -- @param obj DCS Object canidate
+    -- @return[type=Bool] True if object is a Unit that still exists
+    function HOUND.Utils.Dcs.isUnitAlive(obj)
+        if not HOUND.Utils.Dcs.isUnit(obj) then return false end
+        return obj:isExist() == true
+    end
+
+    --- check if object is a static object that still exists in the world
+    -- @param obj DCS Object canidate
+    -- @return[type=Bool] True if object is a static object that still exists
+    function HOUND.Utils.Dcs.isStaticObjectAlive(obj)
+        if not HOUND.Utils.Dcs.isStaticObject(obj) then return false end
+        return obj:isExist() == true
+    end
+
+    --- get the units of a group that still exists
+    -- @param obj DCS Object canidate
+    -- @return table of units, or nil when the group is not a live Group
+    function HOUND.Utils.Dcs.getGroupUnits(obj)
+        if not HOUND.Utils.Dcs.isGroupAlive(obj) then return nil end
+        return obj:getUnits()
+    end
+
     --- check if object is a human unit
     -- @param obj DCS Object canidate
     -- @return[type=Bool] True if object is a Human unit
@@ -619,10 +655,14 @@ do
         local humanUnits = {}
         for i = 1, #players do
             local playerUnit = players[i]
-            local _,catEx = playerUnit:getCategory()
-            if HOUND.setContainsValue({Unit.Category.AIRPLANE,Unit.Category.HELICOPTER},catEx) then
-                local unit_data = HOUND.DB.generateMistDbEntry(playerUnit)
-                humanUnits[unit_data.unitName] = unit_data
+            if HOUND.Utils.Dcs.isUnitAlive(playerUnit) then
+                local _,catEx = playerUnit:getCategory()
+                if HOUND.setContainsValue({Unit.Category.AIRPLANE,Unit.Category.HELICOPTER},catEx) then
+                    local unit_data = HOUND.DB.generateMistDbEntry(playerUnit)
+                    if unit_data.unitName then
+                        humanUnits[unit_data.unitName] = unit_data
+                    end
+                end
             end
         end
         return humanUnits
@@ -635,7 +675,7 @@ do
         if type(DcsGroup) == "string" then
             DcsGroup = Group.getByName(DcsGroup)
         end
-        if not HOUND.Utils.Dcs.isGroup(DcsGroup) then return {} end
+        if not HOUND.Utils.Dcs.isGroupAlive(DcsGroup) then return {} end
         local coa = DcsGroup:getCoalition()
         local gid = DcsGroup:getID()
         if type(HOUND.DB.HumanUnits.byGid[coa][gid]) ~= "table" then return {} end
@@ -650,9 +690,9 @@ do
     -- @param DcsUnit
     -- @return[type=bool] True if tracking
     function HOUND.Utils.Dcs.isRadarTracking(DcsUnit)
-        if not HOUND.Utils.Dcs.isUnit(DcsUnit) then return false end
+        if not HOUND.Utils.Dcs.isUnitAlive(DcsUnit) then return false end
         local _,isTracking = DcsUnit:getRadar()
-        return HOUND.Utils.Dcs.isUnit(isTracking)
+        return HOUND.Utils.Dcs.isUnit(isTracking) -- tracking target is a type test, not a live handle
     end
 
     --- return maximum weapon range of DCS Unit
@@ -661,7 +701,7 @@ do
 
     function HOUND.Utils.Dcs.getSamRange(DcsUnit)
         local maxRng = 0
-        if not HOUND.Utils.Dcs.isUnit(DcsUnit) then return maxRng end
+        if not HOUND.Utils.Dcs.isUnitAlive(DcsUnit) then return maxRng end
         local weapons = DcsUnit:getAmmo()
         if weapons == nil then return maxRng end
         for _, ammo in ipairs(weapons) do
@@ -678,8 +718,9 @@ do
 
     function HOUND.Utils.Dcs.getSamMaxRange(DcsUnit)
         local maxRng = 0
-        if DcsUnit ~= nil then
-            local units = DcsUnit:getGroup():getUnits()
+        if HOUND.Utils.Dcs.isUnitAlive(DcsUnit) then
+            local units = HOUND.Utils.Dcs.getGroupUnits(DcsUnit:getGroup())
+            if not units then return maxRng end
             for _, unit in ipairs(units) do
                 maxRng = l_math.max(HOUND.Utils.Dcs.getSamRange(unit),maxRng)
             end
@@ -716,9 +757,11 @@ do
     -- @return[type=table] Table of radar units in group
     function HOUND.Utils.Dcs.getRadarUnitsInGroup(DcsGroup)
         local radarUnits = {}
-        if HOUND.Utils.Dcs.isGroup(DcsGroup) and DcsGroup:isExist() and DcsGroup:getSize() > 0 then
-            for _,unit in ipairs(DcsGroup:getUnits()) do
-                if unit:hasSensors(Unit.SensorType.RADAR) and HOUND.setContains(HOUND.DB.Radars,unit:getTypeName()) then
+        local units = HOUND.Utils.Dcs.getGroupUnits(DcsGroup)
+        if units then
+            for _,unit in ipairs(units) do
+                if HOUND.Utils.Dcs.isUnitAlive(unit) and unit:hasSensors(Unit.SensorType.RADAR)
+                    and HOUND.setContains(HOUND.DB.Radars,unit:getTypeName()) then
                     table.insert(radarUnits,unit)
                 end
             end
@@ -736,9 +779,11 @@ do
         end
         for _,coalitionName in pairs(coalition.side) do
             for _,group in pairs(coalition.getGroups(coalitionName)) do
-                local groupName = group:getName()
-                if prefix == nil or (prefix ~= "" and string.find(groupName, prefix, 1, true) == 1) then
-                    groups[groupName] = group:getID()
+                if HOUND.Utils.Dcs.isGroupAlive(group) then
+                    local groupName = group:getName()
+                    if prefix == nil or (prefix ~= "" and string.find(groupName, prefix, 1, true) == 1) then
+                        groups[groupName] = group:getID()
+                    end
                 end
             end
         end
@@ -755,10 +800,15 @@ do
         end
         for _,coalitionName in pairs(coalition.side) do
             for _,group in pairs(coalition.getGroups(coalitionName)) do
-                for _,unit in pairs(group:getUnits()) do
-                    local unitName = unit:getName()
-                    if prefix == nil or (prefix ~= "" and string.find(unitName, prefix, 1, true) == 1) then
-                        units[unitName] = HOUND.DB.generateMistDbEntry(unit)
+                local groupUnits = HOUND.Utils.Dcs.getGroupUnits(group)
+                if groupUnits then
+                    for _,unit in pairs(groupUnits) do
+                        if HOUND.Utils.Dcs.isUnitAlive(unit) then
+                            local unitName = unit:getName()
+                            if prefix == nil or (prefix ~= "" and string.find(unitName, prefix, 1, true) == 1) then
+                                units[unitName] = HOUND.DB.generateMistDbEntry(unit)
+                            end
+                        end
                     end
                 end
             end
@@ -775,11 +825,12 @@ do
         end
         for _,coalitionName in pairs(coalition.side) do
             for _,staticObj in pairs(coalition.getStaticObjects(coalitionName)) do
-                local name = staticObj:getName()
-                if prefix == nil or (prefix ~= "" and string.find(name, prefix, 1, true) == 1) then
-                    staticObjs[name] = name
+                if HOUND.Utils.Dcs.isStaticObjectAlive(staticObj) then
+                    local name = staticObj:getName()
+                    if prefix == nil or (prefix ~= "" and string.find(name, prefix, 1, true) == 1) then
+                        staticObjs[name] = name
+                    end
                 end
-
             end
         end
         return staticObjs
@@ -1300,9 +1351,12 @@ do
             if coalitionName ~= instanceCoalition then
                 for _,CategoryId in pairs({Group.Category.GROUND,Group.Category.SHIP}) do
                     for _,group in pairs(coalition.getGroups(coalitionName, CategoryId)) do
-                        for _,unit in pairs(group:getUnits()) do
-                            if (unit:isExist() and unit:isActive() and unit:getRadar()) then
-                                table.insert(Radars, unit:getName()) -- insert the name
+                        local groupUnits = HOUND.Utils.Dcs.getGroupUnits(group)
+                        if groupUnits then
+                            for _,unit in pairs(groupUnits) do
+                                if (unit:isExist() and unit:isActive() and unit:getRadar()) then
+                                    table.insert(Radars, unit:getName()) -- insert the name
+                                end
                             end
                         end
                     end
@@ -1330,12 +1384,15 @@ do
                     local processed = 0
                     local batch = {}
                     for _, group in pairs(groups) do
-                        for _, unit in pairs(group:getUnits()) do
-                            if unit:isExist() and unit:isActive()
-                               and unit:getRadar() then
-                                local name = unit:getName()
-                                table.insert(Radars, name)
-                                table.insert(batch, name)
+                        local groupUnits = HOUND.Utils.Dcs.getGroupUnits(group)
+                        if groupUnits then
+                            for _, unit in pairs(groupUnits) do
+                                if unit:isExist() and unit:isActive()
+                                   and unit:getRadar() then
+                                    local name = unit:getName()
+                                    table.insert(Radars, name)
+                                    table.insert(batch, name)
+                                end
                             end
                         end
                         processed = processed + 1
@@ -1366,8 +1423,9 @@ do
         local Radars = {}
         if GroupName == nil then return Radars end
         local group = Group.getByName(GroupName)
-        if not HOUND.Utils.Dcs.isGroup(group) then return Radars end
-        for _,unit in pairs(group:getUnits()) do
+        local groupUnits = HOUND.Utils.Dcs.getGroupUnits(group)
+        if not groupUnits then return Radars end
+        for _,unit in pairs(groupUnits) do
             if (unit:isExist() and unit:isActive() and unit:getRadar()) then
                 table.insert(Radars, unit:getName()) -- insert the name
             end
@@ -1536,9 +1594,11 @@ do
     -- @param GroupName
     -- @return table of points if group exists or nil
     function HOUND.Utils.Zone.getGroupRoute(GroupName)
-        if type(GroupName) == "string" and HOUND.Utils.Dcs.isGroup(Group.getByName(GroupName)) then
-            return HOUND.Utils.Dcs.getGroupPoints(Group.getByName(GroupName):getID())
+        if type(GroupName) == "string" then
+            GroupName = Group.getByName(GroupName)
         end
+        if not HOUND.Utils.Dcs.isGroupAlive(GroupName) then return end
+        return HOUND.Utils.Dcs.getGroupPoints(GroupName:getID())
     end
 
     --- Sort Functions
@@ -1648,7 +1708,7 @@ do
         local groups = {}
         for groupName, _ in pairs(HOUND.Utils.Dcs.getGroupNames(prefix)) do
             local dcsObject = Group.getByName(groupName)
-            if HOUND.Utils.Dcs.isGroup(dcsObject) then
+            if HOUND.Utils.Dcs.isGroupAlive(dcsObject) then
                 groups[groupName] = dcsObject
             end
         end
@@ -1663,7 +1723,7 @@ do
         local units = {}
         for unitName, _ in pairs(HOUND.Utils.Dcs.getUnitNames(prefix)) do
             local dcsUnit = Unit.getByName(unitName)
-            if HOUND.Utils.Dcs.isUnit(dcsUnit) then
+            if HOUND.Utils.Dcs.isUnitAlive(dcsUnit) then
                 units[unitName] = dcsUnit
             end
         end
@@ -1678,7 +1738,7 @@ do
         local objects = {}
         for objectName, _ in pairs(HOUND.Utils.Dcs.getStaticObjectNames(prefix)) do
             local dcsObject = StaticObject.getByName(objectName)
-            if HOUND.Utils.Dcs.isStaticObject(dcsObject) then
+            if HOUND.Utils.Dcs.isStaticObjectAlive(dcsObject) then
                 objects[objectName] = dcsObject
             end
         end
