@@ -271,7 +271,7 @@ do -- HOUND.Mist.util scope
 
     function HOUND.Mist.utils.getHeadingPoints(point1, point2, north) -- sick of writing this out.
         if north then
-			local p1 = HOUND.Mist.utils.get3DDist(point1)
+			local p1 = HOUND.Mist.utils.makeVec3(point1)
             return HOUND.Mist.utils.getDir(HOUND.Mist.vec.sub(HOUND.Mist.utils.makeVec3(point2), p1), p1)
         else
             return HOUND.Mist.utils.getDir(HOUND.Mist.vec.sub(HOUND.Mist.utils.makeVec3(point2), HOUND.Mist.utils.makeVec3(point1)))

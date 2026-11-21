@@ -286,6 +286,20 @@ do
             site:ensurePrimaryHasPos(refPos)
         end
     end
+
+    --- check if a launch event is on cooldown for the firing group
+    -- Gates the entire launch handling: when true the caller skips the extra sample,
+    -- the site position update and the launch alert. Counted independently of `last_seen`,
+    -- so a regular scan sample cannot suppress launch processing.
+    -- Unknown groups are never on cooldown, they are not tracked yet.
+    -- @param[type=string] fireGrp DCS Group name that is firing
+    -- @return[type=bool] true if the launch is on cooldown and must be skipped
+    function HOUND.ElintWorker:onLaunchCooldown(fireGrp)
+        local site = self:getSite(fireGrp,true)
+        if site == nil then return false end
+        return site:onLaunchCooldown(self.settings:getAlertOnLaunchCooldown())
+    end
+
     --- Send Launch Alert
     -- Publishes RADAR_LAUNCH event for tracked emitter unit, or SITE_LAUNCH
     -- for parent site. Cooldown prevents spam.

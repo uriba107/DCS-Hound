@@ -133,6 +133,7 @@ do
     -- @return azimuth in radians (between 0 and pi)
     function HOUND.Utils.PointClusterTilt(points,MagNorth,refPos)
         if not points or type(points) ~= "table" then return end
+        if next(points) == nil then return end
         if not refPos then
             refPos = l_mist.getAvgPoint(points)
         end
@@ -352,14 +353,21 @@ do
             if HOUND.setContains(override,formationCallsign) then
                 local override = override[formationCallsign]
                 if override == "*" then
-                    override = DcsUnit:getGroup():getName() or formationCallsign
+                    local grpName = nil
+                    if HOUND.Utils.Dcs.isUnitAlive(DcsUnit) then
+                        local grp = DcsUnit:getGroup()
+                        if HOUND.Utils.Dcs.isGroupAlive(grp) then
+                            grpName = grp:getName()
+                        end
+                    end
+                    override = grpName or formationCallsign
                 end
                 callsign = callsign:gsub(formationCallsign,override)
                 return string.upper(callsign:match( "^%s*(.-)%s*$" ))
             end
         end
 
-        if not DcsUnit then return string.upper(callsign:match( "^%s*(.-)%s*$" )) end
+        if not HOUND.Utils.Dcs.isUnitAlive(DcsUnit) then return string.upper(callsign:match( "^%s*(.-)%s*$" )) end
         local rawPlayerName = DcsUnit:getPlayerName()
         if rawPlayerName then
             local callsign = rawPlayerName
@@ -515,7 +523,7 @@ do
         if type(sensitivity) ~= "number" then
             sensitivity = 9
         end
-        sensitivity=l_math.min(0,l_math.max(9,sensitivity))
+        sensitivity=l_math.max(0,l_math.min(9,sensitivity))
         local relativePos = HOUND.Utils.Mapping.linear(value,in_min,in_max,0,1)
         -- retail curve (default)
         -- f(I) = I*(s/9)+(I^5)*(9-s)/9
@@ -599,6 +607,36 @@ do
     function HOUND.Utils.Dcs.isStaticObject(obj)
         if type(obj) ~= "table" then return false end
         return getmetatable(obj) == StaticObject
+    end
+
+    --- check if object is DCS Weapon
+    -- @param obj DCS Object canidate
+    -- @return[type=Bool] True if object is weapon
+    function HOUND.Utils.Dcs.isWeapon(obj)
+        if type(obj) ~= "table" then return false end
+        return getmetatable(obj) == Weapon
+    end
+
+    --- Weapon guidance types that indicate a radar guided weapon
+    local RADAR_GUIDANCE = {
+        Weapon.GuidanceType.RADAR_ACTIVE,
+        Weapon.GuidanceType.RADAR_SEMI_ACTIVE,
+        Weapon.GuidanceType.RADAR_PASSIVE
+    }
+
+    --- check if Weapon is a radar guided missile
+    -- Rejects everything that cannot produce a usable position update from a radar
+    -- signature: shells, rockets, bombs, and TV / IR / laser / INS / telemetry guided missiles.
+    -- @param weapon DCS Weapon candidate (e.g. S_EVENT_SHOT `event.weapon`)
+    -- @return[type=Bool] True if weapon is a missile with radar guidance
+    function HOUND.Utils.Dcs.isRadarGuidedMissile(weapon)
+        if not HOUND.Utils.Dcs.isWeapon(weapon) then return false end
+        -- A shot event can carry a weapon handle that is already gone; getDesc
+        -- raises on a dead handle, so it must not escape the event handler.
+        local ok, desc = pcall(weapon.getDesc, weapon)
+        if not ok or type(desc) ~= "table" then return false end
+        if desc.category ~= Weapon.Category.MISSILE then return false end
+        return HOUND.setContainsValue(RADAR_GUIDANCE,desc.guidance)
     end
 
     --- check if object is a group that still exists in the world
@@ -1029,7 +1067,7 @@ do
             HOUND.Logger.error("Failed to set Initial marker Id. Value provided was not a number")
             return false
         end
-        if HOUND.Utils.Marker._MarkID ~= 0 then
+        if HOUND.Utils.Marker._MarkId ~= 4999 then
             HOUND.Logger.error("Initial MarkId not updated because markers have already been drawn")
             return false
         end
@@ -1437,7 +1475,7 @@ do
     -- @param platform DCS Unit of platform
     -- @return Table of all currently transmitting Ground and Ship radars that RWR detected by supplied platform
     function HOUND.Utils.Elint.getRwrContacts(platform)
-        if not HOUND.Utils.Dcs.isUnit(platform) and not platform:hasSensors(Unit.SensorType.RWR) then return {} end
+        if not HOUND.Utils.Dcs.isUnitAlive(platform) or not platform:hasSensors(Unit.SensorType.RWR) then return {} end
         local radars = {}
         local platformCoalition = platform:getCoalition()
         local contacts = platform:getController():getDetectedTargets(Controller.Detection.RWR)

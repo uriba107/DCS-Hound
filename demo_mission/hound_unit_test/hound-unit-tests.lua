@@ -44,6 +44,7 @@ do
         assert(loadfile(HoundWorkDir..'demo_mission\\hound_unit_test\\extras\\test-houndUtils.lua'))()
         assert(loadfile(HoundWorkDir..'demo_mission\\hound_unit_test\\extras\\test-HoundContactEmitter.lua'))()
         assert(loadfile(HoundWorkDir..'demo_mission\\hound_unit_test\\extras\\test-HoundContactSite.lua'))()
+        assert(loadfile(HoundWorkDir..'demo_mission\\hound_unit_test\\extras\\test-HoundEstimator.lua'))()
         assert(loadfile(HoundWorkDir..'demo_mission\\hound_unit_test\\extras\\test-HoundSector.lua'))()
         assert(loadfile(HoundWorkDir..'demo_mission\\hound_unit_test\\extras\\test-hound-worker.lua'))()
         assert(loadfile(HoundWorkDir..'demo_mission\\hound_unit_test\\extras\\test-HoundCommsManager.lua'))()

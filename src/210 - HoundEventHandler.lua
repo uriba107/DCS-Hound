@@ -72,13 +72,30 @@ do
         [HOUND.EVENTS.SITE_LAUNCH]     = true,
     }
 
+    --- Invoke a handler method, isolating callback errors.
+    -- @local
+    local function safeDispatch(handler, funcName, event)
+        local func = handler[funcName]
+        if func and type(func) == "function" then
+            local ok, err = pcall(func, handler, event)
+            if not ok then
+                HOUND.Logger.error("HoundEventHandler: " .. funcName .. " failed on event " ..
+                    tostring(event.id) .. " (" .. tostring(err) .. ")")
+            end
+        end
+    end
+
     --- Dispatch event to external subscribers synchronously.
+    -- Snapshots the subscriber table so callbacks that (de)register handlers
+    -- via the public API during dispatch cannot mutate the iterated table.
     -- @local
     local function dispatchExternalSync(event)
-        for _, handler in pairs(HOUND.EventHandler.subscribers) do
-            if handler.onHoundEvent and type(handler.onHoundEvent) == "function" then
-                handler:onHoundEvent(event)
-            end
+        local snapshot = {}
+        for k, v in pairs(HOUND.EventHandler.subscribers) do
+            snapshot[k] = v
+        end
+        for _, handler in pairs(snapshot) do
+            safeDispatch(handler, "onHoundEvent", event)
         end
     end
 
@@ -96,9 +113,7 @@ do
         local guardName = "HoundEventHandler_on_" .. (event.houndId or "unknown")
         HOUND.Coroutine.add(function()
             for _, handler in pairs(snapshot) do
-                if handler.onHoundEvent and type(handler.onHoundEvent) == "function" then
-                    handler:onHoundEvent(event)
-                end
+                safeDispatch(handler, "onHoundEvent", event)
                 coroutine.yield()
             end
         end,{name = guardName})
@@ -108,14 +123,16 @@ do
     -- @param event event to execute
     -- @local
     function HOUND.EventHandler.onHoundEvent(event)
-        for _, handler in pairs(HOUND.EventHandler._internalSubscribers) do
+        -- Snapshot: an internal handler may register/deregister handlers while
+        -- the event is dispatched, which must not mutate the iterated table.
+        local internalSnapshot = {}
+        for k, v in pairs(HOUND.EventHandler._internalSubscribers) do
+            internalSnapshot[k] = v
+        end
+        for _, handler in pairs(internalSnapshot) do
             if handler and getmetatable(handler) == HoundElint and handler:getId() == event.houndId then
-                if handler.onHoundInternalEvent and type(handler.onHoundInternalEvent) == "function" then
-                    handler:onHoundInternalEvent(event)
-                end
-                if handler.onHoundEvent and type(handler.onHoundEvent) == "function" then
-                    handler:onHoundEvent(event)
-                end
+                safeDispatch(handler, "onHoundInternalEvent", event)
+                safeDispatch(handler, "onHoundEvent", event)
             end
         end
         dispatchExternalSync(event)

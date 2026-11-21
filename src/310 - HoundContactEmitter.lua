@@ -229,7 +229,7 @@ do
     -- @param datapoint @{HOUND.Contact.Datapoint}
     function HOUND.Contact.Emitter:AddPoint(datapoint)
         if not self.Kalman and HoundUtils.Dcs.isPoint(self.pos.p) then
-            if self.uncertenty_data.r < 15000 then
+            if self.uncertenty_data and self.uncertenty_data.r and self.uncertenty_data.r < 15000 then
                 self.Kalman = HOUND.Contact.Estimator.UPLKF(self.pos.p,{x=0,z=0},self.last_seen,self.uncertenty_data.major)
             end
         end
@@ -306,6 +306,7 @@ do
 
         local m1 = l_math.tan(earlyPoint.az)
         local m2 = l_math.tan(latePoint.az)
+        if m1 == m2 then return nil end
 
         local b1 = -m1 * p1.x + p1.z
         local b2 = -m2 * p2.x + p2.z
@@ -347,7 +348,7 @@ do
         max.x = -99999
         max.y = -99999
 
-        Theta = HoundUtils.PointClusterTilt(RelativeToPos)
+        local Theta = HoundUtils.PointClusterTilt(RelativeToPos)
 
         local sinTheta = l_math.sin(-Theta)
         local cosTheta = l_math.cos(-Theta)
@@ -585,6 +586,7 @@ do
             local point = {}
             point.x = uncertenty_data.major/2 * l_math.cos(pointAngle)
             point.z = uncertenty_data.minor/2 * l_math.sin(pointAngle)
+            point.y = refPos.y or 0
             -- rotate and translate into correct position
             local x = point.x * cos_theta - point.z * sin_theta
             local z = point.x * sin_theta + point.z * cos_theta
@@ -693,15 +695,21 @@ do
     --- Use DCS Unit Position as contact position
     -- @param[number] unitPosMarker marker type to use for unit (see HOUND.MARKER)
     function HOUND.Contact.Emitter:useUnitPos(unitPosMarker)
-        if not self.DcsObject:isExist() then
+        if type(self.DcsObject) ~= "table" or type(self.DcsObject.isExist) ~= "function" or not self.DcsObject:isExist() then
             HOUND.Logger.info("PB failed - unit does not exist")
+            return
+        end
+        -- Re-check the returned position: the handle can be gone by the time
+        -- getPosition runs, and copyPoint below requires a valid point.
+        local unitPos = self.DcsObject:getPosition()
+        if not unitPos or not HoundUtils.Dcs.isPoint(unitPos.p) then
+            HOUND.Logger.info("PB failed - unit position unavailable")
             return
         end
         self.state = HOUND.EVENTS.RADAR_DETECTED
         if type(self.pos.p) == "table" then
             self.state = HOUND.EVENTS.RADAR_UPDATED
         end
-        local unitPos = self.DcsObject:getPosition()
         self:setPreBriefed(true)
 
         self.pos.p = HoundUtils.Dcs.copyPoint(unitPos.p)

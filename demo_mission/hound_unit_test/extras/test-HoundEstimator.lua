@@ -222,7 +222,10 @@ do
         local first = filter.estimated
         filter:update(1.05)
         local second = filter.estimated
-        lu.assertIsTrue(math.abs(second - 1.0) < math.abs(first - 1.0))
+        -- the second sample pulls the estimate toward 1.05 without overshooting
+        lu.assertIsTrue(second > first)
+        lu.assertIsTrue(second < 1.05)
+        lu.assertIsTrue(math.abs(1.05 - second) < math.abs(1.05 - first))
     end
 
     function TestHoundEstimator:TestAzElFilterInit()
@@ -312,6 +315,31 @@ do
         lu.assertIsNil(HOUND.Contact.Estimator.UPLKF:create({x = "abc", z = "def"}))
     end
 
+    -- Emitter:AddPoint calls UPLKF(...) through the __call metamethod, not
+    -- UPLKF:create(...); a bad __call argument mapping breaks only that path.
+    function TestHoundEstimator:TestUPLKFCallMetamethod()
+        local p0 = {x = 1000, z = 2000, y = 100}
+        local filter = HOUND.Contact.Estimator.UPLKF(p0, {x = 0, z = 0}, 100.0, 5000)
+        lu.assertNotNil(filter)
+        lu.assertEquals(filter.state[1][1], 1000)
+        lu.assertEquals(filter.state[2][1], 2000)
+        lu.assertEquals(filter.P[1][1], 5000 * 5000)
+    end
+
+    function TestHoundEstimator:TestMatrixCallConstructors()
+        local vector = HOUND.Matrix({{100},{200},{300},{400}})
+        lu.assertEquals(vector[1][1], 100)
+        lu.assertEquals(vector[4][1], 400)
+
+        local identity = HOUND.Matrix(4,"I")
+        lu.assertEquals(identity[1][1], 1)
+        lu.assertEquals(identity[1][2], 0)
+        lu.assertEquals(identity[4][4], 1)
+
+        local sized = HOUND.Matrix(2,3,7)
+        lu.assertEquals(sized[2][3], 7)
+    end
+
     function TestHoundEstimator:TestUPLKFGetEstimatedPos()
         local p0 = {x = 1000, z = 2000, y = 100}
         local filter = HOUND.Contact.Estimator.UPLKF:create(p0, nil, 100.0, 5000, false)
@@ -366,15 +394,11 @@ do
 
     function TestHoundEstimator:TestUPLKFNormalizeAzEdge()
         local normalize = HOUND.Contact.Estimator.UPLKF.normalizeAz
-        local az_north = normalize(0)
-        local az_east = normalize(HalfPi)
-        local az_south = normalize(math.pi)
-        local az_west = normalize(3 * HalfPi)
-        lu.assertIsNumber(az_north)
-        lu.assertIsNumber(az_east)
-        lu.assertIsNumber(az_south)
-        lu.assertIsNumber(az_west)
-        lu.assertIsTrue(az_south > az_east)
+        -- DCS azimuth (clockwise from north) -> east-aligned bearing in [-pi, pi]
+        lu.assertAlmostEquals(normalize(0), HalfPi, 0.0001)
+        lu.assertAlmostEquals(normalize(HalfPi), 0, 0.0001)
+        lu.assertAlmostEquals(normalize(math.pi), -HalfPi, 0.0001)
+        lu.assertAlmostEquals(math.abs(normalize(3 * HalfPi)), math.pi, 0.0001)
     end
 
     function TestHoundEstimator:TestUPLKFBearingToAzimuth()
@@ -391,7 +415,9 @@ do
         for _, bearing in ipairs({0, HalfPi, math.pi, 3 * HalfPi}) do
             local az = b2a(bearing)
             local roundtrip = normalize(az)
-            lu.assertAlmostEquals(roundtrip, bearing, 0.0001)
+            -- compare as angles: -pi and pi denote the same direction
+            local delta = (roundtrip - bearing + math.pi) % TwoPI - math.pi
+            lu.assertAlmostEquals(delta, 0, 0.0001)
         end
     end
 

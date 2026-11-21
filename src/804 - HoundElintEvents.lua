@@ -134,31 +134,39 @@ do
         end
 
         if DcsEvent.id == world.event.S_EVENT_SHOT
+            -- the initiator can be destroyed between the event and this slice;
+            -- isUnitAlive must gate every dereference below
+            and HoundUtils.Dcs.isUnitAlive(DcsEvent.initiator)
             and DcsEvent.initiator:getCoalition() ~= self.settings:getCoalition()
             and DcsEvent.initiator:hasAttribute("Air Defence")
             and DcsEvent.initiator:getCategory() == Object.Category.UNIT
         then
             local _,catEx = DcsEvent.initiator:getCategory()
             if not HOUND.setContainsValue({Unit.Category.GROUND_UNIT,Unit.Category.SHIP},catEx) then return end
+            -- Pre-filter. AAA, rockets, and TV/IR/laser guided missiles flood S_EVENT_SHOT and
+            -- carry no radar signature worth an extra sample. Reject them before any work.
+            if not HoundUtils.Dcs.isRadarGuidedMissile(DcsEvent.weapon) then return end
             local unit = DcsEvent.initiator
             local grp = unit:getGroup()
-            if HoundUtils.Dcs.isGroupAlive(grp) then
-                self.contacts:Sniff(grp:getName())
-                if DcsEvent.weapon:getDesc().category ~= Weapon.Category.MISSILE then return end
-                local tgtPos = nil
-                local wpnTgt = DcsEvent.weapon:getTarget()
-                if HoundUtils.Dcs.isUnitAlive(wpnTgt) then
-                  tgtPos = wpnTgt:getPoint()
-                end
-                if HoundUtils.Dcs.isPoint(tgtPos) then
-                    HoundUtils.Geo.setPointHeight(tgtPos)
-                end
-                self.contacts:ensureSitePrimaryHasPos(grp:getName(),tgtPos) -- pass target position, if no position available, it will alert on target position
-                if HOUND.DB.Radars[unit:getTypeName()] then
-                    self:AlertOnLaunch(unit)
-                else
-                    self:AlertOnLaunch(grp)
-                end
+            if not HoundUtils.Dcs.isGroupAlive(grp) then return end
+            local grpName = grp:getName()
+            -- Launch cooldown. Gates the whole block: extra sample, site position update
+            -- and launch alert all skip, so a salvo is processed once per cooldown window.
+            if self.contacts:onLaunchCooldown(grpName) then return end
+            self.contacts:Sniff(grpName)
+            local tgtPos = nil
+            local wpnTgt = DcsEvent.weapon:getTarget()
+            if HoundUtils.Dcs.isUnitAlive(wpnTgt) then
+              tgtPos = wpnTgt:getPoint()
+            end
+            if HoundUtils.Dcs.isPoint(tgtPos) then
+                HoundUtils.Geo.setPointHeight(tgtPos)
+            end
+            self.contacts:ensureSitePrimaryHasPos(grpName,tgtPos) -- pass target position, if no position available, it will alert on target position
+            if HOUND.DB.Radars[unit:getTypeName()] then
+                self:AlertOnLaunch(unit)
+            else
+                self:AlertOnLaunch(grp)
             end
         end
 

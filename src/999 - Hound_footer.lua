@@ -1,6 +1,7 @@
     --- HOUND
     -- @module HOUND
 do
-    trigger.action.outText("Hound ELINT ("..HOUND.VERSION..") is loaded.", 15)
-    env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
+    local version = (type(HOUND) == "table" and HOUND.VERSION) or "unknown"
+    trigger.action.outText("Hound ELINT ("..version..") is loaded.", 15)
+    env.info("[Hound] - finished loading (".. version ..")")
 end

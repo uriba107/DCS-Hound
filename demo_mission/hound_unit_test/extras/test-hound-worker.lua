@@ -160,6 +160,46 @@ do
         lu.assertIsNil(self.worker:getSite(nil))
     end
 
+    -- Launch cooldown (onLaunchCooldown)
+
+    --- register a mock site, inheriting the real HOUND.Contact.Site.onLaunchCooldown
+    function TestHoundWorker:mockSiteSeen(grpName,secondsSinceSeen)
+        local site = {getLastSeen = function() return secondsSinceSeen end}
+        -- own metatable so the class lookup works without a prior Site:New
+        setmetatable(site,{__index = HOUND.Contact.Site})
+        self.worker.sites[grpName] = site
+        return site
+    end
+
+    function TestHoundWorker:TestOnLaunchCooldownUnknownGroup()
+        lu.assertIsFalse(self.worker:onLaunchCooldown("never_seen_group"))
+    end
+
+    function TestHoundWorker:TestOnLaunchCooldownFirstLaunchPasses()
+        self:mockSiteSeen("cool_group",0)
+        lu.assertIsFalse(self.worker:onLaunchCooldown("cool_group"))
+    end
+
+    function TestHoundWorker:TestOnLaunchCooldownBlocksRepeatLaunches()
+        self:mockSiteSeen("cool_group",0)
+        lu.assertIsFalse(self.worker:onLaunchCooldown("cool_group"))
+        -- repeat launches inside the window are blocked, regardless of last_seen
+        lu.assertIsTrue(self.worker:onLaunchCooldown("cool_group"))
+        lu.assertIsTrue(self.worker:onLaunchCooldown("cool_group"))
+    end
+
+    function TestHoundWorker:TestOnLaunchCooldownIgnoresLastSeen()
+        local cooldown = self.worker.settings:getAlertOnLaunchCooldown()
+        -- a stale site still gets its first launch through - last_seen must not suppress it
+        self:mockSiteSeen("stale_group",cooldown * 10)
+        lu.assertIsFalse(self.worker:onLaunchCooldown("stale_group"))
+        lu.assertIsTrue(self.worker:onLaunchCooldown("stale_group"))
+        -- and a fresh site is blocked just the same
+        self:mockSiteSeen("fresh_group",0)
+        lu.assertIsFalse(self.worker:onLaunchCooldown("fresh_group"))
+        lu.assertIsTrue(self.worker:onLaunchCooldown("fresh_group"))
+    end
+
     -- Remove methods
 
     function TestHoundWorker:TestRemoveContactByString()
@@ -381,7 +421,7 @@ do
     -- addContact / addSite must survive a constructor that bails out and returns nil
     function TestHoundWorker:TestAddContactWithNilConstructor()
         local tor = Unit.getByName("TOR_SAIPAN-1")
-        lu.assertIsNotNil(tor)
+        lu.assertNotNil(tor)
         local origNew = HOUND.Contact.Emitter.New
         HOUND.Contact.Emitter.New = function() return nil end
         local ok, err = pcall(function() self.worker:addContact(tor) end)
@@ -392,7 +432,7 @@ do
 
     function TestHoundWorker:TestAddSiteWithNilConstructor()
         local contact = HOUND.Contact.Emitter:New(Unit.getByName("TOR_SAIPAN-1"), coalition.side.BLUE, 1)
-        lu.assertIsNotNil(contact)
+        lu.assertNotNil(contact)
         local origNew = HOUND.Contact.Site.New
         HOUND.Contact.Site.New = function() return nil end
         local ok, err = pcall(function() self.worker:addSite(contact) end)
@@ -403,7 +443,7 @@ do
 
     function TestHoundWorker:TestAddSiteWithoutGroupName()
         local contact = HOUND.Contact.Emitter:New(Unit.getByName("TOR_SAIPAN-1"), coalition.side.BLUE, 1)
-        lu.assertIsNotNil(contact)
+        lu.assertNotNil(contact)
         contact.DcsGroupName = nil
         local ok, err = pcall(function() self.worker:addSite(contact) end)
         lu.assertIsTrue(ok, tostring(err))

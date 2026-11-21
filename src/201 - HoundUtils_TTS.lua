@@ -64,7 +64,8 @@ do
         local pos = dcsObject:getPoint()
         local transmitterObjectCat, transmitterSubCat = dcsObject:getCategory()
         if transmitterObjectCat == Object.Category.STATIC or (transmitterObjectCat == Object.Category.UNIT and transmitterSubCat == Unit.Category.GROUND_UNIT) then
-            local verticalOffset = (dcsObject:getDesc()["box"]["max"]["y"] + 5) or 20
+            local desc = dcsObject:getDesc()
+            local verticalOffset = (desc and desc.box and desc.box.max and desc.box.max.y and (desc.box.max.y + 5)) or 20
             pos.y = pos.y + verticalOffset
         end
         return pos
@@ -332,6 +333,7 @@ do
         local speedFactor = 1.0
         if googleTTS then
             speedFactor = speed
+            if speedFactor <= 0 then speedFactor = 1.0 end
         else
             if speed ~= 0 then
                 speedFactor = l_math.abs(speed) * (maxRateRatio - 1) / 10 + 1
@@ -343,6 +345,7 @@ do
 
         local wpm = l_math.ceil(100 * speedFactor)
         local cps = l_math.floor((wpm * 5)/60)
+        if cps < 1 then cps = 1 end
 
         if type(length) == "string" then
             length = string.len(length)

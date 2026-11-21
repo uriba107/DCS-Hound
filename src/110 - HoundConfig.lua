@@ -16,7 +16,12 @@ do
     -- @return config map for specific hound instace
     -- @within HOUND.Config
     function HOUND.Config.get(HoundInstanceId)
-        HoundInstanceId = HoundInstanceId or HOUND.Length(HOUND.Config.configMaps)+1
+        if HoundInstanceId == nil then
+            HoundInstanceId = 1
+            while HOUND.Config.configMaps[HoundInstanceId] ~= nil do
+                HoundInstanceId = HoundInstanceId + 1
+            end
+        end
 
         if HOUND.Config.configMaps[HoundInstanceId] then
             return HOUND.Config.configMaps[HoundInstanceId]

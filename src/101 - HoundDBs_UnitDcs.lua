@@ -971,6 +971,17 @@ do
         ['Primary'] = true,
         ['numDistinctFreqs'] = 0
     }
+    HOUND.DB.Radars['CHAP_PGZ09'] = {
+        ['Name'] = "SPAAG PGZ-09",
+        ['Assigned'] = { "AAA" },
+        ['Role'] = { HOUND.DB.RadarType.SEARCH, HOUND.DB.RadarType.TRACK },
+        ['Band'] = {
+            [true] = { 0.074948, 0.074948 },
+            [false] = { 0.074948, 0.074948 }
+        },
+        ['Primary'] = true,
+        ['numDistinctFreqs'] = 0
+    }
     HOUND.DB.Radars['CHAP_Project22160'] = {
         ['Name'] = "Project 22160 (DD)",
         ['Assigned'] = { "Naval" },

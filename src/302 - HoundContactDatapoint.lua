@@ -88,8 +88,8 @@ do
     -- @param[opt] predictedAz predicted azimuth
     -- @param[opt] processNoise Process noise
     function HOUND.Contact.Datapoint.update(self,newAz,predictedAz,processNoise)
-        if not self.platformPrecision and not self.platformStatic then return end
-        self.kalman:update(newAz,nil,processNoise)
+        if not self.kalman then return end
+        self.kalman:update(newAz,predictedAz,processNoise)
         self.az = self.kalman:get()
         return self.az
     end

@@ -39,7 +39,7 @@ do
 
         instance.emitters = { HoundContact }
         instance.primaryEmitter = HoundContact
-        instance.last_seen = HoundContact:getLastSeen()
+        instance.last_seen = HoundContact.last_seen
         instance.first_seen = HoundContact.first_seen
         instance.maxWeaponsRange = HoundContact:getMaxWeaponsRange()
         instance.detectionRange = HoundContact:getRadarDetectionRange()
@@ -164,8 +164,8 @@ do
         if not HoundUtils.Dcs.isGroupAlive(self.DcsObject) then return false end
         for i = self.DcsObject:getSize(), 1, -1 do
             local unit = self.DcsObject:getUnit(i)
-            if HoundUtils.Dcs.isUnitAlive(unit) then
-                return unit:hasSensors(Unit.SensorType.RADAR)
+            if HoundUtils.Dcs.isUnitAlive(unit) and unit:hasSensors(Unit.SensorType.RADAR) then
+                return true
             end
         end
         return false
@@ -197,12 +197,12 @@ do
     function HOUND.Contact.Site:removeEmitter(HoundEmitter)
         self.state = HOUND.EVENTS.NO_CHANGE
         if HoundEmitter:getDcsGroupName() == self:getDcsGroupName() then
-            for idx,emitter in ipairs(self.emitters) do
-                if emitter == HoundEmitter then
+            for idx=#self.emitters,1,-1 do
+                if self.emitters[idx] == HoundEmitter then
                     table.remove(self.emitters,idx)
-                    if #self.emitters > 0 then
-                        self:selectPrimaryEmitter()
-                    end
+                    self:selectPrimaryEmitter()
+                    self:updateTypeAssigned()
+                    self:updateSector()
                     self:updateGroupRadars()
                     self.state = HOUND.EVENTS.SITE_UPDATED
                     break
@@ -360,6 +360,21 @@ do
             end
         end
         self:updateDefaultSector()
+    end
+
+    --- check if site is on launch cooldown
+    -- Gates the whole launch handling (extra sample, site position update, launch alert).
+    -- Uses an independent counter, not `last_seen`: a regular scan sample must never
+    -- suppress launch processing. Counter is advanced when the launch is allowed through.
+    -- @param[number] cooldown interval between processed launches
+    -- @return[type=bool] True if the launch is on cooldown and must be skipped
+    function HOUND.Contact.Site:onLaunchCooldown(cooldown)
+        local cooldown = cooldown or 30
+        if self.last_launch_processed and HoundUtils.absTimeDelta(self.last_launch_processed) <= cooldown then
+            return true
+        end
+        self.last_launch_processed = timer.getAbsTime()
+        return false
     end
 
     --- trigger launch event
