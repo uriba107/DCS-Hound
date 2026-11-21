@@ -298,6 +298,14 @@ do
         return self.threatSectors[sectorName] or false
     end
 
+    --- check if contact threatens named sector from outside
+    -- a member of the sector (primarySector) is not counted as a threat
+    -- @string sectorName name of sector
+    -- @return[type=Bool] True if contact threatens sector and is not in it
+    function HOUND.Contact.Base:isThreatening(sectorName)
+        return self.threatSectors[sectorName] == true and self.primarySector ~= sectorName
+    end
+
     --- Marker managment
     -- @section markers
 

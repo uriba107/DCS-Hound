@@ -5,6 +5,22 @@ do
     local l_math = math
     local HoundUtils = HOUND.Utils
 
+    -- zone points come from drawn zones (Vec2 {x,y}) or group routes (Vec3 {x,y,z})
+    local function isZonePoint(point)
+        return type(point) == "table" and type(point.x) == "number"
+            and (type(point.z) == "number" or type(point.y) == "number")
+    end
+
+    local function isValidZone(zone)
+        if type(zone) ~= "table" then return false end
+        local count = 0
+        for _, point in ipairs(zone) do
+            if not isZonePoint(point) then return false end
+            count = count + 1
+        end
+        return count >= 3
+    end
+
     --- HOUND.Sector
     -- @type HOUND.Sector
     -- @within HOUND.Sector
@@ -49,6 +65,17 @@ do
         }
         instance.childSectors = {}
         instance.priority = priority or 10
+        instance.zoneCenter = nil
+        instance.zoneCells = nil
+        instance.zoneCellKeys = nil
+        instance.zoneCellList = nil
+        instance.zoneCenterHex = nil
+        instance.zoneRadiusHex = nil
+        instance.zoneVersion = 0
+        instance.zoneBuildPending = false
+        instance._zoneBuildId = nil
+        instance._onZoneBuilt = nil
+        instance._membershipCache = setmetatable({}, { __mode = "k" })
 
         if settings ~= nil and type(settings) == "table" and HOUND.Length(settings) > 0 then
             instance:updateSettings(settings)
@@ -98,6 +125,12 @@ do
     -- cleans up everyting needed for sector to safly be removed
     -- @return nil is returned
     function HOUND.Sector:destroy()
+        if self._zoneBuildId then
+            HOUND.Coroutine.cancel(self._zoneBuildId)
+            self._zoneBuildId = nil
+            self.zoneBuildPending = false
+            self._onZoneBuilt = nil
+        end
         self:removeRadioMenu()
         for _,contact in pairs(self._contacts:listAllContacts()) do
             contact:removeSector(self.name)
@@ -211,33 +244,107 @@ do
     end
 
     --- Set zone in sector
+    -- Builds the hex cell index incrementally through HOUND.Coroutine; the
+    -- sector has no grid until the build completes.
     -- @param zonecandidate (String) DCS group name, or a drawn map freeform Polygon. sector borders will be group waypoints or polygon points
-    function HOUND.Sector:setZone(zonecandidate)
+    -- @param[opt] onComplete called after the cell index is built
+    function HOUND.Sector:setZone(zonecandidate, onComplete)
         if self.name == "default" then
             HOUND.Logger.warn("[Hound] - cannot set zone to default sector")
             return
         end
         local zone = nil
-        if not zonecandidate then
+        if type(zonecandidate) == "table" then
+            zone = zonecandidate
+        elseif type(zonecandidate) == "string" then
+            zone = HoundUtils.Zone.getDrawnZone(zonecandidate) or HoundUtils.Zone.getGroupRoute(zonecandidate)
+        else
             zone = HoundUtils.Zone.getDrawnZone(self.name .. " Sector")
         end
-        if type(zonecandidate) == "string" then
-            zone = HoundUtils.Zone.getDrawnZone(zonecandidate) or HoundUtils.Zone.getGroupRoute(zonecandidate)
-            -- local zone = HoundUtils.Zone.getDrawnZone(zonecandidate)
-            -- if not zone and (Group.getByName(zonecandidate)) then
-            --     zone = mist.getGroupPoints(zonecandidate)
-            -- end
-            -- self.settings.zone = zone
-            -- return
+        if not isValidZone(zone) then
+            -- invalid candidate: keep the existing zone and derived fields consistent
+            return
         end
-        if zone then
-            self.settings.zone = zone
-            self.zoneCenter = HOUND.Mist.getAvgPoint(zone)
+
+        if self._zoneBuildId then
+            HOUND.Coroutine.cancel(self._zoneBuildId)
+            self._zoneBuildId = nil
         end
+
+        self.settings.zone = zone
+        self.zoneCenter = HOUND.Mist.getAvgPoint(zone)
+        self.zoneCells = nil
+        self.zoneCellKeys = nil
+        self.zoneCellList = nil
+        self.zoneCenterHex = nil
+        self.zoneRadiusHex = nil
+        self._membershipCache = setmetatable({}, { __mode = "k" })
+        self.zoneBuildPending = true
+        self._onZoneBuilt = type(onComplete) == "function" and onComplete or nil
+
+        local self_ = self
+        self._zoneBuildId = HOUND.Coroutine.add(function()
+            local cells = HOUND.Mist.hex.getFromRoute(zone, true, coroutine.yield)
+            local keys, list = {}, {}
+            local work = 0
+            for _, cell in pairs(cells) do
+                keys[HOUND.Mist.hex.cellKey(cell.r, cell.q)] = true
+                list[#list + 1] = cell
+                work = work + 1
+                if work >= 512 then
+                    work = 0
+                    coroutine.yield()
+                end
+            end
+            local centerHex = HOUND.Mist.hex.pointToHex(self_.zoneCenter)
+            local radiusHex = 0
+            for i = 1, #list do
+                local distance = HOUND.Mist.hex.distance(centerHex, list[i])
+                if distance > radiusHex then radiusHex = distance end
+                if i % 512 == 0 then coroutine.yield() end
+            end
+            self_.zoneCells = cells
+            self_.zoneCellKeys = keys
+            self_.zoneCellList = list
+            self_.zoneCenterHex = centerHex
+            self_.zoneRadiusHex = radiusHex
+            self_.zoneVersion = self_.zoneVersion + 1
+            self_._membershipCache = setmetatable({}, { __mode = "k" })
+            self_.zoneBuildPending = false
+            self_._zoneBuildId = nil
+            local callback = self_._onZoneBuilt
+            self_._onZoneBuilt = nil
+            if callback then callback() end
+        end, {
+            name = "zone-build-" .. self.name,
+            interval = 0,
+            onError = function(err)
+                self_.zoneBuildPending = false
+                self_._zoneBuildId = nil
+                self_._onZoneBuilt = nil
+                HOUND.Logger.error(string.format("zone build '%s' failed: %s", self_.name, tostring(err)))
+            end,
+        })
     end
 
     --- Remove Zone settings from sector
-    function HOUND.Sector:removeZone() self.settings.zone = nil end
+    function HOUND.Sector:removeZone()
+        if self._zoneBuildId then
+            HOUND.Coroutine.cancel(self._zoneBuildId)
+            self._zoneBuildId = nil
+        end
+        self.zoneBuildPending = false
+        self._onZoneBuilt = nil
+        self.settings.zone = nil
+        self.zoneCenter = nil
+        self.zoneCells = nil
+        self.zoneCellKeys = nil
+        self.zoneCellList = nil
+        self.zoneCenterHex = nil
+        self.zoneRadiusHex = nil
+        self.zoneVersion = self.zoneVersion + 1
+        self._membershipCache = setmetatable({}, { __mode = "k" })
+    end
 
     --- get Sector zone center
     -- @return DCS point or nil
@@ -594,9 +701,44 @@ do
     end
 
     --- update contact for zone memberships
+    -- A contact in the same hex and with the same weapon range cannot change its
+    -- result while the sector grid is unchanged, so cache it per contact.
     -- @param contact HOUND.Contact instance
-    function HOUND.Sector:updateSectorMembership(contact)
-        local inSector, threatsSector = HoundUtils.Polygon.threatOnSector(self.settings.zone,contact:getPos(),contact:getMaxWeaponsRange())
+    -- @param[opt] hexPoint contact hex precomputed for this cycle
+    function HOUND.Sector:updateSectorMembership(contact, hexPoint)
+        local position = contact:getPos()
+        local range = contact:getMaxWeaponsRange()
+        local inSector, threatsSector
+
+        if self.zoneBuildPending or not self.zoneCellKeys then
+            -- grid not ready (or build failed): resolve immediately with the polygon path
+            inSector, threatsSector = HoundUtils.Polygon.threatOnSectorLegacy(
+                self.settings.zone, position, range)
+        elseif HOUND.useHexGrid and hexPoint then
+            local cached = self._membershipCache[contact]
+            if cached and cached.version == self.zoneVersion
+                and cached.r == hexPoint.r and cached.q == hexPoint.q
+                and cached.range == range then
+                inSector, threatsSector = cached.inSector, cached.threatsSector
+            else
+                inSector, threatsSector = HoundUtils.Polygon.threatOnSector(
+                    self.settings.zone, position, range,
+                    self.zoneCellKeys, self.zoneCellList,
+                    self.zoneCenterHex, self.zoneRadiusHex, hexPoint)
+                self._membershipCache[contact] = {
+                    version = self.zoneVersion,
+                    r = hexPoint.r, q = hexPoint.q, range = range,
+                    inSector = inSector, threatsSector = threatsSector,
+                }
+            end
+        else
+            -- legacy path or a contact without a position: no hex cache
+            inSector, threatsSector = HoundUtils.Polygon.threatOnSector(
+                self.settings.zone, position, range,
+                self.zoneCellKeys, self.zoneCellList,
+                self.zoneCenterHex, self.zoneRadiusHex, hexPoint)
+        end
+
         contact:updateSector(self.name, inSector, threatsSector)
         local site = self._contacts:getSite(contact)
         if site then site:updateSector() end

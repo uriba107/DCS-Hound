@@ -1,6 +1,21 @@
 do
     TestHoundUtils = {}
 
+    local function buildZoneGrid(zone)
+        local hex = HOUND.Mist.hex
+        local centerHex = hex.pointToHex(HOUND.Mist.getAvgPoint(zone))
+        local cells = hex.getFromRoute(zone, true)
+        local keys, list = {}, {}
+        local radiusHex = 0
+        for _, cell in pairs(cells) do
+            keys[hex.cellKey(cell.r, cell.q)] = true
+            table.insert(list, cell)
+            local distance = hex.distance(centerHex, cell)
+            if distance > radiusHex then radiusHex = distance end
+        end
+        return keys, list, centerHex, radiusHex
+    end
+
     function TestHoundUtils:setUp()
     end
 
@@ -1328,33 +1343,57 @@ do
     end
 
     function TestHoundUtils:TestThreatOnSectorInside()
-        local square = {{x=0,z=0},{x=100,z=0},{x=100,z=100},{x=0,z=100}}
-        local inside = {x=50,z=50}
-        local inPoly, intPoly = HOUND.Utils.Polygon.threatOnSector(square, inside)
-        if inPoly ~= nil then
-            lu.assertIsBoolean(inPoly)
-            lu.assertIsBoolean(intPoly)
-        end
+        local square = {{x=-5000,y=0,z=-5000},{x=5000,y=0,z=-5000},{x=5000,y=0,z=5000},{x=-5000,y=0,z=5000}}
+        local keys, list, centerHex, radiusHex = buildZoneGrid(square)
+        local inPoly, intPoly = HOUND.Utils.Polygon.threatOnSector(square, {x=0,z=0}, nil, keys, list, centerHex, radiusHex)
+        lu.assertIsTrue(inPoly)
+        lu.assertIsTrue(intPoly)
     end
 
     function TestHoundUtils:TestThreatOnSectorOutside()
-        local square = {{x=0,z=0},{x=100,z=0},{x=100,z=100},{x=0,z=100}}
-        local outside = {x=200,z=200}
-        local inPoly, intPoly = HOUND.Utils.Polygon.threatOnSector(square, outside)
-        if inPoly ~= nil then
-            lu.assertIsBoolean(inPoly)
-            lu.assertIsBoolean(intPoly)
-        end
+        local square = {{x=-5000,y=0,z=-5000},{x=5000,y=0,z=-5000},{x=5000,y=0,z=5000},{x=-5000,y=0,z=5000}}
+        local keys, list, centerHex, radiusHex = buildZoneGrid(square)
+        local inPoly, intPoly = HOUND.Utils.Polygon.threatOnSector(square, {x=50000,z=50000}, nil, keys, list, centerHex, radiusHex)
+        lu.assertIsFalse(inPoly)
+        lu.assertIsFalse(intPoly)
     end
 
     function TestHoundUtils:TestThreatOnSectorWithRadius()
-        local square = {{x=0,y=0,z=0},{x=100,y=0,z=0},{x=100,y=0,z=100},{x=0,y=0,z=100}}
-        local nearEdge = {x=110,y=0,z=50}
-        local inPoly, intPoly = HOUND.Utils.Polygon.threatOnSector(square, nearEdge, 20)
-        if inPoly ~= nil then
-            lu.assertIsBoolean(inPoly)
-            lu.assertIsBoolean(intPoly)
-        end
+        local square = {{x=-5000,y=0,z=-5000},{x=5000,y=0,z=-5000},{x=5000,y=0,z=5000},{x=-5000,y=0,z=5000}}
+        local keys, list, centerHex, radiusHex = buildZoneGrid(square)
+        local nearEdge = {x=6000,z=0}
+        local inPoly, intPoly = HOUND.Utils.Polygon.threatOnSector(square, nearEdge, 2000, keys, list, centerHex, radiusHex)
+        lu.assertIsFalse(inPoly)
+        lu.assertIsTrue(intPoly)
+    end
+
+    function TestHoundUtils:TestThreatOnSectorNoCells()
+        local square = {{x=-5000,z=-5000},{x=5000,z=-5000},{x=5000,z=5000},{x=-5000,z=5000}}
+        -- no hex grid built: nil passthrough (default/meta sector)
+        lu.assertIsNil(HOUND.Utils.Polygon.threatOnSector(square, {x=0,z=0}))
+    end
+
+    function TestHoundUtils:TestThreatOnSectorLegacyFlag()
+        local square = {
+            {x=0,y=0,z=0},{x=100,y=0,z=0},{x=100,y=0,z=100},{x=0,y=0,z=100},
+        }
+        local keys, list, centerHex, radiusHex = buildZoneGrid(square)
+        local saved = HOUND.useHexGrid
+        HOUND.useHexGrid = false
+
+        local inPoly, intPoly = HOUND.Utils.Polygon.threatOnSector(square, {x=50,y=0,z=50}, nil, keys, list, centerHex, radiusHex)
+        lu.assertIsTrue(inPoly)
+        lu.assertIsTrue(intPoly)
+
+        inPoly, intPoly = HOUND.Utils.Polygon.threatOnSector(square, {x=200,y=0,z=200}, nil, keys, list, centerHex, radiusHex)
+        lu.assertIsFalse(inPoly)
+        lu.assertIsFalse(intPoly)
+
+        inPoly, intPoly = HOUND.Utils.Polygon.threatOnSector(square, {x=110,y=0,z=50}, 20, keys, list, centerHex, radiusHex)
+        lu.assertIsFalse(inPoly)
+        lu.assertIsTrue(intPoly)
+
+        HOUND.useHexGrid = saved
     end
 
     function TestHoundUtils:TestAzMinMaxInvalidRef()

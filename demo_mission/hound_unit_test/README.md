@@ -175,9 +175,11 @@ The **UI/Comms** batch (5) is special: it registers a `world.event` handler for 
 | `TestPointClusterTiltWithRef` | Tilt relative to reference |
 | `TestThreatOnSectorInvalidPolygon` | `threatOnSector` with bad polygon → nil |
 | `TestThreatOnSectorInvalidPoint` | `threatOnSector` with bad point → nil |
-| `TestThreatOnSectorInside` | Point inside polygon → true, true |
-| `TestThreatOnSectorOutside` | Point outside polygon → false, false |
-| `TestThreatOnSectorWithRadius` | Point near polygon with radius overlap |
+| `TestThreatOnSectorInside` | Point inside sector hex grid → true, true |
+| `TestThreatOnSectorOutside` | Point far outside sector hex grid → false, false |
+| `TestThreatOnSectorWithRadius` | Point outside but within range of sector cells → false, true |
+| `TestThreatOnSectorNoCells` | No sector hex grid → nil passthrough |
+| `TestThreatOnSectorLegacyFlag` | `HOUND.useHexGrid = false` restores polygon in/intersects results |
 | `TestAzMinMaxInvalidRef` | `azMinMax` with bad ref → nil |
 | `TestAzMinMaxInvalidPoly` | `azMinMax` with bad poly → nil |
 | `TestAzMinMaxRefInside` | Ref inside polygon → nil |
@@ -562,6 +564,20 @@ Sector model unit tests covering construction, callsign, zone, child sectors, tr
 | `TestSetGetZone` | Manually set zone → hasZone true, getZone returns zone |
 | `TestRemoveZone` | `removeZone` clears zone, hasZone false |
 | `TestGetCenter` | `getCenter` returns zoneCenter when set |
+| `TestSetZoneBuildsCells` | `setZone` builds `zoneCells`, `zoneCellKeys`, `zoneCellList`, `zoneCenterHex`, `zoneRadiusHex` |
+| `TestSetZoneReplacementDiffers` | Replacing the zone rebuilds cells and center at the new location |
+| `TestRemoveZonePurgesCells` | `removeZone` clears zone, center, and all three hex fields |
+| `TestSetZoneTooFewPoints` | Zone with fewer than 3 points → nil cells and no zone |
+| `TestSetZoneAcceptsDrawnZone2D` | Drawn-zone Vec2 `{x,y}` points accepted (group routes are `{x,y,z}`) |
+| `TestSetZoneInvalidKeepsExisting` | Malformed/too-short candidate is a no-op; existing zone and cells stay consistent |
+| `TestUpdateSectorMembershipHex` | Center contact → `updateSector` gets (true, true) |
+| `TestUpdateSectorMembershipPendingUsesLegacy` | While the grid builds, membership resolves immediately through the polygon path |
+| `TestUpdateSectorMembershipCacheHex` | Same hex repeats without a query; hex and range changes requery |
+| `TestUpdateSectorMembershipCacheZoneInvalidation` | `setZone` rebuild invalidates the per-contact result cache |
+| `TestUpdateSectorMembershipCacheLegacyBypass` | `useHexGrid=false` bypasses the cache and queries every time |
+| `TestIsThreatening` | Member → false; outside threat → true; no threat → false |
+| `TestSetHexRadiusRebuilds` | `HOUND.setHexRadius` syncs `hex.getRadius` and rebuilds zoned sectors |
+| `TestSetHexRadiusInvalid` | Nil, non-number, and zero radius are ignored |
 
 **Child Sectors:**
 
@@ -859,6 +875,7 @@ Coroutine scheduler unit tests for `HOUND.Coroutine` (011). Runs in batch 1.
 | `TestHasWorkTrue` | Has entries → true |
 | `TestShutdown` | Clear all state |
 | `TestPumpSelfCancelKeepsWalking` | Self-cancel during resume is deferred; next record still runs in the tick |
+| `TestPumpFirstRunImmediateAtLargeMissionTime` | New record runs on the first pump even when `now - interval` rounds below `interval` |
 | `TestPumpShutdownThenAddDefers` | shutdown+add during a tick defers new work to a later tick, no second scheduler |
 
 ### `test-hex.lua` — TestHoundHex
@@ -875,9 +892,14 @@ Hex grid unit tests for `HOUND.Mist.hex` (`src/020 - HoundMist.lua`). No DCS run
 | `TestCubeSpiral` | `cubeSpiral(center, 2)` count = 19, all within distance 2, contains center |
 | `TestLineDraw` | Length = distance + 1, endpoints present |
 | `TestGetFromRouteFill` | Fill count > edge-only count; edge hashes subset of fill; no `"0 0 -0"` key |
+| `TestGetFromRouteFillInsidePolygon` | Every filled (non-edge) cell center passes `pointInPolygon` |
+| `TestGetFromRouteYields` | Optional `yieldFn` produces a resumable build with the same result |
 | `TestRingWalkProperty` | First-hit ring k == brute-force min distance over `getFromRoute` set |
 | `TestDrawNoMist` | `draw` with `mist` nil/bare table → nil, no error (`_G.mist` restored) |
-| `TestRadius` | Default 10000; `setRadius`/`getRadius` roundtrip with restore |
+| `TestUseHexGridDefault` | `HOUND.useHexGrid` defaults true and toggles back |
+| `TestRadius` | `HOUND.hexRadius` and `hex.getRadius()` default 1000; `setRadius` roundtrip; nil/string/zero ignored |
+| `TestThreatOnSectorHexQuery` | Center → true, true; far → false, false; outside-in-range → false, true |
+| `TestThreatOnSectorScanMatchesBruteForce` | Grid of query points: numeric-key scan matches brute-force min hex distance |
 | `TestMakeVec3GL` | x/z match `makeVec3`, y = `land.getHeight` + offset; skipped when `land` is nil |
 
 ## Mission Layout

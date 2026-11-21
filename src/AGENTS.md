@@ -90,12 +90,24 @@ DCS runs all mission scripting on one thread. Every hook (event handler, timer c
 - Keep the Kalman filter math in `HoundContactEmitter` and matrix ops in `HoundMatrix` separated from business logic.
 - Every change to a hot path (per-contact, per-site, per-event, per-tick loop) gets a guard/duplication pass: remove redundant checks and hoist loop-invariant lookups before commit.
 
+### Sector Zone Hex Grid
+
+- `HOUND.useHexGrid` (default true) selects the hex query; set it false to restore the legacy polygon path (`pointInPolygon` + `shape.insideShape`) for rollback or the DCS agreement run.
+- `HOUND.hexRadius` (default 1000 m) is the single resolution. `HOUND.setHexRadius` and `HOUND.Mist.hex.setRadius` reject non-numbers and values below 1; the global setter rebuilds every zoned sector via `Sector:setZone(zone)`.
+- `HOUND.Sector:setZone` builds `zoneCells`, `zoneCellKeys` (`{[hex.cellKey]=true}`), `zoneCellList`, `zoneCenterHex`, `zoneRadiusHex` asynchronously through `HOUND.Coroutine`; the `getFromRoute` fill yields via its optional `yieldFn`. `zoneBuildPending` is true until the index is complete. `removeZone` cancels the build and purges the fields plus `zoneCenter`. Invalid candidates (nil, fewer than 3 points, non-point entries) are a no-op; both Vec2 `{x,y}` drawn zones and Vec3 `{x,y,z}` group routes are accepted.
+- While `zoneBuildPending`, `Sector:updateSectorMembership` resolves the contact immediately with `HOUND.Utils.Polygon.threatOnSectorLegacy` (polygon membership + radius); the completed grid replaces that result on the completion refresh. Membership is never left unresolved during a build.
+- `HOUND.Mist.hex.getFromRoute` uses an allocation-free ray cast for the fill and accepts an optional `yieldFn` (pass `coroutine.yield`) to build incrementally.
+- `HOUND.Utils.Polygon.threatOnSector(polygon, point, radius, cellKeys, cellList, centerHex, radiusHex, hexPoint)` returns `(inSector, intersectsZone)`. It returns nil when `cellKeys`/`cellList`/`centerHex` are absent (default and meta sectors).
+- Query is prefilter (integer `hexDist` vs `rings + radiusHex`), membership by packed `hex.cellKey`, then a scan of `cellList` with early exit. `rings = ceil(radius / (1.5 * R)) + 1`, so a threat is never missed. No `cubeRing`/string hashing in the query.
+- `HoundElint:updateSectorMembership` computes one `pointToHex` per contact per cycle and passes it to every sector. `Sector:updateSectorMembership` caches the `(inSector, intersects)` result per contact while `zoneVersion`, contact hex `r/q`, and `maxWeaponsRange` are unchanged. `setZone`/`removeZone` bump `zoneVersion` and reset the weak-keyed cache. The cache is bypassed when `HOUND.useHexGrid` is false (legacy agreement path).
+- `HOUND.Contact.Base:isThreatening` excludes the sector member (`primarySector`); `threatSectors` remains the single membership store.
+
 ### Key Conventions
 
 - New files go between existing numeric prefixes (e.g. `115 - Foo.lua` after `110`)
 - Don't gate production logic on `HOUND.DEBUG` — compile flips it to `false`
 - Don't put logic in `StopWatch` / `:Stop()` / `HOUND.Logger.trace("` lines — stripped at compile
-- `HOUND.Coroutine` is pump-safe: `add` may append to `_list` during a pump and the new record runs on a later tick, while `cancel`/`cancelByName`/`shutdown` mark records dead (`rec.dead`) instead of removing them; dead records are purged after the walk (`purgeDead`). Never remove from or reorder `_list` from inside a coroutine body or its callbacks
+- `HOUND.Coroutine` is pump-safe: `add` may append to `_list` during a pump and the new record runs on a later tick, while `cancel`/`cancelByName`/`shutdown` mark records dead (`rec.dead`) instead of removing them; dead records are purged after the walk (`purgeDead`). Never remove from or reorder `_list` from inside a coroutine body or its callbacks. New records use `lastResume = -math.huge` so the first pump slice is due immediately; do not initialize it from `now - interval` (floating-point rounding at large mission times skips the first slice)
 - `HOUND.Matrix:new` and `HOUND.Contact.Estimator.UPLKF:create` are methods. Their `__call` metamethods (`matrix(...)`, `UPLKF(...)`) must re-supply the receiver (`HOUND.Matrix:new(...)`, `.create(...)`); dropping the implicit call argument passes the first user argument as `self` and fails at runtime
 - `DATAPOINTS_NUM = 30` hard FIFO cap per platform per emitter
 - Pre-briefed contacts (`preBriefedContact`) bypass triangulation but still drive state machine

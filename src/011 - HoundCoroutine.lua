@@ -127,19 +127,21 @@ do
         local co = coroutine.create(function()
             return func(unpack(args))
         end)
+        local interval = type(opts.interval) == "number" and opts.interval
+                         or HOUND.Coroutine.YieldInterval
         local rec = {
             id = {},
             co = co,
             name = opts.name or "anonymous",
-            interval = type(opts.interval) == "number" and opts.interval
-                       or HOUND.Coroutine.YieldInterval,
-            lastResume = timer.getTime() - HOUND.Coroutine.YieldInterval,
+            interval = interval,
+            -- first pump is due immediately: now - interval can round below
+            -- interval at large mission times, skipping the first slice
+            lastResume = -math.huge,
             onError = opts.onError,
             onYield = opts.onYield,
         }
         table.insert(HOUND.Coroutine._list, rec)
         ensurePump()
-        HOUND.Logger.trace("scheduled coroutine '" .. rec.name .. "'")
         return rec.id
     end
 
@@ -233,6 +235,5 @@ do
             HOUND.Coroutine._running = false
             purgeDead()
         end
-        HOUND.Logger.trace("HOUND.Coroutine shutdown")
     end
 end

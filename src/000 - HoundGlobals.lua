@@ -41,6 +41,8 @@ do
     -- @field REF_DIST Reference distance for contact scoring. Used to calculate the weight of datap
     -- @field KALMAN_DEBUG If true, will print kalman filter debug info (currently not implemented, default is false)
     -- @field AUTO_ADD_PLATFORM_BY_PAYLOAD If true, will automatically add platforms that have ELINT payloads (currently, due to DCS limits, only works for units spawning with the required pods)
+    -- @field hexRadius Hex grid radius in meters used for sector zone acceleration (default 1000)
+    -- @field useHexGrid Use the sector hex grid for threatOnSector; false restores the legacy polygon path (default true)
     HOUND = {
         VERSION = "0.5.2-TRUNK",
         DEBUG = true,
@@ -64,6 +66,8 @@ do
         REF_DIST = 75000, -- Do not change, used for datapoint weighting
         KALMAN_DEBUG = false,
         AUTO_ADD_PLATFORM_BY_PAYLOAD = true, -- if true, will automatically add platforms that have ELINT payloads (currently, due to DCS limits, only works for units spawning with the required pods)
+        hexRadius = 1000, -- sector zone hex grid radius in meters
+        useHexGrid = true, -- false restores the legacy polygon threat query
     }
 
     --- Map Markers ENUM
@@ -170,6 +174,29 @@ do
     function HOUND.setMgrsPresicion(value)
         if type(value) == "number" then
             HOUND.MGRS_PRECISION = math.max(1,math.min(5,math.floor(value)))
+        end
+    end
+
+    --- set sector zone hex grid radius and rebuild all zoned sectors
+    -- syncs HOUND.Mist.hex and rebuilds each zoned sector's cell set.
+    -- @param value (Int) Requested radius in meters, must be at least 1
+    function HOUND.setHexRadius(value)
+        if type(value) ~= "number" then return end
+        local radius = math.floor(value)
+        if radius < 1 then return end
+        HOUND.hexRadius = radius
+        if HOUND.Mist and HOUND.Mist.hex and HOUND.Mist.hex.setRadius then
+            HOUND.Mist.hex.setRadius(radius)
+        end
+        for _, instance in pairs(HOUND.INSTANCES) do
+            local instanceRef = instance
+            for _, sector in pairs(instance:getSectors()) do
+                if sector:hasZone() then
+                    sector:setZone(sector:getZone(), function()
+                        instanceRef:updateSectorMembership()
+                    end)
+                end
+            end
         end
     end
 

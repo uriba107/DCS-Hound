@@ -338,8 +338,11 @@ do
     function HoundElint:setZone(sectorName,zoneCandidate)
         if type(sectorName) ~= "string" then return end
         if type(zoneCandidate) ~= "string" and zoneCandidate ~= nil then return end
+        local self_ = self
         if self.sectors[sectorName] then
-            self.sectors[sectorName]:setZone(zoneCandidate)
+            self.sectors[sectorName]:setZone(zoneCandidate, function()
+                self_:updateSectorMembership()
+            end)
         end
         self:updateSectorMembership()
     end
@@ -375,19 +378,40 @@ do
     -- @local
     function HoundElint:updateSectorMembership()
         local guardName = "sector-membership-" .. self:getId()
-        if HOUND.Coroutine.isRunning(guardName) then return end
+        if HOUND.Coroutine.isRunning(guardName) then
+            self._sectorUpdateQueued = true
+            return
+        end
         local self_ = self
         HOUND.Coroutine.add(function()
+            self_._sectorUpdateQueued = false
             local sectors = self_:getSectors()
             table.sort(sectors, HoundUtils.Sort.sectorsByPriorityLowFirst)
+            local contacts = self_.contacts:listAllContacts()
+            local hexPositions = nil
+            if HOUND.useHexGrid then
+                -- one pointToHex per contact per cycle, shared by every sector
+                hexPositions = {}
+                for _, contact in ipairs(contacts) do
+                    local pos = contact:getPos()
+                    if HOUND.Utils.Dcs.isPoint(pos) then
+                        hexPositions[contact] = HOUND.Mist.hex.pointToHex(pos)
+                    end
+                end
+            end
             for _, sector in pairs(sectors) do
-                for _, contact in ipairs(self_.contacts:listAllContacts()) do
-                    sector:updateSectorMembership(contact)
+                for _, contact in ipairs(contacts) do
+                    sector:updateSectorMembership(contact, hexPositions and hexPositions[contact])
                 end
                 coroutine.yield()
             end
             for _, site in ipairs(self_.contacts:listAllSites()) do
                 site:updateSector()
+            end
+            if self_._sectorUpdateQueued then
+                self_._sectorUpdateQueued = false
+                timer.scheduleFunction(function() self_:updateSectorMembership() end,
+                    nil, timer.getTime() + 0.1)
             end
         end, { name = guardName })
     end

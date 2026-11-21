@@ -146,6 +146,22 @@ do
         lu.assertEquals(#HOUND.Coroutine._list, 0)
     end
 
+    function TestHoundCoroutine:TestPumpFirstRunImmediateAtLargeMissionTime()
+        -- regression: timer.getTime() - YieldInterval can round to less than
+        -- YieldInterval in the past at large mission times, so a naive
+        -- lastResume initialization skipped the first pump slice
+        local realGetTime = timer.getTime
+        timer.getTime = function() return 1234.567 end
+        local ran = false
+        local ok, err = pcall(function()
+            HOUND.Coroutine.add(function() ran = true end)
+            HOUND.Coroutine._pump()
+        end)
+        timer.getTime = realGetTime
+        lu.assertIsTrue(ok, tostring(err))
+        lu.assertIsTrue(ran)
+    end
+
     function TestHoundCoroutine:TestPumpShutdownThenAddDefers()
         -- shutdown during a tick marks records dead; a record added afterwards joins
         -- the list for a later tick and must not arm a second scheduling loop

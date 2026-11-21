@@ -12,13 +12,15 @@ do
     --- Polygon functions
     -- @section Polygon
 
-    --- Check if polygon is under threat of SAM
-    -- @param polygon Table of point reprasenting a polygon
+    --- Legacy polygon threat query.
+    -- Used when HOUND.useHexGrid is false and while a sector's hex grid is
+    -- still building, so membership is never left unresolved.
+    -- @param polygon Table of points representing a polygon (sector zone)
     -- @param point DCS position (x,z)
     -- @param radius Radius in Meters around point to test
-    -- @return[type=Bool] True if point is in polygon
-    -- @return[type=Bool] True if radius around point intersects polygon
-    function HOUND.Utils.Polygon.threatOnSector(polygon,point, radius)
+    -- @return[type=Bool] True if point is in the polygon
+    -- @return[type=Bool] True if radius around point intersects the polygon
+    function HOUND.Utils.Polygon.threatOnSectorLegacy(polygon, point, radius)
         if type(polygon) ~= "table" or #polygon < 3 or not HOUND.Utils.Dcs.isPoint(l_mist.utils.makeVec3(polygon[1])) then
             return
         end
@@ -27,13 +29,79 @@ do
         end
         local inPolygon = l_mist.pointInPolygon(point,polygon)
         local intersectsPolygon = inPolygon
-
         if radius ~= nil and radius > 0 and l_mist.shape ~= nil then
-            -- if mist version in use contains shapesOverlap use it. (4.5.103?)
             local circle={point=point,radius=radius}
             intersectsPolygon = l_mist.shape.insideShape(circle,polygon)
         end
         return inPolygon,intersectsPolygon
+    end
+
+    --- Check if polygon is under threat of SAM
+    -- Uses the sector's hex grid cells when HOUND.useHexGrid is true (default).
+    -- Point-to-hex snap error is bounded by HOUND.hexRadius; the range rings
+    -- round up so a threat is never missed. Set HOUND.useHexGrid = false to
+    -- restore the legacy polygon implementation.
+    -- @param polygon Table of point reprasenting a polygon (sector zone)
+    -- @param point DCS position (x,z)
+    -- @param radius Radius in Meters around point to test
+    -- @param cellKeys Sector cell set keyed by HOUND.Mist.hex.cellKey
+    -- @param cellList Sector cells as an array
+    -- @param centerHex Sector zone center hex
+    -- @param radiusHex Max hex distance from centerHex to a sector cell
+    -- @param[opt] hexPoint Contact hex precomputed for this cycle
+    -- @return[type=Bool] True if point is in the sector zone
+    -- @return[type=Bool] True if radius around point intersects the sector zone
+    function HOUND.Utils.Polygon.threatOnSector(polygon,point, radius, cellKeys, cellList, centerHex, radiusHex, hexPoint)
+        if not HOUND.useHexGrid then
+            return HOUND.Utils.Polygon.threatOnSectorLegacy(polygon, point, radius)
+        end
+        if type(polygon) ~= "table" or #polygon < 3 or not HOUND.Utils.Dcs.isPoint(l_mist.utils.makeVec3(polygon[1])) then
+            return
+        end
+        if not HOUND.Utils.Dcs.isPoint(point) then
+            return
+        end
+
+        if type(cellKeys) ~= "table" or type(cellList) ~= "table" or not centerHex then
+            -- no hex grid built for this sector (default or meta sector, or zone without cells)
+            return
+        end
+
+        local hex = HOUND.Mist.hex
+        hexPoint = hexPoint or hex.pointToHex(point)
+        local step = 1.5 * hex.getRadius()
+        local rings = math.ceil((radius or 0) / step) + 1
+
+        -- prefilter against the sector's bounding circle
+        local dr = hexPoint.r - centerHex.r
+        local dq = hexPoint.q - centerHex.q
+        local ds = -(dr + dq)
+        if dr < 0 then dr = -dr end
+        if dq < 0 then dq = -dq end
+        if ds < 0 then ds = -ds end
+        if (dr + dq + ds) * 0.5 > rings + radiusHex then
+            return false, false
+        end
+
+        if cellKeys[hex.cellKey(hexPoint.r, hexPoint.q)] then
+            return true, true
+        end
+
+        -- scan the sector's own cells; no ring allocation or string hashing
+        local hr, hq = hexPoint.r, hexPoint.q
+        for i = 1, #cellList do
+            local cell = cellList[i]
+            local cr = hr - cell.r
+            local cq = hq - cell.q
+            local cs = -(cr + cq)
+            if cr < 0 then cr = -cr end
+            if cq < 0 then cq = -cq end
+            if cs < 0 then cs = -cs end
+            if (cr + cq + cs) * 0.5 <= rings then
+                return false, true
+            end
+        end
+        return false, false
     end
 
 
