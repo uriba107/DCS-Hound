@@ -1035,6 +1035,8 @@ do
     --- Marker Functions
     -- @section Markers
     HOUND.Utils.Marker._MarkId = 4999
+    --- internal: true once getId has handed out an ID
+    HOUND.Utils.Marker._MarkIdAllocated = false
     HOUND.Utils.Marker.Type = {
         NONE = 0,
         POINT = 1,
@@ -1055,6 +1057,7 @@ do
         -- else
             HOUND.Utils.Marker._MarkId = HOUND.Utils.Marker._MarkId + 1
         -- end
+        HOUND.Utils.Marker._MarkIdAllocated = true
         return HOUND.Utils.Marker._MarkId
     end
 
@@ -1067,7 +1070,7 @@ do
             HOUND.Logger.error("Failed to set Initial marker Id. Value provided was not a number")
             return false
         end
-        if HOUND.Utils.Marker._MarkId ~= 4999 then
+        if HOUND.Utils.Marker._MarkIdAllocated then
             HOUND.Logger.error("Initial MarkId not updated because markers have already been drawn")
             return false
         end

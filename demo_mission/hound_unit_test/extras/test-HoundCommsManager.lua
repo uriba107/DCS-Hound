@@ -216,6 +216,14 @@ do
         lu.assertEquals(self.manager.loop.msg.tts, "loop msg")
     end
 
+    function TestHoundCommsManager:TestAddMessageObjPriorityLoopGid()
+        self.manager.enabled = true
+        self.manager.loop = {}
+        self.manager:addMessageObj({coalition = 2, txt = "loop msg", gid = 123, priority = "loop"})
+        lu.assertIsTable(self.manager.loop.msg.gid)
+        lu.assertEquals(self.manager.loop.msg.gid[1], 123)
+    end
+
     function TestHoundCommsManager:TestAddMessageObjContactIdDedup()
         self.manager.enabled = true
         local gid = {100}

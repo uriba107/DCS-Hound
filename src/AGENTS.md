@@ -61,7 +61,7 @@ Coroutine scheduler pump interval: **50ms** (`src/011 - HoundCoroutine.lua`).
 4. `HOUND.Utils.Dcs.isGroupAlive(grp)`
 5. `HOUND.ElintWorker:onLaunchCooldown(grpName)` - per-site independent counter (`Site.last_launch_processed`). **Must not use `last_seen`**: a normal scan sample would refresh it and permanently suppress launch handling
 
-Gate 5 exits the whole block - `Sniff`, `ensureSitePrimaryHasPos` and `AlertOnLaunch` all skip. Unknown groups are never on cooldown, they are not tracked yet.
+Gate 5 exits the whole block - `Sniff`, `ensureSitePrimaryHasPos` and `AlertOnLaunch` all skip. Unknown groups are never on cooldown, they are not tracked yet. The first launch of an unknown group creates its site inside `Sniff`; the handler stamps `last_launch_processed` on that new site afterwards, so the rest of the salvo hits gate 5 instead of being processed again.
 
 ### Emitter State Machine
 
@@ -95,11 +95,11 @@ DCS runs all mission scripting on one thread. Every hook (event handler, timer c
 - New files go between existing numeric prefixes (e.g. `115 - Foo.lua` after `110`)
 - Don't gate production logic on `HOUND.DEBUG` — compile flips it to `false`
 - Don't put logic in `StopWatch` / `:Stop()` / `HOUND.Logger.trace("` lines — stripped at compile
-- `HOUND.Coroutine` is pump-safe: while the pump walks `_list`, `add`/`cancel`/`cancelByName`/`shutdown` mark records dead (`rec.dead`) instead of removing them; dead records are purged after the walk (`purgeDead`). Never structurally mutate `_list` from inside a coroutine body or its callbacks
+- `HOUND.Coroutine` is pump-safe: `add` may append to `_list` during a pump and the new record runs on a later tick, while `cancel`/`cancelByName`/`shutdown` mark records dead (`rec.dead`) instead of removing them; dead records are purged after the walk (`purgeDead`). Never remove from or reorder `_list` from inside a coroutine body or its callbacks
 - `HOUND.Matrix:new` and `HOUND.Contact.Estimator.UPLKF:create` are methods. Their `__call` metamethods (`matrix(...)`, `UPLKF(...)`) must re-supply the receiver (`HOUND.Matrix:new(...)`, `.create(...)`); dropping the implicit call argument passes the first user argument as `self` and fails at runtime
 - `DATAPOINTS_NUM = 30` hard FIFO cap per platform per emitter
 - Pre-briefed contacts (`preBriefedContact`) bypass triangulation but still drive state machine
-- Validate DCS handles before method calls: `coalition.getGroups` / `coalition.getStaticObjects` / `Group.getByName` return objects that may already be destroyed, and a live group can still hold destroyed units. DCS raises on any method call for a dead handle. Use `HOUND.Utils.Dcs.isGroupAlive` / `isUnitAlive` / `isStaticObjectAlive` / `getGroupUnits` (defined in `200 - HoundUtils.lua`) before calling methods on a handle. `isGroup` / `isUnit` / `isStaticObject` are type tests only — keep them where liveness is irrelevant or where a distinct dead state is part of the contract (`HOUND.Utils.TTS.getTransmitterPos`, `HOUND.Contact.Emitter:isAlive()`, the `S_EVENT_UNIT_LOST` gate in `804 - HoundElintEvents.lua`).
+- Validate DCS handles before method calls: `coalition.getGroups` / `coalition.getStaticObjects` / `Group.getByName` return objects that may already be destroyed, and a live group can still hold destroyed units. DCS raises on any method call for a dead handle. Use `HOUND.Utils.Dcs.isGroupAlive` / `isUnitAlive` / `isStaticObjectAlive` / `getGroupUnits` (defined in `200 - HoundUtils.lua`) before calling methods on a handle. `isGroup` / `isUnit` / `isStaticObject` are type tests only — keep them where liveness is irrelevant or where a distinct dead state is part of the contract (`HOUND.Utils.TTS.getTransmitterPos`, `HOUND.Contact.Emitter:isAlive()`, the `S_EVENT_UNIT_LOST` gate in `804 - HoundElintEvents.lua`, the unit branch of `markDeadContact` in `801 - HoundElint_properties.lua`).
 
 ## Verification
 

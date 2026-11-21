@@ -68,6 +68,18 @@ do
         lu.assertIsFalse(HOUND.Utils.Marker.setInitialId(100))
     end
 
+    function TestHoundUtils:TestSetInitialMarkIdBeforeAllocation()
+        local prevId = HOUND.Utils.Marker._MarkId
+        local prevAllocated = HOUND.Utils.Marker._MarkIdAllocated
+        HOUND.Utils.Marker._MarkId = 4999
+        HOUND.Utils.Marker._MarkIdAllocated = false
+        lu.assertIsTrue(HOUND.Utils.Marker.setInitialId(4998))
+        lu.assertEquals(HOUND.Utils.Marker.getId(), 4999)
+        lu.assertIsFalse(HOUND.Utils.Marker.setInitialId(100))
+        HOUND.Utils.Marker._MarkId = prevId
+        HOUND.Utils.Marker._MarkIdAllocated = prevAllocated
+    end
+
     function TestHoundUtils:TestMarkerCreate()
         local marker = HOUND.Utils.Marker.create()
         lu.assertIsTable(marker)
@@ -612,7 +624,7 @@ do
         -- a tiny positive speed must not floor cps to zero and divide by zero
         local t = HOUND.Utils.TTS.getReadTime(100,0.001,true)
         lu.assertIsNumber(t)
-        lu.assertIsTrue(t > 0)
+        lu.assertEquals(t,100)
     end
 
     function TestHoundUtils:TestTTSGetCardinalDirection()

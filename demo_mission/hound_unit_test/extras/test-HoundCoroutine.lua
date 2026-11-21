@@ -9,6 +9,7 @@ do
         HOUND.Coroutine.shutdown()
         HOUND.Coroutine._list = {}
         HOUND.Coroutine._running = false
+        HOUND.Coroutine._pumping = false
     end
 
     function TestHoundCoroutine:tearDown()
@@ -124,5 +125,49 @@ do
         lu.assertFalse(HOUND.Coroutine._running)
         lu.assertEquals(HOUND.Coroutine.count(), 0)
         lu.assertFalse(HOUND.Coroutine.hasWork())
+    end
+
+    function TestHoundCoroutine:TestPumpSelfCancelKeepsWalking()
+        -- a record cancelling itself during resume is deferred to purgeDead and
+        -- must not stop the next record from running in the same tick
+        local ran = {}
+        local id
+        id = HOUND.Coroutine.add(function()
+            ran.selfCancelled = true
+            HOUND.Coroutine.cancel(id)
+        end, { name = "selfCancel" })
+        HOUND.Coroutine.add(function() ran.next = true end, { name = "next" })
+
+        HOUND.Coroutine._pump()
+
+        lu.assertIsTrue(ran.selfCancelled)
+        lu.assertIsTrue(ran.next)
+        lu.assertEquals(HOUND.Coroutine.count(), 0)
+        lu.assertEquals(#HOUND.Coroutine._list, 0)
+    end
+
+    function TestHoundCoroutine:TestPumpShutdownThenAddDefers()
+        -- shutdown during a tick marks records dead; a record added afterwards joins
+        -- the list for a later tick and must not arm a second scheduling loop
+        local ran = {}
+        HOUND.Coroutine.add(function()
+            HOUND.Coroutine.shutdown()
+            HOUND.Coroutine.add(function() ran.late = true end, { name = "late" })
+        end, { name = "outer" })
+
+        local scheduled = 0
+        local realSchedule = timer.scheduleFunction
+        timer.scheduleFunction = function(...)
+            scheduled = scheduled + 1
+            return realSchedule(...)
+        end
+        local ok, err = pcall(HOUND.Coroutine._pump)
+        timer.scheduleFunction = realSchedule
+
+        lu.assertIsTrue(ok, tostring(err))
+        lu.assertNil(ran.late)
+        lu.assertEquals(scheduled, 0)
+        lu.assertEquals(HOUND.Coroutine.count(), 1)
+        lu.assertIsTrue(HOUND.Coroutine._running)
     end
 end

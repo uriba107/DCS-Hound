@@ -28,6 +28,8 @@ do
         instance._hSettings = HOUND.Config.get(HoundId)
         instance._contacts = HOUND.ContactManager.get(HoundId)
         instance.callsign = "HOUND"
+        --- internal: true once setCallsign registered self.callsign in the shared pool
+        instance._callsignRegistered = false
         instance.settings = {
             controller = nil,
             atis = nil,
@@ -176,15 +178,17 @@ do
             callsign = HoundUtils.getHoundCallsign(namePool)
         end
 
-        if self.callsign ~= nil and self.callsign ~= "HOUND" then
+        if self._callsignRegistered then
             for k = #self._hSettings.callsigns, 1, -1 do
                 if self._hSettings.callsigns[k] == self.callsign then
                     table.remove(self._hSettings.callsigns, k)
                 end
             end
+            self._callsignRegistered = false
         end
         table.insert(self._hSettings.callsigns, callsign)
         self.callsign = callsign
+        self._callsignRegistered = true
         self:updateServices()
     end
 

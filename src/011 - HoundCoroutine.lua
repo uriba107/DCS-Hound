@@ -18,7 +18,7 @@ do
         _list = {},
         --- internal: true while timer pump is armed
         _running = false,
-        --- internal: true while pump() is iterating _list; mutators defer
+        --- internal: true while pump() is iterating _list; remover mutators defer
         -- structural changes (mark dead instead of removing) until pump ends
         _pumping = false,
     }
@@ -35,11 +35,12 @@ do
     end
 
     --- internal pump — advances one tick's worth of coroutines.
-    -- Does not structurally mutate _list during the walk: a resumed coroutine
-    -- or its onError/onYield callbacks may reentrantly call add/cancel/
-    -- cancelByName/shutdown, which mark records dead instead of removing them.
-    -- Records are compacted after the walk. table.remove mid-walk would shift
-    -- indices and skip/repeat records.
+    -- Does not remove from _list during the walk: a resumed coroutine or its
+    -- onError/onYield callbacks may reentrantly call add/cancel/cancelByName/
+    -- shutdown. add appends, but the walk is bounded by the record count captured
+    -- at tick start, so new work waits for a later tick. Removers mark records dead
+    -- instead of removing them. Records are compacted after the walk. table.remove
+    -- mid-walk would shift indices and skip/repeat records.
     -- coroutine.resume returns (false, err) on error — never throws.
     -- @local
     local function pump()
@@ -96,6 +97,9 @@ do
         end
         return timer.getTime() + HOUND.Coroutine.YieldInterval
     end
+
+    --- internal: exposed so tests can advance one pump tick synchronously
+    HOUND.Coroutine._pump = pump
 
     --- start pump if idle
     -- @local

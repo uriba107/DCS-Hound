@@ -110,6 +110,25 @@ do
         lu.assertIsString(self.sector:getCallsign())
     end
 
+    function TestHoundSector:TestSetCallsignReleasesPrevious()
+        self.sector._hSettings = mockSettings
+        self.sector:setCallsign("HOUND")
+        lu.assertIsTrue(HOUND.setContainsValue(mockSettings.callsigns, "HOUND"))
+        self.sector:setCallsign("ALPHA")
+        lu.assertIsFalse(HOUND.setContainsValue(mockSettings.callsigns, "HOUND"))
+        lu.assertIsTrue(HOUND.setContainsValue(mockSettings.callsigns, "ALPHA"))
+    end
+
+    function TestHoundSector:TestSetCallsignKeepsForeignRegistration()
+        -- the initial "HOUND" placeholder is unregistered and must not release
+        -- another sector's callsign from the shared pool
+        self.sector._hSettings = mockSettings
+        table.insert(mockSettings.callsigns, "HOUND")
+        self.sector:setCallsign("ALPHA")
+        lu.assertIsTrue(HOUND.setContainsValue(mockSettings.callsigns, "HOUND"))
+        lu.assertIsTrue(HOUND.setContainsValue(mockSettings.callsigns, "ALPHA"))
+    end
+
     function TestHoundSector:TestZoneDefaults()
         lu.assertIsNil(self.sector:getZone())
         lu.assertIsFalse(self.sector:hasZone())
