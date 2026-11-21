@@ -10,8 +10,8 @@ do
     -- @param[type=?string] sectorName name or sector to filter by
     function HOUND.ElintWorker:listContactsInSector(sectorName)
         local emitters = {}
-        for _,emitter in ipairs(self.contacts) do
-            if emitter:isInSector(sectorName) then
+        for _,emitter in pairs(self.contacts) do
+            if not sectorName or emitter:isInSector(sectorName) then
                 table.insert(emitters,emitter)
             end
         end

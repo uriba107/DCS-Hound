@@ -176,9 +176,9 @@ do
             callsign = HoundUtils.getHoundCallsign(namePool)
         end
 
-        if self.callsign ~= nil or self.callsign ~= "HOUND" then
-            for k, v in ipairs(self._hSettings.callsigns) do
-                if v == self.callsign then
+        if self.callsign ~= nil and self.callsign ~= "HOUND" then
+            for k = #self._hSettings.callsigns, 1, -1 do
+                if self._hSettings.callsigns[k] == self.callsign then
                     table.remove(self._hSettings.callsigns, k)
                 end
             end
@@ -594,7 +594,8 @@ do
     function HOUND.Sector:updateSectorMembership(contact)
         local inSector, threatsSector = HoundUtils.Polygon.threatOnSector(self.settings.zone,contact:getPos(),contact:getMaxWeaponsRange())
         contact:updateSector(self.name, inSector, threatsSector)
-        self._contacts:getSite(contact):updateSector()
+        local site = self._contacts:getSite(contact)
+        if site then site:updateSector() end
     end
 
     --- return a sorted list of all sites for the sector

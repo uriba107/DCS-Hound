@@ -317,7 +317,9 @@ do
     function HOUND.Gaussian(mean, sigma)
         -- Box-Muller transform: sqrt(-2*ln(U)) * cos(2π*V) gives standard normal
         -- Multiply by sigma and add mean for desired distribution
-        return math.sqrt(-2 * math.log(math.random())) * sigma *
+        local u = math.random()
+        while u <= 0 do u = math.random() end
+        return math.sqrt(-2 * math.log(u)) * sigma *
                    math.cos(2 * math.pi * math.random()) + mean
     end
 

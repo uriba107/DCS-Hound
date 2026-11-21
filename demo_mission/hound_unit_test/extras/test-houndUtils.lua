@@ -514,6 +514,13 @@ do
         lu.assertIsTrue(v2 < v)
     end
 
+    function TestHoundUtils:TestGaussianKernelInvalidBandwidth()
+        -- non-positive bandwidth has no meaning and would flip the density sign
+        lu.assertEquals(HOUND.Utils.Cluster.gaussianKernel(0,0),0)
+        lu.assertEquals(HOUND.Utils.Cluster.gaussianKernel(0,-1),0)
+        lu.assertEquals(HOUND.Utils.Cluster.gaussianKernel("x",1),0)
+    end
+
     function TestHoundUtils:TestSortContactsById()
         local a = {uid=100,maxWeaponsRange=10000}
         local b = {uid=200,maxWeaponsRange=5000}
@@ -599,6 +606,13 @@ do
     function TestHoundUtils:TestTTSGetReadTimeGoogle()
         local t = HOUND.Utils.TTS.getReadTime(100,1.0,true)
         lu.assertIsNumber(t)
+    end
+
+    function TestHoundUtils:TestTTSGetReadTimeGoogleTinySpeed()
+        -- a tiny positive speed must not floor cps to zero and divide by zero
+        local t = HOUND.Utils.TTS.getReadTime(100,0.001,true)
+        lu.assertIsNumber(t)
+        lu.assertIsTrue(t > 0)
     end
 
     function TestHoundUtils:TestTTSGetCardinalDirection()
@@ -880,7 +894,7 @@ do
     --- coalition.getGroups / getStaticObjects. Every method raises, so reaching one of
     --- them through a guard that should have rejected the handle fails the test loudly.
     local function deadHandle(DcsClass,methods)
-        lu.assertEquals(type(DcsClass),"table",DcsClass .. " must be a table to mock a handle")
+        lu.assertEquals(type(DcsClass),"table","DCS class must be a table to mock a handle")
         local mock = {isExist = function() return false end}
         for _,name in pairs(methods) do
             mock[name] = function() error("dead handle method called: " .. name) end
@@ -891,8 +905,8 @@ do
     function TestHoundUtils:TestDcsAliveGuards()
         local liveGrp = Group.getByName("TOR_SAIPAN")
         local liveUnit = Unit.getByName("TOR_SAIPAN-1")
-        lu.assertIsNotNil(liveGrp)
-        lu.assertIsNotNil(liveUnit)
+        lu.assertNotNil(liveGrp)
+        lu.assertNotNil(liveUnit)
         lu.assertIsTrue(HOUND.Utils.Dcs.isGroupAlive(liveGrp))
         lu.assertIsFalse(HOUND.Utils.Dcs.isGroupAlive("TOR_SAIPAN"))
         lu.assertIsFalse(HOUND.Utils.Dcs.isGroupAlive(deadHandle(Group,{"getName","getID","getUnits"})))
@@ -911,12 +925,70 @@ do
         lu.assertIsTrue(#units > 0)
     end
 
+    --- mock a Weapon handle returning the given descriptor
+    local function mockWeapon(desc)
+        local mock = {getDesc = function() return desc end}
+        return setmetatable(mock,Weapon)
+    end
+
+    function TestHoundUtils:TestDcsIsWeapon()
+        lu.assertIsTrue(HOUND.Utils.Dcs.isWeapon(mockWeapon({})))
+        lu.assertIsFalse(HOUND.Utils.Dcs.isWeapon("9M120"))
+        lu.assertIsFalse(HOUND.Utils.Dcs.isWeapon(nil))
+        lu.assertIsFalse(HOUND.Utils.Dcs.isWeapon(Unit.getByName("TOR_SAIPAN-1")))
+    end
+
+    function TestHoundUtils:TestDcsIsRadarGuidedMissile()
+        lu.assertIsFalse(HOUND.Utils.Dcs.isRadarGuidedMissile(nil))
+        lu.assertIsFalse(HOUND.Utils.Dcs.isRadarGuidedMissile("9M120"))
+        lu.assertIsFalse(HOUND.Utils.Dcs.isRadarGuidedMissile(Unit.getByName("TOR_SAIPAN-1")))
+        lu.assertIsFalse(HOUND.Utils.Dcs.isRadarGuidedMissile(mockWeapon(nil)))
+
+        -- non missile categories are rejected outright (AAA shells, rockets, bombs)
+        lu.assertIsFalse(HOUND.Utils.Dcs.isRadarGuidedMissile(mockWeapon({category = Weapon.Category.SHELL})))
+        lu.assertIsFalse(HOUND.Utils.Dcs.isRadarGuidedMissile(mockWeapon({category = Weapon.Category.ROCKET})))
+        lu.assertIsFalse(HOUND.Utils.Dcs.isRadarGuidedMissile(mockWeapon({category = Weapon.Category.BOMB})))
+        lu.assertIsFalse(HOUND.Utils.Dcs.isRadarGuidedMissile(mockWeapon({category = Weapon.Category.MISSILE})))
+
+        -- radar guided missiles pass
+        for _,guidance in pairs({
+            Weapon.GuidanceType.RADAR_ACTIVE,
+            Weapon.GuidanceType.RADAR_SEMI_ACTIVE,
+            Weapon.GuidanceType.RADAR_PASSIVE
+        }) do
+            lu.assertIsTrue(HOUND.Utils.Dcs.isRadarGuidedMissile(
+                mockWeapon({category = Weapon.Category.MISSILE,guidance = guidance})))
+        end
+
+        -- missiles without a radar signature are rejected
+        for _,guidance in pairs({
+            Weapon.GuidanceType.INS,
+            Weapon.GuidanceType.IR,
+            Weapon.GuidanceType.TV,
+            Weapon.GuidanceType.LASER,
+            Weapon.GuidanceType.TELE
+        }) do
+            lu.assertIsFalse(HOUND.Utils.Dcs.isRadarGuidedMissile(
+                mockWeapon({category = Weapon.Category.MISSILE,guidance = guidance})))
+        end
+
+        -- a guided shell is still rejected - category wins
+        lu.assertIsFalse(HOUND.Utils.Dcs.isRadarGuidedMissile(
+            mockWeapon({category = Weapon.Category.SHELL,guidance = Weapon.GuidanceType.RADAR_ACTIVE})))
+    end
+
+    function TestHoundUtils:TestDcsIsRadarGuidedMissileDeadHandle()
+        -- S_EVENT_SHOT can carry a weapon handle that is already gone; getDesc
+        -- raises on it, which must be rejected rather than escaping the handler
+        lu.assertIsFalse(HOUND.Utils.Dcs.isRadarGuidedMissile(deadHandle(Weapon,{"getDesc"})))
+    end
+
     --- run a mocked coalition enumeration with the given dead group mixed in
     --- @param body function receiving the live group and a dead group handle
     function TestHoundUtils:withMockedGroups(body)
         local origGetGroups = coalition.getGroups
         local liveGrp = Group.getByName("TOR_SAIPAN")
-        lu.assertIsNotNil(liveGrp)
+        lu.assertNotNil(liveGrp)
         local deadGrp = deadHandle(Group,{"getName","getID","getUnits"})
         coalition.getGroups = function() return {liveGrp,deadGrp} end
         local ok, err = pcall(body,liveGrp,deadGrp)
@@ -939,11 +1011,11 @@ do
     function TestHoundUtils:TestDcsQueriesSkipDeadGroups()
         self:withMockedGroups(function(liveGrp)
             local groups = HOUND.Utils.Dcs.getGroupNames()
-            lu.assertIsNotNil(groups["TOR_SAIPAN"])
+            lu.assertNotNil(groups["TOR_SAIPAN"])
             lu.assertEquals(HOUND.Length(groups),1)
 
             local units = HOUND.Utils.Dcs.getUnitNames("TOR_SAIPAN")
-            lu.assertIsNotNil(units["TOR_SAIPAN-1"])
+            lu.assertNotNil(units["TOR_SAIPAN-1"])
 
             lu.assertEquals(HOUND.Length(HOUND.Utils.Filter.groupsByPrefix("TOR_SAIPAN")),1)
             lu.assertEquals(HOUND.Length(HOUND.Utils.Filter.unitsByPrefix("TOR_SAIPAN")),
@@ -983,12 +1055,12 @@ do
     function TestHoundUtils:TestStaticObjectQueriesSkipDeadObjects()
         local origGetStaticObjects = coalition.getStaticObjects
         local liveObj = StaticObject.getByName("StaticTower")
-        lu.assertIsNotNil(liveObj)
+        lu.assertNotNil(liveObj)
         local deadObj = deadHandle(StaticObject,{"getName"})
         coalition.getStaticObjects = function() return {liveObj,deadObj} end
         local ok, err = pcall(function()
             local objs = HOUND.Utils.Dcs.getStaticObjectNames()
-            lu.assertIsNotNil(objs["StaticTower"])
+            lu.assertNotNil(objs["StaticTower"])
             lu.assertEquals(HOUND.Length(objs),1)
             lu.assertEquals(HOUND.Length(HOUND.Utils.Filter.staticObjectsByPrefix("StaticTower")),1)
         end)
@@ -1007,6 +1079,12 @@ do
         end)
         Group.getByName = origGetByName
         lu.assertIsTrue(ok,tostring(err))
+    end
+
+    function TestHoundUtils:TestGetRwrContactsDeadHandle()
+        -- a destroyed platform must not reach hasSensors/getController
+        lu.assertItemsEquals(HOUND.Utils.Elint.getRwrContacts(deadHandle(Unit,{"hasSensors","getCoalition","getController"})),{})
+        lu.assertItemsEquals(HOUND.Utils.Elint.getRwrContacts(nil),{})
     end
 
     function TestHoundUtils:TestDcsGetGroupNamesNoPrefix()

@@ -13,8 +13,8 @@ do
     -- @tab[opt] settings table containing comms instance settings
     -- @return CommsManager Instance
     function HOUND.Comms.Manager:create(sector,houndConfig,settings)
-        if (not houndConfig and type(houndConfig) ~= "table") or
-            (not sector and type(sector) ~= "string") then
+        if type(houndConfig) ~= "table" or
+            type(sector) ~= "string" then
                 HOUND.Logger.warn("[Hound] - Comm Controller could not be initilized, missing params")
                 return nil
         end
@@ -22,12 +22,13 @@ do
         setmetatable(CommsManager, HOUND.Comms.Manager)
         CommsManager.enabled = false
         CommsManager.transmitter = nil
-        CommsManager.sector = nil
+        CommsManager.sector = sector
         CommsManager.houndConfig = houndConfig
 
         CommsManager._queue = {
             {},{},{}
         }
+        CommsManager.loop = { msg = nil }
 
         CommsManager.settings = {
             freq = 250.000,

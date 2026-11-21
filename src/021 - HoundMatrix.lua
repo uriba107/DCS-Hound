@@ -61,7 +61,9 @@ do
     --// matrix ( rows [, comlumns [, value]] )
     -- set __call behaviour of matrix
     -- for matrix( ... ) as HOUND.Matrix.new( ... )
-    setmetatable( HOUND.Matrix, { __call = function( ... ) return HOUND.Matrix.new( ... ) end } )
+    -- new() is a method, so the implicit call argument (HOUND.Matrix itself) is
+    -- discarded while HOUND.Matrix is passed back in as the method receiver
+    setmetatable( HOUND.Matrix, { __call = function( _, ... ) return HOUND.Matrix:new( ... ) end } )
 
     -- functions are designed to be light on checks
     -- so we get Lua errors instead on wrong input
@@ -603,11 +605,11 @@ do
     --// HOUND.Matrix.random( mtx [,start] [, stop] [, idip] )
     -- fillmatrix with random values
     local numfill = function( _,start,stop,idp )
-        return l_math.random( start,stop ) / idp
+        return math.random( start,stop ) / idp
     end
     local tfill = function( t,start,stop,idp )
         for i in ipairs(t) do
-            t[i] = l_math.random( start,stop ) / idp
+            t[i] = math.random( start,stop ) / idp
         end
         return t
     end
@@ -659,9 +661,9 @@ do
     function HOUND.Matrix.copy( m1 )
         local docopy = HOUND.Matrix.type( m1 ) == "number" and num_copy or t_copy
         local mtx = {}
-        for i = 1,#m1[1] do
+        for i = 1,#m1 do
             mtx[i] = {}
-            for j = 1,#m1 do
+            for j = 1,#m1[1] do
                 mtx[i][j] = docopy( m1[i][j] )
             end
         end

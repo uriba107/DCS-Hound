@@ -18,20 +18,41 @@ do
         _list = {},
         --- internal: true while timer pump is armed
         _running = false,
+        --- internal: true while pump() is iterating _list; mutators defer
+        -- structural changes (mark dead instead of removing) until pump ends
+        _pumping = false,
     }
 
+    --- internal: drop dead-marked records. Only call outside a pump walk.
+    -- @local
+    local function purgeDead()
+        local list = HOUND.Coroutine._list
+        for i = #list, 1, -1 do
+            if list[i].dead then
+                table.remove(list, i)
+            end
+        end
+    end
+
     --- internal pump — advances one tick's worth of coroutines.
+    -- Does not structurally mutate _list during the walk: a resumed coroutine
+    -- or its onError/onYield callbacks may reentrantly call add/cancel/
+    -- cancelByName/shutdown, which mark records dead instead of removing them.
+    -- Records are compacted after the walk. table.remove mid-walk would shift
+    -- indices and skip/repeat records.
     -- coroutine.resume returns (false, err) on error — never throws.
     -- @local
     local function pump()
         if not HOUND.Coroutine._running then return nil end
+        HOUND.Coroutine._pumping = true
         local now = timer.getTime()
         local list = HOUND.Coroutine._list
+        local n = #list
         local i = 1
-        while i <= #list do
+        while i <= n do
             local rec = list[i]
-            if coroutine.status(rec.co) == "dead" then
-                table.remove(list, i)
+            if rec.dead or coroutine.status(rec.co) == "dead" then
+                i = i + 1
             elseif (now - rec.lastResume) >= rec.interval then
                 local startT = timer.getTime()
                 local ok, v1, v2 = coroutine.resume(rec.co)
@@ -44,7 +65,8 @@ do
                     if rec.onError then
                         pcall(rec.onError, v1)
                     end
-                    table.remove(list, i)
+                    rec.dead = true
+                    i = i + 1
                 else
                     rec.lastResume = now
                     if rec.onYield then
@@ -57,15 +79,16 @@ do
                             HOUND.Coroutine.MaxExecutionTime))
                     end
                     if coroutine.status(rec.co) == "dead" then
-                        table.remove(list, i)
-                    else
-                        i = i + 1
+                        rec.dead = true
                     end
+                    i = i + 1
                 end
             else
                 i = i + 1
             end
         end
+        HOUND.Coroutine._pumping = false
+        purgeDead()
 
         if #list == 0 then
             HOUND.Coroutine._running = false
@@ -117,13 +140,18 @@ do
     end
 
     --- cancel a coroutine by handle
+    -- Mutating _list while the pump walks it is unsafe, so during a pump the
+    -- record is only marked dead and removed after the walk (purgeDead).
     -- @param id handle returned from add
     -- @return true if found and removed
     function HOUND.Coroutine.cancel(id)
         if id == nil then return false end
-        for i, rec in ipairs(HOUND.Coroutine._list) do
-            if rec.id == id then
-                table.remove(HOUND.Coroutine._list, i)
+        for _, rec in ipairs(HOUND.Coroutine._list) do
+            if not rec.dead and rec.id == id then
+                rec.dead = true
+                if not HOUND.Coroutine._pumping then
+                    purgeDead()
+                end
                 return true
             end
         end
@@ -136,14 +164,14 @@ do
     function HOUND.Coroutine.cancelByName(name)
         if type(name) ~= "string" then return 0 end
         local removed = 0
-        local i = 1
-        while i <= #HOUND.Coroutine._list do
-            if HOUND.Coroutine._list[i].name == name then
-                table.remove(HOUND.Coroutine._list, i)
+        for _, rec in ipairs(HOUND.Coroutine._list) do
+            if not rec.dead and rec.name == name then
+                rec.dead = true
                 removed = removed + 1
-            else
-                i = i + 1
             end
+        end
+        if removed > 0 and not HOUND.Coroutine._pumping then
+            purgeDead()
         end
         return removed
     end
@@ -154,7 +182,8 @@ do
     -- @return bool
     function HOUND.Coroutine.isRunning(name)
         for _, rec in ipairs(HOUND.Coroutine._list) do
-            if rec.name == name
+            if not rec.dead
+               and rec.name == name
                and coroutine.status(rec.co) ~= "dead" then
                 return true
             end
@@ -164,12 +193,16 @@ do
 
     --- total active coroutine count
     function HOUND.Coroutine.count()
-        return #HOUND.Coroutine._list
+        local count = 0
+        for _, rec in ipairs(HOUND.Coroutine._list) do
+            if not rec.dead then count = count + 1 end
+        end
+        return count
     end
 
     --- predicate: any active coroutines?
     function HOUND.Coroutine.hasWork()
-        return #HOUND.Coroutine._list > 0
+        return HOUND.Coroutine.count() > 0
     end
 
     --- convenience alias for coroutine.yield
@@ -179,9 +212,23 @@ do
     end
 
     --- cancel everything; used by HoundElint:destroy and :systemOff
+    -- Clears _list in place (doesn't replace the table) so an in-progress
+    -- pump keeps iterating the same array; dead-marking lets the pump skip
+    -- and purge naturally. Coroutines added after shutdown are not orphaned.
     function HOUND.Coroutine.shutdown()
-        HOUND.Coroutine._list = {}
-        HOUND.Coroutine._running = false
+        for _, rec in ipairs(HOUND.Coroutine._list) do
+            if not rec.dead then
+                rec.dead = true
+            end
+        end
+        -- Do not clear _running mid-pump: a coroutine added from inside the
+        -- current slice would re-arm the pump, and the finishing pump would
+        -- then schedule a second one. The active pump sees the empty list and
+        -- clears _running itself.
+        if not HOUND.Coroutine._pumping then
+            HOUND.Coroutine._running = false
+            purgeDead()
+        end
         HOUND.Logger.trace("HOUND.Coroutine shutdown")
     end
 end

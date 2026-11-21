@@ -238,6 +238,7 @@ do
         HOUND.Coroutine.cancelByName("sector-membership-" .. self:getId())
         if self.elintTaskID ~= nil then
             timer.removeFunction(self.elintTaskID)
+            self.elintTaskID = nil
         end
         self:purgeRadioMenu()
         if notify == nil or notify then
@@ -324,6 +325,12 @@ do
         if not filename then
             filename = string.format("hound_contacts_%d.%s",self:getId(), format)
         end
+        -- keep only the base name to prevent path traversal out of the DCS writedir
+        filename = string.match(tostring(filename), "[^\\/]+$") or string.format("hound_contacts_%d.%s",self:getId(), format)
+        -- "." and ".." are valid matches above but still resolve outside the writedir
+        if filename == "." or filename == ".." then
+            filename = string.format("hound_contacts_%d.%s",self:getId(), format)
+        end
         if format == "json" then
             local report = {
                 ReportGenerated = HoundUtils.Text.getTime(),
@@ -340,9 +347,14 @@ do
                 HOUND.Logger.warn("Failed to open file for JSON export: " .. tostring(err))
                 return
             end
-            jsonFile:write(net.lua2json(report))
-            jsonFile:flush()
+            local jsonOk, jsonErr = pcall(function()
+                jsonFile:write(net.lua2json(report))
+                jsonFile:flush()
+            end)
             jsonFile:close()
+            if not jsonOk then
+                HOUND.Logger.warn("Failed to write JSON export: " .. tostring(jsonErr))
+            end
             return
         end
         local currentGameTime = HoundUtils.Text.getTime()
@@ -353,16 +365,21 @@ do
         end
         csvFile:write("SiteId,SiteNatoDesignation,TrackId,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accuracy,lastSeen,DcsType,DcsUnit,DcsGroup,ReportGenerated\n")
         csvFile:flush()
-        for _,site in pairs(self.contacts:listAllSitesByRange()) do
-            local siteItems = site:generateIntelBrief()
-            if #siteItems > 0 then
-                for _,item in ipairs(siteItems) do
-                    csvFile:write(item .. "," .. currentGameTime .."\n")
-                    csvFile:flush()
+        local csvOk, csvWriteErr = pcall(function()
+            for _,site in pairs(self.contacts:listAllSitesByRange()) do
+                local siteItems = site:generateIntelBrief()
+                if #siteItems > 0 then
+                    for _,item in ipairs(siteItems) do
+                        csvFile:write(item .. "," .. currentGameTime .."\n")
+                        csvFile:flush()
+                    end
                 end
             end
-        end
+        end)
         csvFile:close()
+        if not csvOk then
+            HOUND.Logger.warn("Failed to write CSV export: " .. tostring(csvWriteErr))
+        end
     end
 
     --- return Debugging information

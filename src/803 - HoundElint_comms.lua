@@ -21,7 +21,7 @@ do
             self.sectors[sectorName]:enableController(settings)
             return
         end
-        if string.lower(sectorName) == "all" and settings == nil then
+        if type(sectorName) == "string" and string.lower(sectorName) == "all" then
             for _,sector in pairs(self.sectors) do
                 sector:enableController()
             end
@@ -37,8 +37,9 @@ do
         end
         if self.sectors[sectorName] ~= nil then
             self.sectors[sectorName]:disableController()
+            return
         end
-        if sectorName:lower() == "all" then
+        if type(sectorName) == "string" and string.lower(sectorName) == "all" then
             for _,sector in pairs(self.sectors) do
                 sector:disableController()
             end
@@ -275,7 +276,7 @@ do
         if sectorName == nil then
             sectorName = "default"
         end
-        if sectorName == "all" then
+        if type(sectorName) == "string" and string.lower(sectorName) == "all" then
             for _,sector in pairs(self.sectors) do
                 sector:removeNotifier()
             end

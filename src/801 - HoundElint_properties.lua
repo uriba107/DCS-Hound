@@ -95,7 +95,7 @@ do
         end
 
         for _,unit in pairs(units) do
-            if unit:getCoalition() ~= self.settings:getCoalition() and unit:isExist() and HOUND.setContains(HOUND.DB.Radars,unit:getTypeName()) then
+            if unit:isExist() and unit:getCoalition() ~= self.settings:getCoalition() and HOUND.setContains(HOUND.DB.Radars,unit:getTypeName()) then
                 self.contacts:setPreBriefedContact(unit)
             end
         end

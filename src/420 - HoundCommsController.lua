@@ -15,6 +15,7 @@ do
     -- @return HOUND.Comms.Controller Instance
     function HOUND.Comms.Controller:create(sector,houndConfig,settings)
         local instance = self:superClass():create(sector,houndConfig,settings)
+        if not instance then return nil end
         setmetatable(instance, HOUND.Comms.Controller)
         self.__index = self
 

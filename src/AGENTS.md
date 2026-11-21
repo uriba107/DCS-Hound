@@ -33,6 +33,7 @@ This subtree owns all Lua source files that compose the HoundElint system. The n
 - `HOUND.ElintWorker.contacts[unitName] = Emitter` — master list of detected radar emitters
 - `HOUND.ElintWorker.sites[groupId] = Site` — logical grouping by DCS Group
 - `Site.emitters[]` are **references** into `contacts`, not copies
+- `Site.last_seen` stores the emitter's **absolute** `getAbsTime()` timestamp (never a relative age)
 - `Site.typeAssigned` computed by **set intersection** of its emitters' `typeAssigned` arrays
 - `Contact.Base` position data (`pos.LL`, `pos.grid`, `pos.be`) is lazily derived from `pos.p`; `hasPosData()`/`ensurePosData()` gate functions that concatenate grid/BE strings
 - `ensurePosData()` recomputes `pos.LL` from `pos.p` when either `lat` or `lon` is absent (partial LL values are not trusted)
@@ -46,12 +47,40 @@ This subtree owns all Lua source files that compose the HoundElint system. The n
 | Menu | 60s | Atomic F10 radio menu rebuild, sorted by distance |
 | Markers | 120s | Coroutine, yields every 3 sites |
 | ATIS | 180s | Refresh broadcast text (transmission scheduler 4s) |
+| Launch cooldown | `AlertOnLaunchCooldown` (30s) | Per-site independent counter. Suppresses all launch handling while a site is inside its window |
 
 Coroutine scheduler pump interval: **50ms** (`src/011 - HoundCoroutine.lua`).
+
+### Launch Event Gate
+
+`S_EVENT_SHOT` handling in `804 - HoundElintEvents.lua` gates in order, cheapest first. Do not reorder or move work above a gate:
+
+1. `HOUND.Utils.Dcs.isUnitAlive(DcsEvent.initiator)` - every later gate dereferences the initiator; a unit destroyed between the event and the slice raises on `getCoalition` / `getGroup`
+2. Ground/ship + enemy coalition + `Air Defence` attribute
+3. `HOUND.Utils.Dcs.isRadarGuidedMissile` - rejects shells, rockets, bombs, and TV/IR/laser/INS/TELE guided missiles. AAA barrages produce orders of magnitude more `S_EVENT_SHOT` events than missile salvos
+4. `HOUND.Utils.Dcs.isGroupAlive(grp)`
+5. `HOUND.ElintWorker:onLaunchCooldown(grpName)` - per-site independent counter (`Site.last_launch_processed`). **Must not use `last_seen`**: a normal scan sample would refresh it and permanently suppress launch handling
+
+Gate 5 exits the whole block - `Sniff`, `ensureSitePrimaryHasPos` and `AlertOnLaunch` all skip. Unknown groups are never on cooldown, they are not tracked yet.
 
 ### Emitter State Machine
 
 `NEW → DETECTED|UPDATED → ASLEEP (15 min idle) → SITE_ALIVE → UPDATED`, plus `DESTROYED`.
+
+### Runtime Performance Contract
+
+DCS runs all mission scripting on one thread. Every hook (event handler, timer callback, coroutine step) blocks the simulation while it runs. Cost per tick must scale with the work actually needed, not with total mission size.
+
+- **Guard once, at the boundary.** Validate at the public entry point or where a DCS handle enters the system. Inner functions trust their contract; no stacked `nil`/type/liveness checks on values the caller already validated.
+- **No speculative guards.** Do not add a check for a state the contract excludes ("just in case"). A guard that runs per contact per tick costs every mission; a missing guard costs one stack trace.
+- **No repeated tests in one call path.** Do not test the same handle, name, or flag at consecutive layers (caller tests, callee tests again). Do not test a condition and then re-test it inline in the same block.
+- **Hoist invariants out of loops.** Resolve DCS handles, names, config values, `contacts[x]`/`sites[x]` lookups, and `getmetatable` checks once before the loop, never per iteration.
+- **Never re-derive cached data.** `hasPosData()`/`ensurePosData()` own `pos.LL`/`pos.grid`/`pos.be`; consumers read the cached value instead of recomputing strings per contact per tick.
+- **Event-driven over poll.** Do work in the event or state transition that changes the data, not in a timer that re-derives it. Existing cycles (Scan 10s, Process 30s, Menu 60s, Markers 120s) are budgets, not targets.
+- **Cheapest reject first.** Never move expensive work above a cheap gate (see Launch Event Gate).
+- **Yield long walks.** Any walk over contacts, sites, or groups goes through `HOUND.Coroutine` in batches (Scan yields every 128 groups, Markers every 3 sites). No new unbounded loop on the main thread. Pump interval 50ms, per-resume budget `MaxExecutionTime = 0.01`.
+- **No per-tick allocation in hot paths.** Reuse scratch tables and locals; build strings only at the point they are consumed (marker text, menu text, exports).
+- **Prefer inline handling over pre-check + call.** One `if` that handles the absent case where it is used beats a separate validation pass that walks the same data first.
 
 ## Work Guidance
 
@@ -59,12 +88,15 @@ Coroutine scheduler pump interval: **50ms** (`src/011 - HoundCoroutine.lua`).
 - Add LDoc annotations for any new public function.
 - Run `hound_builder.sh` to verify the build concatenates without errors after source changes.
 - Keep the Kalman filter math in `HoundContactEmitter` and matrix ops in `HoundMatrix` separated from business logic.
+- Every change to a hot path (per-contact, per-site, per-event, per-tick loop) gets a guard/duplication pass: remove redundant checks and hoist loop-invariant lookups before commit.
 
 ### Key Conventions
 
 - New files go between existing numeric prefixes (e.g. `115 - Foo.lua` after `110`)
 - Don't gate production logic on `HOUND.DEBUG` — compile flips it to `false`
 - Don't put logic in `StopWatch` / `:Stop()` / `HOUND.Logger.trace("` lines — stripped at compile
+- `HOUND.Coroutine` is pump-safe: while the pump walks `_list`, `add`/`cancel`/`cancelByName`/`shutdown` mark records dead (`rec.dead`) instead of removing them; dead records are purged after the walk (`purgeDead`). Never structurally mutate `_list` from inside a coroutine body or its callbacks
+- `HOUND.Matrix:new` and `HOUND.Contact.Estimator.UPLKF:create` are methods. Their `__call` metamethods (`matrix(...)`, `UPLKF(...)`) must re-supply the receiver (`HOUND.Matrix:new(...)`, `.create(...)`); dropping the implicit call argument passes the first user argument as `self` and fails at runtime
 - `DATAPOINTS_NUM = 30` hard FIFO cap per platform per emitter
 - Pre-briefed contacts (`preBriefedContact`) bypass triangulation but still drive state machine
 - Validate DCS handles before method calls: `coalition.getGroups` / `coalition.getStaticObjects` / `Group.getByName` return objects that may already be destroyed, and a live group can still hold destroyed units. DCS raises on any method call for a dead handle. Use `HOUND.Utils.Dcs.isGroupAlive` / `isUnitAlive` / `isStaticObjectAlive` / `getGroupUnits` (defined in `200 - HoundUtils.lua`) before calling methods on a handle. `isGroup` / `isUnit` / `isStaticObject` are type tests only — keep them where liveness is irrelevant or where a distinct dead state is part of the contract (`HOUND.Utils.TTS.getTransmitterPos`, `HOUND.Contact.Emitter:isAlive()`, the `S_EVENT_UNIT_LOST` gate in `804 - HoundElintEvents.lua`).

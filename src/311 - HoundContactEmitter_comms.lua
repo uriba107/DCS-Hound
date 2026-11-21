@@ -44,7 +44,7 @@ do
     -- @param[opt] refPos position of reference point for BR (Not Currently Used)
     -- @return generated message
     function HOUND.Contact.Emitter:generateTtsReport(useDMM,preferMGRS,refPos)
-        if not self:hasPosData() then return end
+        if not self:hasPosData() or self.uncertenty_data == nil then return end
         useDMM = useDMM or false
         preferMGRS = preferMGRS or false
         local MGRSPrecision = HOUND.MGRS_PRECISION
@@ -102,7 +102,7 @@ do
     -- @param[opt] refPos position of reference point for BR
     -- @return generated message
     function HOUND.Contact.Emitter:generateTextReport(useDMM,refPos)
-        if not self:hasPosData() then return end
+        if not self:hasPosData() or self.uncertenty_data == nil then return end
         useDMM = useDMM or false
 
         local GridPos,BePos = self:getTextData(true,HOUND.MGRS_PRECISION)
@@ -202,7 +202,7 @@ do
     function HOUND.Contact.Emitter:generateIntelBrief()
         -- TrackId,RadarType,State,Bullseye,Latitude,Longitude,MGRS,Accuracy,DCS type,DCS Unit
         local msg = ""
-        if self:hasPosData() then
+        if self:hasPosData() and self.uncertenty_data ~= nil then
             local GridPos,BePos = self:getTextData(true,HOUND.MGRS_PRECISION)
             msg = {
                 self:getTrackId(),self:getType(),

@@ -12,7 +12,7 @@ Batches run in order; each sets a `next_test_delay` before the next fires.
 
 | # | Batch | Pattern | Test File(s) | Delay to Next |
 |---|-------|---------|-------------|---------------|
-| 1 | **Modules** | (all) | `test-houndUtils.lua`, `test-HoundContactEmitter.lua`, `test-HoundContactSite.lua`, `test-HoundSector.lua`, `test-hound-worker.lua`, `test-HoundCommsManager.lua`, `test-HoundCoroutine.lua`, `test-hex.lua` | 10s |
+| 1 | **Modules** | (all) | `test-houndUtils.lua`, `test-HoundContactEmitter.lua`, `test-HoundContactSite.lua`, `test-HoundEstimator.lua`, `test-HoundSector.lua`, `test-hound-worker.lua`, `test-HoundCommsManager.lua`, `test-HoundCoroutine.lua`, `test-hex.lua` | 10s |
 | 2 | **Init** | `01_init` | `test-hound-init.lua` | 15s |
 | 3 | **Base** | `02_base` | `test-hound-base.lua` | 2 min |
 | 4 | **2m Delay** | `2mDelay` | `test-hound-delayed.lua` | 2 min |
@@ -27,7 +27,7 @@ The **UI/Comms** batch (5) is special: it registers a `world.event` handler for 
 
 ### `test-houndUtils.lua` — TestHoundUtils
 
-147 test methods covering utility functions, mapping, geo, elint, vector, marker, polygon/cluster, TTS, text, zone, Hound globals, sort, and filter. Runs in batch 1.
+153 test methods covering utility functions, mapping, geo, elint, vector, marker, polygon/cluster, TTS, text, zone, Hound globals, sort, and filter. Runs in batch 1.
 
 **Timing & General**
 
@@ -130,10 +130,14 @@ The **UI/Comms** batch (5) is special: it registers a `world.event` handler for 
 | `TestElintGetAzimuth` | Azimuth between ELINT plane and emitter |
 | `TestGetActiveRadarsInGroup` | Active radar units (valid + invalid) |
 | `TestDcsAliveGuards` | `isGroupAlive` / `isUnitAlive` / `isStaticObjectAlive` / `getGroupUnits` on live, dead, wrong-type handles |
+| `TestDcsIsWeapon` | `isWeapon` on mock weapon, string, nil, wrong-type handles |
+| `TestDcsIsRadarGuidedMissile` | `isRadarGuidedMissile` rejects shells/rockets/bombs, TV/IR/laser/INS/TELE missiles and non-weapons; accepts RADAR_ACTIVE / RADAR_SEMI_ACTIVE / RADAR_PASSIVE missiles |
+| `TestDcsIsRadarGuidedMissileDeadHandle` | `isRadarGuidedMissile` returns false when `getDesc` raises on a dead weapon handle |
 | `TestDcsQueriesSkipDeadGroups` | `getGroupNames`/`getUnitNames`/`Filter.*`/`getActiveRadars` skip non-existing group handles from `coalition.getGroups` |
 | `TestGetActiveRadarsYieldingSkipsDeadGroups` | Yielding radar discovery terminates, yields, and skips dead group handles |
 | `TestStaticObjectQueriesSkipDeadObjects` | `getStaticObjectNames` / `Filter.staticObjectsByPrefix` skip non-existing static handles |
 | `TestGetActiveRadarsInGroupDeadHandle` | `Group.getByName` returning a dead handle yields an empty radar list |
+| `TestGetRwrContactsDeadHandle` | `getRwrContacts` returns `{}` for a dead platform handle and for nil |
 | `TestGetRadarDetectionRange` | Detection range from live units |
 | `TestGetRadarUnitsInGroup` | Radar units in group |
 | `TestGetSamMaxRange` | SAM max range from live units |
@@ -163,6 +167,7 @@ The **UI/Comms** batch (5) is special: it registers a `world.event` handler for 
 | Method | What It Tests |
 |--------|--------------|
 | `TestGaussianKernel` | `gaussianKernel` single point |
+| `TestGaussianKernelInvalidBandwidth` | Zero / negative / non-numeric bandwidth rejected (0) |
 | `TestPolygonGaussianKernelMulti` | Multiple gaussianKernel calls |
 | `TestPointClusterTilt` | Cluster tilt calculation |
 | `TestPointClusterTiltInvalid` | Invalid → 0 |
@@ -232,6 +237,7 @@ The **UI/Comms** batch (5) is special: it registers a `world.event` handler for 
 | `TestTTSGetReadTimeSpeed` | Speed multiplier affects time |
 | `TestTTSGetReadTimeString` | String vs table input |
 | `TestTTSGetReadTimeGoogle` | Google TTS rate |
+| `TestTTSGetReadTimeGoogleTinySpeed` | Near-zero speed keeps cps >= 1 (no divide by zero) |
 | `TestTTSGetVerbalConfidenceEdge` | Edge cases (0/0.5/1.0) |
 | `TestTTSGetVerbalContactAge` | Seconds/minutes/hours verbal |
 | `TestTTSGetVerbalContactAgeEdge` | Boundary transitions |
@@ -441,6 +447,10 @@ Contact model unit tests for `HOUND.Contact.Site` — unit-level site logic with
 | `TestExport` | Site export with emitters |
 | `TestExportNoEmitters` | Site export with no emitters |
 
+### `test-HoundEstimator.lua` — TestHoundEstimator
+
+44 test methods covering `HOUND.Contact.Estimator`: legacy Kalman position/azimuth filters, UB-PLKF (`:create` and the `UPLKF(...)` call form used by `Emitter:AddPoint`), `HOUND.Matrix` constructors, uncertainty, matrix F/Q, and azimuth conversion. Runs in batch 1.
+
 ### `test-hound-init.lua` — TestHoundFunctional (init)
 
 HoundElint instance lifecycle, singleton config, platform management. Runs in batch 2 (pattern `01_init`).
@@ -640,7 +650,7 @@ Sector model unit tests covering construction, callsign, zone, child sectors, tr
 
 ### `test-hound-worker.lua` — TestHoundWorker
 
-Worker and query unit tests covering `HOUND.ElintWorker` (500) and `HOUND.ElintWorker_queries` (501). Runs in batch 1.
+Worker and query unit tests covering `HOUND.ElintWorker` (500) and `HOUND.ElintWorker_queries` (501) — 62 methods. Runs in batch 1.
 
 **Constructor & Properties:**
 
@@ -691,6 +701,15 @@ Worker and query unit tests covering `HOUND.ElintWorker` (500) and `HOUND.ElintW
 | `TestGetContactNil` | `getContact(nil)` → nil |
 | `TestGetContactByString` | `getContact` by unit name |
 | `TestGetSiteNil` | `getSite(nil)` → nil |
+
+**Launch Cooldown:**
+
+| Method | What It Tests |
+|--------|--------------|
+| `TestOnLaunchCooldownUnknownGroup` | `onLaunchCooldown` returns false when the group has no tracked site |
+| `TestOnLaunchCooldownFirstLaunchPasses` | First launch for a tracked site is allowed through |
+| `TestOnLaunchCooldownBlocksRepeatLaunches` | Repeat launches inside the window are blocked by the independent counter |
+| `TestOnLaunchCooldownIgnoresLastSeen` | Stale site still passes its first launch; fresh site is still blocked — counter is independent of `last_seen` |
 
 **Remove Contact/Site:**
 

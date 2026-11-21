@@ -94,9 +94,9 @@ do
         lu.assertEquals(self.site:getState(),HOUND.EVENTS.SITE_NEW)
         lu.assertIsFalse(self.site:isAccurate())
         lu.assertIsTrue(self.site:isAlive())
-        lu.assertTrue(self.site:isTimedout())
-        lu.assertIsFalse(self.site:isActive())
-        lu.assertIsFalse(self.site:isRecent())
+        lu.assertIsFalse(self.site:isTimedout())
+        lu.assertIsTrue(self.site:isActive())
+        lu.assertIsTrue(self.site:isRecent())
     end
 
     function TestHoundContactSite:TestEmitterMgmt()

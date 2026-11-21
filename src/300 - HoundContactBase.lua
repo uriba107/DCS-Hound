@@ -320,14 +320,18 @@ do
             self.pos.LL = {}
             self.pos.LL.lat, self.pos.LL.lon = coord.LOtoLL(self.pos.p)
         end
-        if self.pos.grid == nil then
+        if self.pos.LL.lat == nil or self.pos.LL.lon == nil then return false end
+        if self.pos.grid == nil or self.pos.grid.UTMZone == nil or self.pos.grid.MGRSDigraph == nil
+            or self.pos.grid.Easting == nil or self.pos.grid.Northing == nil then
             self.pos.grid = coord.LLtoMGRS(self.pos.LL.lat, self.pos.LL.lon)
         end
-        if self.pos.be == nil or self.pos.be.brStr == nil then
+        if self.pos.be == nil or self.pos.be.brStr == nil or self.pos.be.rng == nil then
             local bullsPos = coalition.getMainRefPoint(self._platformCoalition)
             self.pos.be = HoundUtils.getBR(bullsPos,self.pos.p)
         end
-        return self.pos.grid ~= nil and self.pos.be ~= nil and self.pos.be.brStr ~= nil
+        return self.pos.grid ~= nil and self.pos.grid.UTMZone ~= nil and self.pos.grid.MGRSDigraph ~= nil
+            and self.pos.grid.Easting ~= nil and self.pos.grid.Northing ~= nil
+            and self.pos.be ~= nil and self.pos.be.brStr ~= nil and self.pos.be.rng ~= nil
     end
 
     --- return Information used in Text messages

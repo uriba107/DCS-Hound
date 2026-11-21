@@ -52,7 +52,7 @@ do
                 }
             end
 
-            if type(datapoint.err.score) ~= "table" then
+            if not datapoint.err or type(datapoint.err.score) ~= "table" then
                 return self.estimated.p
             end
             self.P.x = self.P.x + math.sqrt(datapoint.err.score.x)
@@ -83,6 +83,9 @@ do
     -- @param maxError maximum expected angular error (~2σ bound) in radians
     -- @return Kalman filter instance
     function HOUND.Contact.Estimator.Kalman.AzFilter(maxError)
+        if type(maxError) ~= "number" or maxError <= 0 then
+            maxError = l_math.rad(HOUND.MAX_ANGULAR_RES_DEG)
+        end
         local Kalman = {}
         Kalman.P = 0.5
         -- Convert maxError (~2σ) to variance (σ²) for Kalman calculations
@@ -108,8 +111,8 @@ do
 
             self.P = self.P + noiseVar -- add process noise as variance
             local K = self.P / (self.P + self.noiseVariance)
-            local deltaAz = newAz - predAz
-            self.estimated = ((self.estimated + K * (deltaAz)) + TwoPI) % TwoPI
+            local deltaAz = ((newAz - predAz) + l_math.pi) % TwoPI - l_math.pi
+            self.estimated = (predAz + K * deltaAz + TwoPI) % TwoPI
             self.P = (1 - K) * self.P
         end
 
@@ -213,6 +216,8 @@ do
         instance.t0 = timestamp or timer.getAbsTime()
         instance.mobile = isMobile or false
         v0 = v0 or { z = 0, x = 0 }
+        v0.x = v0.x or 0
+        v0.z = v0.z or 0
 
         -- intialize the State Matrix
         -- DCS is wierd. X is north, Z is east, Y is up. so values are flipped so it will conform to normal X,Y used in the whitepaper
@@ -391,6 +396,7 @@ do
     function HOUND.Contact.Estimator.UPLKF:predict(timestamp)
         timestamp = timestamp or timer.getAbsTime()
         local deltaT = timestamp - self.t0
+        if deltaT <= 0 then return end
         self.t0 = timestamp
 
         -- predict state
@@ -411,9 +417,16 @@ do
         local sigma_r = (z_err or l_math.rad(HOUND.MAX_ANGULAR_RES_DEG)) / 2
 
         local x_hat, P_k
-        -- If deltaT is very small (< 0.5s), skip prediction - measurements are essentially simultaneous
+        -- If deltaT is negative (out-of-order timestamp), use current state without
+        -- prediction and without advancing the time reference
+        -- If deltaT is very small (< 0.5s), also skip prediction - measurements are
+        -- essentially simultaneous, but still advance the time reference
         -- This handles multiple platforms measured in the same loop iteration
-        if deltaT < 0.5 then
+        if deltaT < 0 then
+            x_hat = self.state
+            P_k = self.P
+        elseif deltaT < 0.5 then
+            self.t0 = timestamp
             x_hat = self.state
             P_k = self.P
         else

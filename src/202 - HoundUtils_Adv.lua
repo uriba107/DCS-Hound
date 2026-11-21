@@ -65,6 +65,9 @@ do
     -- @param value input to evaluate
     -- @param bandwidth Standard diviation for weight calculation
     function HOUND.Utils.Cluster.gaussianKernel(value,bandwidth)
+        if type(value) ~= "number" or type(bandwidth) ~= "number" or bandwidth <= 0 then
+            return 0
+        end
         return (1/(bandwidth*l_math.sqrt(2*l_math.pi))) * l_math.exp(-0.5*((value / bandwidth))^2)
     end
 
@@ -75,6 +78,7 @@ do
     -- @param returnRelative If true returning array will contain relative positions to referencePos
     -- @return List
     function HOUND.Utils.Cluster.getDeltaSubsetPercent(Table,referencePos,NthPercentile,returnRelative)
+        if type(Table) ~= "table" then return {} end
         -- local t = l_mist.utils.deepCopy(Table)
         -- t = HOUND.Utils.Geo.setHeight(t)
         -- shallow copy to reduce overhead
@@ -83,6 +87,10 @@ do
             table.insert(t, { x = pt.x, y = pt.y or 0, z = pt.z, dist = 0, score = pt.score})
         end
         local len_t = #t
+        if len_t == 0 then return {} end
+        if type(NthPercentile) ~= "number" then
+            NthPercentile = 1
+        end
 
         if not referencePos then
             referencePos = l_mist.getAvgPoint(t)
@@ -93,7 +101,7 @@ do
         table.sort(t,function(a,b) return a.dist < b.dist end)
 
         local percentile = l_math.floor(len_t*NthPercentile)
-        local NumToUse = l_math.max(l_math.min(2,len_t),percentile)
+        local NumToUse = l_math.max(l_math.min(2,len_t),l_math.min(percentile,len_t))
         local returnTable = {}
         for i = 1, NumToUse  do
             table.insert(returnTable,t[i])
@@ -111,16 +119,20 @@ do
     -- @param PosList List of positions with scores
     -- @return Weighted average position estimate {x,y,z}
     function HOUND.Utils.Cluster.WeightedCentroid(PosList)
+        if type(PosList) ~= "table" then
+            return {x = 0, y = 0, z = 0}
+        end
         local sumWeights = 0
         local estimate = {z=0,x=0}
         for _,pos in ipairs(PosList) do
-            if HOUND.Utils.Dcs.isPoint(pos) and pos.score > 0 then
+            if HOUND.Utils.Dcs.isPoint(pos) and type(pos.score) == "number" and pos.score > 0 then
                 local w = pos.score
                 sumWeights = sumWeights + w
                 estimate.z = estimate.z + (w * (pos.z - estimate.z)) / sumWeights
                 estimate.x = estimate.x + (w * (pos.x - estimate.x)) / sumWeights
             end
         end
+        -- DCS land.getHeight uses a Vec2 {x=,y=} where 'y' is the z-axis coordinate
         estimate.y = land.getHeight({x=estimate.x, y=estimate.z}) or 0
         return estimate
     end

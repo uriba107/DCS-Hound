@@ -16,6 +16,7 @@ do
     -- @return HOUND.Comms.InformationSystem Instance
     function HOUND.Comms.InformationSystem:create(sector,houndConfig,settings)
         local instance = self:superClass():create(sector,houndConfig,settings)
+        if not instance then return nil end
         setmetatable(instance, HOUND.Comms.InformationSystem)
         self.__index = self
 
@@ -52,6 +53,7 @@ do
     function HOUND.Comms.InformationSystem:reportEWR(state)
         if type(state) == "boolean" then
             self:setSettings("reportEWR",state)
+            self.preferences.reportewr = state
         end
     end
 
@@ -79,7 +81,6 @@ do
         self.loop.header = ""
         self.loop.body = ""
         self.loop.footer = ""
-        self.callback = {}
     end
 
     --- configure function for loop
@@ -103,7 +104,7 @@ do
     -- @return time of next run
     function HOUND.Comms.InformationSystem:runCallback()
         local nextDelay = self.callback.interval or 300
-        if self.callback ~= nil and type(self.callback.func) == "function"  then
+        if type(self.callback.func) == "function"  then
             self.callback.func(self.callback.args,self.loop,self.preferences)
         end
         return timer.getTime() + nextDelay
@@ -116,8 +117,12 @@ do
         if self.loop and not self.loop.msg then
             self:runCallback()
         end
-        if self.loop and self.loop.msg and self.loop.msg.tts ~= nil and (string.len(self.loop.msg.tts) > 0 or string.len(self.loop.msg.txt) > 0) then
-            return self.loop.msg
+        if self.loop and self.loop.msg then
+            local msgValid = (self.loop.msg.tts ~= nil and string.len(self.loop.msg.tts) > 0) or
+                             (self.loop.msg.txt ~= nil and string.len(self.loop.msg.txt) > 0)
+            if msgValid then
+                return self.loop.msg
+            end
         end
     end
 end
