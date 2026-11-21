@@ -260,6 +260,9 @@ do
     function HOUND.Comms.Manager:addMessageObj(obj)
         if obj.coalition == nil or not self.enabled then return end
         if obj.txt == nil and obj.tts == nil then return end
+        if obj.gid and type(obj.gid) ~= "table" then
+            obj.gid = {obj.gid}
+        end
         if obj.priority == "loop" then
             self.loop.msg = obj
             return
@@ -268,9 +271,6 @@ do
         if obj.priority == 0 then
             obj.priority = 1
             obj.push = true
-        end
-        if obj.gid and type(obj.gid) ~= "table" then
-            obj.gid = {obj.gid}
         end
         if obj.contactId ~= nil then
             for id,queueObj in ipairs(self._queue[obj.priority]) do

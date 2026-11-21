@@ -154,6 +154,13 @@ do
             -- and launch alert all skip, so a salvo is processed once per cooldown window.
             if self.contacts:onLaunchCooldown(grpName) then return end
             self.contacts:Sniff(grpName)
+            -- Sniff creates the site when the group was not tracked yet. Stamp this
+            -- launch on it so the rest of the salvo hits the cooldown gate instead of
+            -- being processed again; already tracked sites were stamped above.
+            local site = self.contacts:getSite(grpName, true)
+            if site and not site.last_launch_processed then
+                site.last_launch_processed = timer.getAbsTime()
+            end
             local tgtPos = nil
             local wpnTgt = DcsEvent.weapon:getTarget()
             if HoundUtils.Dcs.isUnitAlive(wpnTgt) then

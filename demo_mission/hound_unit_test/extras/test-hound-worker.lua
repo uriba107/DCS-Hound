@@ -385,13 +385,25 @@ do
     end
 
     function TestHoundWorker:TestListContactsInSector()
-        -- listContactsInSector uses ipairs, so contacts must have numeric indices
-        local c1 = { uid = 1, isInSector = function(_, s) return s == "target" end }
-        local c2 = { uid = 2, isInSector = function(_, s) return false end }
-        self.worker.contacts = { [1] = c1, [2] = c2 }
+        -- contacts live in a name-keyed dictionary, not an array
+        local c1 = { uid = 2, isInSector = function(_, s) return s == "target" end }
+        local c2 = { uid = 1, isInSector = function(_, s) return false end }
+        self.worker.contacts = { alpha = c1, bravo = c2 }
         local result = self.worker:listContactsInSector("target")
         lu.assertEquals(#result, 1)
+        lu.assertEquals(result[1], c1)
+    end
+
+    function TestHoundWorker:TestListContactsInSectorNilSector()
+        local c1 = { uid = 3 }
+        local c2 = { uid = 1 }
+        local c3 = { uid = 2 }
+        self.worker.contacts = { charlie = c1, alpha = c2, bravo = c3 }
+        local result = self.worker:listContactsInSector()
+        lu.assertEquals(#result, 3)
         lu.assertEquals(result[1].uid, 1)
+        lu.assertEquals(result[2].uid, 2)
+        lu.assertEquals(result[3].uid, 3)
     end
 
     function TestHoundWorker:TestListContactsInSectorEmpty()

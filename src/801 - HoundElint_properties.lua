@@ -120,7 +120,9 @@ do
             for i, unit in ipairs(units) do
                 units[i] = unit:getName()
             end
-        elseif HoundUtils.Dcs.isUnitAlive(obj) then
+        elseif HoundUtils.Dcs.isUnit(obj) then
+            -- S_EVENT_UNIT_LOST hands over a unit that is already gone (isExist false)
+            -- but still carries the name of the tracked contact.
             table.insert(units,obj:getName())
         end
         if not obj then

@@ -49,7 +49,8 @@ The **UI/Comms** batch (5) is special: it registers a `world.event` handler for 
 |--------|--------------|
 | `TestGetHoundId` | Sequential ID increment |
 | `TestGetMarkId` | Sequential mark ID increment |
-| `TestSetInitialMarkId` | Guard: non-number/nil → false |
+| `TestSetInitialMarkId` | Guard: non-number/nil → false; reconfigure after allocation → false |
+| `TestSetInitialMarkIdBeforeAllocation` | `setInitialId(4998)` before first `getId`; first ID is 4999; later reconfigure fails |
 | `TestGetMarkIdIncrement` | Marker creation increments ID |
 | `TestGetReportId` | Phonetic-alphabet cycling through Z→A wrap |
 | `TestGetRoundedElevationFt` | Meter-to-feet rounding (50 m → 150 ft, 8848 m → 29050 ft) |
@@ -237,7 +238,7 @@ The **UI/Comms** batch (5) is special: it registers a `world.event` handler for 
 | `TestTTSGetReadTimeSpeed` | Speed multiplier affects time |
 | `TestTTSGetReadTimeString` | String vs table input |
 | `TestTTSGetReadTimeGoogle` | Google TTS rate |
-| `TestTTSGetReadTimeGoogleTinySpeed` | Near-zero speed keeps cps >= 1 (no divide by zero) |
+| `TestTTSGetReadTimeGoogleTinySpeed` | Near-zero speed keeps cps >= 1 and yields exactly 100s for 100 chars |
 | `TestTTSGetVerbalConfidenceEdge` | Edge cases (0/0.5/1.0) |
 | `TestTTSGetVerbalContactAge` | Seconds/minutes/hours verbal |
 | `TestTTSGetVerbalContactAgeEdge` | Boundary transitions |
@@ -549,6 +550,8 @@ Sector model unit tests covering construction, callsign, zone, child sectors, tr
 | `TestSetCallsignNATO` | `setCallsign("BRAVO", true)` with NATO flag |
 | `TestSetCallsignBoolArg` | `setCallsign(true)` treats bool as NATO flag, generates random callsign |
 | `TestSetCallsignNoDuplicate` | Duplicate callsign generates a new one from the pool |
+| `TestSetCallsignReleasesPrevious` | Changing callsign, including from "HOUND", releases the old pool registration |
+| `TestSetCallsignKeepsForeignRegistration` | Unregistered initial "HOUND" placeholder never removes another sector's registration |
 | `TestSetCallsignNil` | `setCallsign()` with no args generates random callsign |
 
 **Zone:**
@@ -734,7 +737,8 @@ Worker and query unit tests covering `HOUND.ElintWorker` (500) and `HOUND.ElintW
 | `TestListAllContacts` | `listAllContacts` converts table to sequential list |
 | `TestListAllContactsByRange` | `listAllContactsByRange` removes, sorts, re-inserts |
 | `TestListAllContactsWithSector` | Sector-filtered list |
-| `TestListContactsInSector` | `listContactsInSector` returns table for sector |
+| `TestListContactsInSector` | Name-keyed contacts: returns the one matching the sector |
+| `TestListContactsInSectorNilSector` | Nil sector returns every contact sorted by range/uid |
 | `TestListContactsInSectorEmpty` | Unknown sector → empty table |
 | `TestSortContacts` | `sortContacts` sorts list by comparator |
 | `TestSortContactsInvalidFunc` | Invalid comparator → no-op |
@@ -793,6 +797,7 @@ Comms infrastructure unit tests for `HOUND.Comms.Manager` (400) and `HOUND.Comms
 | `TestAddMessageObjPriorityClamp` | Priority > 3 clamped to 3 |
 | `TestAddMessageObjPriorityZero` | Priority 0 → 1, push=true |
 | `TestAddMessageObjPriorityLoop` | Priority "loop" → stored in self.loop.msg |
+| `TestAddMessageObjPriorityLoopGid` | Loop message scalar gid normalized to `{gid}` before dispatch |
 | `TestAddMessageObjContactIdDedup` | Same gid+contactId updates existing |
 | `TestAddMessageObjGidTable` | gid number → wrapped in table |
 | `TestAddMessageObjGidTableAlready` | gid table kept as table |
@@ -853,6 +858,8 @@ Coroutine scheduler unit tests for `HOUND.Coroutine` (011). Runs in batch 1.
 | `TestHasWorkFalse` | Empty → false |
 | `TestHasWorkTrue` | Has entries → true |
 | `TestShutdown` | Clear all state |
+| `TestPumpSelfCancelKeepsWalking` | Self-cancel during resume is deferred; next record still runs in the tick |
+| `TestPumpShutdownThenAddDefers` | shutdown+add during a tick defers new work to a later tick, no second scheduler |
 
 ### `test-hex.lua` — TestHoundHex
 
