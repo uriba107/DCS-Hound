@@ -1481,9 +1481,12 @@ do
         if not HOUND.Utils.Dcs.isUnitAlive(platform) or not platform:hasSensors(Unit.SensorType.RWR) then return {} end
         local radars = {}
         local platformCoalition = platform:getCoalition()
-        local contacts = platform:getController():getDetectedTargets(Controller.Detection.RWR)
-        for _,unit in contacts do
-            if unit:getCoalition() ~= platformCoalition and unit:getRadar() then
+        local controller = platform:getController()
+        if not controller then return radars end
+        local contacts = controller:getDetectedTargets(Controller.Detection.RWR) or {}
+        for _,unit in pairs(contacts) do
+            if (HOUND.Utils.Dcs.isUnitAlive(unit) or HOUND.Utils.Dcs.isStaticObjectAlive(unit))
+                and unit:getCoalition() ~= platformCoalition and unit:getRadar() then
                 table.insert(radars,unit:getName())
             end
         end

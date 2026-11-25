@@ -22,6 +22,13 @@ do
         getContact = function() return nil end,
     }
 
+    -- run body, then always restore state its assertions may skip
+    local function restoreAfter(restore, body)
+        local ok, err = pcall(body)
+        restore()
+        if not ok then error(err, 0) end
+    end
+
     function TestHoundSector:setUp()
         self.sector = HOUND.Sector.create(1, "default")
         lu.assertNotNil(self.sector)
@@ -56,11 +63,8 @@ do
         lu.assertIsNil(s.settings.notifier)
         lu.assertIsNil(s.settings.transmitter)
         lu.assertIsNil(s.zoneCenter)
-        lu.assertIsNil(s.zoneCells)
-        lu.assertIsNil(s.zoneCellKeys)
-        lu.assertIsNil(s.zoneCellList)
-        lu.assertIsNil(s.zoneCenterHex)
-        lu.assertIsNil(s.zoneRadiusHex)
+        lu.assertIsNil(s._zonePoly)
+        lu.assertIsNil(s._zoneHexCache)
     end
 
     function TestHoundSector:TestConstructorWithPriority()
@@ -453,31 +457,27 @@ do
         }
     end
 
-    local function withThreatCounter(fn)
-        local original = HOUND.Utils.Polygon.threatOnSector
+    local function withZoneDistanceCounter(fn)
+        local original = HOUND.Utils.Polygon.zoneDistance
         local counter = { calls = 0 }
-        HOUND.Utils.Polygon.threatOnSector = function(...)
+        HOUND.Utils.Polygon.zoneDistance = function(...)
             counter.calls = counter.calls + 1
             return original(...)
         end
         local ok, err = pcall(fn, counter)
-        HOUND.Utils.Polygon.threatOnSector = original
+        HOUND.Utils.Polygon.zoneDistance = original
         lu.assertIsTrue(ok, tostring(err))
         return counter.calls
-    end
-
-    local function finishZone(sector)
-        local guard = 0
-        while sector.zoneBuildPending do
-            HOUND.Coroutine._pump()
-            guard = guard + 1
-            if guard > 100000 then error("zone build did not finish") end
-        end
     end
 
     local function mockContact(state)
         local contact = { updates = 0 }
         contact.getPos = function() return state.pos end
+        contact.getHexCell = function()
+            if state.cell then return state.cell end
+            if not HOUND.Utils.Dcs.isPoint(state.pos) then return nil end
+            return HOUND.Mist.hex.pointToHex(state.pos)
+        end
         contact.getMaxWeaponsRange = function() return state.range end
         contact.updateSector = function(_, name, inSector, threatsSector)
             contact.updates = contact.updates + 1
@@ -488,61 +488,164 @@ do
         return contact
     end
 
-    function TestHoundSector:TestSetZoneBuildsCells()
+    function TestHoundSector:TestSetZoneBuildsPolygon()
         self.sector.name = "saipan"
         local zone = zoneSquare()
         self.sector:setZone(zone)
-        finishZone(self.sector)
         lu.assertEquals(self.sector:getZone(), zone)
-        lu.assertIsTable(self.sector.zoneCells)
-        lu.assertTrue(HOUND.Length(self.sector.zoneCells) > 0)
-        lu.assertIsTable(self.sector.zoneCellKeys)
-        lu.assertIsTable(self.sector.zoneCellList)
-        lu.assertEquals(#self.sector.zoneCellList, HOUND.Length(self.sector.zoneCells))
+        lu.assertIsTable(self.sector._zonePoly)
+        lu.assertEquals(self.sector._zonePoly.n, 4)
+        lu.assertIsTable(self.sector._zoneHexCache)
+        lu.assertIsNil(next(self.sector._zoneHexCache))
         lu.assertNotNil(self.sector.zoneCenter)
-        lu.assertIsTable(self.sector.zoneCenterHex)
-        lu.assertIsNumber(self.sector.zoneRadiusHex)
-        lu.assertTrue(self.sector.zoneRadiusHex > 0)
+    end
+
+    function TestHoundSector:TestUpdateSettingsZoneRebuilds()
+        self.sector.name = "saipan"
+        local zone = zoneSquare()
+        self.sector:updateSettings({zone = zone})
+        lu.assertEquals(self.sector:getZone(), zone)
+        lu.assertIsTable(self.sector._zonePoly)
+        lu.assertIsTable(self.sector._zoneHexCache)
+    end
+
+    function TestHoundSector:TestUpdateSettingsInvalidZoneKeepsCurrent()
+        self.sector.name = "saipan"
+        local zone = zoneSquare()
+        self.sector:setZone(zone)
+        local poly = self.sector._zonePoly
+        local cache = self.sector._zoneHexCache
+        self.sector:updateSettings({zone = {{x = 0, z = 0}}})
+        lu.assertIs(self.sector:getZone(), zone)
+        lu.assertIs(self.sector._zonePoly, poly)
+        lu.assertIs(self.sector._zoneHexCache, cache)
     end
 
     function TestHoundSector:TestSetZoneReplacementDiffers()
         self.sector.name = "saipan"
         self.sector:setZone(zoneSquare(0, 0))
-        finishZone(self.sector)
-        local firstCells = self.sector.zoneCells
-        local firstCenter = self.sector.zoneCenterHex
-        local firstCenterHash = HOUND.Mist.hex.hash(firstCenter)
-        lu.assertNotNil(firstCells[firstCenterHash])
+        local firstPoly = self.sector._zonePoly
+        local firstCache = self.sector._zoneHexCache
         self.sector:setZone(zoneSquare(20000, 20000))
-        finishZone(self.sector)
-        lu.assertNotEquals(firstCenterHash, HOUND.Mist.hex.hash(self.sector.zoneCenterHex))
-        lu.assertIsNil(self.sector.zoneCells[firstCenterHash])
+        lu.assertNotEquals(firstPoly, self.sector._zonePoly)
+        -- identity: luaunit deep-compares tables, and both caches start empty
+        lu.assertIsTrue(firstCache ~= self.sector._zoneHexCache)
+        lu.assertNotEquals(firstPoly.xs[1], self.sector._zonePoly.xs[1])
     end
 
-    function TestHoundSector:TestRemoveZonePurgesCells()
+    function TestHoundSector:TestMembershipFollowsRadiusChange()
+        local hex = HOUND.Mist.hex
+        local savedRadius = hex.getRadius()
+        local savedUseHexGrid = HOUND.useHexGrid
+        local realGetTime = timer.getTime
+        restoreAfter(function()
+            hex.setRadius(savedRadius)
+            HOUND.useHexGrid = savedUseHexGrid
+            timer.getTime = realGetTime
+        end, function()
+            local t = 0
+            timer.getTime = function() t = t + 0.1; return t end
+            HOUND.useHexGrid = true
+            hex.setRadius(1000)
+            local pos = {x = 12000, z = 8000, y = 0}
+            local oldHex = hex.pointToHex(pos)
+            local newHex = hex.pointToHex(pos, 2000)
+            local contact = setmetatable({ pos = { p = pos } }, HOUND.Contact.Base)
+            local cells = {}
+            -- priority 20 sorts before 10 with sectorsByPriorityLowFirst
+            local sectorA = {
+                getPriority = function() return 20 end,
+                updateSectorMembership = function(_, c)
+                    cells[1] = c:getHexCell()
+                    -- simulates an async HOUND.setHexRadius between sectors
+                    hex.setRadius(2000)
+                end,
+            }
+            local sectorB = {
+                getPriority = function() return 10 end,
+                updateSectorMembership = function(_, c) cells[2] = c:getHexCell() end,
+            }
+            local hound = setmetatable({
+                getId = function() return 987001 end,
+                getSectors = function() return {sectorA, sectorB} end,
+                contacts = {
+                    listAllContacts = function() return {contact} end,
+                    listAllSites = function() return {} end,
+                },
+            }, HoundElint)
+
+            hound:updateSectorMembership()
+            local guard = 0
+            while HOUND.Coroutine.isRunning("sector-membership-987001") do
+                HOUND.Coroutine._pump()
+                guard = guard + 1
+                if guard > 100 then error("sector membership did not finish") end
+            end
+
+            lu.assertNotNil(cells[1])
+            lu.assertNotNil(cells[2])
+            lu.assertEquals(cells[1].r, oldHex.r)
+            lu.assertEquals(cells[1].q, oldHex.q)
+            lu.assertEquals(cells[2].r, newHex.r)
+            lu.assertEquals(cells[2].q, newHex.q)
+        end)
+    end
+
+    function TestHoundSector:TestMembershipYieldsPerSector()
+        local savedUseHexGrid = HOUND.useHexGrid
+        local realGetTime = timer.getTime
+        restoreAfter(function()
+            HOUND.useHexGrid = savedUseHexGrid
+            timer.getTime = realGetTime
+        end, function()
+            local t = 0
+            timer.getTime = function() t = t + 0.1; return t end
+            HOUND.useHexGrid = true
+            local contact = setmetatable({ pos = { p = {x = 0, y = 0, z = 0} } }, HOUND.Contact.Base)
+            local sectors = {}
+            for i = 1, 3 do
+                sectors[i] = {
+                    getPriority = function() return i end,
+                    updateSectorMembership = function() end,
+                }
+            end
+            local hound = setmetatable({
+                getId = function() return 987002 end,
+                getSectors = function() return sectors end,
+                contacts = {
+                    listAllContacts = function() return {contact} end,
+                    listAllSites = function() return {} end,
+                },
+            }, HoundElint)
+
+            hound:updateSectorMembership()
+            local pumps = 0
+            while HOUND.Coroutine.isRunning("sector-membership-987002") do
+                HOUND.Coroutine._pump()
+                pumps = pumps + 1
+                if pumps > 100 then error("sector membership did not finish") end
+            end
+            lu.assertIsTrue(pumps > 1)
+        end)
+    end
+
+    function TestHoundSector:TestRemoveZonePurgesZone()
         self.sector.name = "saipan"
         self.sector:setZone(zoneSquare())
-        finishZone(self.sector)
-        lu.assertNotNil(self.sector.zoneCells)
+        lu.assertNotNil(self.sector._zonePoly)
         self.sector:removeZone()
         lu.assertIsNil(self.sector:getZone())
         lu.assertIsNil(self.sector.zoneCenter)
-        lu.assertIsNil(self.sector.zoneCells)
-        lu.assertIsNil(self.sector.zoneCellKeys)
-        lu.assertIsNil(self.sector.zoneCellList)
-        lu.assertIsNil(self.sector.zoneCenterHex)
-        lu.assertIsNil(self.sector.zoneRadiusHex)
+        lu.assertIsNil(self.sector._zonePoly)
+        lu.assertIsNil(self.sector._zoneHexCache)
     end
 
     function TestHoundSector:TestSetZoneTooFewPoints()
         self.sector.name = "saipan"
         self.sector:setZone({{x = 0, z = 0}, {x = 1000, z = 0}})
         lu.assertIsNil(self.sector:getZone())
-        lu.assertIsNil(self.sector.zoneCells)
-        lu.assertIsNil(self.sector.zoneCellKeys)
-        lu.assertIsNil(self.sector.zoneCellList)
-        lu.assertIsNil(self.sector.zoneCenterHex)
-        lu.assertIsNil(self.sector.zoneRadiusHex)
+        lu.assertIsNil(self.sector._zonePoly)
+        lu.assertIsNil(self.sector._zoneHexCache)
     end
 
     function TestHoundSector:TestSetZoneAcceptsDrawnZone2D()
@@ -555,51 +658,45 @@ do
             {x = -5000, y = 5000},
         }
         self.sector:setZone(zone)
-        finishZone(self.sector)
         lu.assertEquals(self.sector:getZone(), zone)
-        lu.assertIsTable(self.sector.zoneCells)
-        lu.assertTrue(HOUND.Length(self.sector.zoneCells) > 0)
-        lu.assertNotNil(self.sector.zoneCenterHex)
+        lu.assertEquals(self.sector._zonePoly.n, 4)
+        local hex = HOUND.Mist.hex
+        local pos = {x = 0, y = 0, z = 0}
+        local inSector, threats = HOUND.Utils.Polygon.threatOnSector(
+            zone, pos, 0, hex.pointToHex(pos), self.sector._zoneHexCache, self.sector._zonePoly)
+        lu.assertIsTrue(inSector)
+        lu.assertIsTrue(threats)
     end
 
     function TestHoundSector:TestSetZoneInvalidKeepsExisting()
         self.sector.name = "saipan"
         local zone = zoneSquare()
         self.sector:setZone(zone)
-        finishZone(self.sector)
-        local cells = self.sector.zoneCells
-        local keys = self.sector.zoneCellKeys
-        local list = self.sector.zoneCellList
+        local poly = self.sector._zonePoly
+        local cache = self.sector._zoneHexCache
         local center = self.sector.zoneCenter
-        local centerHex = self.sector.zoneCenterHex
-        local radiusHex = self.sector.zoneRadiusHex
 
         self.sector:setZone({{x = 0, z = 0}, {x = 1000, z = 0}})
         lu.assertEquals(self.sector:getZone(), zone)
-        lu.assertEquals(self.sector.zoneCells, cells)
-        lu.assertEquals(self.sector.zoneCellKeys, keys)
-        lu.assertEquals(self.sector.zoneCellList, list)
-        lu.assertEquals(self.sector.zoneCenter, center)
-        lu.assertEquals(self.sector.zoneCenterHex, centerHex)
-        lu.assertEquals(self.sector.zoneRadiusHex, radiusHex)
+        lu.assertIs(self.sector._zonePoly, poly)
+        lu.assertIs(self.sector._zoneHexCache, cache)
+        lu.assertIs(self.sector.zoneCenter, center)
 
         self.sector:setZone({{x = 0, z = 0}, {x = 1000, z = 0}, {x = "bad", z = 0}})
         lu.assertEquals(self.sector:getZone(), zone)
-        lu.assertEquals(self.sector.zoneCells, cells)
-        lu.assertEquals(self.sector.zoneCellKeys, keys)
-        lu.assertEquals(self.sector.zoneCellList, list)
-        lu.assertEquals(self.sector.zoneCenterHex, centerHex)
-        lu.assertEquals(self.sector.zoneRadiusHex, radiusHex)
+        lu.assertIs(self.sector._zonePoly, poly)
+        lu.assertIs(self.sector._zoneHexCache, cache)
+        lu.assertIs(self.sector.zoneCenter, center)
     end
 
     function TestHoundSector:TestUpdateSectorMembershipHex()
         self.sector.name = "saipan"
         self.sector:setZone(zoneSquare())
-        finishZone(self.sector)
         self.sector._contacts = mockContacts
         local captured = {}
         local contact = {
             getPos = function() return {x = 0, y = 0, z = 0} end,
+            getHexCell = function() return HOUND.Mist.hex.pointToHex({x = 0, y = 0, z = 0}) end,
             getMaxWeaponsRange = function() return 0 end,
             updateSector = function(_, name, inSector, threatsSector)
                 captured.name = name
@@ -613,89 +710,89 @@ do
         lu.assertIsTrue(captured.threatsSector)
     end
 
-    function TestHoundSector:TestUpdateSectorMembershipPendingUsesLegacy()
+    function TestHoundSector:TestUpdateSectorMembershipLazyClassify()
         self.sector.name = "saipan"
         self.sector:setZone(zoneSquare())
-        -- deliberately do not finish the async build
         self.sector._contacts = mockContacts
-        local hex = HOUND.Mist.hex
         local state = { pos = { x = 0, y = 0, z = 0 }, range = 0 }
         local contact = mockContact(state)
-        local saved = HOUND.useHexGrid
-        HOUND.useHexGrid = true
-        local ok, err = pcall(function()
-            self.sector:updateSectorMembership(contact, hex.pointToHex(state.pos))
-            lu.assertIsTrue(self.sector.zoneBuildPending)
+        local calls = withZoneDistanceCounter(function()
+            self.sector:updateSectorMembership(contact)
             lu.assertEquals(contact.updates, 1)
             lu.assertIsTrue(contact.lastIn)
             lu.assertIsTrue(contact.lastThreat)
-
-            finishZone(self.sector)
-            self.sector:updateSectorMembership(contact, hex.pointToHex(state.pos))
-            lu.assertEquals(contact.updates, 2)
-            lu.assertIsTrue(contact.lastIn)
+            self.sector:updateSectorMembership(contact)
         end)
-        HOUND.useHexGrid = saved
-        lu.assertIsTrue(ok, tostring(err))
+        lu.assertEquals(calls, 1)
+        lu.assertEquals(contact.updates, 2)
     end
 
-    function TestHoundSector:TestUpdateSectorMembershipCacheHex()
+    function TestHoundSector:TestUpdateSectorMembershipThreatOnlyOutside()
         self.sector.name = "saipan"
         self.sector:setZone(zoneSquare())
-        finishZone(self.sector)
         self.sector._contacts = mockContacts
-        local hex = HOUND.Mist.hex
-        local state = { pos = { x = 0, y = 0, z = 0 }, range = 50000 }
+        local state = { pos = { x = 12000, y = 0, z = 0 }, range = 10000 }
         local contact = mockContact(state)
-        local calls = withThreatCounter(function()
-            local h = hex.pointToHex(state.pos)
-            self.sector:updateSectorMembership(contact, h)
-            self.sector:updateSectorMembership(contact, h)
-            local h2 = hex.neighbor(h, 1)
-            self.sector:updateSectorMembership(contact, h2)
-            state.range = 60000
-            self.sector:updateSectorMembership(contact, h2)
-        end)
-        lu.assertEquals(calls, 3)
-        lu.assertEquals(contact.updates, 4)
+        self.sector:updateSectorMembership(contact)
+        lu.assertIsFalse(contact.lastIn)
+        lu.assertIsTrue(contact.lastThreat)
+
+        -- range is not part of the cached classification
+        state.range = 0
+        self.sector:updateSectorMembership(contact)
+        lu.assertIsFalse(contact.lastIn)
+        lu.assertIsFalse(contact.lastThreat)
     end
 
-    function TestHoundSector:TestUpdateSectorMembershipCacheZoneInvalidation()
+    function TestHoundSector:TestUpdateSectorMembershipZoneCacheHex()
         self.sector.name = "saipan"
         self.sector:setZone(zoneSquare())
-        finishZone(self.sector)
         self.sector._contacts = mockContacts
         local hex = HOUND.Mist.hex
         local state = { pos = { x = 0, y = 0, z = 0 }, range = 50000 }
         local contact = mockContact(state)
         local h = hex.pointToHex(state.pos)
-        local calls = withThreatCounter(function()
-            self.sector:updateSectorMembership(contact, h)
-            self.sector:updateSectorMembership(contact, h)
+        local calls = withZoneDistanceCounter(function()
+            self.sector:updateSectorMembership(contact)
+            self.sector:updateSectorMembership(contact)
+            state.cell = hex.neighbor(h, 1)
+            self.sector:updateSectorMembership(contact)
+            state.range = 60000
+            self.sector:updateSectorMembership(contact)
+        end)
+        lu.assertEquals(calls, 2)
+        lu.assertEquals(contact.updates, 4)
+    end
+
+    function TestHoundSector:TestUpdateSectorMembershipZoneCacheInvalidation()
+        self.sector.name = "saipan"
+        self.sector:setZone(zoneSquare())
+        self.sector._contacts = mockContacts
+        local state = { pos = { x = 0, y = 0, z = 0 }, range = 50000 }
+        local contact = mockContact(state)
+        local calls = withZoneDistanceCounter(function()
+            self.sector:updateSectorMembership(contact)
             self.sector:setZone(zoneSquare(20000, 20000))
-            finishZone(self.sector)
-            self.sector:updateSectorMembership(contact, h)
+            self.sector:updateSectorMembership(contact)
         end)
         lu.assertEquals(calls, 2)
     end
 
-    function TestHoundSector:TestUpdateSectorMembershipCacheLegacyBypass()
+    function TestHoundSector:TestUpdateSectorMembershipLegacyBypass()
         self.sector.name = "saipan"
         self.sector:setZone(zoneSquare())
-        finishZone(self.sector)
         self.sector._contacts = mockContacts
-        local hex = HOUND.Mist.hex
         local state = { pos = { x = 0, y = 0, z = 0 }, range = 50000 }
         local contact = mockContact(state)
-        local h = hex.pointToHex(state.pos)
         local saved = HOUND.useHexGrid
         HOUND.useHexGrid = false
         local ok, err = pcall(function()
-            local calls = withThreatCounter(function()
-                self.sector:updateSectorMembership(contact, h)
-                self.sector:updateSectorMembership(contact, h)
+            local calls = withZoneDistanceCounter(function()
+                self.sector:updateSectorMembership(contact)
+                self.sector:updateSectorMembership(contact)
             end)
-            lu.assertEquals(calls, 2)
+            lu.assertEquals(calls, 0)
+            lu.assertIsNil(next(self.sector._zoneHexCache))
         end)
         HOUND.useHexGrid = saved
         lu.assertIsTrue(ok, tostring(err))
@@ -712,39 +809,55 @@ do
         lu.assertIsFalse(nonThreat:isThreatening("saipan"))
     end
 
-    function TestHoundSector:TestSetHexRadiusRebuilds()
+    function TestHoundSector:TestSetHexRadiusResetsZoneCache()
         self.sector.name = "saipan"
         self.sector:setZone(zoneSquare())
-        finishZone(self.sector)
-        local radiusAt1000 = self.sector.zoneRadiusHex
+        local hex = HOUND.Mist.hex
+        local pos = { x = 0, y = 0, z = 0 }
+        HOUND.Utils.Polygon.threatOnSector(self.sector:getZone(), pos, 0,
+            hex.pointToHex(pos), self.sector._zoneHexCache, self.sector._zonePoly)
+        lu.assertNotNil(next(self.sector._zoneHexCache))
 
         local savedInstances = HOUND.INSTANCES
+        local savedRadius = HOUND.Mist.hex.getRadius()
+        local savedHexRadius = HOUND.hexRadius
         HOUND.INSTANCES = {
             [1] = {
                 getSectors = function() return {self.sector} end,
                 updateSectorMembership = function() end,
             },
         }
-        HOUND.setHexRadius(500)
-        finishZone(self.sector)
-        lu.assertEquals(HOUND.Mist.hex.getRadius(), 500)
-        lu.assertNotNil(self.sector.zoneCells)
-        lu.assertTrue(self.sector.zoneRadiusHex > radiusAt1000)
+        restoreAfter(function()
+            HOUND.INSTANCES = savedInstances
+            HOUND.Mist.hex.setRadius(savedRadius)
+            HOUND.hexRadius = savedHexRadius
+        end, function()
+            HOUND.setHexRadius(500)
+            lu.assertEquals(HOUND.Mist.hex.getRadius(), 500)
+            lu.assertIsTable(self.sector._zonePoly)
+            lu.assertIsNil(next(self.sector._zoneHexCache))
 
-        HOUND.setHexRadius(1000)
-        finishZone(self.sector)
-        HOUND.INSTANCES = savedInstances
-        lu.assertEquals(HOUND.Mist.hex.getRadius(), 1000)
+            HOUND.setHexRadius(1000)
+            lu.assertEquals(HOUND.Mist.hex.getRadius(), 1000)
+            lu.assertIsTable(self.sector._zonePoly)
+        end)
     end
 
     function TestHoundSector:TestSetHexRadiusInvalid()
         local savedInstances = HOUND.INSTANCES
+        local savedRadius = HOUND.Mist.hex.getRadius()
+        local savedHexRadius = HOUND.hexRadius
         HOUND.INSTANCES = {}
-        HOUND.setHexRadius(1000)
-        HOUND.setHexRadius(nil)
-        HOUND.setHexRadius("bad")
-        HOUND.setHexRadius(0)
-        HOUND.INSTANCES = savedInstances
-        lu.assertEquals(HOUND.Mist.hex.getRadius(), 1000)
+        restoreAfter(function()
+            HOUND.INSTANCES = savedInstances
+            HOUND.Mist.hex.setRadius(savedRadius)
+            HOUND.hexRadius = savedHexRadius
+        end, function()
+            HOUND.setHexRadius(1000)
+            HOUND.setHexRadius(nil)
+            HOUND.setHexRadius("bad")
+            HOUND.setHexRadius(0)
+            lu.assertEquals(HOUND.Mist.hex.getRadius(), 1000)
+        end)
     end
 end

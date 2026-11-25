@@ -123,6 +123,8 @@ do
             if msgValid then
                 return self.loop.msg
             end
+            -- drop the stale invalid message so the next poll regenerates it
+            self.loop.msg = nil
         end
     end
 end

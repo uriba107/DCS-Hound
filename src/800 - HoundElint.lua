@@ -350,8 +350,8 @@ do
             local jsonOk, jsonErr = pcall(function()
                 jsonFile:write(net.lua2json(report))
                 jsonFile:flush()
+                jsonFile:close()
             end)
-            jsonFile:close()
             if not jsonOk then
                 HOUND.Logger.warn("Failed to write JSON export: " .. tostring(jsonErr))
             end
@@ -375,8 +375,8 @@ do
                     end
                 end
             end
+            csvFile:close()
         end)
-        csvFile:close()
         if not csvOk then
             HOUND.Logger.warn("Failed to write CSV export: " .. tostring(csvWriteErr))
         end

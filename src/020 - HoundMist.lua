@@ -925,7 +925,10 @@ do
 	-- @tparam number direction diagonal index
 	-- @treturn table diagonal neighbor hex
 	function HOUND.Mist.hex.diagonalNeighbor (hex, direction)
-		return HOUND.Mist.hex.add(hex, HOUND.Mist.hex.diagonals[1+direction])
+		if type(direction) ~= "number" then return end
+		local diagonal = HOUND.Mist.hex.diagonals[1+direction]
+		if not diagonal then return end
+		return HOUND.Mist.hex.add(hex, diagonal)
 	end
 
 
@@ -1238,17 +1241,12 @@ do
 		local drawn = {}
 
 		local work = 0
-		local lastYield = yieldFn and timer.getTime() or 0
 		local function yieldNow()
 			if not yieldFn then return end
 			work = work + 1
 			if work >= 256 then
 				work = 0
-				local now = timer.getTime()
-				if now - lastYield >= 0.005 then
-					lastYield = now
-					yieldFn()
-				end
+				yieldFn()
 			end
 		end
 

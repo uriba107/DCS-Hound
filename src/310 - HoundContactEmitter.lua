@@ -594,6 +594,9 @@ do
             point.z = z + refPos.z
             local mgrs = coord.LLtoMGRS(coord.LOtoLL( point ))
             if type(mgrs) == "table" and type(mgrs.Easting) == "number" and type(mgrs.Northing ) == "number" then
+                -- y is only needed for the lat/lon conversion above; clear it so
+                -- setHeight below snaps each point to terrain elevation
+                point.y = nil
                 table.insert(polygonPoints, point)
             end
         end

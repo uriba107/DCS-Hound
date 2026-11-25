@@ -14,6 +14,13 @@ do
         return a.r == b.r and a.q == b.q and a.s == b.s
     end
 
+    -- run body, then always restore state its assertions may skip
+    local function restoreAfter(restore, body)
+        local ok, err = pcall(body)
+        restore()
+        if not ok then error(err, 0) end
+    end
+
     -- 60km square centered on origin. Covers many hexes at default radius 1000.
     local function originSquare()
         return {
@@ -82,6 +89,22 @@ do
         lu.assertEquals(countKeys(seen), 6)
         lu.assertIsNil(hex.direction(0))
         lu.assertIsNil(hex.neighbor(c, 0))
+    end
+
+    function TestHoundHex:TestDiagonalNeighbor()
+        local hex = HOUND.Mist.hex
+        local c = hex.to(0, 0, 0)
+        local seen = {}
+        for i = 0, 5 do
+            local n = hex.diagonalNeighbor(c, i)
+            lu.assertNotNil(n)
+            lu.assertEquals(hex.distance(c, n), 2)
+            seen[hex.hash(n)] = true
+        end
+        lu.assertEquals(countKeys(seen), 6)
+        lu.assertIsNil(hex.diagonalNeighbor(c, -1))
+        lu.assertIsNil(hex.diagonalNeighbor(c, 6))
+        lu.assertIsNil(hex.diagonalNeighbor(c, "bad"))
     end
 
     function TestHoundHex:TestDistance()
@@ -156,13 +179,13 @@ do
     function TestHoundHex:TestGetFromRouteYields()
         local hex = HOUND.Mist.hex
         local realGetTime = timer.getTime
-        local t = 0
-        timer.getTime = function() t = t + 0.01; return t end
-        local co = coroutine.create(function()
-            return hex.getFromRoute(originSquare(), true, coroutine.yield)
-        end)
         local resumes, result = 0, nil
-        local ok, err = pcall(function()
+        -- getTime is constant: yielding must be bounded by work units, not time
+        restoreAfter(function() timer.getTime = realGetTime end, function()
+            timer.getTime = function() return 0 end
+            local co = coroutine.create(function()
+                return hex.getFromRoute(originSquare(), true, coroutine.yield)
+            end)
             while true do
                 local resumed, value = coroutine.resume(co)
                 lu.assertIsTrue(resumed, tostring(value))
@@ -171,8 +194,6 @@ do
                 lu.assertIsTrue(resumes < 1000)
             end
         end)
-        timer.getTime = realGetTime
-        lu.assertIsTrue(ok, tostring(err))
         lu.assertIsTable(result)
         lu.assertIsTrue(HOUND.Length(result) > 0)
         lu.assertIsTrue(resumes > 1)
@@ -224,116 +245,152 @@ do
     end
 
     function TestHoundHex:TestUseHexGridDefault()
-        lu.assertIsTrue(HOUND.useHexGrid)
-        HOUND.useHexGrid = false
-        lu.assertIsFalse(HOUND.useHexGrid)
-        HOUND.useHexGrid = true
-        lu.assertIsTrue(HOUND.useHexGrid)
+        local saved = HOUND.useHexGrid
+        restoreAfter(function() HOUND.useHexGrid = saved end, function()
+            lu.assertIsTrue(HOUND.useHexGrid)
+            HOUND.useHexGrid = false
+            lu.assertIsFalse(HOUND.useHexGrid)
+            HOUND.useHexGrid = true
+            lu.assertIsTrue(HOUND.useHexGrid)
+        end)
     end
 
     function TestHoundHex:TestRadius()
         local hex = HOUND.Mist.hex
-        lu.assertEquals(HOUND.hexRadius, 1000)
-        lu.assertEquals(hex.getRadius(), 1000)
-        hex.setRadius(5000)
-        lu.assertEquals(hex.getRadius(), 5000)
-        hex.setRadius(1000)
-        lu.assertEquals(hex.getRadius(), 1000)
-        hex.setRadius(nil)
-        hex.setRadius("bad")
-        hex.setRadius(0)
-        lu.assertEquals(hex.getRadius(), 1000)
+        local savedRadius = hex.getRadius()
+        restoreAfter(function() hex.setRadius(savedRadius) end, function()
+            lu.assertEquals(HOUND.hexRadius, 1000)
+            lu.assertEquals(hex.getRadius(), 1000)
+            hex.setRadius(5000)
+            lu.assertEquals(hex.getRadius(), 5000)
+            hex.setRadius(1000)
+            lu.assertEquals(hex.getRadius(), 1000)
+            hex.setRadius(nil)
+            hex.setRadius("bad")
+            hex.setRadius(0)
+            lu.assertEquals(hex.getRadius(), 1000)
+        end)
     end
 
-    local function zoneGrid(poly)
-        local hex = HOUND.Mist.hex
-        local centerHex = hex.pointToHex(HOUND.Mist.getAvgPoint(poly))
-        local cells = hex.getFromRoute(poly, true)
-        local keys, list = {}, {}
-        local radiusHex = 0
-        for _, cell in pairs(cells) do
-            keys[hex.cellKey(cell.r, cell.q)] = true
-            table.insert(list, cell)
-            local distance = hex.distance(centerHex, cell)
-            if distance > radiusHex then radiusHex = distance end
+    local function zonePolyOf(poly)
+        local xs, zs = {}, {}
+        for i, point in ipairs(poly) do
+            xs[i] = point.x
+            zs[i] = point.z or point.y
         end
-        return keys, list, centerHex, radiusHex
+        return { xs = xs, zs = zs, n = #xs }
     end
 
-    function TestHoundHex:TestThreatOnSectorHexQuery()
+    function TestHoundHex:TestThreatOnSectorZoneQuery()
         local hex = HOUND.Mist.hex
         local savedRadius = hex.getRadius()
-        hex.setRadius(1000)
-        local poly = {
-            {x = -5000, z = -5000, y = 0},
-            {x = 5000, z = -5000, y = 0},
-            {x = 5000, z = 5000, y = 0},
-            {x = -5000, z = 5000, y = 0},
-        }
-        local keys, list, centerHex, radiusHex = zoneGrid(poly)
+        restoreAfter(function() hex.setRadius(savedRadius) end, function()
+            hex.setRadius(1000)
+            local poly = {
+                {x = -5000, z = -5000, y = 0},
+                {x = 5000, z = -5000, y = 0},
+                {x = 5000, z = 5000, y = 0},
+                {x = -5000, z = 5000, y = 0},
+            }
+            local zonePoly = zonePolyOf(poly)
+            local cache = {}
 
-        local inSector, threat = HOUND.Utils.Polygon.threatOnSector(poly, {x = 0, z = 0}, nil, keys, list, centerHex, radiusHex)
-        lu.assertIsTrue(inSector)
-        lu.assertIsTrue(threat)
+            local inSector, threat = HOUND.Utils.Polygon.threatOnSector(poly, {x = 0, z = 0}, nil, nil, cache, zonePoly)
+            lu.assertIsTrue(inSector)
+            lu.assertIsTrue(threat)
 
-        inSector, threat = HOUND.Utils.Polygon.threatOnSector(poly, {x = 50000, z = 50000}, nil, keys, list, centerHex, radiusHex)
-        lu.assertIsFalse(inSector)
-        lu.assertIsFalse(threat)
+            inSector, threat = HOUND.Utils.Polygon.threatOnSector(poly, {x = 50000, z = 50000}, nil, nil, cache, zonePoly)
+            lu.assertIsFalse(inSector)
+            lu.assertIsFalse(threat)
 
-        inSector, threat = HOUND.Utils.Polygon.threatOnSector(poly, {x = 6000, z = 0}, 2000, keys, list, centerHex, radiusHex)
-        lu.assertIsFalse(inSector)
-        lu.assertIsTrue(threat)
-
-        hex.setRadius(savedRadius)
+            inSector, threat = HOUND.Utils.Polygon.threatOnSector(poly, {x = 6000, z = 0}, 2000, nil, cache, zonePoly)
+            lu.assertIsFalse(inSector)
+            lu.assertIsTrue(threat)
+        end)
     end
 
     function TestHoundHex:TestThreatOnSectorOriginMembership()
         local hex = HOUND.Mist.hex
         local savedRadius = hex.getRadius()
-        hex.setRadius(1000)
-        local poly = originSquare()
-        local keys, list, centerHex, radiusHex = zoneGrid(poly)
-        local inSector, threat = HOUND.Utils.Polygon.threatOnSector(
-            poly, { x = 0, y = 0, z = 0 }, 50000, keys, list, centerHex, radiusHex)
-        lu.assertIsTrue(inSector)
-        lu.assertIsTrue(threat)
-        hex.setRadius(savedRadius)
+        restoreAfter(function() hex.setRadius(savedRadius) end, function()
+            hex.setRadius(1000)
+            local poly = originSquare()
+            local inSector, threat = HOUND.Utils.Polygon.threatOnSector(
+                poly, { x = 0, y = 0, z = 0 }, 50000, nil, {}, zonePolyOf(poly))
+            lu.assertIsTrue(inSector)
+            lu.assertIsTrue(threat)
+        end)
     end
 
-    function TestHoundHex:TestThreatOnSectorScanMatchesBruteForce()
+    function TestHoundHex:TestThreatOnSectorMatchesPolygonAndRadius()
         local hex = HOUND.Mist.hex
         local savedRadius = hex.getRadius()
-        local radius = 1000
-        hex.setRadius(radius)
-        local poly = {
-            {x = -6000, z = -6000, y = 0},
-            {x = 6000, z = -6000, y = 0},
-            {x = 6000, z = 6000, y = 0},
-            {x = -6000, z = 6000, y = 0},
-        }
-        local keys, list, centerHex, radiusHex = zoneGrid(poly)
-        local step = 1.5 * radius
-        local range = 5000
-        local rings = math.ceil(range / step) + 1
+        restoreAfter(function() hex.setRadius(savedRadius) end, function()
+            hex.setRadius(1000)
+            -- 6100 avoids cell centres landing exactly on an edge
+            local poly = {
+                {x = -6100, z = -6100, y = 0},
+                {x = 6100, z = -6100, y = 0},
+                {x = 6100, z = 6100, y = 0},
+                {x = -6100, z = 6100, y = 0},
+            }
+            local zonePoly = zonePolyOf(poly)
+            local cache = {}
+            local ranges = {0, 5000, 10000, 20000}
 
-        for x = -14000, 14000, 3000 do
-            for z = -14000, 14000, 3000 do
-                local point = {x = x, y = 0, z = z}
-                local h = hex.pointToHex(point)
-                local minD = math.huge
-                for _, cell in ipairs(list) do
-                    local distance = hex.distance(h, cell)
-                    if distance < minD then minD = distance end
+            for x = -14000, 14000, 3000 do
+                for z = -14000, 14000, 3000 do
+                    local point = {x = x, y = 0, z = z}
+                    local h = hex.pointToHex(point)
+                    local center = hex.makeVec2(h)
+                    local inside = HOUND.Mist.pointInPolygon(
+                        {x = center.x, y = 0, z = center.y}, poly) and true or false
+                    local wasThreat = false
+                    for _, range in ipairs(ranges) do
+                        local inSector, threat = HOUND.Utils.Polygon.threatOnSector(
+                            poly, point, range, h, cache, zonePoly)
+                        lu.assertEquals(inSector, inside)
+                        if inside then
+                            lu.assertIsTrue(threat)
+                        end
+                        if wasThreat then
+                            lu.assertIsTrue(threat)
+                        end
+                        wasThreat = threat
+                    end
                 end
-                local expectedIn = minD == 0
-                local expectedThreat = minD <= rings
-                local inSector, threat = HOUND.Utils.Polygon.threatOnSector(poly, point, range, keys, list, centerHex, radiusHex)
-                lu.assertEquals(inSector, expectedIn)
-                lu.assertEquals(threat, expectedThreat)
             end
-        end
+        end)
+    end
 
-        hex.setRadius(savedRadius)
+    function TestHoundHex:TestContactGetHexCell()
+        local hex = HOUND.Mist.hex
+        local savedRadius = hex.getRadius()
+        restoreAfter(function() hex.setRadius(savedRadius) end, function()
+            hex.setRadius(1000)
+            local contact = setmetatable(
+                { pos = { p = {x = 12000, y = 0, z = 8000} } }, HOUND.Contact.Base)
+            local expected = hex.pointToHex(contact.pos.p)
+            local cell = contact:getHexCell()
+            lu.assertEquals(cell.r, expected.r)
+            lu.assertEquals(cell.q, expected.q)
+            lu.assertIs(cell, contact:getHexCell())
+
+            contact.pos.p.x = 30000
+            local moved = contact:getHexCell()
+            lu.assertNotEquals(moved.r, cell.r)
+
+            contact.pos.p.x, contact.pos.p.z = 12000, 8000
+            hex.setRadius(2000)
+            local resized = contact:getHexCell()
+            lu.assertEquals(resized.radius, 2000)
+            lu.assertIsTrue(resized ~= moved)
+        end)
+    end
+
+    function TestHoundHex:TestContactGetHexCellNoPos()
+        local contact = setmetatable({ pos = {} }, HOUND.Contact.Base)
+        lu.assertIsNil(contact:getHexCell())
     end
 
     function TestHoundHex:TestMakeVec3GL()

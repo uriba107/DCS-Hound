@@ -98,6 +98,15 @@ do
         lu.assertFalse(HOUND.Coroutine.isRunning("deadCo"))
     end
 
+    function TestHoundCoroutine:TestPumpPurgesExternallyDeadCoroutine()
+        HOUND.Coroutine.add(quickExit, { name = "externallyDead" })
+        coroutine.resume(HOUND.Coroutine._list[1].co)
+        lu.assertEquals(HOUND.Coroutine.count(), 1)
+        HOUND.Coroutine._pump()
+        lu.assertEquals(HOUND.Coroutine.count(), 0)
+        lu.assertEquals(#HOUND.Coroutine._list, 0)
+    end
+
     function TestHoundCoroutine:TestCountZero()
         lu.assertEquals(HOUND.Coroutine.count(), 0)
     end

@@ -36,72 +36,89 @@ do
         return inPolygon,intersectsPolygon
     end
 
+    --- Distance from an XZ point to a polygon, and whether it is inside.
+    -- Single pass: even-odd crossing test plus minimum segment distance.
+    -- @param px point x
+    -- @param pz point z
+    -- @param xs polygon x coordinates (array)
+    -- @param zs polygon z coordinates (array)
+    -- @param n number of polygon points
+    -- @return[type=Bool] True if the point is inside the polygon
+    -- @return[type=number] Distance to the nearest polygon edge in meters (0 inside)
+    function HOUND.Utils.Polygon.zoneDistance(px, pz, xs, zs, n)
+        local inside = false
+        local best = math.huge
+        local prevX, prevZ = xs[n], zs[n]
+        for i = 1, n do
+            local curX, curZ = xs[i], zs[i]
+            if (prevZ <= pz) ~= (curZ <= pz) then
+                local vt = (pz - prevZ) / (curZ - prevZ)
+                if px < prevX + vt * (curX - prevX) then
+                    inside = not inside
+                end
+            end
+            local dx, dz = curX - prevX, curZ - prevZ
+            local l2 = dx*dx + dz*dz
+            local t = 0
+            if l2 > 0 then
+                t = ((px - prevX) * dx + (pz - prevZ) * dz) / l2
+                if t < 0 then t = 0 elseif t > 1 then t = 1 end
+            end
+            local ex, ez = prevX + t*dx - px, prevZ + t*dz - pz
+            local d = math.sqrt(ex*ex + ez*ez)
+            if d < best then best = d end
+            prevX, prevZ = curX, curZ
+        end
+        if inside then return true, 0 end
+        return false, best
+    end
+
     --- Check if polygon is under threat of SAM
-    -- Uses the sector's hex grid cells when HOUND.useHexGrid is true (default).
-    -- Point-to-hex snap error is bounded by HOUND.hexRadius; the range rings
-    -- round up so a threat is never missed. Set HOUND.useHexGrid = false to
-    -- restore the legacy polygon implementation.
-    -- @param polygon Table of point reprasenting a polygon (sector zone)
+    -- Uses the sector's hex grid classification when HOUND.useHexGrid is true
+    -- (default). Each contact hex is classified lazily on first sight and cached
+    -- per sector; no zone-wide cell set is built. Point-to-hex snap error is
+    -- bounded by HOUND.hexRadius, which is added to the radius so a threat is
+    -- never missed. Set HOUND.useHexGrid = false to restore the legacy polygon
+    -- implementation.
+    -- @param polygon Table of points representing a polygon (sector zone)
     -- @param point DCS position (x,z)
     -- @param radius Radius in Meters around point to test
-    -- @param cellKeys Sector cell set keyed by HOUND.Mist.hex.cellKey
-    -- @param cellList Sector cells as an array
-    -- @param centerHex Sector zone center hex
-    -- @param radiusHex Max hex distance from centerHex to a sector cell
-    -- @param[opt] hexPoint Contact hex precomputed for this cycle
+    -- @param hexPoint Contact hex cell (Contact.Base:getHexCell); derived from point when absent
+    -- @param hexCache Sector hex classification cache keyed by HOUND.Mist.hex.cellKey
+    -- @param zonePoly Sector zone as {xs=..., zs=..., n=...}
     -- @return[type=Bool] True if point is in the sector zone
     -- @return[type=Bool] True if radius around point intersects the sector zone
-    function HOUND.Utils.Polygon.threatOnSector(polygon,point, radius, cellKeys, cellList, centerHex, radiusHex, hexPoint)
+    function HOUND.Utils.Polygon.threatOnSector(polygon, point, radius, hexPoint, hexCache, zonePoly)
         if not HOUND.useHexGrid then
             return HOUND.Utils.Polygon.threatOnSectorLegacy(polygon, point, radius)
         end
-        if type(polygon) ~= "table" or #polygon < 3 or not HOUND.Utils.Dcs.isPoint(l_mist.utils.makeVec3(polygon[1])) then
-            return
-        end
-        if not HOUND.Utils.Dcs.isPoint(point) then
-            return
-        end
-
-        if type(cellKeys) ~= "table" or type(cellList) ~= "table" or not centerHex then
-            -- no hex grid built for this sector (default or meta sector, or zone without cells)
+        if not zonePoly or type(hexCache) ~= "table" then
+            -- no zone for this sector (default or meta sector)
             return
         end
 
         local hex = HOUND.Mist.hex
-        hexPoint = hexPoint or hex.pointToHex(point)
-        local step = 1.5 * hex.getRadius()
-        local rings = math.ceil((radius or 0) / step) + 1
-
-        -- prefilter against the sector's bounding circle
-        local dr = hexPoint.r - centerHex.r
-        local dq = hexPoint.q - centerHex.q
-        local ds = -(dr + dq)
-        if dr < 0 then dr = -dr end
-        if dq < 0 then dq = -dq end
-        if ds < 0 then ds = -ds end
-        if (dr + dq + ds) * 0.5 > rings + radiusHex then
-            return false, false
+        if not hexPoint then
+            if not HOUND.Utils.Dcs.isPoint(point) then
+                return
+            end
+            hexPoint = hex.pointToHex(point)
         end
 
-        if cellKeys[hex.cellKey(hexPoint.r, hexPoint.q)] then
+        local key = hex.cellKey(hexPoint.r, hexPoint.q)
+        local class = hexCache[key]
+        if not class then
+            local center = hex.makeVec2(hexPoint)
+            local inside, distance = HOUND.Utils.Polygon.zoneDistance(
+                center.x, center.y, zonePoly.xs, zonePoly.zs, zonePoly.n)
+            class = { inside = inside, distance = distance }
+            hexCache[key] = class
+        end
+
+        if class.inside then
             return true, true
         end
-
-        -- scan the sector's own cells; no ring allocation or string hashing
-        local hr, hq = hexPoint.r, hexPoint.q
-        for i = 1, #cellList do
-            local cell = cellList[i]
-            local cr = hr - cell.r
-            local cq = hq - cell.q
-            local cs = -(cr + cq)
-            if cr < 0 then cr = -cr end
-            if cq < 0 then cq = -cq end
-            if cs < 0 then cs = -cs end
-            if (cr + cq + cs) * 0.5 <= rings then
-                return false, true
-            end
-        end
-        return false, false
+        return false, class.distance <= (radius or 0) + hex.getRadius()
     end
 
 

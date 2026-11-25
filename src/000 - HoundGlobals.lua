@@ -44,7 +44,7 @@ do
     -- @field hexRadius Hex grid radius in meters used for sector zone acceleration (default 1000)
     -- @field useHexGrid Use the sector hex grid for threatOnSector; false restores the legacy polygon path (default true)
     HOUND = {
-        VERSION = "0.5.2-TRUNK",
+        VERSION = "0.6.0-TRUNK",
         DEBUG = true,
         ELLIPSE_PERCENTILE = 0.6,
         DATAPOINTS_NUM = 30,
@@ -178,7 +178,8 @@ do
     end
 
     --- set sector zone hex grid radius and rebuild all zoned sectors
-    -- syncs HOUND.Mist.hex and rebuilds each zoned sector's cell set.
+    -- syncs HOUND.Mist.hex and resets each zoned sector's hex classification
+    -- cache (lazy, one entry per contact hex).
     -- @param value (Int) Requested radius in meters, must be at least 1
     function HOUND.setHexRadius(value)
         if type(value) ~= "number" then return end

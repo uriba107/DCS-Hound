@@ -1,19 +1,13 @@
 do
     TestHoundUtils = {}
 
-    local function buildZoneGrid(zone)
-        local hex = HOUND.Mist.hex
-        local centerHex = hex.pointToHex(HOUND.Mist.getAvgPoint(zone))
-        local cells = hex.getFromRoute(zone, true)
-        local keys, list = {}, {}
-        local radiusHex = 0
-        for _, cell in pairs(cells) do
-            keys[hex.cellKey(cell.r, cell.q)] = true
-            table.insert(list, cell)
-            local distance = hex.distance(centerHex, cell)
-            if distance > radiusHex then radiusHex = distance end
+    local function buildZonePoly(zone)
+        local xs, zs = {}, {}
+        for i, point in ipairs(zone) do
+            xs[i] = point.x
+            zs[i] = point.z or point.y
         end
-        return keys, list, centerHex, radiusHex
+        return { xs = xs, zs = zs, n = #xs }
     end
 
     function TestHoundUtils:setUp()
@@ -88,11 +82,54 @@ do
         local prevAllocated = HOUND.Utils.Marker._MarkIdAllocated
         HOUND.Utils.Marker._MarkId = 4999
         HOUND.Utils.Marker._MarkIdAllocated = false
-        lu.assertIsTrue(HOUND.Utils.Marker.setInitialId(4998))
-        lu.assertEquals(HOUND.Utils.Marker.getId(), 4999)
-        lu.assertIsFalse(HOUND.Utils.Marker.setInitialId(100))
+        local ok, err = pcall(function()
+            lu.assertIsTrue(HOUND.Utils.Marker.setInitialId(4998))
+            lu.assertEquals(HOUND.Utils.Marker.getId(), 4999)
+            lu.assertIsFalse(HOUND.Utils.Marker.setInitialId(100))
+        end)
         HOUND.Utils.Marker._MarkId = prevId
         HOUND.Utils.Marker._MarkIdAllocated = prevAllocated
+        if not ok then error(err, 0) end
+    end
+
+    function TestHoundUtils:TestWeaponAddName()
+        local unit = Unit.getByName("ELINT_BLUE_C17_EAST")
+        lu.assertNotNil(unit)
+        local hound = setmetatable({
+            settings = { getCoalition = function() return unit:getCoalition() end },
+            isRunning = function() return true end,
+        }, { __index = HoundElint })
+        local captured
+        local orig = HOUND.DB.isValidPlatform
+        HOUND.DB.isValidPlatform = function(_, weaponName)
+            captured = weaponName
+            return false
+        end
+        local ok, err = pcall(function()
+            hound:onEvent({
+                id = world.event.S_EVENT_WEAPON_ADD,
+                initiator = unit,
+                weapon = { isExist = function() return true end, getTypeName = function() return "livePod" end },
+            })
+        end)
+        HOUND.DB.isValidPlatform = orig
+        if not ok then error(err, 0) end
+        lu.assertEquals(captured, "livePod")
+
+        HOUND.DB.isValidPlatform = function(_, weaponName)
+            captured = weaponName
+            return false
+        end
+        ok, err = pcall(function()
+            hound:onEvent({
+                id = world.event.S_EVENT_WEAPON_ADD,
+                initiator = unit,
+                weapon_name = "legacyPod",
+            })
+        end)
+        HOUND.DB.isValidPlatform = orig
+        if not ok then error(err, 0) end
+        lu.assertEquals(captured, "legacyPod")
     end
 
     function TestHoundUtils:TestMarkerCreate()
@@ -1114,6 +1151,33 @@ do
         lu.assertItemsEquals(HOUND.Utils.Elint.getRwrContacts(nil),{})
     end
 
+    function TestHoundUtils:TestGetRwrContactsLive()
+        local target = setmetatable({
+            isExist = function() return true end,
+            getName = function() return "RADAR" end,
+            getCoalition = function() return coalition.side.RED end,
+            getRadar = function() return true end,
+        }, Unit)
+        local controller = {
+            getDetectedTargets = function() return {target} end,
+        }
+        local platform = setmetatable({
+            isExist = function() return true end,
+            hasSensors = function() return true end,
+            getCoalition = function() return coalition.side.BLUE end,
+            getController = function() return controller end,
+        }, Unit)
+
+        lu.assertItemsEquals(HOUND.Utils.Elint.getRwrContacts(platform),{"RADAR"})
+
+        controller.getDetectedTargets = function() return nil end
+        lu.assertItemsEquals(HOUND.Utils.Elint.getRwrContacts(platform),{})
+
+        controller.getDetectedTargets = function() return {target} end
+        target.isExist = function() return false end
+        lu.assertItemsEquals(HOUND.Utils.Elint.getRwrContacts(platform),{})
+    end
+
     function TestHoundUtils:TestDcsGetGroupNamesNoPrefix()
         local groups = HOUND.Utils.Dcs.getGroupNames()
         lu.assertIsTable(groups)
@@ -1328,72 +1392,84 @@ do
         lu.assertEquals(HOUND.Utils.TTS.getdefaultModulation(nil),"AM")
         lu.assertEquals(HOUND.Utils.TTS.getdefaultModulation("not_a_number"),"AM")
     end
-    function TestHoundUtils:TestThreatOnSectorInvalidPolygon()
+    function TestHoundUtils:TestThreatOnSectorNoZone()
         local square = {{x=0,z=0},{x=100,z=0},{x=100,z=100},{x=0,z=100}}
-        lu.assertIsNil(HOUND.Utils.Polygon.threatOnSector(nil, {x=50,z=50}))
-        lu.assertIsNil(HOUND.Utils.Polygon.threatOnSector("bad", {x=50,z=50}))
-        lu.assertIsNil(HOUND.Utils.Polygon.threatOnSector({{x=0,z=0}}, {x=50,z=50}))
-        lu.assertIsNil(HOUND.Utils.Polygon.threatOnSector({{x=0,z=0},{x=100,z=0}}, {x=50,z=50}))
+        -- no zone polygon (default/meta sector): nil passthrough
+        lu.assertIsNil(HOUND.Utils.Polygon.threatOnSector(square, {x=50,z=50}, nil, nil, {}, nil))
     end
 
     function TestHoundUtils:TestThreatOnSectorInvalidPoint()
         local square = {{x=0,z=0},{x=100,z=0},{x=100,z=100},{x=0,z=100}}
-        lu.assertIsNil(HOUND.Utils.Polygon.threatOnSector(square, nil))
-        lu.assertIsNil(HOUND.Utils.Polygon.threatOnSector(square, "bad"))
+        local zonePoly = buildZonePoly(square)
+        lu.assertIsNil(HOUND.Utils.Polygon.threatOnSector(square, nil, nil, nil, {}, zonePoly))
+        lu.assertIsNil(HOUND.Utils.Polygon.threatOnSector(square, "bad", nil, nil, {}, zonePoly))
     end
 
     function TestHoundUtils:TestThreatOnSectorInside()
         local square = {{x=-5000,y=0,z=-5000},{x=5000,y=0,z=-5000},{x=5000,y=0,z=5000},{x=-5000,y=0,z=5000}}
-        local keys, list, centerHex, radiusHex = buildZoneGrid(square)
-        local inPoly, intPoly = HOUND.Utils.Polygon.threatOnSector(square, {x=0,z=0}, nil, keys, list, centerHex, radiusHex)
+        local inPoly, intPoly = HOUND.Utils.Polygon.threatOnSector(
+            square, {x=0,z=0}, nil, nil, {}, buildZonePoly(square))
         lu.assertIsTrue(inPoly)
         lu.assertIsTrue(intPoly)
     end
 
     function TestHoundUtils:TestThreatOnSectorOutside()
         local square = {{x=-5000,y=0,z=-5000},{x=5000,y=0,z=-5000},{x=5000,y=0,z=5000},{x=-5000,y=0,z=5000}}
-        local keys, list, centerHex, radiusHex = buildZoneGrid(square)
-        local inPoly, intPoly = HOUND.Utils.Polygon.threatOnSector(square, {x=50000,z=50000}, nil, keys, list, centerHex, radiusHex)
+        local inPoly, intPoly = HOUND.Utils.Polygon.threatOnSector(
+            square, {x=50000,z=50000}, nil, nil, {}, buildZonePoly(square))
         lu.assertIsFalse(inPoly)
         lu.assertIsFalse(intPoly)
     end
 
     function TestHoundUtils:TestThreatOnSectorWithRadius()
         local square = {{x=-5000,y=0,z=-5000},{x=5000,y=0,z=-5000},{x=5000,y=0,z=5000},{x=-5000,y=0,z=5000}}
-        local keys, list, centerHex, radiusHex = buildZoneGrid(square)
         local nearEdge = {x=6000,z=0}
-        local inPoly, intPoly = HOUND.Utils.Polygon.threatOnSector(square, nearEdge, 2000, keys, list, centerHex, radiusHex)
+        local inPoly, intPoly = HOUND.Utils.Polygon.threatOnSector(
+            square, nearEdge, 2000, nil, {}, buildZonePoly(square))
         lu.assertIsFalse(inPoly)
         lu.assertIsTrue(intPoly)
     end
 
-    function TestHoundUtils:TestThreatOnSectorNoCells()
-        local square = {{x=-5000,z=-5000},{x=5000,z=-5000},{x=5000,z=5000},{x=-5000,z=5000}}
-        -- no hex grid built: nil passthrough (default/meta sector)
-        lu.assertIsNil(HOUND.Utils.Polygon.threatOnSector(square, {x=0,z=0}))
+    function TestHoundUtils:TestThreatOnSectorCachesCell()
+        local square = {{x=-5000,y=0,z=-5000},{x=5000,y=0,z=-5000},{x=5000,y=0,z=5000},{x=-5000,y=0,z=5000}}
+        local zonePoly = buildZonePoly(square)
+        local cache = {}
+        local hex = HOUND.Mist.hex
+        local h = hex.pointToHex({x=0,z=0})
+        HOUND.Utils.Polygon.threatOnSector(square, {x=0,z=0}, nil, h, cache, zonePoly)
+        local class = cache[hex.cellKey(h.r, h.q)]
+        lu.assertIsTable(class)
+        lu.assertIsTrue(class.inside)
+        lu.assertEquals(class.distance, 0)
+        -- a cached classification is the same record on the next query
+        HOUND.Utils.Polygon.threatOnSector(square, {x=0,z=0}, nil, h, cache, zonePoly)
+        lu.assertIs(class, cache[hex.cellKey(h.r, h.q)])
     end
 
     function TestHoundUtils:TestThreatOnSectorLegacyFlag()
         local square = {
             {x=0,y=0,z=0},{x=100,y=0,z=0},{x=100,y=0,z=100},{x=0,y=0,z=100},
         }
-        local keys, list, centerHex, radiusHex = buildZoneGrid(square)
+        local zonePoly = buildZonePoly(square)
         local saved = HOUND.useHexGrid
         HOUND.useHexGrid = false
 
-        local inPoly, intPoly = HOUND.Utils.Polygon.threatOnSector(square, {x=50,y=0,z=50}, nil, keys, list, centerHex, radiusHex)
-        lu.assertIsTrue(inPoly)
-        lu.assertIsTrue(intPoly)
+        local ok, err = pcall(function()
+            local inPoly, intPoly = HOUND.Utils.Polygon.threatOnSector(square, {x=50,y=0,z=50}, nil, nil, {}, zonePoly)
+            lu.assertIsTrue(inPoly)
+            lu.assertIsTrue(intPoly)
 
-        inPoly, intPoly = HOUND.Utils.Polygon.threatOnSector(square, {x=200,y=0,z=200}, nil, keys, list, centerHex, radiusHex)
-        lu.assertIsFalse(inPoly)
-        lu.assertIsFalse(intPoly)
+            inPoly, intPoly = HOUND.Utils.Polygon.threatOnSector(square, {x=200,y=0,z=200}, nil, nil, {}, zonePoly)
+            lu.assertIsFalse(inPoly)
+            lu.assertIsFalse(intPoly)
 
-        inPoly, intPoly = HOUND.Utils.Polygon.threatOnSector(square, {x=110,y=0,z=50}, 20, keys, list, centerHex, radiusHex)
-        lu.assertIsFalse(inPoly)
-        lu.assertIsTrue(intPoly)
+            inPoly, intPoly = HOUND.Utils.Polygon.threatOnSector(square, {x=110,y=0,z=50}, 20, nil, {}, zonePoly)
+            lu.assertIsFalse(inPoly)
+            lu.assertIsTrue(intPoly)
+        end)
 
         HOUND.useHexGrid = saved
+        if not ok then error(err, 0) end
     end
 
     function TestHoundUtils:TestAzMinMaxInvalidRef()

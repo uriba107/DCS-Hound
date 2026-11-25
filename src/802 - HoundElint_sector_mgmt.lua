@@ -388,20 +388,10 @@ do
             local sectors = self_:getSectors()
             table.sort(sectors, HoundUtils.Sort.sectorsByPriorityLowFirst)
             local contacts = self_.contacts:listAllContacts()
-            local hexPositions = nil
-            if HOUND.useHexGrid then
-                -- one pointToHex per contact per cycle, shared by every sector
-                hexPositions = {}
+
+            for _, sector in ipairs(sectors) do
                 for _, contact in ipairs(contacts) do
-                    local pos = contact:getPos()
-                    if HOUND.Utils.Dcs.isPoint(pos) then
-                        hexPositions[contact] = HOUND.Mist.hex.pointToHex(pos)
-                    end
-                end
-            end
-            for _, sector in pairs(sectors) do
-                for _, contact in ipairs(contacts) do
-                    sector:updateSectorMembership(contact, hexPositions and hexPositions[contact])
+                    sector:updateSectorMembership(contact)
                 end
                 coroutine.yield()
             end

@@ -26,7 +26,10 @@ do
         local instance = self:superClass():New(HoundContact:getDcsObject(),HoundCoalition)
         setmetatable(instance, HOUND.Contact.Site)
         self.__index = self
-        local siteGroup = HoundContact:getDcsObject():getGroup()
+        -- Resolve the group by name: a unit left behind by its group can still be
+        -- alive, and calling :getGroup() on a dead handle raises in DCS.
+        local groupName = HoundContact:getDcsGroupName()
+        local siteGroup = groupName and Group.getByName(groupName) or nil
         if not HoundUtils.Dcs.isGroupAlive(siteGroup) then
             HOUND.Logger.warn("failed to create HOUND.Contact.Site instance, group does not exist")
             return

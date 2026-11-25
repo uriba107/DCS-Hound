@@ -53,6 +53,9 @@ do
         while i <= n do
             local rec = list[i]
             if rec.dead or coroutine.status(rec.co) == "dead" then
+                -- mark so purgeDead drops records whose coroutine died outside
+                -- the normal completion branch
+                rec.dead = true
                 i = i + 1
             elseif (now - rec.lastResume) >= rec.interval then
                 local startT = timer.getTime()

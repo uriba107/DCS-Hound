@@ -21,6 +21,15 @@ do
         lu.assertIsNil(HOUND.Contact.Site:New(self.torContact,nil))
     end
 
+    function TestHoundContactSite:TestConstructorGroupGone()
+        self.torContact.DcsGroupName = "NO_SUCH_GROUP"
+        local ok, site = pcall(function()
+            return HOUND.Contact.Site:New(self.torContact, coalition.side.BLUE)
+        end)
+        lu.assertIsTrue(ok, tostring(site))
+        lu.assertIsNil(site)
+    end
+
     function TestHoundContactSite:TestConstructorValid()
         self.site = HOUND.Contact.Site:New(self.torContact,coalition.side.BLUE)
         lu.assertNotNil(self.site)

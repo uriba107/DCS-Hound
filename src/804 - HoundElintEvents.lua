@@ -183,7 +183,10 @@ do
             and DcsEvent.initiator:getCoalition() == self.settings:getCoalition()
         then
             local unit = DcsEvent.initiator
-            if not HOUND.DB.isValidPlatform(unit,DcsEvent.weapon_name) then return end
+            -- DCS no longer fills weapon_name; WEAPON_ADD still carries the live weapon.
+            local weapon = DcsEvent.weapon
+            local weaponName = weapon and weapon:isExist() and weapon:getTypeName() or DcsEvent.weapon_name
+            if not HOUND.DB.isValidPlatform(unit,weaponName) then return end
             self:addPlatform(unit:getName())
         end
     end
