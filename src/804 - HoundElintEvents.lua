@@ -162,8 +162,9 @@ do
                 site.last_launch_processed = timer.getAbsTime()
             end
             local tgtPos = nil
-            local wpnTgt = DcsEvent.weapon:getTarget()
-            if HoundUtils.Dcs.isUnitAlive(wpnTgt) then
+            -- the weapon can be destroyed between the event and this slice
+            local okTgt, wpnTgt = pcall(DcsEvent.weapon.getTarget, DcsEvent.weapon)
+            if okTgt and HoundUtils.Dcs.isUnitAlive(wpnTgt) then
               tgtPos = wpnTgt:getPoint()
             end
             if HoundUtils.Dcs.isPoint(tgtPos) then

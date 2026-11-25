@@ -139,6 +139,16 @@ do
         lu.assertIsTrue(HOUND.setContainsValue(mockSettings.callsigns, "ALPHA"))
     end
 
+    function TestHoundSector:TestSetCallsignReappliesCurrent()
+        -- re-applying the sector's own callsign must not treat its registration
+        -- as a foreign conflict and replace it with a random one
+        self.sector._hSettings = mockSettings
+        self.sector:setCallsign("ALPHA")
+        self.sector:setCallsign("ALPHA")
+        lu.assertEquals(self.sector:getCallsign(), "ALPHA")
+        lu.assertEquals(#mockSettings.callsigns, 1)
+    end
+
     function TestHoundSector:TestZoneDefaults()
         lu.assertIsNil(self.sector:getZone())
         lu.assertIsFalse(self.sector:hasZone())
@@ -521,6 +531,17 @@ do
         lu.assertIs(self.sector._zoneHexCache, cache)
     end
 
+    function TestHoundSector:TestUpdateSettingsNonZoneValueKeepsCurrent()
+        -- a non table/string zone value must not overwrite settings.zone with
+        -- a value whose derived polygon/cache are still the old zone's
+        self.sector.name = "saipan"
+        local zone = zoneSquare()
+        self.sector:setZone(zone)
+        self.sector:updateSettings({zone = false})
+        lu.assertIs(self.sector:getZone(), zone)
+        lu.assertIsTable(self.sector._zonePoly)
+    end
+
     function TestHoundSector:TestSetZoneReplacementDiffers()
         self.sector.name = "saipan"
         self.sector:setZone(zoneSquare(0, 0))
@@ -569,7 +590,8 @@ do
                 getId = function() return 987001 end,
                 getSectors = function() return {sectorA, sectorB} end,
                 contacts = {
-                    listAllContacts = function() return {contact} end,
+                    -- production collections are name-keyed dictionaries
+                    listAllContacts = function() return {someContact = contact} end,
                     listAllSites = function() return {} end,
                 },
             }, HoundElint)
@@ -602,6 +624,8 @@ do
             timer.getTime = function() t = t + 0.1; return t end
             HOUND.useHexGrid = true
             local contact = setmetatable({ pos = { p = {x = 0, y = 0, z = 0} } }, HOUND.Contact.Base)
+            local siteUpdated = false
+            local site = { updateSector = function() siteUpdated = true end }
             local sectors = {}
             for i = 1, 3 do
                 sectors[i] = {
@@ -613,8 +637,9 @@ do
                 getId = function() return 987002 end,
                 getSectors = function() return sectors end,
                 contacts = {
-                    listAllContacts = function() return {contact} end,
-                    listAllSites = function() return {} end,
+                    -- production collections are name-keyed dictionaries
+                    listAllContacts = function() return {someContact = contact} end,
+                    listAllSites = function() return {someSite = site} end,
                 },
             }, HoundElint)
 
@@ -626,6 +651,74 @@ do
                 if pumps > 100 then error("sector membership did not finish") end
             end
             lu.assertIsTrue(pumps > 1)
+            lu.assertIsTrue(siteUpdated)
+        end)
+    end
+
+    function TestHoundSector:TestMembershipYieldsInBatches()
+        local realGetTime = timer.getTime
+        restoreAfter(function() timer.getTime = realGetTime end, function()
+            local t = 0
+            timer.getTime = function() t = t + 0.1; return t end
+            local contacts = {}
+            for i = 1, 200 do
+                contacts["c" .. i] = { pos = {p = {x = 0, y = 0, z = 0}} }
+            end
+            local hound = setmetatable({
+                getId = function() return 987003 end,
+                getSectors = function() return {{ getPriority = function() return 1 end,
+                                                 updateSectorMembership = function() end }} end,
+                contacts = {
+                    listAllContacts = function() return contacts end,
+                    listAllSites = function() return {} end,
+                },
+            }, HoundElint)
+
+            hound:updateSectorMembership()
+            local pumps = 0
+            while HOUND.Coroutine.isRunning("sector-membership-987003") do
+                HOUND.Coroutine._pump()
+                pumps = pumps + 1
+                if pumps > 100 then error("sector membership did not finish") end
+            end
+            -- 200 contacts: one yield at the 128 pair batch plus the per-sector yield
+            lu.assertIsTrue(pumps >= 3)
+        end)
+    end
+
+    function TestHoundSector:TestMembershipSnapshotSurvivesInsert()
+        local realGetTime = timer.getTime
+        restoreAfter(function() timer.getTime = realGetTime end, function()
+            local t = 0
+            timer.getTime = function() t = t + 0.1; return t end
+            local contacts = {}
+            for i = 1, 200 do
+                contacts["c" .. i] = {}
+            end
+            local processed = 0
+            local hound = setmetatable({
+                getId = function() return 987004 end,
+                getSectors = function() return {{ getPriority = function() return 1 end,
+                                                 updateSectorMembership = function(_, c)
+                                                     processed = processed + 1
+                                                     -- a contact appearing mid-walk must not
+                                                     -- disturb the snapshot the walk runs on
+                                                     if processed == 1 then contacts.late = {} end
+                                                 end }} end,
+                contacts = {
+                    listAllContacts = function() return contacts end,
+                    listAllSites = function() return {} end,
+                },
+            }, HoundElint)
+
+            hound:updateSectorMembership()
+            local pumps = 0
+            while HOUND.Coroutine.isRunning("sector-membership-987004") do
+                HOUND.Coroutine._pump()
+                pumps = pumps + 1
+                if pumps > 100 then error("sector membership did not finish") end
+            end
+            lu.assertEquals(processed, 200)
         end)
     end
 
@@ -687,6 +780,49 @@ do
         lu.assertIs(self.sector._zonePoly, poly)
         lu.assertIs(self.sector._zoneHexCache, cache)
         lu.assertIs(self.sector.zoneCenter, center)
+
+        -- nonnumeric z must not be masked by a valid y on the same point
+        self.sector:setZone({{x = 0, y = 0}, {x = 1000, y = 0}, {x = 1000, y = 1000, z = "bad"}})
+        lu.assertEquals(self.sector:getZone(), zone)
+        lu.assertIs(self.sector._zonePoly, poly)
+    end
+
+    function TestHoundSector:TestSetZoneSparseKeepsExisting()
+        self.sector.name = "saipan"
+        local zone = zoneSquare()
+        self.sector:setZone(zone)
+        local poly = self.sector._zonePoly
+        local cache = self.sector._zoneHexCache
+        local center = self.sector.zoneCenter
+
+        -- keys 1-3 alone must not validate a table with a hole before key 5
+        self.sector:setZone({
+            {x = 0, y = 0, z = 0}, {x = 1000, y = 0, z = 0}, {x = 1000, y = 0, z = 1000}, [5] = {x = 0, y = 0, z = 1000},
+        })
+        lu.assertEquals(self.sector:getZone(), zone)
+        lu.assertIs(self.sector._zonePoly, poly)
+        lu.assertIs(self.sector._zoneHexCache, cache)
+        lu.assertIs(self.sector.zoneCenter, center)
+    end
+
+    function TestHoundSector:TestSetZoneInvalidVec3KeepsExisting()
+        -- a Vec3 candidate with nonnumeric y would break getAvgPoint after
+        -- settings.zone was already replaced; it must be a no-op
+        self.sector.name = "saipan"
+        local zone = zoneSquare()
+        self.sector:setZone(zone)
+        local center = self.sector.zoneCenter
+        local poly = self.sector._zonePoly
+        local cache = self.sector._zoneHexCache
+        self.sector:setZone({
+            {x = 0, y = "bad", z = 0},
+            {x = 1000, y = "bad", z = 0},
+            {x = 1000, y = 0, z = 1000},
+        })
+        lu.assertIs(self.sector:getZone(), zone)
+        lu.assertIs(self.sector.zoneCenter, center)
+        lu.assertIs(self.sector._zonePoly, poly)
+        lu.assertIs(self.sector._zoneHexCache, cache)
     end
 
     function TestHoundSector:TestUpdateSectorMembershipHex()
@@ -725,6 +861,27 @@ do
         end)
         lu.assertEquals(calls, 1)
         lu.assertEquals(contact.updates, 2)
+    end
+
+    function TestHoundSector:TestZoneCacheRecomputesOnRadiusChange()
+        self.sector.name = "saipan"
+        self.sector:setZone(zoneSquare())
+        self.sector._contacts = mockContacts
+        local hex = HOUND.Mist.hex
+        local savedRadius = hex.getRadius()
+        restoreAfter(function() hex.setRadius(savedRadius) end, function()
+            local contact = mockContact({ pos = { x = 0, y = 0, z = 0 }, range = 0 })
+            local calls = withZoneDistanceCounter(function()
+                self.sector:updateSectorMembership(contact)
+                local key = hex.cellKey(contact:getHexCell().r, contact:getHexCell().q)
+                lu.assertEquals(self.sector._zoneHexCache[key].radius, hex.getRadius())
+                -- a direct lower-level radius change must not reuse old cell geometry
+                hex.setRadius(2000)
+                self.sector:updateSectorMembership(contact)
+                lu.assertEquals(self.sector._zoneHexCache[key].radius, 2000)
+            end)
+            lu.assertEquals(calls, 2)
+        end)
     end
 
     function TestHoundSector:TestUpdateSectorMembershipThreatOnlyOutside()

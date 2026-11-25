@@ -123,8 +123,10 @@ do
             if msgValid then
                 return self.loop.msg
             end
-            -- drop the stale invalid message so the next poll regenerates it
+            -- drop the stale invalid message and the cached body so the next
+            -- callback regenerates the message instead of comparing equal
             self.loop.msg = nil
+            self.loop.body = nil
         end
     end
 end

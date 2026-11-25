@@ -3,7 +3,17 @@ do
         local triggerUnit = self.eventTriggerUnit
         local triggerUnitName = triggerUnit:getName()
         lu.assertIsTrue(HOUND.Utils.Dcs.isHuman(triggerUnit))
+        -- batch reruns on every human birth; drop units left behind by an earlier slot
+        HOUND.DB.HumanUnits.byName[coalition.side.BLUE] = {}
+        HOUND.DB.HumanUnits.byGid[coalition.side.BLUE] = {}
         HOUND.DB.updateHumanDb(coalition.side.BLUE)
+        -- clear enrollments from an earlier slot so menus and checks start clean
+        for _, sector in ipairs(self.houndBlue:getSectors()) do
+            sector.comms.enrolled = {}
+        end
+        -- menus are keyed by the player tables created above; rebuild them so the
+        -- lookups in later tests hit the current entries instead of the stale ones
+        self.houndBlue:populateRadioMenu()
         lu.assertIsTrue(HOUND.Length(HOUND.DB.HumanUnits.byName[coalition.side.BLUE]) > 0)
         -- local players=HOUND.Utils.Dcs.getPlayers(coalition.side.BLUE)
         -- lu.assertEquals(HOUND.Length(players),1)

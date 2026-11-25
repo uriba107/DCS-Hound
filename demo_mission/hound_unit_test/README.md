@@ -126,6 +126,7 @@ The **UI/Comms** batch (5) is special: it registers a `world.event` handler for 
 | `TestGetSignalStrength` | Positive signal strength |
 | `TestGetSignalStrengthInvalid` | Nil → nil |
 | `TestElintDB` | DB band lookup, frequency ranges, aperture, diffraction, sensor precision, callsign pools |
+| `TestGetSensorPrecisionUnitArg` | `getSensorPrecision` accepts a live unit (finite rad) and a dead unit handle (default 30°) |
 | `TestGetEmitterBand` | Band enum lookup |
 | `TestGetEmitters` | Emitter list from DB |
 | `TestElintGetAzimuth` | Azimuth between ELINT plane and emitter |
@@ -139,7 +140,7 @@ The **UI/Comms** batch (5) is special: it registers a `world.event` handler for 
 | `TestStaticObjectQueriesSkipDeadObjects` | `getStaticObjectNames` / `Filter.staticObjectsByPrefix` skip non-existing static handles |
 | `TestGetActiveRadarsInGroupDeadHandle` | `Group.getByName` returning a dead handle yields an empty radar list |
 | `TestGetRwrContactsDeadHandle` | `getRwrContacts` returns `{}` for a dead platform handle and for nil |
-| `TestGetRwrContactsLive` | `getRwrContacts` returns names of enemy radar targets; nil target list and dead target handles yield `{}` |
+| `TestGetRwrContactsLive` | `getRwrContacts` reads `DetectedTarget.object`; returns enemy radar names, nil list and dead targets yield `{}` |
 | `TestGetRadarDetectionRange` | Detection range from live units |
 | `TestGetRadarUnitsInGroup` | Radar units in group |
 | `TestGetSamMaxRange` | SAM max range from live units |
@@ -562,6 +563,7 @@ Sector model unit tests covering construction, callsign, zone, child sectors, tr
 | `TestSetCallsignNoDuplicate` | Duplicate callsign generates a new one from the pool |
 | `TestSetCallsignReleasesPrevious` | Changing callsign, including from "HOUND", releases the old pool registration |
 | `TestSetCallsignKeepsForeignRegistration` | Unregistered initial "HOUND" placeholder never removes another sector's registration |
+| `TestSetCallsignReappliesCurrent` | Re-applying the sector's own callsign keeps it instead of picking a random one |
 | `TestSetCallsignNil` | `setCallsign()` with no args generates random callsign |
 
 **Zone:**
@@ -576,12 +578,16 @@ Sector model unit tests covering construction, callsign, zone, child sectors, tr
 | `TestSetZoneReplacementDiffers` | Replacing the zone swaps the polygon and resets the cache at the new location |
 | `TestUpdateSettingsZoneRebuilds` | `updateSettings({zone = ...})` delegates to `setZone` and resets the cache |
 | `TestUpdateSettingsInvalidZoneKeepsCurrent` | Invalid zone replacement leaves the current zone and cache untouched |
+| `TestUpdateSettingsNonZoneValueKeepsCurrent` | Non table/string `zone` value leaves `settings.zone` and its derived polygon consistent |
 | `TestRemoveZonePurgesZone` | `removeZone` clears zone, center, polygon, and cache |
 | `TestSetZoneTooFewPoints` | Zone with fewer than 3 points → nil polygon/cache and no zone |
 | `TestSetZoneAcceptsDrawnZone2D` | Drawn-zone Vec2 `{x,y}` points accepted and classify the origin as inside |
 | `TestSetZoneInvalidKeepsExisting` | Malformed/too-short candidate is a no-op; existing zone and cache stay consistent |
+| `TestSetZoneInvalidVec3KeepsExisting` | Vec3 candidate with nonnumeric `y` is a no-op; zone, center, polygon, cache unchanged |
+| `TestSetZoneSparseKeepsExisting` | Sparse candidate (hole before a later point) is a no-op; zone, center, polygon, cache unchanged |
 | `TestUpdateSectorMembershipHex` | Center contact → `updateSector` gets (true, true) |
 | `TestUpdateSectorMembershipLazyClassify` | First sight of a cell runs one classification; a repeat hit is free |
+| `TestZoneCacheRecomputesOnRadiusChange` | A lower-level radius change invalidates cached cell geometry (radius-aware entries) |
 | `TestUpdateSectorMembershipThreatOnlyOutside` | Outside but in weapon range → (false, true); range is re-evaluated per call |
 | `TestUpdateSectorMembershipZoneCacheHex` | Same hex reuses the classification; a neighbor cell classifies once |
 | `TestUpdateSectorMembershipZoneCacheInvalidation` | `setZone` resets the per-cell classification cache |
@@ -590,7 +596,9 @@ Sector model unit tests covering construction, callsign, zone, child sectors, tr
 | `TestSetHexRadiusResetsZoneCache` | `HOUND.setHexRadius` syncs `hex.getRadius` and resets zoned sector caches |
 | `TestSetHexRadiusInvalid` | Nil, non-number, and zero radius are ignored |
 | `TestMembershipFollowsRadiusChange` | A radius change between sectors makes `getHexCell` classify at the new radius |
-| `TestMembershipYieldsPerSector` | The sector membership coroutine yields once per sector |
+| `TestMembershipYieldsPerSector` | The sector membership coroutine walks name-keyed contacts/sites and yields once per sector |
+| `TestMembershipYieldsInBatches` | The contact walk yields at the 128-pair batch boundary, not only at sector end |
+| `TestMembershipSnapshotSurvivesInsert` | A contact inserted mid-walk is not visited; the walk runs on the pre-yield snapshot (Lua 5.1 `pairs` mutation safety) |
 
 **Child Sectors:**
 
@@ -863,7 +871,7 @@ Comms infrastructure unit tests for `HOUND.Comms.Manager` (400) and `HOUND.Comms
 | `TestRunCallback` | Calls func, returns next time |
 | `TestGetNextMsgOverride` | Calls runCallback if no loop.msg |
 | `TestGetNextMsgNoMsg` | No callback → returns nil |
-| `TestGetNextMsgDropsInvalid` | Invalid loop message is cleared so the next poll regenerates it |
+| `TestGetNextMsgDropsInvalid` | Invalid loop message and cached body are cleared so the next poll regenerates it |
 
 ### `test-HoundCoroutine.lua` — TestHoundCoroutine
 
@@ -908,10 +916,11 @@ Hex grid unit tests for `HOUND.Mist.hex` (`src/020 - HoundMist.lua`). No DCS run
 | `TestDistance` | Known pairs: 0, 1, 2, 6 |
 | `TestCubeRing` | `cubeRing(center, 2)` count = 12, all at distance 2, keys match `hash` |
 | `TestCubeSpiral` | `cubeSpiral(center, 2)` count = 19, all within distance 2, contains center |
-| `TestLineDraw` | Length = distance + 1, endpoints present |
+| `TestLineDraw` | Length = distance + 1, endpoints present; optional yield callback runs per generated cell |
 | `TestGetFromRouteFill` | Fill count > edge-only count; edge hashes subset of fill; no `"0 0 -0"` key |
 | `TestGetFromRouteFillInsidePolygon` | Every filled (non-edge) cell center passes `pointInPolygon` |
 | `TestGetFromRouteYields` | Optional `yieldFn` produces a resumable build with the same result; yields on bounded work even with a constant `timer.getTime` |
+| `TestGetFromRouteEdgeYields` | Edge-only route yields during long edges and matches the synchronous result |
 | `TestRingWalkProperty` | First-hit ring k == brute-force min distance over `getFromRoute` set |
 | `TestDrawNoMist` | `draw` with `mist` nil/bare table → nil, no error (`_G.mist` restored) |
 | `TestUseHexGridDefault` | `HOUND.useHexGrid` defaults true and toggles back |

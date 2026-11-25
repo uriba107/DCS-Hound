@@ -966,6 +966,16 @@ do
         return setmetatable(mock, DcsClass)
     end
 
+    function TestHoundUtils:TestGetSensorPrecisionUnitArg()
+        local platform = Unit.getByName("ELINT_BLUE_C17_EAST")
+        local emitter = Unit.getByName("TOR_SAIPAN-1")
+        -- a live unit is accepted directly as emitterFreq (documented contract)
+        lu.assertIsNumber(HOUND.DB.getSensorPrecision(platform, emitter))
+        -- a dead unit has no readable band; default resolution, no method call
+        local dead = deadHandle(Unit,{"getTypeName","getRadar","getName","getID"})
+        lu.assertEquals(HOUND.DB.getSensorPrecision(platform, dead), math.rad(30))
+    end
+
     function TestHoundUtils:TestDcsAliveGuards()
         local liveGrp = Group.getByName("TOR_SAIPAN")
         local liveUnit = Unit.getByName("TOR_SAIPAN-1")
@@ -1159,7 +1169,8 @@ do
             getRadar = function() return true end,
         }, Unit)
         local controller = {
-            getDetectedTargets = function() return {target} end,
+            -- getDetectedTargets returns DetectedTarget descriptors: {object=, visible=, ...}
+            getDetectedTargets = function() return {{object = target, visible = true}} end,
         }
         local platform = setmetatable({
             isExist = function() return true end,
@@ -1173,7 +1184,7 @@ do
         controller.getDetectedTargets = function() return nil end
         lu.assertItemsEquals(HOUND.Utils.Elint.getRwrContacts(platform),{})
 
-        controller.getDetectedTargets = function() return {target} end
+        controller.getDetectedTargets = function() return {{object = target, visible = true}} end
         target.isExist = function() return false end
         lu.assertItemsEquals(HOUND.Utils.Elint.getRwrContacts(platform),{})
     end
@@ -1561,6 +1572,51 @@ do
         lu.assertEquals(est.x, 0)
         lu.assertEquals(est.z, 0)
         lu.assertIsNumber(est.y)
+    end
+
+    function TestHoundUtils:TestCleanHumanDbPurgesStale()
+        local coa = coalition.side.NEUTRAL
+        local savedByName = HOUND.DB.HumanUnits.byName[coa]
+        local savedByGid = HOUND.DB.HumanUnits.byGid[coa]
+        local ok, err = pcall(function()
+            HOUND.DB.HumanUnits.byName[coa] = {}
+            HOUND.DB.HumanUnits.byGid[coa] = {}
+            local now = timer.getAbsTime()
+            local stale = {unitName = "stale", groupId = 4242, lastSeen = now - 400}
+            local live = {unitName = "live", groupId = 4243, lastSeen = now}
+            HOUND.DB.HumanUnits.byName[coa].stale = stale
+            HOUND.DB.HumanUnits.byName[coa].live = live
+            HOUND.DB.HumanUnits.byGid[coa][4242] = {stale = stale}
+            HOUND.DB.HumanUnits.byGid[coa][4243] = {live = live}
+
+            HOUND.DB.cleanHumanDb(coa)
+
+            lu.assertIsNil(HOUND.DB.HumanUnits.byName[coa].stale)
+            lu.assertIsNil(HOUND.DB.HumanUnits.byGid[coa][4242])
+            lu.assertIsTable(HOUND.DB.HumanUnits.byName[coa].live)
+            lu.assertIsTable(HOUND.DB.HumanUnits.byGid[coa][4243])
+        end)
+        HOUND.DB.HumanUnits.byName[coa] = savedByName
+        HOUND.DB.HumanUnits.byGid[coa] = savedByGid
+        if not ok then error(err, 0) end
+    end
+
+    function TestHoundUtils:TestCleanHumanDbMissingGroupBucket()
+        local coa = coalition.side.NEUTRAL
+        local savedByName = HOUND.DB.HumanUnits.byName[coa]
+        local savedByGid = HOUND.DB.HumanUnits.byGid[coa]
+        local ok, err = pcall(function()
+            HOUND.DB.HumanUnits.byName[coa] = {}
+            HOUND.DB.HumanUnits.byGid[coa] = {}
+            HOUND.DB.HumanUnits.byName[coa].stale = {unitName = "stale", groupId = 4242, lastSeen = timer.getAbsTime() - 400}
+
+            HOUND.DB.cleanHumanDb(coa)
+
+            lu.assertIsNil(HOUND.DB.HumanUnits.byName[coa].stale)
+        end)
+        HOUND.DB.HumanUnits.byName[coa] = savedByName
+        HOUND.DB.HumanUnits.byGid[coa] = savedByGid
+        if not ok then error(err, 0) end
     end
 
     function TestHoundUtils:tearDown()

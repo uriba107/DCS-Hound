@@ -142,8 +142,10 @@ do
         local hex = HOUND.Mist.hex
         local a = hex.to(0, 0, 0)
         local b = hex.to(3, -1, -2)
-        local line = hex.lineDraw(a, b)
+        local generated = 0
+        local line = hex.lineDraw(a, b, function() generated = generated + 1 end)
         lu.assertEquals(#line, hex.distance(a, b) + 1)
+        lu.assertEquals(generated, #line)
         lu.assertTrue(hexEquals(line[1], a))
         lu.assertTrue(hexEquals(line[#line], b))
     end
@@ -197,6 +199,39 @@ do
         lu.assertIsTable(result)
         lu.assertIsTrue(HOUND.Length(result) > 0)
         lu.assertIsTrue(resumes > 1)
+    end
+
+    function TestHoundHex:TestGetFromRouteEdgeYields()
+        local hex = HOUND.Mist.hex
+        local poly = {
+            {x = -150000, z = -150000, y = 0},
+            {x = 150000, z = -150000, y = 0},
+            {x = 150000, z = 150000, y = 0},
+            {x = -150000, z = 150000, y = 0},
+        }
+        local expected = hex.getFromRoute(poly, false)
+        local lineCells = 0
+        for i = 1, #poly do
+            local nextIndex = i % #poly + 1
+            lineCells = lineCells + #hex.lineDraw(
+                hex.pointToHex(poly[i]),
+                hex.pointToHex(poly[nextIndex])
+            )
+        end
+        local resumes, result = 0, nil
+        local co = coroutine.create(function()
+            return hex.getFromRoute(poly, false, coroutine.yield)
+        end)
+        while true do
+            local resumed, value = coroutine.resume(co)
+            lu.assertIsTrue(resumed, tostring(value))
+            resumes = resumes + 1
+            if coroutine.status(co) == "dead" then result = value; break end
+            lu.assertIsTrue(resumes < 100)
+        end
+        lu.assertEquals(result, expected)
+        lu.assertEquals(resumes - 1, math.floor(lineCells * 2 / 256))
+        lu.assertTrue(resumes > 1)
     end
 
     function TestHoundHex:TestRingWalkProperty()

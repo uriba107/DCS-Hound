@@ -344,7 +344,6 @@ do
                 self_:updateSectorMembership()
             end)
         end
-        self:updateSectorMembership()
     end
 
     --- remove zone from sector
@@ -387,16 +386,35 @@ do
             self_._sectorUpdateQueued = false
             local sectors = self_:getSectors()
             table.sort(sectors, HoundUtils.Sort.sectorsByPriorityLowFirst)
-            local contacts = self_.contacts:listAllContacts()
+            -- snapshot the live dictionaries in one pass: a key inserted during a
+            -- yield makes resuming a pairs traversal undefined behaviour in Lua 5.1
+            local contacts = {}
+            for _, contact in pairs(self_.contacts:listAllContacts()) do
+                table.insert(contacts, contact)
+            end
+            local sites = {}
+            for _, site in pairs(self_.contacts:listAllSites()) do
+                table.insert(sites, site)
+            end
 
+            local BATCH = 128
+            local processed = 0
             for _, sector in ipairs(sectors) do
                 for _, contact in ipairs(contacts) do
                     sector:updateSectorMembership(contact)
+                    processed = processed + 1
+                    if processed % BATCH == 0 then
+                        coroutine.yield()
+                    end
                 end
                 coroutine.yield()
             end
-            for _, site in ipairs(self_.contacts:listAllSites()) do
+            for _, site in ipairs(sites) do
                 site:updateSector()
+                processed = processed + 1
+                if processed % BATCH == 0 then
+                    coroutine.yield()
+                end
             end
             if self_._sectorUpdateQueued then
                 self_._sectorUpdateQueued = false

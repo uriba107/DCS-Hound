@@ -76,10 +76,11 @@ do
     --- Check if polygon is under threat of SAM
     -- Uses the sector's hex grid classification when HOUND.useHexGrid is true
     -- (default). Each contact hex is classified lazily on first sight and cached
-    -- per sector; no zone-wide cell set is built. Point-to-hex snap error is
-    -- bounded by HOUND.hexRadius, which is added to the radius so a threat is
-    -- never missed. Set HOUND.useHexGrid = false to restore the legacy polygon
-    -- implementation.
+    -- per sector with the radius it was computed at, so a radius change
+    -- recomputes instead of reusing the old grid; no zone-wide cell set is built.
+    -- Point-to-hex snap error is bounded by HOUND.hexRadius, which is added to
+    -- the radius so a threat is never missed. Set HOUND.useHexGrid = false to
+    -- restore the legacy polygon implementation.
     -- @param polygon Table of points representing a polygon (sector zone)
     -- @param point DCS position (x,z)
     -- @param radius Radius in Meters around point to test
@@ -105,20 +106,23 @@ do
             hexPoint = hex.pointToHex(point)
         end
 
+        local hexRadius = hex.getRadius()
         local key = hex.cellKey(hexPoint.r, hexPoint.q)
         local class = hexCache[key]
-        if not class then
+        -- the classification is resolution dependent: recompute after a radius
+        -- change instead of reusing the cell geometry of the old grid
+        if not class or class.radius ~= hexRadius then
             local center = hex.makeVec2(hexPoint)
             local inside, distance = HOUND.Utils.Polygon.zoneDistance(
                 center.x, center.y, zonePoly.xs, zonePoly.zs, zonePoly.n)
-            class = { inside = inside, distance = distance }
+            class = { inside = inside, distance = distance, radius = hexRadius }
             hexCache[key] = class
         end
 
         if class.inside then
             return true, true
         end
-        return false, class.distance <= (radius or 0) + hex.getRadius()
+        return false, class.distance <= (radius or 0) + hexRadius
     end
 
 

@@ -7,16 +7,25 @@ do
 
     -- zone points come from drawn zones (Vec2 {x,y}) or group routes (Vec3 {x,y,z})
     local function isZonePoint(point)
-        return type(point) == "table" and type(point.x) == "number"
-            and (type(point.z) == "number" or type(point.y) == "number")
+        if type(point) ~= "table" or type(point.x) ~= "number" then return false end
+        if point.z == nil then
+            return type(point.y) == "number"
+        end
+        return type(point.y) == "number" and type(point.z) == "number"
     end
 
     local function isValidZone(zone)
         if type(zone) ~= "table" then return false end
         local count = 0
-        for _, point in ipairs(zone) do
-            if not isZonePoint(point) then return false end
+        for key, point in pairs(zone) do
+            if type(key) ~= "number" or key % 1 ~= 0 or not isZonePoint(point) then
+                return false
+            end
             count = count + 1
+        end
+        -- contiguous 1-based array: setZone builds xs/zs with ipairs and stops at a hole
+        for i = 1, count do
+            if zone[i] == nil then return false end
         end
         return count >= 3
     end
@@ -106,10 +115,14 @@ do
                     self.settings[k0][tostring(k1):lower()] = v1
                 end
                 self.settings[k0]["name"] = self.callsign
-            elseif k0 == "zone" and (type(v) == "table" or type(v) == "string") then
+            elseif k0 == "zone" then
                 -- setZone validates the replacement and resets the hex cache;
-                -- invalid candidates leave the current zone and cache untouched
-                self:setZone(v)
+                -- invalid candidates leave the current zone and cache unchanged
+                if type(v) == "table" or type(v) == "string" then
+                    self:setZone(v)
+                else
+                    HOUND.Logger.warn("[Hound] - sector " .. self.name .. ": ignoring invalid zone value in updateSettings")
+                end
             else
                 self.settings[k0] = v
             end
@@ -197,10 +210,8 @@ do
 
         callsign = string.upper(callsign or HoundUtils.getHoundCallsign(namePool))
 
-        while HOUND.setContainsValue(self._hSettings.callsigns, callsign) do
-            callsign = HoundUtils.getHoundCallsign(namePool)
-        end
-
+        -- release the sector's own registration first so re-applying the current
+        -- callsign is not treated as taken and replaced by a random one
         if self._callsignRegistered then
             for k = #self._hSettings.callsigns, 1, -1 do
                 if self._hSettings.callsigns[k] == self.callsign then
@@ -209,6 +220,11 @@ do
             end
             self._callsignRegistered = false
         end
+
+        while HOUND.setContainsValue(self._hSettings.callsigns, callsign) do
+            callsign = HoundUtils.getHoundCallsign(namePool)
+        end
+
         table.insert(self._hSettings.callsigns, callsign)
         self.callsign = callsign
         self._callsignRegistered = true

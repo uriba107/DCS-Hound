@@ -1039,8 +1039,9 @@ do
 	--- Return the hexes on the line between two hexes (inclusive).
 	-- @tparam table a first hex
 	-- @tparam table b second hex
+	-- @tparam[opt] function yieldFn called for each generated hex
 	-- @treturn table array of hexes from a to b
-	function HOUND.Mist.hex.lineDraw (a, b)
+	function HOUND.Mist.hex.lineDraw (a, b, yieldFn)
 		local N = HOUND.Mist.hex.distance(a, b)
 		local a_nudge = HOUND.Mist.hex.to( a.r + 1e-06, a.q + 1e-06, a.s - 2e-06)
 		local b_nudge = HOUND.Mist.hex.to(b.r + 1e-06, b.q + 1e-06,  b.s - 2e-06)
@@ -1048,6 +1049,7 @@ do
 		local step = 1.0 / math.max(N, 1)
 		for i = 0, N do
 			table.insert(results, HOUND.Mist.hex.round(HOUND.Mist.hex.lerp(a_nudge, b_nudge, step * i)))
+			if yieldFn then yieldFn() end
 		end
 		return results
 	end
@@ -1250,15 +1252,16 @@ do
 			end
 		end
 
+		local lineYieldFn = yieldFn and yieldNow or nil
 		for i = 1, #points-1 do
-			local res = HOUND.Mist.hex.lineDraw(HOUND.Mist.hex.pointToHex(points[i]), HOUND.Mist.hex.pointToHex(points[i+1]))
+			local res = HOUND.Mist.hex.lineDraw(HOUND.Mist.hex.pointToHex(points[i]), HOUND.Mist.hex.pointToHex(points[i+1]), lineYieldFn)
 			for j = 1, #res do
 				local hash = HOUND.Mist.hex.hash(res[j])
 				if not drawn[hash] then
 					drawn[hash] = res[j]
 				end
+				if yieldFn then yieldNow() end
 			end
-			yieldNow()
 		end
 
 		if fill then
@@ -1269,7 +1272,7 @@ do
 			local row = {}
 			for _, hex in pairs(drawn) do
 				if not row[hex.r] then
-					row[hex.r] = {maxQ = 0, minQ = math.huge}
+					row[hex.r] = {maxQ = -math.huge, minQ = math.huge}
 				end
 				if hex.q > row[hex.r].maxQ then row[hex.r].maxQ = hex.q end
 				if hex.q < row[hex.r].minQ then row[hex.r].minQ = hex.q end

@@ -493,9 +493,13 @@ do
         local calls = 0
         self.atis:SetMsgCallback(function() calls = calls + 1 end, {})
         self.atis.loop.msg = {tts = "", txt = ""}
+        self.atis.loop.body = "cached body"
         -- invalid message is dropped instead of stalling the loop forever
         lu.assertNil(self.atis:getNextMsg())
         lu.assertNil(self.atis.loop.msg)
+        -- cached body is cleared too, otherwise generateAtis returns early on
+        -- the unchanged body and never recreates loop.msg
+        lu.assertNil(self.atis.loop.body)
         -- next poll regenerates through runCallback
         self.atis:getNextMsg()
         lu.assertEquals(calls, 1)
