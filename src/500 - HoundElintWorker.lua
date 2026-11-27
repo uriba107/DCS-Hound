@@ -185,6 +185,10 @@ do
     -- @return Name of added unit
     function HOUND.ElintWorker:addContact(emitter)
         if emitter == nil or emitter.getName == nil then return end
+        -- DCS raises on any method call for a destroyed handle; reject it before getName
+        if HoundUtils.Dcs.isUnit(emitter) and not HoundUtils.Dcs.isUnitAlive(emitter) then return end
+        if HoundUtils.Dcs.isGroup(emitter) and not HoundUtils.Dcs.isGroupAlive(emitter) then return end
+        if HoundUtils.Dcs.isStaticObject(emitter) and not HoundUtils.Dcs.isStaticObjectAlive(emitter) then return end
         local emitterName = emitter:getName()
         if self.contacts[emitterName] ~= nil then return emitterName end
         local contact = HOUND.Contact.Emitter:New(emitter, self:getCoalition(), self:getNewTrackId())
@@ -369,11 +373,13 @@ do
 
 
     --- add site to worker
-    -- @param emitter DCS Unit to add
+    -- @param emitter @{HOUND.Contact.Emitter} to add
     -- @return Name of added group
     function HOUND.ElintWorker:addSite(emitter)
         if emitter == nil or emitter.getName == nil then return end
-        local groupName = emitter:getDcsGroupName()
+        local getDcsGroupName = emitter.getDcsGroupName
+        if type(getDcsGroupName) ~= "function" then return end
+        local groupName = getDcsGroupName(emitter)
         if groupName == nil then
             HOUND.Logger.warn("failed to add site, emitter has no resolvable group")
             return

@@ -462,4 +462,22 @@ do
         lu.assertEquals(HOUND.Length(self.worker.sites), 0)
     end
 
+    function TestHoundWorker:TestAddContactDeadUnit()
+        local dead = setmetatable({
+            isExist = function() return false end,
+            getName = function() error("dead handle getName called") end,
+        }, Unit)
+        local ok, err = pcall(function() self.worker:addContact(dead) end)
+        lu.assertIsTrue(ok, tostring(err))
+        lu.assertEquals(HOUND.Length(self.worker.contacts), 0)
+    end
+
+    function TestHoundWorker:TestAddSiteRawDcsHandle()
+        local grp = Unit.getByName("TOR_SAIPAN-1"):getGroup()
+        lu.assertNotNil(grp)
+        local ok, err = pcall(function() self.worker:addSite(grp) end)
+        lu.assertIsTrue(ok, tostring(err))
+        lu.assertEquals(HOUND.Length(self.worker.sites), 0)
+    end
+
 end

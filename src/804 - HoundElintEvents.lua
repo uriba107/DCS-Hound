@@ -162,8 +162,9 @@ do
                 site.last_launch_processed = timer.getAbsTime()
             end
             local tgtPos = nil
-            local wpnTgt = DcsEvent.weapon:getTarget()
-            if HoundUtils.Dcs.isUnitAlive(wpnTgt) then
+            -- the weapon can be destroyed between the event and this slice
+            local okTgt, wpnTgt = pcall(DcsEvent.weapon.getTarget, DcsEvent.weapon)
+            if okTgt and HoundUtils.Dcs.isUnitAlive(wpnTgt) then
               tgtPos = wpnTgt:getPoint()
             end
             if HoundUtils.Dcs.isPoint(tgtPos) then
@@ -183,7 +184,10 @@ do
             and DcsEvent.initiator:getCoalition() == self.settings:getCoalition()
         then
             local unit = DcsEvent.initiator
-            if not HOUND.DB.isValidPlatform(unit,DcsEvent.weapon_name) then return end
+            -- DCS no longer fills weapon_name; WEAPON_ADD still carries the live weapon.
+            local weapon = DcsEvent.weapon
+            local weaponName = weapon and weapon:isExist() and weapon:getTypeName() or DcsEvent.weapon_name
+            if not HOUND.DB.isValidPlatform(unit,weaponName) then return end
             self:addPlatform(unit:getName())
         end
     end

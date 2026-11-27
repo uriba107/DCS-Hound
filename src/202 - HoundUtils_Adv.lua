@@ -12,13 +12,15 @@ do
     --- Polygon functions
     -- @section Polygon
 
-    --- Check if polygon is under threat of SAM
-    -- @param polygon Table of point reprasenting a polygon
+    --- Legacy polygon threat query.
+    -- Used when HOUND.useHexGrid is false and while a sector's hex grid is
+    -- still building, so membership is never left unresolved.
+    -- @param polygon Table of points representing a polygon (sector zone)
     -- @param point DCS position (x,z)
     -- @param radius Radius in Meters around point to test
-    -- @return[type=Bool] True if point is in polygon
-    -- @return[type=Bool] True if radius around point intersects polygon
-    function HOUND.Utils.Polygon.threatOnSector(polygon,point, radius)
+    -- @return[type=Bool] True if point is in the polygon
+    -- @return[type=Bool] True if radius around point intersects the polygon
+    function HOUND.Utils.Polygon.threatOnSectorLegacy(polygon, point, radius)
         if type(polygon) ~= "table" or #polygon < 3 or not HOUND.Utils.Dcs.isPoint(l_mist.utils.makeVec3(polygon[1])) then
             return
         end
@@ -27,13 +29,100 @@ do
         end
         local inPolygon = l_mist.pointInPolygon(point,polygon)
         local intersectsPolygon = inPolygon
-
         if radius ~= nil and radius > 0 and l_mist.shape ~= nil then
-            -- if mist version in use contains shapesOverlap use it. (4.5.103?)
             local circle={point=point,radius=radius}
             intersectsPolygon = l_mist.shape.insideShape(circle,polygon)
         end
         return inPolygon,intersectsPolygon
+    end
+
+    --- Distance from an XZ point to a polygon, and whether it is inside.
+    -- Single pass: even-odd crossing test plus minimum segment distance.
+    -- @param px point x
+    -- @param pz point z
+    -- @param xs polygon x coordinates (array)
+    -- @param zs polygon z coordinates (array)
+    -- @param n number of polygon points
+    -- @return[type=Bool] True if the point is inside the polygon
+    -- @return[type=number] Distance to the nearest polygon edge in meters (0 inside)
+    function HOUND.Utils.Polygon.zoneDistance(px, pz, xs, zs, n)
+        local inside = false
+        local best = math.huge
+        local prevX, prevZ = xs[n], zs[n]
+        for i = 1, n do
+            local curX, curZ = xs[i], zs[i]
+            if (prevZ <= pz) ~= (curZ <= pz) then
+                local vt = (pz - prevZ) / (curZ - prevZ)
+                if px < prevX + vt * (curX - prevX) then
+                    inside = not inside
+                end
+            end
+            local dx, dz = curX - prevX, curZ - prevZ
+            local l2 = dx*dx + dz*dz
+            local t = 0
+            if l2 > 0 then
+                t = ((px - prevX) * dx + (pz - prevZ) * dz) / l2
+                if t < 0 then t = 0 elseif t > 1 then t = 1 end
+            end
+            local ex, ez = prevX + t*dx - px, prevZ + t*dz - pz
+            local d = math.sqrt(ex*ex + ez*ez)
+            if d < best then best = d end
+            prevX, prevZ = curX, curZ
+        end
+        if inside then return true, 0 end
+        return false, best
+    end
+
+    --- Check if polygon is under threat of SAM
+    -- Uses the sector's hex grid classification when HOUND.useHexGrid is true
+    -- (default). Each contact hex is classified lazily on first sight and cached
+    -- per sector with the radius it was computed at, so a radius change
+    -- recomputes instead of reusing the old grid; no zone-wide cell set is built.
+    -- Point-to-hex snap error is bounded by HOUND.hexRadius, which is added to
+    -- the radius so a threat is never missed. Set HOUND.useHexGrid = false to
+    -- restore the legacy polygon implementation.
+    -- @param polygon Table of points representing a polygon (sector zone)
+    -- @param point DCS position (x,z)
+    -- @param radius Radius in Meters around point to test
+    -- @param hexPoint Contact hex cell (Contact.Base:getHexCell); derived from point when absent
+    -- @param hexCache Sector hex classification cache keyed by HOUND.Mist.hex.cellKey
+    -- @param zonePoly Sector zone as {xs=..., zs=..., n=...}
+    -- @return[type=Bool] True if point is in the sector zone
+    -- @return[type=Bool] True if radius around point intersects the sector zone
+    function HOUND.Utils.Polygon.threatOnSector(polygon, point, radius, hexPoint, hexCache, zonePoly)
+        if not HOUND.useHexGrid then
+            return HOUND.Utils.Polygon.threatOnSectorLegacy(polygon, point, radius)
+        end
+        if not zonePoly or type(hexCache) ~= "table" then
+            -- no zone for this sector (default or meta sector)
+            return
+        end
+
+        local hex = HOUND.Mist.hex
+        if not hexPoint then
+            if not HOUND.Utils.Dcs.isPoint(point) then
+                return
+            end
+            hexPoint = hex.pointToHex(point)
+        end
+
+        local hexRadius = hex.getRadius()
+        local key = hex.cellKey(hexPoint.r, hexPoint.q)
+        local class = hexCache[key]
+        -- the classification is resolution dependent: recompute after a radius
+        -- change instead of reusing the cell geometry of the old grid
+        if not class or class.radius ~= hexRadius then
+            local center = hex.makeVec2(hexPoint)
+            local inside, distance = HOUND.Utils.Polygon.zoneDistance(
+                center.x, center.y, zonePoly.xs, zonePoly.zs, zonePoly.n)
+            class = { inside = inside, distance = distance, radius = hexRadius }
+            hexCache[key] = class
+        end
+
+        if class.inside then
+            return true, true
+        end
+        return false, class.distance <= (radius or 0) + hexRadius
     end
 
 

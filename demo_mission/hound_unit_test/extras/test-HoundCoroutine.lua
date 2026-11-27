@@ -98,6 +98,15 @@ do
         lu.assertFalse(HOUND.Coroutine.isRunning("deadCo"))
     end
 
+    function TestHoundCoroutine:TestPumpPurgesExternallyDeadCoroutine()
+        HOUND.Coroutine.add(quickExit, { name = "externallyDead" })
+        coroutine.resume(HOUND.Coroutine._list[1].co)
+        lu.assertEquals(HOUND.Coroutine.count(), 1)
+        HOUND.Coroutine._pump()
+        lu.assertEquals(HOUND.Coroutine.count(), 0)
+        lu.assertEquals(#HOUND.Coroutine._list, 0)
+    end
+
     function TestHoundCoroutine:TestCountZero()
         lu.assertEquals(HOUND.Coroutine.count(), 0)
     end
@@ -144,6 +153,22 @@ do
         lu.assertIsTrue(ran.next)
         lu.assertEquals(HOUND.Coroutine.count(), 0)
         lu.assertEquals(#HOUND.Coroutine._list, 0)
+    end
+
+    function TestHoundCoroutine:TestPumpFirstRunImmediateAtLargeMissionTime()
+        -- regression: timer.getTime() - YieldInterval can round to less than
+        -- YieldInterval in the past at large mission times, so a naive
+        -- lastResume initialization skipped the first pump slice
+        local realGetTime = timer.getTime
+        timer.getTime = function() return 1234.567 end
+        local ran = false
+        local ok, err = pcall(function()
+            HOUND.Coroutine.add(function() ran = true end)
+            HOUND.Coroutine._pump()
+        end)
+        timer.getTime = realGetTime
+        lu.assertIsTrue(ok, tostring(err))
+        lu.assertIsTrue(ran)
     end
 
     function TestHoundCoroutine:TestPumpShutdownThenAddDefers()

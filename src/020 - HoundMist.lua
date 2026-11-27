@@ -805,7 +805,8 @@ do
 
 	HOUND.Mist.hex = {}
 
-	local hexRadius = 10000
+	local hexRadius = HOUND.hexRadius
+	if type(hexRadius) ~= "number" or hexRadius < 1 then hexRadius = 1000 end
 	local hexIter = math.rad(360/6)
 
 	--- Return the current hex grid radius in meters.
@@ -817,7 +818,10 @@ do
 	--- Set the hex grid radius in meters.
 	-- @tparam number r new hex radius
 	function HOUND.Mist.hex.setRadius(r)
-		hexRadius = r
+		if type(r) ~= "number" then return end
+		local radius = math.floor(r)
+		if radius < 1 then return end
+		hexRadius = radius
 	end
 
 
@@ -921,7 +925,10 @@ do
 	-- @tparam number direction diagonal index
 	-- @treturn table diagonal neighbor hex
 	function HOUND.Mist.hex.diagonalNeighbor (hex, direction)
-		return HOUND.Mist.hex.add(hex, HOUND.Mist.hex.diagonals[1+direction])
+		if type(direction) ~= "number" then return end
+		local diagonal = HOUND.Mist.hex.diagonals[1+direction]
+		if not diagonal then return end
+		return HOUND.Mist.hex.add(hex, diagonal)
 	end
 
 
@@ -1032,8 +1039,9 @@ do
 	--- Return the hexes on the line between two hexes (inclusive).
 	-- @tparam table a first hex
 	-- @tparam table b second hex
+	-- @tparam[opt] function yieldFn called for each generated hex
 	-- @treturn table array of hexes from a to b
-	function HOUND.Mist.hex.lineDraw (a, b)
+	function HOUND.Mist.hex.lineDraw (a, b, yieldFn)
 		local N = HOUND.Mist.hex.distance(a, b)
 		local a_nudge = HOUND.Mist.hex.to( a.r + 1e-06, a.q + 1e-06, a.s - 2e-06)
 		local b_nudge = HOUND.Mist.hex.to(b.r + 1e-06, b.q + 1e-06,  b.s - 2e-06)
@@ -1041,6 +1049,7 @@ do
 		local step = 1.0 / math.max(N, 1)
 		for i = 0, N do
 			table.insert(results, HOUND.Mist.hex.round(HOUND.Mist.hex.lerp(a_nudge, b_nudge, step * i)))
+			if yieldFn then yieldFn() end
 		end
 		return results
 	end
@@ -1120,13 +1129,31 @@ do
 		return {x = x, y = y, z = z}
 	end
 
+	-- tostring(-0.0) is "-0" in Lua 5.1; normalize so origin cells match "0 0 0"
+	local function hashPart(n)
+		if n == 0 then return "0" end
+		return tostring(n)
+	end
+
+	-- packed numeric key for cell sets; supports |r|,|q| < 2^24
+	local CELL_KEY_OFFSET = 16777216
+	local CELL_KEY_STRIDE = 33554432
+
+	--- Numeric key for a hex r/q pair (cheaper than the string hash).
+	-- @tparam number r r coordinate
+	-- @tparam number q q coordinate
+	-- @treturn number packed key
+	function HOUND.Mist.hex.cellKey(r, q)
+		return (r + CELL_KEY_OFFSET) * CELL_KEY_STRIDE + (q + CELL_KEY_OFFSET)
+	end
+
 	--- Hash a hex to a "r q s" string key (s omitted when nil).
 	-- @tparam table tbl hex
 	-- @treturn string hash key
 	function HOUND.Mist.hex.hash(tbl)
-		local s = tostring(tbl.r) .. " " .. tostring(tbl.q)
+		local s = hashPart(tbl.r) .. " " .. hashPart(tbl.q)
 		if tbl.s then
-			s = s .. " " .. tostring(tbl.s)
+			s = s .. " " .. hashPart(tbl.s)
 		end
 		return s
 	end
@@ -1187,86 +1214,83 @@ do
 		return mist.marker.add(hexDraw)
 	end
 
+	-- allocation-free ray cast; poly is precomputed with makeVec3
+	local function pointInPolyXZ(px, pz, poly)
+		local cn = 0
+		local n = #poly
+		local prev = poly[n]
+		for i = 1, n do
+			local cur = poly[i]
+			if (prev.z <= pz and cur.z > pz) or (prev.z > pz and cur.z <= pz) then
+				local vt = (pz - prev.z) / (cur.z - prev.z)
+				if px < prev.x + vt * (cur.x - prev.x) then
+					cn = cn + 1
+				end
+			end
+			prev = cur
+		end
+		return cn % 2 == 1
+	end
+
 	--- Return the hexes covered by a route polygon (edge, or filled when fill=true).
 	-- @tparam table p array of DCS points forming the polygon
 	-- @tparam boolean fill when true, fill interior hexes via point-in-polygon
+	-- @tparam[opt] function yieldFn optional yield callback (pass coroutine.yield to build incrementally)
 	-- @treturn table covered hexes keyed by hash
-	function HOUND.Mist.hex.getFromRoute(p, fill)
+	function HOUND.Mist.hex.getFromRoute(p, fill, yieldFn)
 		local points = HOUND.Mist.utils.deepCopy(p)
-		local avg = HOUND.Mist.getAvgPoint(points)
 		table.insert(points, points[1])
 		local drawn = {}
-		local indexed = {}
-		local meta = {count = 0, maxR = 0, minR = 100000000}
 
-		--drawHex(HOUND.Mist.hex.makeVec2(HOUND.Mist.hex.pointToHex(avg)), {1, 1, 1, 0.3})
+		local work = 0
+		local function yieldNow()
+			if not yieldFn then return end
+			work = work + 1
+			if work >= 256 then
+				work = 0
+				yieldFn()
+			end
+		end
 
+		local lineYieldFn = yieldFn and yieldNow or nil
 		for i = 1, #points-1 do
-			--HOUND.Mist.marker.add({mType = "line", points = {points[i], points[i+1]}})
-			local res = HOUND.Mist.hex.lineDraw(HOUND.Mist.hex.pointToHex(points[i]), HOUND.Mist.hex.pointToHex(points[i+1]))
+			local res = HOUND.Mist.hex.lineDraw(HOUND.Mist.hex.pointToHex(points[i]), HOUND.Mist.hex.pointToHex(points[i+1]), lineYieldFn)
 			for j = 1, #res do
 				local hash = HOUND.Mist.hex.hash(res[j])
-
 				if not drawn[hash] then
 					drawn[hash] = res[j]
-					table.insert(indexed, res[j])
-					local point = HOUND.Mist.hex.makeVec2(res[j])
-					--drawHex(point)
-					--HOUND.Mist.marker.add({mType = "text", text = hash, point = point })
-					meta.count = meta.count + 1
 				end
-
-
+				if yieldFn then yieldNow() end
 			end
-
-			--log:echo(res)
 		end
-		local row = {}
+
 		if fill then
-			local poly = HOUND.Mist.utils.deepCopy(drawn)
-
-			for hexName, hex in pairs(poly) do
-				if not row[hex.r] then
-					row[hex.r] = {maxQ = 0, minQ = math.huge}
-				end
-				if hex.q > row[hex.r].maxQ then
-					row[hex.r].maxQ = HOUND.Mist.utils.deepCopy(hex.q)
-				end
-				if hex.q < row[hex.r].minQ then
-					row[hex.r].minQ = HOUND.Mist.utils.deepCopy(hex.q)
-				end
-				row[hex.r][hex.q] = hex
-
-				if hex.r > meta.maxR then
-					meta.maxR = HOUND.Mist.utils.deepCopy(hex.r)
-				end
-				if  hex.r < meta.minR then
-					meta.minR = HOUND.Mist.utils.deepCopy(hex.r)
-				end
-
+			local fillPoly = {}
+			for i = 1, #p do
+				fillPoly[i] = HOUND.Mist.utils.makeVec3(p[i])
 			end
-
+			local row = {}
+			for _, hex in pairs(drawn) do
+				if not row[hex.r] then
+					row[hex.r] = {maxQ = -math.huge, minQ = math.huge}
+				end
+				if hex.q > row[hex.r].maxQ then row[hex.r].maxQ = hex.q end
+				if hex.q < row[hex.r].minQ then row[hex.r].minQ = hex.q end
+				row[hex.r][hex.q] = hex
+				yieldNow()
+			end
 			for rIndex, rData in pairs(row) do
-				local skip = {}
-				local draws = {}
-				local crosses = 0
-				local lastClear
 				for i = rData.minQ+1, rData.maxQ-1 do
 					local newHex = {q = i, r = rIndex, s = -rIndex-i}
 					local hash = HOUND.Mist.hex.hash(newHex)
 					local hexPoint = HOUND.Mist.hex.makeVec2(newHex)
-					if (not drawn[hash]) and HOUND.Mist.pointInPolygon(hexPoint, p) then			--- still think there is a faster way than checking old point in polygon, but whatever.
+					if not drawn[hash] and pointInPolyXZ(hexPoint.x, hexPoint.y, fillPoly) then
 						row[rIndex][newHex.q] = newHex
 						drawn[hash] = newHex
-						--drawHex(hexPoint, {0, 1, 0, 0.5})
-						--HOUND.Mist.marker.add({mType = "text", text = hash, point = hexPoint })
-						meta.count = meta.count + 1
 					end
+					yieldNow()
 				end
-
 			end
-			meta.row = row
-			--return {hexes = drawn, meta = meta}
 		end
 		if drawn["0 0 -0"] then
 			drawn["0 0 0"] = {r = 0, q = 0, s = 0}

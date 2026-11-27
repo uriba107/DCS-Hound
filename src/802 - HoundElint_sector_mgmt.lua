@@ -338,10 +338,12 @@ do
     function HoundElint:setZone(sectorName,zoneCandidate)
         if type(sectorName) ~= "string" then return end
         if type(zoneCandidate) ~= "string" and zoneCandidate ~= nil then return end
+        local self_ = self
         if self.sectors[sectorName] then
-            self.sectors[sectorName]:setZone(zoneCandidate)
+            self.sectors[sectorName]:setZone(zoneCandidate, function()
+                self_:updateSectorMembership()
+            end)
         end
-        self:updateSectorMembership()
     end
 
     --- remove zone from sector
@@ -375,19 +377,49 @@ do
     -- @local
     function HoundElint:updateSectorMembership()
         local guardName = "sector-membership-" .. self:getId()
-        if HOUND.Coroutine.isRunning(guardName) then return end
+        if HOUND.Coroutine.isRunning(guardName) then
+            self._sectorUpdateQueued = true
+            return
+        end
         local self_ = self
         HOUND.Coroutine.add(function()
+            self_._sectorUpdateQueued = false
             local sectors = self_:getSectors()
             table.sort(sectors, HoundUtils.Sort.sectorsByPriorityLowFirst)
-            for _, sector in pairs(sectors) do
-                for _, contact in ipairs(self_.contacts:listAllContacts()) do
+            -- snapshot the live dictionaries in one pass: a key inserted during a
+            -- yield makes resuming a pairs traversal undefined behaviour in Lua 5.1
+            local contacts = {}
+            for _, contact in pairs(self_.contacts:listAllContacts()) do
+                table.insert(contacts, contact)
+            end
+            local sites = {}
+            for _, site in pairs(self_.contacts:listAllSites()) do
+                table.insert(sites, site)
+            end
+
+            local BATCH = 128
+            local processed = 0
+            for _, sector in ipairs(sectors) do
+                for _, contact in ipairs(contacts) do
                     sector:updateSectorMembership(contact)
+                    processed = processed + 1
+                    if processed % BATCH == 0 then
+                        coroutine.yield()
+                    end
                 end
                 coroutine.yield()
             end
-            for _, site in ipairs(self_.contacts:listAllSites()) do
+            for _, site in ipairs(sites) do
                 site:updateSector()
+                processed = processed + 1
+                if processed % BATCH == 0 then
+                    coroutine.yield()
+                end
+            end
+            if self_._sectorUpdateQueued then
+                self_._sectorUpdateQueued = false
+                timer.scheduleFunction(function() self_:updateSectorMembership() end,
+                    nil, timer.getTime() + 0.1)
             end
         end, { name = guardName })
     end

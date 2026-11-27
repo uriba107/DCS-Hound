@@ -1,6 +1,15 @@
 do
     TestHoundUtils = {}
 
+    local function buildZonePoly(zone)
+        local xs, zs = {}, {}
+        for i, point in ipairs(zone) do
+            xs[i] = point.x
+            zs[i] = point.z or point.y
+        end
+        return { xs = xs, zs = zs, n = #xs }
+    end
+
     function TestHoundUtils:setUp()
     end
 
@@ -73,11 +82,54 @@ do
         local prevAllocated = HOUND.Utils.Marker._MarkIdAllocated
         HOUND.Utils.Marker._MarkId = 4999
         HOUND.Utils.Marker._MarkIdAllocated = false
-        lu.assertIsTrue(HOUND.Utils.Marker.setInitialId(4998))
-        lu.assertEquals(HOUND.Utils.Marker.getId(), 4999)
-        lu.assertIsFalse(HOUND.Utils.Marker.setInitialId(100))
+        local ok, err = pcall(function()
+            lu.assertIsTrue(HOUND.Utils.Marker.setInitialId(4998))
+            lu.assertEquals(HOUND.Utils.Marker.getId(), 4999)
+            lu.assertIsFalse(HOUND.Utils.Marker.setInitialId(100))
+        end)
         HOUND.Utils.Marker._MarkId = prevId
         HOUND.Utils.Marker._MarkIdAllocated = prevAllocated
+        if not ok then error(err, 0) end
+    end
+
+    function TestHoundUtils:TestWeaponAddName()
+        local unit = Unit.getByName("ELINT_BLUE_C17_EAST")
+        lu.assertNotNil(unit)
+        local hound = setmetatable({
+            settings = { getCoalition = function() return unit:getCoalition() end },
+            isRunning = function() return true end,
+        }, { __index = HoundElint })
+        local captured
+        local orig = HOUND.DB.isValidPlatform
+        HOUND.DB.isValidPlatform = function(_, weaponName)
+            captured = weaponName
+            return false
+        end
+        local ok, err = pcall(function()
+            hound:onEvent({
+                id = world.event.S_EVENT_WEAPON_ADD,
+                initiator = unit,
+                weapon = { isExist = function() return true end, getTypeName = function() return "livePod" end },
+            })
+        end)
+        HOUND.DB.isValidPlatform = orig
+        if not ok then error(err, 0) end
+        lu.assertEquals(captured, "livePod")
+
+        HOUND.DB.isValidPlatform = function(_, weaponName)
+            captured = weaponName
+            return false
+        end
+        ok, err = pcall(function()
+            hound:onEvent({
+                id = world.event.S_EVENT_WEAPON_ADD,
+                initiator = unit,
+                weapon_name = "legacyPod",
+            })
+        end)
+        HOUND.DB.isValidPlatform = orig
+        if not ok then error(err, 0) end
+        lu.assertEquals(captured, "legacyPod")
     end
 
     function TestHoundUtils:TestMarkerCreate()
@@ -914,6 +966,16 @@ do
         return setmetatable(mock, DcsClass)
     end
 
+    function TestHoundUtils:TestGetSensorPrecisionUnitArg()
+        local platform = Unit.getByName("ELINT_BLUE_C17_EAST")
+        local emitter = Unit.getByName("TOR_SAIPAN-1")
+        -- a live unit is accepted directly as emitterFreq (documented contract)
+        lu.assertIsNumber(HOUND.DB.getSensorPrecision(platform, emitter))
+        -- a dead unit has no readable band; default resolution, no method call
+        local dead = deadHandle(Unit,{"getTypeName","getRadar","getName","getID"})
+        lu.assertEquals(HOUND.DB.getSensorPrecision(platform, dead), math.rad(30))
+    end
+
     function TestHoundUtils:TestDcsAliveGuards()
         local liveGrp = Group.getByName("TOR_SAIPAN")
         local liveUnit = Unit.getByName("TOR_SAIPAN-1")
@@ -1097,6 +1159,34 @@ do
         -- a destroyed platform must not reach hasSensors/getController
         lu.assertItemsEquals(HOUND.Utils.Elint.getRwrContacts(deadHandle(Unit,{"hasSensors","getCoalition","getController"})),{})
         lu.assertItemsEquals(HOUND.Utils.Elint.getRwrContacts(nil),{})
+    end
+
+    function TestHoundUtils:TestGetRwrContactsLive()
+        local target = setmetatable({
+            isExist = function() return true end,
+            getName = function() return "RADAR" end,
+            getCoalition = function() return coalition.side.RED end,
+            getRadar = function() return true end,
+        }, Unit)
+        local controller = {
+            -- getDetectedTargets returns DetectedTarget descriptors: {object=, visible=, ...}
+            getDetectedTargets = function() return {{object = target, visible = true}} end,
+        }
+        local platform = setmetatable({
+            isExist = function() return true end,
+            hasSensors = function() return true end,
+            getCoalition = function() return coalition.side.BLUE end,
+            getController = function() return controller end,
+        }, Unit)
+
+        lu.assertItemsEquals(HOUND.Utils.Elint.getRwrContacts(platform),{"RADAR"})
+
+        controller.getDetectedTargets = function() return nil end
+        lu.assertItemsEquals(HOUND.Utils.Elint.getRwrContacts(platform),{})
+
+        controller.getDetectedTargets = function() return {{object = target, visible = true}} end
+        target.isExist = function() return false end
+        lu.assertItemsEquals(HOUND.Utils.Elint.getRwrContacts(platform),{})
     end
 
     function TestHoundUtils:TestDcsGetGroupNamesNoPrefix()
@@ -1313,48 +1403,84 @@ do
         lu.assertEquals(HOUND.Utils.TTS.getdefaultModulation(nil),"AM")
         lu.assertEquals(HOUND.Utils.TTS.getdefaultModulation("not_a_number"),"AM")
     end
-    function TestHoundUtils:TestThreatOnSectorInvalidPolygon()
+    function TestHoundUtils:TestThreatOnSectorNoZone()
         local square = {{x=0,z=0},{x=100,z=0},{x=100,z=100},{x=0,z=100}}
-        lu.assertIsNil(HOUND.Utils.Polygon.threatOnSector(nil, {x=50,z=50}))
-        lu.assertIsNil(HOUND.Utils.Polygon.threatOnSector("bad", {x=50,z=50}))
-        lu.assertIsNil(HOUND.Utils.Polygon.threatOnSector({{x=0,z=0}}, {x=50,z=50}))
-        lu.assertIsNil(HOUND.Utils.Polygon.threatOnSector({{x=0,z=0},{x=100,z=0}}, {x=50,z=50}))
+        -- no zone polygon (default/meta sector): nil passthrough
+        lu.assertIsNil(HOUND.Utils.Polygon.threatOnSector(square, {x=50,z=50}, nil, nil, {}, nil))
     end
 
     function TestHoundUtils:TestThreatOnSectorInvalidPoint()
         local square = {{x=0,z=0},{x=100,z=0},{x=100,z=100},{x=0,z=100}}
-        lu.assertIsNil(HOUND.Utils.Polygon.threatOnSector(square, nil))
-        lu.assertIsNil(HOUND.Utils.Polygon.threatOnSector(square, "bad"))
+        local zonePoly = buildZonePoly(square)
+        lu.assertIsNil(HOUND.Utils.Polygon.threatOnSector(square, nil, nil, nil, {}, zonePoly))
+        lu.assertIsNil(HOUND.Utils.Polygon.threatOnSector(square, "bad", nil, nil, {}, zonePoly))
     end
 
     function TestHoundUtils:TestThreatOnSectorInside()
-        local square = {{x=0,z=0},{x=100,z=0},{x=100,z=100},{x=0,z=100}}
-        local inside = {x=50,z=50}
-        local inPoly, intPoly = HOUND.Utils.Polygon.threatOnSector(square, inside)
-        if inPoly ~= nil then
-            lu.assertIsBoolean(inPoly)
-            lu.assertIsBoolean(intPoly)
-        end
+        local square = {{x=-5000,y=0,z=-5000},{x=5000,y=0,z=-5000},{x=5000,y=0,z=5000},{x=-5000,y=0,z=5000}}
+        local inPoly, intPoly = HOUND.Utils.Polygon.threatOnSector(
+            square, {x=0,z=0}, nil, nil, {}, buildZonePoly(square))
+        lu.assertIsTrue(inPoly)
+        lu.assertIsTrue(intPoly)
     end
 
     function TestHoundUtils:TestThreatOnSectorOutside()
-        local square = {{x=0,z=0},{x=100,z=0},{x=100,z=100},{x=0,z=100}}
-        local outside = {x=200,z=200}
-        local inPoly, intPoly = HOUND.Utils.Polygon.threatOnSector(square, outside)
-        if inPoly ~= nil then
-            lu.assertIsBoolean(inPoly)
-            lu.assertIsBoolean(intPoly)
-        end
+        local square = {{x=-5000,y=0,z=-5000},{x=5000,y=0,z=-5000},{x=5000,y=0,z=5000},{x=-5000,y=0,z=5000}}
+        local inPoly, intPoly = HOUND.Utils.Polygon.threatOnSector(
+            square, {x=50000,z=50000}, nil, nil, {}, buildZonePoly(square))
+        lu.assertIsFalse(inPoly)
+        lu.assertIsFalse(intPoly)
     end
 
     function TestHoundUtils:TestThreatOnSectorWithRadius()
-        local square = {{x=0,y=0,z=0},{x=100,y=0,z=0},{x=100,y=0,z=100},{x=0,y=0,z=100}}
-        local nearEdge = {x=110,y=0,z=50}
-        local inPoly, intPoly = HOUND.Utils.Polygon.threatOnSector(square, nearEdge, 20)
-        if inPoly ~= nil then
-            lu.assertIsBoolean(inPoly)
-            lu.assertIsBoolean(intPoly)
-        end
+        local square = {{x=-5000,y=0,z=-5000},{x=5000,y=0,z=-5000},{x=5000,y=0,z=5000},{x=-5000,y=0,z=5000}}
+        local nearEdge = {x=6000,z=0}
+        local inPoly, intPoly = HOUND.Utils.Polygon.threatOnSector(
+            square, nearEdge, 2000, nil, {}, buildZonePoly(square))
+        lu.assertIsFalse(inPoly)
+        lu.assertIsTrue(intPoly)
+    end
+
+    function TestHoundUtils:TestThreatOnSectorCachesCell()
+        local square = {{x=-5000,y=0,z=-5000},{x=5000,y=0,z=-5000},{x=5000,y=0,z=5000},{x=-5000,y=0,z=5000}}
+        local zonePoly = buildZonePoly(square)
+        local cache = {}
+        local hex = HOUND.Mist.hex
+        local h = hex.pointToHex({x=0,z=0})
+        HOUND.Utils.Polygon.threatOnSector(square, {x=0,z=0}, nil, h, cache, zonePoly)
+        local class = cache[hex.cellKey(h.r, h.q)]
+        lu.assertIsTable(class)
+        lu.assertIsTrue(class.inside)
+        lu.assertEquals(class.distance, 0)
+        -- a cached classification is the same record on the next query
+        HOUND.Utils.Polygon.threatOnSector(square, {x=0,z=0}, nil, h, cache, zonePoly)
+        lu.assertIs(class, cache[hex.cellKey(h.r, h.q)])
+    end
+
+    function TestHoundUtils:TestThreatOnSectorLegacyFlag()
+        local square = {
+            {x=0,y=0,z=0},{x=100,y=0,z=0},{x=100,y=0,z=100},{x=0,y=0,z=100},
+        }
+        local zonePoly = buildZonePoly(square)
+        local saved = HOUND.useHexGrid
+        HOUND.useHexGrid = false
+
+        local ok, err = pcall(function()
+            local inPoly, intPoly = HOUND.Utils.Polygon.threatOnSector(square, {x=50,y=0,z=50}, nil, nil, {}, zonePoly)
+            lu.assertIsTrue(inPoly)
+            lu.assertIsTrue(intPoly)
+
+            inPoly, intPoly = HOUND.Utils.Polygon.threatOnSector(square, {x=200,y=0,z=200}, nil, nil, {}, zonePoly)
+            lu.assertIsFalse(inPoly)
+            lu.assertIsFalse(intPoly)
+
+            inPoly, intPoly = HOUND.Utils.Polygon.threatOnSector(square, {x=110,y=0,z=50}, 20, nil, {}, zonePoly)
+            lu.assertIsFalse(inPoly)
+            lu.assertIsTrue(intPoly)
+        end)
+
+        HOUND.useHexGrid = saved
+        if not ok then error(err, 0) end
     end
 
     function TestHoundUtils:TestAzMinMaxInvalidRef()
@@ -1446,6 +1572,51 @@ do
         lu.assertEquals(est.x, 0)
         lu.assertEquals(est.z, 0)
         lu.assertIsNumber(est.y)
+    end
+
+    function TestHoundUtils:TestCleanHumanDbPurgesStale()
+        local coa = coalition.side.NEUTRAL
+        local savedByName = HOUND.DB.HumanUnits.byName[coa]
+        local savedByGid = HOUND.DB.HumanUnits.byGid[coa]
+        local ok, err = pcall(function()
+            HOUND.DB.HumanUnits.byName[coa] = {}
+            HOUND.DB.HumanUnits.byGid[coa] = {}
+            local now = timer.getAbsTime()
+            local stale = {unitName = "stale", groupId = 4242, lastSeen = now - 400}
+            local live = {unitName = "live", groupId = 4243, lastSeen = now}
+            HOUND.DB.HumanUnits.byName[coa].stale = stale
+            HOUND.DB.HumanUnits.byName[coa].live = live
+            HOUND.DB.HumanUnits.byGid[coa][4242] = {stale = stale}
+            HOUND.DB.HumanUnits.byGid[coa][4243] = {live = live}
+
+            HOUND.DB.cleanHumanDb(coa)
+
+            lu.assertIsNil(HOUND.DB.HumanUnits.byName[coa].stale)
+            lu.assertIsNil(HOUND.DB.HumanUnits.byGid[coa][4242])
+            lu.assertIsTable(HOUND.DB.HumanUnits.byName[coa].live)
+            lu.assertIsTable(HOUND.DB.HumanUnits.byGid[coa][4243])
+        end)
+        HOUND.DB.HumanUnits.byName[coa] = savedByName
+        HOUND.DB.HumanUnits.byGid[coa] = savedByGid
+        if not ok then error(err, 0) end
+    end
+
+    function TestHoundUtils:TestCleanHumanDbMissingGroupBucket()
+        local coa = coalition.side.NEUTRAL
+        local savedByName = HOUND.DB.HumanUnits.byName[coa]
+        local savedByGid = HOUND.DB.HumanUnits.byGid[coa]
+        local ok, err = pcall(function()
+            HOUND.DB.HumanUnits.byName[coa] = {}
+            HOUND.DB.HumanUnits.byGid[coa] = {}
+            HOUND.DB.HumanUnits.byName[coa].stale = {unitName = "stale", groupId = 4242, lastSeen = timer.getAbsTime() - 400}
+
+            HOUND.DB.cleanHumanDb(coa)
+
+            lu.assertIsNil(HOUND.DB.HumanUnits.byName[coa].stale)
+        end)
+        HOUND.DB.HumanUnits.byName[coa] = savedByName
+        HOUND.DB.HumanUnits.byGid[coa] = savedByGid
+        if not ok then error(err, 0) end
     end
 
     function TestHoundUtils:tearDown()

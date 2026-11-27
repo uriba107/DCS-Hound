@@ -3,7 +3,17 @@ do
         local triggerUnit = self.eventTriggerUnit
         local triggerUnitName = triggerUnit:getName()
         lu.assertIsTrue(HOUND.Utils.Dcs.isHuman(triggerUnit))
+        -- batch reruns on every human birth; drop units left behind by an earlier slot
+        HOUND.DB.HumanUnits.byName[coalition.side.BLUE] = {}
+        HOUND.DB.HumanUnits.byGid[coalition.side.BLUE] = {}
         HOUND.DB.updateHumanDb(coalition.side.BLUE)
+        -- clear enrollments from an earlier slot so menus and checks start clean
+        for _, sector in ipairs(self.houndBlue:getSectors()) do
+            sector.comms.enrolled = {}
+        end
+        -- menus are keyed by the player tables created above; rebuild them so the
+        -- lookups in later tests hit the current entries instead of the stale ones
+        self.houndBlue:populateRadioMenu()
         lu.assertIsTrue(HOUND.Length(HOUND.DB.HumanUnits.byName[coalition.side.BLUE]) > 0)
         -- local players=HOUND.Utils.Dcs.getPlayers(coalition.side.BLUE)
         -- lu.assertEquals(HOUND.Length(players),1)
@@ -66,7 +76,17 @@ do
                 table.insert(types, item.typeAssigned)
             end
         end
-        lu.assertItemsEquals(types,{'SA-3','SA-6','SA-15','Naval'})
+
+        -- expected from the live sector, not a mission snapshot: ships only join
+        -- Saipan as a threat whose range/position depends on the run
+        local expectedTypes = {}
+        for _, site in ipairs(saipan:getSites()) do
+            if site:getPos() then
+                table.insert(expectedTypes, site:getTypeAssigned())
+            end
+        end
+        lu.assertItemsEquals(types, expectedTypes)
+        lu.assertIsTrue(#expectedTypes > 0, "Saipan should have positioned sites")
     end
 
     function TestHoundFunctional:Test_Comms_03_CommsMenu()

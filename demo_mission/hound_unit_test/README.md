@@ -126,6 +126,7 @@ The **UI/Comms** batch (5) is special: it registers a `world.event` handler for 
 | `TestGetSignalStrength` | Positive signal strength |
 | `TestGetSignalStrengthInvalid` | Nil → nil |
 | `TestElintDB` | DB band lookup, frequency ranges, aperture, diffraction, sensor precision, callsign pools |
+| `TestGetSensorPrecisionUnitArg` | `getSensorPrecision` accepts a live unit (finite rad) and a dead unit handle (default 30°) |
 | `TestGetEmitterBand` | Band enum lookup |
 | `TestGetEmitters` | Emitter list from DB |
 | `TestElintGetAzimuth` | Azimuth between ELINT plane and emitter |
@@ -139,6 +140,7 @@ The **UI/Comms** batch (5) is special: it registers a `world.event` handler for 
 | `TestStaticObjectQueriesSkipDeadObjects` | `getStaticObjectNames` / `Filter.staticObjectsByPrefix` skip non-existing static handles |
 | `TestGetActiveRadarsInGroupDeadHandle` | `Group.getByName` returning a dead handle yields an empty radar list |
 | `TestGetRwrContactsDeadHandle` | `getRwrContacts` returns `{}` for a dead platform handle and for nil |
+| `TestGetRwrContactsLive` | `getRwrContacts` reads `DetectedTarget.object`; returns enemy radar names, nil list and dead targets yield `{}` |
 | `TestGetRadarDetectionRange` | Detection range from live units |
 | `TestGetRadarUnitsInGroup` | Radar units in group |
 | `TestGetSamMaxRange` | SAM max range from live units |
@@ -155,6 +157,12 @@ The **UI/Comms** batch (5) is special: it registers a `world.event` handler for 
 | `TestGetRandomVec2Invalid` | Invalid → nil |
 | `TestGetRandomVec3` | Random 3D vec in bounds |
 | `TestGetRandomVec3Invalid` | Invalid → nil |
+
+**Events**
+
+| Method | What It Tests |
+|--------|--------------|
+| `TestWeaponAddName` | `S_EVENT_WEAPON_ADD` uses live `weapon:getTypeName()`, falls back to `weapon_name` |
 
 **Marker**
 
@@ -175,9 +183,11 @@ The **UI/Comms** batch (5) is special: it registers a `world.event` handler for 
 | `TestPointClusterTiltWithRef` | Tilt relative to reference |
 | `TestThreatOnSectorInvalidPolygon` | `threatOnSector` with bad polygon → nil |
 | `TestThreatOnSectorInvalidPoint` | `threatOnSector` with bad point → nil |
-| `TestThreatOnSectorInside` | Point inside polygon → true, true |
-| `TestThreatOnSectorOutside` | Point outside polygon → false, false |
-| `TestThreatOnSectorWithRadius` | Point near polygon with radius overlap |
+| `TestThreatOnSectorInside` | Point inside sector hex grid → true, true |
+| `TestThreatOnSectorOutside` | Point far outside sector hex grid → false, false |
+| `TestThreatOnSectorWithRadius` | Point outside but within range of sector cells → false, true |
+| `TestThreatOnSectorNoCells` | No sector hex grid → nil passthrough |
+| `TestThreatOnSectorLegacyFlag` | `HOUND.useHexGrid = false` restores polygon in/intersects results |
 | `TestAzMinMaxInvalidRef` | `azMinMax` with bad ref → nil |
 | `TestAzMinMaxInvalidPoly` | `azMinMax` with bad poly → nil |
 | `TestAzMinMaxRefInside` | Ref inside polygon → nil |
@@ -383,6 +393,7 @@ Contact model unit tests for `HOUND.Contact.Site` — unit-level site logic with
 | Method | What It Tests |
 |--------|--------------|
 | `TestConstructorInvalid` | Nil, wrong types → nil |
+| `TestConstructorGroupGone` | Emitter with an unresolvable group name → nil, no error |
 | `TestConstructorValid` | Valid construction, metatable, SITE_NEW state |
 | `TestConstructorWithId` | Custom SiteId → `getId` returns id % 1000 |
 | `TestGenerateLaunchAlertWithoutGrid` | Site with pos.p but nil grid/BE → `generateLaunchAlert` fills lazily, no error |
@@ -518,7 +529,7 @@ Human-player radio comms. Only runs after a human spawns (batch 5, pattern `Comm
 |--------|--------------|
 | `Test_Comms_00_HumanUnitsFunctions` | `updateHumanDb`, `getPlayersInGroup`, player lookup |
 | `Test_Comms_01_CheckIn` | Check-in flow: verify menu items, `Sector.checkIn`, enrollment count |
-| `Test_Comms_02_MenuItems` | List radio items for sector, verify site types `{'SA-3', 'SA-6', 'SA-15', 'Naval'}` |
+| `Test_Comms_02_MenuItems` | List radio items for sector, verify site types match the sector's positioned sites |
 | `Test_Comms_03_CommsMenu` | Menu structure: verify grpMenu.items/objs/pages, check_in shows "Check out", type-assigned submenus exist |
 | `Test_Comms_04_RequestReport` | `TransmitSamReport`: verify message added to controller queue with correct coalition, priority, contactId, tts |
 | `Test_Comms_05_TinianCheckIn` | Tinian sector: enable controller, check in, verify enrollment and menu items |
@@ -552,6 +563,7 @@ Sector model unit tests covering construction, callsign, zone, child sectors, tr
 | `TestSetCallsignNoDuplicate` | Duplicate callsign generates a new one from the pool |
 | `TestSetCallsignReleasesPrevious` | Changing callsign, including from "HOUND", releases the old pool registration |
 | `TestSetCallsignKeepsForeignRegistration` | Unregistered initial "HOUND" placeholder never removes another sector's registration |
+| `TestSetCallsignReappliesCurrent` | Re-applying the sector's own callsign keeps it instead of picking a random one |
 | `TestSetCallsignNil` | `setCallsign()` with no args generates random callsign |
 
 **Zone:**
@@ -562,6 +574,31 @@ Sector model unit tests covering construction, callsign, zone, child sectors, tr
 | `TestSetGetZone` | Manually set zone → hasZone true, getZone returns zone |
 | `TestRemoveZone` | `removeZone` clears zone, hasZone false |
 | `TestGetCenter` | `getCenter` returns zoneCenter when set |
+| `TestSetZoneBuildsPolygon` | `setZone` stores the zone polygon (`_zonePoly`) and an empty hex classification cache |
+| `TestSetZoneReplacementDiffers` | Replacing the zone swaps the polygon and resets the cache at the new location |
+| `TestUpdateSettingsZoneRebuilds` | `updateSettings({zone = ...})` delegates to `setZone` and resets the cache |
+| `TestUpdateSettingsInvalidZoneKeepsCurrent` | Invalid zone replacement leaves the current zone and cache untouched |
+| `TestUpdateSettingsNonZoneValueKeepsCurrent` | Non table/string `zone` value leaves `settings.zone` and its derived polygon consistent |
+| `TestRemoveZonePurgesZone` | `removeZone` clears zone, center, polygon, and cache |
+| `TestSetZoneTooFewPoints` | Zone with fewer than 3 points → nil polygon/cache and no zone |
+| `TestSetZoneAcceptsDrawnZone2D` | Drawn-zone Vec2 `{x,y}` points accepted and classify the origin as inside |
+| `TestSetZoneInvalidKeepsExisting` | Malformed/too-short candidate is a no-op; existing zone and cache stay consistent |
+| `TestSetZoneInvalidVec3KeepsExisting` | Vec3 candidate with nonnumeric `y` is a no-op; zone, center, polygon, cache unchanged |
+| `TestSetZoneSparseKeepsExisting` | Sparse candidate (hole before a later point) is a no-op; zone, center, polygon, cache unchanged |
+| `TestUpdateSectorMembershipHex` | Center contact → `updateSector` gets (true, true) |
+| `TestUpdateSectorMembershipLazyClassify` | First sight of a cell runs one classification; a repeat hit is free |
+| `TestZoneCacheRecomputesOnRadiusChange` | A lower-level radius change invalidates cached cell geometry (radius-aware entries) |
+| `TestUpdateSectorMembershipThreatOnlyOutside` | Outside but in weapon range → (false, true); range is re-evaluated per call |
+| `TestUpdateSectorMembershipZoneCacheHex` | Same hex reuses the classification; a neighbor cell classifies once |
+| `TestUpdateSectorMembershipZoneCacheInvalidation` | `setZone` resets the per-cell classification cache |
+| `TestUpdateSectorMembershipLegacyBypass` | `useHexGrid=false` bypasses the hex cache and uses the polygon path |
+| `TestIsThreatening` | Member → false; outside threat → true; no threat → false |
+| `TestSetHexRadiusResetsZoneCache` | `HOUND.setHexRadius` syncs `hex.getRadius` and resets zoned sector caches |
+| `TestSetHexRadiusInvalid` | Nil, non-number, and zero radius are ignored |
+| `TestMembershipFollowsRadiusChange` | A radius change between sectors makes `getHexCell` classify at the new radius |
+| `TestMembershipYieldsPerSector` | The sector membership coroutine walks name-keyed contacts/sites and yields once per sector |
+| `TestMembershipYieldsInBatches` | The contact walk yields at the 128-pair batch boundary, not only at sector end |
+| `TestMembershipSnapshotSurvivesInsert` | A contact inserted mid-walk is not visited; the walk runs on the pre-yield snapshot (Lua 5.1 `pairs` mutation safety) |
 
 **Child Sectors:**
 
@@ -759,6 +796,8 @@ Worker and query unit tests covering `HOUND.ElintWorker` (500) and `HOUND.ElintW
 | `TestAddContactWithNilConstructor` | `addContact` stores nothing and does not raise when `Emitter:New` returns nil |
 | `TestAddSiteWithNilConstructor` | `addSite` stores nothing and does not raise when `Site:New` returns nil |
 | `TestAddSiteWithoutGroupName` | `addSite` rejects an emitter with no resolvable group name |
+| `TestAddContactDeadUnit` | `addContact` rejects a destroyed DCS unit handle before calling `getName` |
+| `TestAddSiteRawDcsHandle` | `addSite` rejects a DCS group handle without `getDcsGroupName` |
 
 ### `test-HoundCommsManager.lua` — TestHoundCommsManager, TestHoundCommsInformationSystem
 
@@ -832,6 +871,7 @@ Comms infrastructure unit tests for `HOUND.Comms.Manager` (400) and `HOUND.Comms
 | `TestRunCallback` | Calls func, returns next time |
 | `TestGetNextMsgOverride` | Calls runCallback if no loop.msg |
 | `TestGetNextMsgNoMsg` | No callback → returns nil |
+| `TestGetNextMsgDropsInvalid` | Invalid loop message and cached body are cleared so the next poll regenerates it |
 
 ### `test-HoundCoroutine.lua` — TestHoundCoroutine
 
@@ -853,12 +893,14 @@ Coroutine scheduler unit tests for `HOUND.Coroutine` (011). Runs in batch 1.
 | `TestIsRunningFalse` | No coroutines → false |
 | `TestIsRunningTrue` | Active coroutine → true |
 | `TestIsRunningDead` | Finished coroutine → false |
+| `TestPumpPurgesExternallyDeadCoroutine` | Coroutine dead outside the pump is marked and purged on the next pump |
 | `TestCountZero` | Empty → 0 |
 | `TestCountNonZero` | Add 2 → 2 |
 | `TestHasWorkFalse` | Empty → false |
 | `TestHasWorkTrue` | Has entries → true |
 | `TestShutdown` | Clear all state |
 | `TestPumpSelfCancelKeepsWalking` | Self-cancel during resume is deferred; next record still runs in the tick |
+| `TestPumpFirstRunImmediateAtLargeMissionTime` | New record runs on the first pump even when `now - interval` rounds below `interval` |
 | `TestPumpShutdownThenAddDefers` | shutdown+add during a tick defers new work to a later tick, no second scheduler |
 
 ### `test-hex.lua` — TestHoundHex
@@ -870,14 +912,24 @@ Hex grid unit tests for `HOUND.Mist.hex` (`src/020 - HoundMist.lua`). No DCS run
 | `TestHashRoundtrip` | `hash`/`hashToHex` roundtrip; `s` omitted when nil; `"0 0 -0"` parses to zero |
 | `TestPointVecRoundtrip` | `pointToHex`/`makeVec3` inverse; `makeVec3` shape `{x, z, y=0}`; `z or y` read |
 | `TestNeighbor` | 6 dirs at distance 1, distinct; `direction(0)`/`neighbor(c, 0)` → nil |
+| `TestDiagonalNeighbor` | Directions 0-5 at distance 2, distinct; out-of-range and non-number → nil |
 | `TestDistance` | Known pairs: 0, 1, 2, 6 |
 | `TestCubeRing` | `cubeRing(center, 2)` count = 12, all at distance 2, keys match `hash` |
 | `TestCubeSpiral` | `cubeSpiral(center, 2)` count = 19, all within distance 2, contains center |
-| `TestLineDraw` | Length = distance + 1, endpoints present |
+| `TestLineDraw` | Length = distance + 1, endpoints present; optional yield callback runs per generated cell |
 | `TestGetFromRouteFill` | Fill count > edge-only count; edge hashes subset of fill; no `"0 0 -0"` key |
+| `TestGetFromRouteFillInsidePolygon` | Every filled (non-edge) cell center passes `pointInPolygon` |
+| `TestGetFromRouteYields` | Optional `yieldFn` produces a resumable build with the same result; yields on bounded work even with a constant `timer.getTime` |
+| `TestGetFromRouteEdgeYields` | Edge-only route yields during long edges and matches the synchronous result |
 | `TestRingWalkProperty` | First-hit ring k == brute-force min distance over `getFromRoute` set |
 | `TestDrawNoMist` | `draw` with `mist` nil/bare table → nil, no error (`_G.mist` restored) |
-| `TestRadius` | Default 10000; `setRadius`/`getRadius` roundtrip with restore |
+| `TestUseHexGridDefault` | `HOUND.useHexGrid` defaults true and toggles back |
+| `TestRadius` | `HOUND.hexRadius` and `hex.getRadius()` default 1000; `setRadius` roundtrip; nil/string/zero ignored |
+| `TestThreatOnSectorZoneQuery` | Center → true, true; far → false, false; outside-in-range → false, true |
+| `TestThreatOnSectorOriginMembership` | Origin cell inside a 60km square → true, true |
+| `TestThreatOnSectorMatchesPolygonAndRadius` | Grid of points: inSector agrees with `pointInPolygon` on the cell center; threat is monotone in range |
+| `TestContactGetHexCell` | Cell matches `pointToHex` on `pos.p`; cached until position or radius changes |
+| `TestContactGetHexCellNoPos` | No position → nil cell |
 | `TestMakeVec3GL` | x/z match `makeVec3`, y = `land.getHeight` + offset; skipped when `land` is nil |
 
 ## Mission Layout
@@ -915,7 +967,7 @@ Drawn zone: **"Tinian Sector"** polygon (Author layer).
    - `test-HoundContactEmitter.lua` — Polygon clipping and `posPolygon` assertions (`TestLocationErr` body) remain commented out.
    - `test-houndUtils.lua:26` — An azimuth-average test case is commented out.
 
-4. **`test-hound-comms.lua:Test_Comms_02_MenuItems`**: Collects the `typeAssigned` of each menu item (site data) and compares against the Saipan sector's site types. Menu items are sorted by range, so ordering is positional, not insertion order — `assertItemsEquals` is order-insensitive. The expected list reflects the current mission (SA-3/SA-6/SA-15 land sites + ships); update it when mission groups change.
+4. **`test-hound-comms.lua:Test_Comms_02_MenuItems`**: Collects the `typeAssigned` of each menu item (site data) and compares it with the sector's positioned sites (`getSites()` filtered by `getPos()`), so the assertion does not depend on mission layout or on ships reaching the sector as a threat. Menu items are sorted by range, so ordering is positional, not insertion order — `assertItemsEquals` is order-insensitive.
 
 5. **Redundant class**: `TestHoundFunctionalBase` in `test-hound-base.lua` has the same setUp/tearDown as `TestHoundFunctional` and only one exclusive test method (`Test_02_base_00_unitSetup`). All other `02_base` tests are on `TestHoundFunctional`.
 

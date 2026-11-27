@@ -169,9 +169,14 @@ do
     -- @return angular resolution in Radians of platform against specific Radar frequency
     function HOUND.DB.getSensorPrecision(platform,emitterFreq)
         local wavelength = emitterFreq
-        if HOUND.Utils.Dcs.isUnitAlive(emitterFreq) then
-            local _,track = emitterFreq:getRadar()
-            wavelength = HOUND.DB.getEmitterFrequencies(HOUND.DB.getEmitterBand(emitterFreq))[HOUND.Utils.Dcs.isUnit(track)]
+        if HOUND.Utils.Dcs.isUnit(emitterFreq) then
+            -- a dead unit still needs a finite wavelength; getEmitterBand falls
+            -- back to band C, but no method may be called on the dead handle
+            wavelength = nil
+            if HOUND.Utils.Dcs.isUnitAlive(emitterFreq) then
+                local band = HOUND.DB.getEmitterBand(emitterFreq)
+                wavelength = band[1] + band[2] * l_math.random()
+            end
         end
 
         return HOUND.DB.getDefraction(wavelength,HOUND.DB.getApertureSize(platform)) or l_math.rad(20.0) -- precision
@@ -215,11 +220,13 @@ do
         for _,coa in pairs(coalitions) do
             for unitName,player in pairs(HOUND.DB.HumanUnits.byName[coa]) do
                 if HOUND.Utils.absTimeDelta(player.lastSeen) > 300 then
-                    local gid = player.groupId
                     HOUND.DB.HumanUnits.byName[coa][unitName] = nil
-                    HOUND.DB.HumanUnits.byGid[coa][gid][unitName] = nil
-                    if HOUND.Length(HOUND.DB.HumanUnits.byGid[coa][gid]) == 0 then
-                        HOUND.DB.HumanUnits.byGid[coa][gid] = nil
+                    local byGid = HOUND.DB.HumanUnits.byGid[coa][player.groupId]
+                    if byGid then
+                        byGid[unitName] = nil
+                        if HOUND.Length(byGid) == 0 then
+                            HOUND.DB.HumanUnits.byGid[coa][player.groupId] = nil
+                        end
                     end
                 end
             end

@@ -114,6 +114,25 @@ do
         return HoundUtils.Dcs.copyPoint(self.pos.p)
     end
 
+    --- get the hex grid cell containing the current estimated position
+    -- Derived lazily from pos.p and cached until the position or the hex radius
+    -- changes, next to the other position-derived data (LL/grid/BE).
+    -- @return hex cube {r,q,s} or nil when the contact has no position
+    function HOUND.Contact.Base:getHexCell()
+        local p = self.pos.p
+        if not HoundUtils.Dcs.isPoint(p) then return nil end
+        local hex = HOUND.Mist.hex
+        local radius = hex.getRadius()
+        local cached = self._hexCell
+        if cached and cached.radius == radius and cached.x == p.x and cached.z == p.z then
+            return cached
+        end
+        local cell = hex.pointToHex(p)
+        cached = { r = cell.r, q = cell.q, s = cell.s, radius = radius, x = p.x, z = p.z }
+        self._hexCell = cached
+        return cached
+    end
+
     --- get max weapons range
     -- @return Number max weapon range of contact
     function HOUND.Contact.Base:getMaxWeaponsRange()
@@ -296,6 +315,14 @@ do
     -- @return[type=Bool] True if contact thretens sector
     function HOUND.Contact.Base:isThreatsSector(sectorName)
         return self.threatSectors[sectorName] or false
+    end
+
+    --- check if contact threatens named sector from outside
+    -- a member of the sector (primarySector) is not counted as a threat
+    -- @string sectorName name of sector
+    -- @return[type=Bool] True if contact threatens sector and is not in it
+    function HOUND.Contact.Base:isThreatening(sectorName)
+        return self.threatSectors[sectorName] == true and self.primarySector ~= sectorName
     end
 
     --- Marker managment

@@ -5,6 +5,31 @@ do
     local l_math = math
     local HoundUtils = HOUND.Utils
 
+    -- zone points come from drawn zones (Vec2 {x,y}) or group routes (Vec3 {x,y,z})
+    local function isZonePoint(point)
+        if type(point) ~= "table" or type(point.x) ~= "number" then return false end
+        if point.z == nil then
+            return type(point.y) == "number"
+        end
+        return type(point.y) == "number" and type(point.z) == "number"
+    end
+
+    local function isValidZone(zone)
+        if type(zone) ~= "table" then return false end
+        local count = 0
+        for key, point in pairs(zone) do
+            if type(key) ~= "number" or key % 1 ~= 0 or not isZonePoint(point) then
+                return false
+            end
+            count = count + 1
+        end
+        -- contiguous 1-based array: setZone builds xs/zs with ipairs and stops at a hole
+        for i = 1, count do
+            if zone[i] == nil then return false end
+        end
+        return count >= 3
+    end
+
     --- HOUND.Sector
     -- @type HOUND.Sector
     -- @within HOUND.Sector
@@ -49,6 +74,9 @@ do
         }
         instance.childSectors = {}
         instance.priority = priority or 10
+        instance.zoneCenter = nil
+        instance._zonePoly = nil
+        instance._zoneHexCache = nil
 
         if settings ~= nil and type(settings) == "table" and HOUND.Length(settings) > 0 then
             instance:updateSettings(settings)
@@ -87,6 +115,14 @@ do
                     self.settings[k0][tostring(k1):lower()] = v1
                 end
                 self.settings[k0]["name"] = self.callsign
+            elseif k0 == "zone" then
+                -- setZone validates the replacement and resets the hex cache;
+                -- invalid candidates leave the current zone and cache unchanged
+                if type(v) == "table" or type(v) == "string" then
+                    self:setZone(v)
+                else
+                    HOUND.Logger.warn("[Hound] - sector " .. self.name .. ": ignoring invalid zone value in updateSettings")
+                end
             else
                 self.settings[k0] = v
             end
@@ -174,10 +210,8 @@ do
 
         callsign = string.upper(callsign or HoundUtils.getHoundCallsign(namePool))
 
-        while HOUND.setContainsValue(self._hSettings.callsigns, callsign) do
-            callsign = HoundUtils.getHoundCallsign(namePool)
-        end
-
+        -- release the sector's own registration first so re-applying the current
+        -- callsign is not treated as taken and replaced by a random one
         if self._callsignRegistered then
             for k = #self._hSettings.callsigns, 1, -1 do
                 if self._hSettings.callsigns[k] == self.callsign then
@@ -186,6 +220,11 @@ do
             end
             self._callsignRegistered = false
         end
+
+        while HOUND.setContainsValue(self._hSettings.callsigns, callsign) do
+            callsign = HoundUtils.getHoundCallsign(namePool)
+        end
+
         table.insert(self._hSettings.callsigns, callsign)
         self.callsign = callsign
         self._callsignRegistered = true
@@ -211,33 +250,48 @@ do
     end
 
     --- Set zone in sector
+    -- Stores the polygon and a precomputed edge coordinate array. Hex cells are
+    -- classified lazily on first contact sighting and cached in `_zoneHexCache`.
     -- @param zonecandidate (String) DCS group name, or a drawn map freeform Polygon. sector borders will be group waypoints or polygon points
-    function HOUND.Sector:setZone(zonecandidate)
+    -- @param[opt] onComplete called after the zone is applied
+    function HOUND.Sector:setZone(zonecandidate, onComplete)
         if self.name == "default" then
             HOUND.Logger.warn("[Hound] - cannot set zone to default sector")
             return
         end
         local zone = nil
-        if not zonecandidate then
+        if type(zonecandidate) == "table" then
+            zone = zonecandidate
+        elseif type(zonecandidate) == "string" then
+            zone = HoundUtils.Zone.getDrawnZone(zonecandidate) or HoundUtils.Zone.getGroupRoute(zonecandidate)
+        else
             zone = HoundUtils.Zone.getDrawnZone(self.name .. " Sector")
         end
-        if type(zonecandidate) == "string" then
-            zone = HoundUtils.Zone.getDrawnZone(zonecandidate) or HoundUtils.Zone.getGroupRoute(zonecandidate)
-            -- local zone = HoundUtils.Zone.getDrawnZone(zonecandidate)
-            -- if not zone and (Group.getByName(zonecandidate)) then
-            --     zone = mist.getGroupPoints(zonecandidate)
-            -- end
-            -- self.settings.zone = zone
-            -- return
+        if not isValidZone(zone) then
+            -- invalid candidate: keep the existing zone and derived fields consistent
+            return
         end
-        if zone then
-            self.settings.zone = zone
-            self.zoneCenter = HOUND.Mist.getAvgPoint(zone)
+
+        local xs, zs = {}, {}
+        for i, point in ipairs(zone) do
+            xs[i] = point.x
+            zs[i] = point.z or point.y
         end
+
+        self.settings.zone = zone
+        self.zoneCenter = HOUND.Mist.getAvgPoint(zone)
+        self._zonePoly = { xs = xs, zs = zs, n = #xs }
+        self._zoneHexCache = {}
+        if type(onComplete) == "function" then onComplete() end
     end
 
     --- Remove Zone settings from sector
-    function HOUND.Sector:removeZone() self.settings.zone = nil end
+    function HOUND.Sector:removeZone()
+        self.settings.zone = nil
+        self.zoneCenter = nil
+        self._zonePoly = nil
+        self._zoneHexCache = nil
+    end
 
     --- get Sector zone center
     -- @return DCS point or nil
@@ -594,9 +648,22 @@ do
     end
 
     --- update contact for zone memberships
+    -- The contact owns its hex cell (Contact.Base:getHexCell); this sector owns
+    -- the zone classification cache for those cells.
     -- @param contact HOUND.Contact instance
     function HOUND.Sector:updateSectorMembership(contact)
-        local inSector, threatsSector = HoundUtils.Polygon.threatOnSector(self.settings.zone,contact:getPos(),contact:getMaxWeaponsRange())
+        local range = contact:getMaxWeaponsRange()
+        local inSector, threatsSector
+
+        if HOUND.useHexGrid then
+            inSector, threatsSector = HoundUtils.Polygon.threatOnSector(
+                self.settings.zone, nil, range,
+                contact:getHexCell(), self._zoneHexCache, self._zonePoly)
+        else
+            inSector, threatsSector = HoundUtils.Polygon.threatOnSectorLegacy(
+                self.settings.zone, contact:getPos(), range)
+        end
+
         contact:updateSector(self.name, inSector, threatsSector)
         local site = self._contacts:getSite(contact)
         if site then site:updateSector() end

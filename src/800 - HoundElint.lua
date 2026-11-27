@@ -188,7 +188,7 @@ do
         for i,sector in pairs(sectors) do
             sector:populateRadioMenu()
         end
-        -- HOUND.DB.cleanHumanDb(self.settings:getCoalition())
+        HOUND.DB.cleanHumanDb(self.settings:getCoalition())
         menuTimer:Stop()
     end
 
@@ -351,7 +351,8 @@ do
                 jsonFile:write(net.lua2json(report))
                 jsonFile:flush()
             end)
-            jsonFile:close()
+            -- always attempt cleanup, and contain a failing close
+            pcall(jsonFile.close, jsonFile)
             if not jsonOk then
                 HOUND.Logger.warn("Failed to write JSON export: " .. tostring(jsonErr))
             end
@@ -376,7 +377,8 @@ do
                 end
             end
         end)
-        csvFile:close()
+        -- always attempt cleanup after partial output, and contain a failing close
+        pcall(csvFile.close, csvFile)
         if not csvOk then
             HOUND.Logger.warn("Failed to write CSV export: " .. tostring(csvWriteErr))
         end
